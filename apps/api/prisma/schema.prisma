@@ -8,20 +8,75 @@ datasource db {
 }
 
 model Tenant {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  users     User[]
+  id         String      @id @default(cuid())
+  name       String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  plaidItems PlaidItem[]
+  users      User[]
 }
 
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  passwordHash  String
-  role          String   @default("member") // e.g., 'admin', 'member'
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  role         String      @default("member")
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  tenantId     String
+  plaidItems   PlaidItem[]
+  tenant       Tenant      @relation(fields: [tenantId], references: [id])
+}
+
+model PlaidItem {
+  id                   String    @id @default(cuid())
+  tenantId             String
+  userId               String
+  plaidItemId          String    @unique
+  accessTokenEncrypted Bytes
+  institutionName      String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  accounts             Account[]
+  tenant               Tenant    @relation(fields: [tenantId], references: [id])
+  user                 User      @relation(fields: [userId], references: [id])
+}
+
+model Account {
+  id             String        @id @default(cuid())
+  plaidItemId    String
+  plaidAccountId String        @unique
+  name           String
+  mask           String?
+  type           String
+  subtype        String
+  currentBalance Decimal
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  plaidItem      PlaidItem     @relation(fields: [plaidItemId], references: [id])
+  transactions   Transaction[]
+}
+
+model TransactionCategory {
+  id            Int                   @id @default(autoincrement())
+  name          String                @unique
+  parentId      Int?
+  transactions  Transaction[]
+  parent        TransactionCategory?  @relation("SubCategories", fields: [parentId], references: [id])
+  subcategories TransactionCategory[] @relation("SubCategories")
+}
+
+model Transaction {
+  id                 String               @id @default(cuid())
+  accountId          String
+  categoryId         Int?
+  plaidTransactionId String               @unique
+  amount             Decimal
+  description        String
+  date               DateTime
+  pending            Boolean              @default(false)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  account            Account              @relation(fields: [accountId], references: [id])
+  category           TransactionCategory? @relation(fields: [categoryId], references: [id])
 }
