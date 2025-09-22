@@ -40,11 +40,14 @@ export class PlaidService {
           client_user_id: userId,
         },
         client_name: 'CoXist AI CFO Assistant',
-        products: (process.env.PLAID_PRODUCTS?.split(',') as Products[]) || [Products.Transactions, Products.Auth, Products.Identity],
+        products: (process.env.PLAID_PRODUCTS?.split(',') as Products[]) || [Products.Transactions],
         country_codes: (process.env.PLAID_COUNTRY_CODES?.split(',') as CountryCode[]) || [CountryCode.Us],
         language: 'en',
-        webhook: `${process.env.API_BASE_URL || 'http://localhost:3001'}/api/v1/cfo/plaid/webhook`,
-        redirect_uri: process.env.PLAID_REDIRECT_URI || 'http://localhost:3000/cfo/plaid/callback',
+        // Only add webhook in production, sandbox doesn't require it
+        ...(process.env.PLAID_ENV === 'production' && {
+          webhook: `${process.env.CORS_ORIGIN || 'http://localhost:3000'}/api/v1/cfo/plaid/webhook`,
+        }),
+        redirect_uri: process.env.PLAID_REDIRECT_URI || 'http://localhost:3000/plaid/oauth',
       };
 
       const response = await plaidClient.linkTokenCreate(request);
