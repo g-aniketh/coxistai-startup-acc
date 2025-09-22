@@ -63,6 +63,10 @@ DATABASE_URL="postgresql://username:password@hostname:port/database?schema=publi
 
 # CORS Configuration
 CORS_ORIGIN=http://localhost:3000
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_EXPIRES_IN=24h
 ```
 
 ### Database Commands
@@ -99,15 +103,18 @@ pnpm start
 
 ## 📡 API Endpoints
 
+### Base URL
+All API endpoints are prefixed with `/api/v1`
+
 ### Health Checks
 
-- `GET /health` - Basic health check
-- `GET /api/health/db` - Database connection health check
+- `GET /api/v1/health` - Comprehensive health check with database connectivity test
+- `GET /api/v1/docs` - API documentation and endpoint reference
 
 ### Tenants
 
-- `GET /api/tenants` - Get all tenants with their users
-- `POST /api/tenants` - Create a new tenant
+- `GET /api/v1/tenants` - Get all tenants with their users
+- `POST /api/v1/tenants` - Create a new tenant
   ```json
   {
     "name": "Tenant Name"
@@ -116,7 +123,54 @@ pnpm start
 
 ### Users
 
-- `GET /api/users` - Get all users with their tenant information
+- `GET /api/v1/users` - Get all users with their tenant information
+
+### Authentication
+
+The API uses JWT-based authentication. Include the access token in the Authorization header:
+
+```bash
+curl -H "Authorization: Bearer <access_token>" http://localhost:3001/api/v1/tenants
+```
+
+#### Authentication Endpoints
+
+- `POST /api/v1/auth/login` - User login
+- `POST /api/v1/auth/register` - User registration  
+- `POST /api/v1/auth/refresh` - Refresh access token
+- `GET /api/v1/auth/me` - Get current user profile
+- `POST /api/v1/auth/logout` - User logout
+
+#### Test Credentials
+
+- **Admin**: `admin@coxist.ai` / `password123`
+- **Member**: `member@coxist.ai` / `password123`
+- **CEO**: `ceo@techstart.com` / `password123`
+
+### Multi-Tenancy
+
+The API supports multi-tenancy through JWT payload and `X-Tenant-ID` header:
+
+```bash
+curl -H "Authorization: Bearer <token>" -H "X-Tenant-ID: tenant-1" http://localhost:3001/api/v1/tenants
+```
+
+### Response Format
+
+All API responses follow this structure:
+
+```json
+{
+  "success": boolean,
+  "data": any,
+  "error": string,
+  "context": {
+    "currentTenant": {
+      "id": "string",
+      "name": "string"
+    }
+  }
+}
 
 ## 🛠️ Available Scripts
 
