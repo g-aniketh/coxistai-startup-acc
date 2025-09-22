@@ -1,0 +1,17 @@
+{
+  "name": "coxistai-startup-accelerator",
+  "version": "1.0.0",
+  "description": "CoXist AI Startup Accelerator Monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel --recursive dev",
+    "build": "pnpm --recursive build",
+    "test": "pnpm --recursive test",
+    "lint": "pnpm --recursive lint",
+    "type-check": "pnpm --recursive type-check"
+  },
+  "keywords": ["monorepo", "startup", "accelerator", "ai"],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.13.1"
+}
