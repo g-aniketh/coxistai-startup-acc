@@ -26,7 +26,7 @@ export function generateAccessToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): s
     expiresIn: JWT_EXPIRES_IN,
     issuer: 'coxist-ai-accelerator',
     audience: 'coxist-ai-users'
-  });
+  } as jwt.SignOptions);
 }
 
 /**
@@ -37,7 +37,7 @@ export function generateRefreshToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): 
     expiresIn: '7d', // Refresh tokens last 7 days
     issuer: 'coxist-ai-accelerator',
     audience: 'coxist-ai-users'
-  });
+  } as jwt.SignOptions);
 }
 
 /**

@@ -6,6 +6,9 @@ import { prisma } from './lib/prisma';
 import { tenantMiddleware, optionalTenantMiddleware } from './middleware/tenant';
 import { authenticateToken, optionalAuth } from './middleware/auth';
 import authRoutes from './routes/auth';
+import plaidRoutes from './routes/plaid';
+import cfoRoutes from './routes/cfo';
+import { TransactionSyncService } from './services/transactionSync';
 
 // Load environment variables
 dotenv.config();
@@ -60,6 +63,12 @@ const v1Router = express.Router();
 
 // Authentication routes (no auth required)
 v1Router.use('/auth', authRoutes);
+
+// CFO Plaid routes (protected by authentication)
+v1Router.use('/cfo/plaid', authenticateToken, plaidRoutes);
+
+// CFO Assistant routes (protected by authentication)
+v1Router.use('/cfo', authenticateToken, cfoRoutes);
 
 // Health check endpoint
 v1Router.get('/health', async (req, res) => {
@@ -139,6 +148,89 @@ v1Router.get('/docs', (req, res) => {
           method: 'POST',
           path: '/auth/logout',
           description: 'User logout (requires authentication)'
+        }
+      },
+      cfo: {
+        plaid: {
+          createLinkToken: {
+            method: 'POST',
+            path: '/cfo/plaid/create-link-token',
+            description: 'Create Plaid link token for frontend integration (requires authentication)'
+          },
+          exchangePublicToken: {
+            method: 'POST',
+            path: '/cfo/plaid/exchange-public-token',
+            description: 'Exchange public token for access token and store Plaid item (requires authentication)',
+            body: {
+              publicToken: 'string (required)'
+            }
+          },
+          getItems: {
+            method: 'GET',
+            path: '/cfo/plaid/items',
+            description: 'Get all Plaid items for the tenant (requires authentication)'
+          },
+          syncTransactions: {
+            method: 'POST',
+            path: '/cfo/plaid/sync-transactions/:plaidItemId',
+            description: 'Sync transactions for a specific Plaid item (requires authentication)',
+            body: {
+              startDate: 'string (optional, ISO date)',
+              endDate: 'string (optional, ISO date)'
+            }
+          },
+          deleteItem: {
+            method: 'DELETE',
+            path: '/cfo/plaid/items/:plaidItemId',
+            description: 'Delete a Plaid item and revoke access (requires authentication)'
+          },
+          webhook: {
+            method: 'POST',
+            path: '/cfo/plaid/webhook',
+            description: 'Plaid webhook endpoint for transaction updates (no authentication required)'
+          }
+        },
+        accounts: {
+          method: 'GET',
+          path: '/cfo/accounts',
+          description: 'Get all financial accounts for the tenant (requires authentication)'
+        },
+        transactions: {
+          method: 'GET',
+          path: '/cfo/transactions',
+          description: 'Get paginated transactions with filters (requires authentication)',
+          query: {
+            page: 'number (optional, default: 1)',
+            limit: 'number (optional, default: 50, max: 100)',
+            startDate: 'string (optional, ISO date)',
+            endDate: 'string (optional, ISO date)',
+            categoryId: 'number (optional)',
+            accountId: 'string (optional)',
+            search: 'string (optional, search in description)',
+            sortBy: 'string (optional, default: date)',
+            sortOrder: 'string (optional, asc|desc, default: desc)'
+          }
+        },
+        dashboard: {
+          method: 'GET',
+          path: '/cfo/dashboard/summary',
+          description: 'Get dashboard summary with key financial metrics (requires authentication)',
+          query: {
+            period: 'number (optional, days, default: 30)'
+          }
+        },
+        categories: {
+          method: 'GET',
+          path: '/cfo/categories',
+          description: 'Get all transaction categories (requires authentication)'
+        },
+        healthScore: {
+          method: 'GET',
+          path: '/cfo/health-score',
+          description: 'Get financial health score and recommendations (requires authentication)',
+          query: {
+            period: 'number (optional, days, default: 30)'
+          }
         }
       },
       tenants: {
@@ -282,11 +374,16 @@ const server = app.listen(PORT, () => {
   console.log(`📍 API Documentation: http://localhost:${PORT}/api/v1/docs`);
   console.log(`🌐 API Base URL: http://localhost:${PORT}/api/v1`);
   console.log(`🗄️  Database: Connected to PostgreSQL via Prisma`);
+  
+  // Start transaction sync service
+  TransactionSyncService.start();
+  console.log(`🔄 Transaction sync service started`);
 });
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, shutting down gracefully');
+  TransactionSyncService.stop();
   server.close(() => {
     console.log('Process terminated');
   });
@@ -295,6 +392,7 @@ process.on('SIGTERM', async () => {
 
 process.on('SIGINT', async () => {
   console.log('SIGINT received, shutting down gracefully');
+  TransactionSyncService.stop();
   server.close(() => {
     console.log('Process terminated');
   });

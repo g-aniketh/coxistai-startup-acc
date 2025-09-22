@@ -9,10 +9,15 @@ import {
   BuildingOfficeIcon,
   CogIcon,
   ArrowRightOnRectangleIcon,
+  ChartBarIcon,
+  DocumentTextIcon,
+  BanknotesIcon,
 } from '@heroicons/react/24/outline';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+  { name: 'CFO Dashboard', href: '/cfo-dashboard', icon: ChartBarIcon },
+  { name: 'Transactions', href: '/transactions', icon: DocumentTextIcon },
   { name: 'Users', href: '/users', icon: UsersIcon },
   { name: 'Tenants', href: '/tenants', icon: BuildingOfficeIcon },
   { name: 'Settings', href: '/settings', icon: CogIcon },
