@@ -1,4 +1,6 @@
-import { twMerge } from 'tailwind-merge';
+import { cn } from '@/lib/utils';
+import { Card, CardContent, CardHeader } from './Card';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
 interface MetricCardProps {
   title: string;
@@ -11,24 +13,38 @@ interface MetricCardProps {
 
 export function MetricCard({ title, value, change, changeType, icon, className }: MetricCardProps) {
   return (
-    <div className={twMerge("bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-5 shadow-sm", className)}>
-      <div className="flex justify-between items-start">
-        <div className="flex flex-col space-y-1">
-          <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
-          <p className="text-2xl font-semibold text-gray-900 dark:text-white">{value}</p>
+    <Card className={cn("group hover:shadow-lg transition-all duration-300 hover:-translate-y-1", className)}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-200">
+            {icon}
+          </div>
+          <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
         </div>
-        <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-md">
-          {icon}
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          <div className="text-2xl font-bold text-foreground">{value}</div>
+          {change && (
+            <div className="flex items-center gap-1">
+              {changeType === 'positive' ? (
+                <TrendingUp className="h-4 w-4 text-green-500" />
+              ) : (
+                <TrendingDown className="h-4 w-4 text-red-500" />
+              )}
+              <span className={cn(
+                "text-sm font-medium",
+                changeType === 'positive' ? "text-green-600" : "text-red-600"
+              )}>
+                {change}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                vs. previous period
+              </span>
+            </div>
+          )}
         </div>
-      </div>
-      {change && (
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-          <span className={changeType === 'positive' ? 'text-green-500' : 'text-red-500'}>
-            {change}
-          </span>
-          {' '}vs. previous period
-        </p>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }

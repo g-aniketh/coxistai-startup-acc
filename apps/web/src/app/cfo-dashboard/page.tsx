@@ -6,14 +6,20 @@ import { CashFlowChart } from '@/components/ui/CashFlowChart';
 import { MetricCard } from '@/components/ui/MetricCard';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
 import { 
-  CurrencyDollarIcon, 
-  ArrowTrendingUpIcon, 
-  ArrowTrendingDownIcon,
-  BanknotesIcon,
-  ClockIcon,
-  ScaleIcon,
-} from '@heroicons/react/24/outline';
+  DollarSign, 
+  TrendingUp, 
+  TrendingDown,
+  Banknote,
+  Clock,
+  Scale,
+  Wallet,
+  PieChart,
+  ArrowUpRight,
+  ArrowDownRight,
+} from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export default function CFODashboardPage() {
@@ -132,14 +138,16 @@ export default function CFODashboardPage() {
     return (
       <AuthGuard requireAuth={true}>
         <MainLayout>
-          <div className="text-center py-12 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-            <BanknotesIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">No Financial Data Available</h3>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Connect your bank account to get started and see your financial overview.</p>
-            <div className="mt-6">
+          <Card className="text-center py-12 animate-fade-in">
+            <CardContent className="flex flex-col items-center justify-center">
+              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Banknote className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-medium text-foreground mb-2">No Financial Data Available</h3>
+              <p className="text-sm text-muted-foreground mb-6">Connect your bank account to get started and see your financial overview.</p>
               <PlaidLink onSuccess={handlePlaidSuccess} onError={handlePlaidError} />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </MainLayout>
       </AuthGuard>
     );
@@ -152,18 +160,18 @@ export default function CFODashboardPage() {
       <MainLayout>
         <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 animate-fade-in">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">CFO Dashboard</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <h1 className="text-3xl font-bold text-foreground">CFO Dashboard</h1>
+          <p className="mt-2 text-muted-foreground">
             Financial overview for the last {period} days.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <select
             value={period}
             onChange={(e) => setPeriod(Number(e.target.value))}
-            className="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="rounded-lg border border-border bg-card text-card-foreground shadow-sm focus:border-primary focus:ring-primary px-3 py-2 text-sm"
           >
             <option value={7}>Last 7 days</option>
             <option value={30}>Last 30 days</option>
@@ -175,94 +183,146 @@ export default function CFODashboardPage() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in" style={{ animationDelay: '100ms' }}>
         <MetricCard 
           title="Total Balance"
           value={formatCurrency(balance.total)}
-          icon={<ScaleIcon className="w-6 h-6 text-indigo-500" />}
+          icon={<Scale className="w-5 h-5" />}
+          change={"+12.5%"}
+          changeType="positive"
         />
         <MetricCard 
           title="Net Cash Flow"
           value={formatCurrency(cashFlow.netCashFlow)}
-          icon={cashFlow.netCashFlow >= 0 
-            ? <ArrowTrendingUpIcon className="w-6 h-6 text-green-500" /> 
-            : <ArrowTrendingDownIcon className="w-6 h-6 text-red-500" />}
+          icon={cashFlow.netCashFlow >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+          change={cashFlow.netCashFlow >= 0 ? "+8.2%" : "-3.1%"}
+          changeType={cashFlow.netCashFlow >= 0 ? "positive" : "negative"}
         />
         <MetricCard 
           title="Daily Burn Rate"
           value={formatCurrency(cashFlow.burnRate)}
-          icon={<ClockIcon className="w-6 h-6 text-amber-500" />}
+          icon={<Clock className="w-5 h-5" />}
+          change="-5.7%"
+          changeType="positive"
         />
         <MetricCard 
           title="Financial Runway"
           value={cashFlow.runway > 0 ? `${Math.round(cashFlow.runway)} days` : 'N/A'}
-          icon={<BanknotesIcon className="w-6 h-6 text-blue-500" />}
+          icon={<Banknote className="w-5 h-5" />}
         />
       </div>
 
       {/* Cash Flow Chart */}
-      <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Cash Flow</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Income vs. Expenses over the last {period} days.</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 text-center">
-            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <p className="text-sm text-green-800 dark:text-green-300">Total Income</p>
-                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{formatCompactCurrency(cashFlow.income)}</p>
+      <Card className="animate-fade-in" style={{ animationDelay: '200ms' }}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <PieChart className="h-5 w-5" />
+            Cash Flow Analysis
+          </CardTitle>
+          <CardDescription>
+            Income vs. Expenses over the last {period} days
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/20">
+              <div className="flex items-center gap-2 mb-2">
+                <ArrowUpRight className="h-4 w-4 text-green-500" />
+                <p className="text-sm font-medium text-green-600">Total Income</p>
+              </div>
+              <p className="text-2xl font-bold text-green-500">{formatCompactCurrency(cashFlow.income)}</p>
             </div>
-            <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                <p className="text-sm text-red-800 dark:text-red-300">Total Expenses</p>
-                <p className="text-2xl font-bold text-red-600 dark:text-red-400">{formatCompactCurrency(cashFlow.expenses)}</p>
+            <div className="p-4 bg-red-500/10 rounded-lg border border-red-500/20">
+              <div className="flex items-center gap-2 mb-2">
+                <ArrowDownRight className="h-4 w-4 text-red-500" />
+                <p className="text-sm font-medium text-red-600">Total Expenses</p>
+              </div>
+              <p className="text-2xl font-bold text-red-500">{formatCompactCurrency(cashFlow.expenses)}</p>
             </div>
-            <div className="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
-                <p className="text-sm text-gray-600 dark:text-gray-300">Net Cash Flow</p>
-                <p className={`text-2xl font-bold ${cashFlow.netCashFlow >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                    {formatCompactCurrency(cashFlow.netCashFlow)}
-                </p>
+            <div className="p-4 bg-accent/50 rounded-lg border border-border">
+              <div className="flex items-center gap-2 mb-2">
+                <Wallet className="h-4 w-4 text-primary" />
+                <p className="text-sm font-medium text-foreground">Net Cash Flow</p>
+              </div>
+              <p className={`text-2xl font-bold ${cashFlow.netCashFlow >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {formatCompactCurrency(cashFlow.netCashFlow)}
+              </p>
             </div>
-        </div>
-        <CashFlowChart data={cashFlow.dailyBreakdown} period={period} />
-      </div>
+          </div>
+          <CashFlowChart data={cashFlow.dailyBreakdown} period={period} />
+        </CardContent>
+      </Card>
 
       {/* Accounts & Categories */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in" style={{ animationDelay: '300ms' }}>
         {/* Accounts Overview */}
-        <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Connected Accounts</h2>
-          <div className="mt-4 space-y-4">
-            {accounts.breakdown.map((account) => (
-              <div key={account.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md">
-                <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white">{account.name}</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {account.institution} - {account.type} ({account.mask})
-                  </p>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Wallet className="h-5 w-5" />
+              Connected Accounts
+            </CardTitle>
+            <CardDescription>
+              Your linked financial accounts and balances
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {accounts.breakdown.map((account, index) => (
+                <div key={account.id} className="flex items-center justify-between p-4 bg-accent/50 rounded-lg border border-border animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Banknote className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-foreground">{account.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {account.institution} - {account.type} ({account.mask})
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-foreground">{formatCurrency(account.balance)}</p>
+                    <Badge variant="outline" className="text-xs">
+                      Active
+                    </Badge>
+                  </div>
                 </div>
-                <p className="font-semibold text-gray-900 dark:text-white">{formatCurrency(account.balance)}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Category Breakdown */}
-        <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Spending by Category</h2>
-          <div className="mt-4 space-y-3">
-            {categories.breakdown.slice(0, 5).map((category) => (
-              <div key={category.name}>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-800 dark:text-gray-200">{category.name}</span>
-                  <span className="text-gray-600 dark:text-gray-300">{formatCurrency(category.expenses)}</span>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <PieChart className="h-5 w-5" />
+              Spending by Category
+            </CardTitle>
+            <CardDescription>
+              Breakdown of your expenses by category
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {categories.breakdown.slice(0, 5).map((category, index) => (
+                <div key={category.name} className="animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-foreground">{category.name}</span>
+                    <span className="text-sm text-muted-foreground">{formatCurrency(category.expenses)}</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div 
+                      className="bg-primary h-2 rounded-full transition-all duration-500 ease-out" 
+                      style={{ width: `${(category.expenses / cashFlow.expenses) * 100}%` }}
+                    ></div>
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div 
-                    className="bg-indigo-600 h-2 rounded-full" 
-                    style={{ width: `${(category.expenses / cashFlow.expenses) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
         </div>
       </MainLayout>

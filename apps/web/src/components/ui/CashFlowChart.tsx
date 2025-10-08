@@ -14,10 +14,10 @@ interface CashFlowChartProps {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="rounded-lg border bg-background p-2 shadow-sm">
-        <div className="grid grid-cols-2 gap-2">
+      <div className="rounded-lg border border-border bg-card p-4 shadow-lg glass">
+        <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col space-y-1">
-            <span className="text-[0.70rem] uppercase text-muted-foreground">
+            <span className="text-[0.70rem] uppercase text-muted-foreground font-medium">
               Income
             </span>
             <span className="font-bold text-green-500">
@@ -25,7 +25,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
             </span>
           </div>
           <div className="flex flex-col space-y-1">
-            <span className="text-[0.70rem] uppercase text-muted-foreground">
+            <span className="text-[0.70rem] uppercase text-muted-foreground font-medium">
               Expenses
             </span>
             <span className="font-bold text-red-500">
@@ -33,7 +33,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
             </span>
           </div>
         </div>
-        <p className="text-center text-sm text-muted-foreground mt-2">{label}</p>
+        <p className="text-center text-sm text-muted-foreground mt-3 font-medium">{label}</p>
       </div>
     );
   }
@@ -74,16 +74,16 @@ export function CashFlowChart({ data, period }: CashFlowChartProps) {
             <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
           </linearGradient>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255, 255, 255, 0.1)" />
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
         <XAxis
           dataKey="date"
-          stroke="#888888"
+          stroke="hsl(var(--muted-foreground))"
           fontSize={12}
           tickLine={false}
           axisLine={false}
         />
         <YAxis
-          stroke="#888888"
+          stroke="hsl(var(--muted-foreground))"
           fontSize={12}
           tickLine={false}
           axisLine={false}
