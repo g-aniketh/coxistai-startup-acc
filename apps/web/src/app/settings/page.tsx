@@ -5,20 +5,24 @@ import { useAuthStore } from '@/store/auth';
 import { api } from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
-import { 
-  UserCircleIcon,
-  BuildingOfficeIcon,
-  BanknotesIcon,
-  BellIcon,
-  ShieldCheckIcon,
-  TrashIcon
-} from '@heroicons/react/24/outline';
+import {
+  User,
+  Banknote,
+  Bell,
+  Shield,
+  Trash2,
+  Settings,
+  Link,
+  Plus,
+} from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import SplitText from '@/components/SplitText';
+import { cn } from '@/lib/utils';
+import PlaidLink from '@/components/ui/PlaidLink';
 
 export default function SettingsPage() {
   const { user } = useAuthStore();
   const [plaidItems, setPlaidItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchPlaidItems();
@@ -34,176 +38,114 @@ export default function SettingsPage() {
       console.error('Failed to fetch Plaid items:', err);
     }
   };
+  
+  const handlePlaidSuccess = () => {
+    toast.success("Account connected! Refreshing...");
+    setTimeout(fetchPlaidItems, 1000);
+  }
 
   const handleDisconnectBank = async (plaidItemId: string) => {
-    if (!confirm('Are you sure you want to disconnect this bank account?')) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const response = await api.cfo.plaid.deleteItem(plaidItemId);
-      if (response.success) {
-        toast.success('Bank account disconnected successfully');
-        fetchPlaidItems();
-      } else {
-        toast.error(response.error || 'Failed to disconnect bank account');
-      }
-    } catch (err) {
-      toast.error('An error occurred while disconnecting bank account');
-    } finally {
-      setLoading(false);
-    }
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <p>Are you sure you want to disconnect this account?</p>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                await api.cfo.plaid.deleteItem(plaidItemId);
+                toast.success('Account disconnected.');
+                fetchPlaidItems();
+              }}
+              className="px-3 py-1 bg-red-500 text-white text-sm rounded"
+            >
+              Disconnect
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1 bg-gray-200 text-sm rounded"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: 5000 }
+    );
   };
+  
+  const sections = [
+    {
+      icon: <User className="h-5 w-5 text-primary" />,
+      title: 'Account Information',
+      content: (
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <dt className="text-muted-foreground">Email</dt>
+              <dd className="mt-1 font-semibold">{user?.email}</dd>
+            </div>
+             <div>
+              <dt className="text-muted-foreground">Role</dt>
+              <dd className="mt-1 font-semibold capitalize">{user?.role}</dd>
+            </div>
+             <div>
+              <dt className="text-muted-foreground">Organization</dt>
+              <dd className="mt-1 font-semibold">{user?.tenant.name}</dd>
+            </div>
+             <div>
+              <dt className="text-muted-foreground">Member Since</dt>
+              <dd className="mt-1 font-semibold">{user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</dd>
+            </div>
+        </dl>
+      ),
+    },
+    {
+      icon: <Link className="h-5 w-5 text-primary" />,
+      title: "Connections",
+      content: (
+        <div className="space-y-4">
+           {plaidItems.map((item) => (
+              <div key={item.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <div>
+                  <p className="font-semibold">{item.institutionName || 'Bank Account'}</p>
+                  <p className="text-xs text-muted-foreground">{item.accounts?.length || 0} accounts</p>
+                </div>
+                 <button onClick={() => handleDisconnectBank(item.id)} className="text-xs p-2 hover:bg-destructive/10 text-destructive rounded-md flex items-center gap-1">
+                  <Trash2 className="h-3 w-3" /> Disconnect
+                </button>
+              </div>
+            ))}
+            <PlaidLink onSuccess={handlePlaidSuccess} onError={(e: any) => toast.error(e.display_message || 'An error occurred.')} />
+        </div>
+      )
+    },
+     {
+      icon: <Shield className="h-5 w-5 text-primary" />,
+      title: "Security",
+       content: (
+        <div className="space-y-4">
+           <button className="w-full p-3 bg-muted rounded-lg text-left">Change Password</button>
+           <button className="w-full p-3 bg-muted rounded-lg text-left">Enable Two-Factor Authentication</button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <AuthGuard requireAuth={true}>
       <MainLayout>
         <div className="space-y-6">
-          <header>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Manage your account settings and preferences.
-            </p>
-          </header>
+          <SplitText text="Settings" tag="h1" className="text-3xl font-bold" />
 
-          {/* Account Information */}
-          <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <UserCircleIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Account Information</h2>
-            </div>
-            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</dt>
-                <dd className="mt-1 text-sm text-gray-900 dark:text-white">{user?.email}</dd>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sections.map(section => (
+              <div key={section.title} className="glass p-6 rounded-lg">
+                <h2 className="font-semibold mb-4 flex items-center gap-2">
+                  {section.icon} {section.title}
+                </h2>
+                {section.content}
               </div>
-              <div>
-                <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Role</dt>
-                <dd className="mt-1">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 capitalize">
-                    {user?.role}
-                  </span>
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Organization</dt>
-                <dd className="mt-1 text-sm text-gray-900 dark:text-white">{user?.tenant.name}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Member Since</dt>
-                <dd className="mt-1 text-sm text-gray-900 dark:text-white">
-                  {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-                </dd>
-              </div>
-            </dl>
-          </div>
-
-          {/* Connected Accounts */}
-          <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <BanknotesIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Connected Bank Accounts</h2>
-            </div>
-            {plaidItems.length > 0 ? (
-              <div className="space-y-3">
-                {plaidItems.map((item) => (
-                  <div 
-                    key={item.id} 
-                    className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {item.institutionName || 'Bank Account'}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {item.accounts?.length || 0} accounts connected
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleDisconnectBank(item.id)}
-                      disabled={loading}
-                      className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors disabled:opacity-50"
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                      Disconnect
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                No bank accounts connected yet. Go to the CFO Dashboard to connect your accounts.
-              </p>
-            )}
-          </div>
-
-          {/* Notifications */}
-          <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <BellIcon className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Notification Preferences</h2>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">Runway Alerts</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Get notified when your runway is running low
-                  </p>
-                </div>
-                <input 
-                  type="checkbox" 
-                  defaultChecked 
-                  className="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500"
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">Weekly Reports</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Receive weekly financial summaries
-                  </p>
-                </div>
-                <input 
-                  type="checkbox" 
-                  defaultChecked 
-                  className="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500"
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">Large Transactions</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Alert me about transactions over $1,000
-                  </p>
-                </div>
-                <input 
-                  type="checkbox" 
-                  className="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Security */}
-          <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <ShieldCheckIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Security</h2>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <button className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors">
-                  Change Password
-                </button>
-              </div>
-              <div>
-                <button className="px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-colors">
-                  Enable Two-Factor Authentication
-                </button>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </MainLayout>

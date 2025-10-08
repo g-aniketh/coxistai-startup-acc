@@ -5,233 +5,274 @@ import { useAuthStore } from '@/store/auth';
 import { api, User, Tenant } from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Users, Building2, TrendingUp, Activity, Clock, DollarSign } from 'lucide-react';
+import {
+  Users,
+  Building2,
+  Activity,
+  Clock,
+  TrendingUp,
+  DollarSign,
+  ArrowUpRight,
+} from 'lucide-react';
 import SplitText from '@/components/SplitText';
 import CountUp from '@/components/CountUp';
 import GradientText from '@/components/GradientText';
 import SpotlightCard from '@/components/SpotlightCard';
+import MagicBento from '@/components/MagicBento';
+import AnimatedList from '@/components/AnimatedList';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+} from 'recharts';
+import { Badge } from '@/components/ui/Badge';
+
+const chartData = [
+  { name: 'Jan', revenue: 4000 },
+  { name: 'Feb', revenue: 3000 },
+  { name: 'Mar', revenue: 5000 },
+  { name: 'Apr', revenue: 4500 },
+  { name: 'May', revenue: 6000 },
+  { name: 'Jun', revenue: 5500 },
+  { name: 'Jul', revenue: 7000 },
+];
 
 export default function DashboardPage() {
-  const { user, isAuthenticated, isLoading } = useAuthStore();
+  const { user } = useAuthStore();
   const [users, setUsers] = useState<User[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
-  // Load dashboard data
   useEffect(() => {
     const loadDashboardData = async () => {
-      if (!isAuthenticated) return;
-      
       try {
         const [usersResponse, tenantsResponse] = await Promise.all([
           api.users.list(),
           api.tenants.list(),
         ]);
-        
-        if (usersResponse.success) {
-          setUsers(usersResponse.data || []);
-        }
-        
-        if (tenantsResponse.success) {
-          setTenants(tenantsResponse.data || []);
-        }
+        if (usersResponse.success) setUsers(usersResponse.data || []);
+        if (tenantsResponse.success) setTenants(tenantsResponse.data || []);
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
       } finally {
         setLoadingData(false);
       }
     };
-    
     loadDashboardData();
-  }, [isAuthenticated]);
+  }, []);
+
+  const bentoItems = [
+    {
+      className: 'col-span-12 lg:col-span-8',
+      background: <div className="absolute top-0 left-0 w-full h-full bg-card" />,
+      content: (
+        <div className="p-6 h-full flex flex-col justify-between">
+          <div>
+            <SplitText
+              text="Dashboard"
+              tag="h1"
+              className="text-3xl font-bold text-foreground"
+            />
+            <p className="mt-2 text-muted-foreground">
+              Welcome back,{' '}
+              <GradientText className="inline-flex font-semibold">
+                {user?.email}
+              </GradientText>
+              !
+            </p>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            Here's a snapshot of your startup's performance.
+          </div>
+        </div>
+      ),
+    },
+    {
+      className: 'col-span-6 lg:col-span-4',
+      background: (
+        <SpotlightCard
+          spotlightColor="rgba(139, 92, 246, 0.3)"
+          className="w-full h-full"
+        />
+      ),
+      content: (
+        <div className="p-6">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+              <Users className="h-5 w-5" />
+            </div>
+            <h3 className="text-lg font-medium text-foreground">Total Users</h3>
+          </div>
+          <div className="mt-4 text-4xl font-bold text-foreground">
+            {loadingData ? '...' : <CountUp to={users.length} duration={1.5} />}
+          </div>
+        </div>
+      ),
+    },
+    {
+      className: 'col-span-6 lg:col-span-4',
+      background: (
+        <SpotlightCard
+          spotlightColor="rgba(5, 150, 105, 0.3)"
+          className="w-full h-full"
+        />
+      ),
+      content: (
+        <div className="p-6">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+              <Building2 className="h-5 w-5" />
+            </div>
+            <h3 className="text-lg font-medium text-foreground">
+              Total Tenants
+            </h3>
+          </div>
+          <div className="mt-4 text-4xl font-bold text-foreground">
+            {loadingData ? '...' : <CountUp to={tenants.length} duration={1.5} />}
+          </div>
+        </div>
+      ),
+    },
+    {
+      className: 'col-span-12 lg:col-span-8',
+      background: <div className="absolute top-0 left-0 w-full h-full bg-card" />,
+      content: (
+        <div className="p-6 h-full flex flex-col">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+              <TrendingUp className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-lg font-medium text-foreground">
+                Revenue Over Time
+              </h3>
+              <p className="text-sm text-muted-foreground">Last 7 months</p>
+            </div>
+          </div>
+          <div className="flex-grow">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={chartData}
+                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="name" stroke="var(--muted-foreground)" fontSize={12} />
+                <YAxis stroke="var(--muted-foreground)" fontSize={12} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'oklch(var(--card))',
+                    borderColor: 'oklch(var(--border))',
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="var(--primary)"
+                  fillOpacity={1}
+                  fill="url(#colorRevenue)"
+                  strokeWidth={2}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      ),
+    },
+    {
+      className: 'col-span-12 lg:col-span-6',
+      background: <div className="absolute top-0 left-0 w-full h-full bg-card" />,
+      content: (
+        <div className="p-6 h-full">
+           <div className="flex items-center gap-3 mb-4">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+              <Users className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-lg font-medium text-foreground">
+                Recent Users
+              </h3>
+              <p className="text-sm text-muted-foreground">Latest signups</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {loadingData ? (
+              <p className="text-muted-foreground text-center py-8">Loading...</p>
+            ) : (
+              <AnimatedList items={
+                users.slice(0, 5).map((u) => (
+                  <div key={u.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
+                        {u.email.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{u.email}</p>
+                        <p className="text-xs text-muted-foreground">{u.tenant.name}</p>
+                      </div>
+                    </div>
+                    <Badge variant="outline">{u.role}</Badge>
+                  </div>
+                ))
+              } />
+            )}
+          </div>
+        </div>
+      ),
+    },
+     {
+      className: 'col-span-12 lg:col-span-6',
+      background: <div className="absolute top-0 left-0 w-full h-full bg-card" />,
+      content: (
+        <div className="p-6 h-full">
+           <div className="flex items-center gap-3 mb-4">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+              <Activity className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-lg font-medium text-foreground">
+                Your Account
+              </h3>
+              <p className="text-sm text-muted-foreground">Current session details</p>
+            </div>
+          </div>
+          <div className="space-y-3 pt-2">
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground text-sm">Email</span>
+              <span className="font-medium text-sm">{user?.email}</span>
+            </div>
+             <div className="flex justify-between items-center">
+              <span className="text-muted-foreground text-sm">Role</span>
+              <Badge variant="default" className="capitalize">{user?.role}</Badge>
+            </div>
+             <div className="flex justify-between items-center">
+              <span className="text-muted-foreground text-sm">Tenant</span>
+              <span className="font-medium text-sm">{user?.tenant.name}</span>
+            </div>
+             <div className="flex justify-between items-center">
+              <span className="text-muted-foreground text-sm">Member Since</span>
+              <span className="font-medium text-sm">{user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</span>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <AuthGuard requireAuth={true}>
       <MainLayout>
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="animate-fade-in">
-          <SplitText 
-            text="Dashboard" 
-            tag="h1"
-            className="text-3xl font-bold text-foreground"
-            textAlign="left"
-            delay={50}
-          />
-          <p className="mt-2 text-muted-foreground">
-            Welcome back, <GradientText className="inline-flex">{user?.email}</GradientText>! Here's what's happening with your account.
-          </p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 animate-fade-in" style={{ animationDelay: '100ms' }}>
-          <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-200">
-                  <Users className="h-4 w-4" />
-                </div>
-                <h3 className="text-sm font-medium text-muted-foreground">Total Users</h3>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
-                {loadingData ? '...' : <CountUp to={users.length} duration={1.5} />}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Active users across all tenants
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-green-500/10 flex items-center justify-center text-green-500 group-hover:scale-110 transition-transform duration-200">
-                  <Building2 className="h-4 w-4" />
-                </div>
-                <h3 className="text-sm font-medium text-muted-foreground">Total Tenants</h3>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
-                {loadingData ? '...' : <CountUp to={tenants.length} duration={1.5} delay={0.2} />}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Organizations in the platform
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-yellow-500/10 flex items-center justify-center text-yellow-500 group-hover:scale-110 transition-transform duration-200">
-                  <Activity className="h-4 w-4" />
-                </div>
-                <h3 className="text-sm font-medium text-muted-foreground">Your Role</h3>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground capitalize">
-                {user?.role}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Current access level
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform duration-200">
-                  <Clock className="h-4 w-4" />
-                </div>
-                <h3 className="text-sm font-medium text-muted-foreground">Member Since</h3>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
-                {user?.createdAt ? new Date(user.createdAt).getFullYear() : 'N/A'}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Years of membership
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Users and User Info */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in" style={{ animationDelay: '200ms' }}>
-          {/* Recent Users */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Recent Users
-              </CardTitle>
-              <CardDescription>
-                Latest users who joined the platform
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loadingData ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                  <p className="mt-2 text-muted-foreground">Loading users...</p>
-                </div>
-              ) : users.length > 0 ? (
-                <div className="space-y-4">
-                  {users.slice(0, 5).map((user, index) => (
-                    <div key={user.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
-                      <div className="h-10 w-10 rounded-full gradient-primary flex items-center justify-center">
-                        <span className="text-sm font-medium text-white">
-                          {user.email.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">
-                          {user.email}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline" className="text-xs">
-                            {user.role}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {user.tenant.name}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground text-center py-8">No users found</p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* User Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                Your Account Information
-              </CardTitle>
-              <CardDescription>
-                Your personal account details and status
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-accent/50">
-                  <span className="text-sm font-medium text-muted-foreground">Email</span>
-                  <span className="text-sm text-foreground">{user?.email}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-accent/50">
-                  <span className="text-sm font-medium text-muted-foreground">Role</span>
-                  <Badge variant="default" className="capitalize">
-                    {user?.role}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-accent/50">
-                  <span className="text-sm font-medium text-muted-foreground">Tenant</span>
-                  <span className="text-sm text-foreground">{user?.tenant.name}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-accent/50">
-                  <span className="text-sm font-medium text-muted-foreground">Member Since</span>
-                  <span className="text-sm text-foreground">
-                    {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+        <MagicBento />
       </MainLayout>
     </AuthGuard>
   );

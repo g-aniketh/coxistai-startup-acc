@@ -1,228 +1,156 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { api, DashboardSummary } from '@/lib/api';
+import { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
-import { 
-  NewspaperIcon,
-  SparklesIcon,
-  DocumentDuplicateIcon,
-  CheckCircleIcon,
-  ArrowDownTrayIcon,
-} from '@heroicons/react/24/outline';
+import {
+  Newspaper,
+  Sparkles,
+  Clipboard,
+  Download,
+  Check,
+} from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import SplitText from '@/components/SplitText';
+import CountUp from '@/components/CountUp';
+import { cn } from '@/lib/utils';
+import MagicBento from '@/components/MagicBento';
+
+// Mock data
+const mockMetrics = {
+  balance: 1000000,
+  netCashFlow: 50000,
+  burnRate: 100000,
+  runway: 10,
+  arr: 2500000,
+  growthRate: 15,
+};
+
+const generateUpdateText = (metrics: typeof mockMetrics) => `
+## Investor Update - ${new Date().toLocaleDateString('en-US', {
+  month: 'long',
+  year: 'numeric',
+})}
+
+Hi Team,
+
+Here's a quick update on our progress and financial health.
+
+### Key Metrics
+- **ARR:** ${formatCurrency(metrics.arr)} (↑${metrics.growthRate}%)
+- **Runway:** ${metrics.runway} months
+- **Net Cash Flow (30d):** ${formatCurrency(metrics.netCashFlow)}
+- **Monthly Burn:** ${formatCurrency(metrics.burnRate)}
+
+### Highlights
+- [Add a key highlight, e.g., "Landed our largest enterprise customer to date."]
+- [Add another highlight, e.g., "Shipped version 2.0 of our main product."]
+
+### Lowlights / Challenges
+- [Add a challenge you're facing, e.g., "Hiring senior engineers has been slower than expected."]
+
+### Asks
+- [Add any asks for your investors, e.g., "Introductions to potential candidates for our Head of Sales role."]
+
+Best,
+[Your Name]
+`;
+
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    notation: 'compact',
+  }).format(amount);
 
 export default function InvestorUpdatesPage() {
-  const [dashboardData, setDashboardData] = useState<DashboardSummary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState(30);
+  const [loading, setLoading] = useState(false);
   const [updateText, setUpdateText] = useState('');
   const [generating, setGenerating] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, [period]);
-
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      const response = await api.cfo.dashboard(period);
-      
-      if (response.success && response.data) {
-        setDashboardData(response.data);
-      } else {
-        toast.error(response.error || 'Failed to fetch data');
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const generateUpdate = () => {
-    if (!dashboardData) return;
-
+  const handleGenerate = () => {
     setGenerating(true);
-    
-    // Simulate AI generation delay
     setTimeout(() => {
-      const { balance, cashFlow, period: dataPeriod, accounts } = dashboardData;
-      
-      const growthRate = ((cashFlow.netCashFlow / Math.max(cashFlow.expenses, 1)) * 100).toFixed(1);
-      const runwayMonths = (cashFlow.runway / 30).toFixed(1);
-      const burnRate = (cashFlow.burnRate * 30).toFixed(0);
-      
-      const update = `## Monthly Investor Update - ${new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-
-### Executive Summary
-This month has shown ${cashFlow.netCashFlow >= 0 ? 'positive momentum' : 'challenges that we\'re actively addressing'}. Our team continues to execute on our strategic priorities while maintaining financial discipline.
-
-### Key Financial Metrics
-- **Current Balance:** $${(balance.total).toLocaleString()} across ${accounts.total} accounts
-- **Net Cash Flow (${dataPeriod.days} days):** $${cashFlow.netCashFlow.toLocaleString()}
-- **Monthly Burn Rate:** $${burnRate}k
-- **Runway:** ${runwayMonths} months
-- **Cash Flow Growth:** ${growthRate}%
-
-### Financial Health
-${cashFlow.netCashFlow >= 0 
-  ? `We're pleased to report positive cash flow this period. Revenue growth is outpacing expenses, and we're on track to extend our runway significantly.`
-  : `While we're experiencing negative cash flow as expected during our growth phase, we're closely monitoring expenses and optimizing our burn rate.`
-}
-
-${parseFloat(runwayMonths) < 6 
-  ? `⚠️ **Action Item:** Our runway is currently at ${runwayMonths} months. We're prioritizing cost optimization and accelerating fundraising conversations.`
-  : `Our runway of ${runwayMonths} months provides us with sufficient time to achieve our next key milestones before needing additional capital.`
-}
-
-### Key Highlights
-- 💰 Total income: $${cashFlow.income.toLocaleString()}
-- 📊 Total expenses: $${cashFlow.expenses.toLocaleString()}
-- 🏦 Connected ${accounts.total} bank accounts for real-time tracking
-- 📈 ${dashboardData.transactions.total} transactions processed this period
-
-### Top Spending Categories
-${dashboardData.categories.breakdown.slice(0, 3).map((cat, i) => 
-  `${i + 1}. **${cat.name}:** $${cat.expenses.toLocaleString()}`
-).join('\n')}
-
-### Looking Ahead
-${cashFlow.netCashFlow >= 0
-  ? `With our current trajectory, we're well-positioned to achieve our Q${Math.ceil((new Date().getMonth() + 1) / 3)} objectives. We're focusing on scaling revenue while maintaining operational efficiency.`
-  : `We're implementing strategic cost optimizations and accelerating our go-to-market efforts. Our focus remains on achieving profitability while investing in high-ROI growth initiatives.`
-}
-
-### Questions or Concerns?
-As always, we're available to discuss any aspects of our financial performance or strategic direction. Please don't hesitate to reach out.
-
----
-*Generated by CoXist AI CFO Assistant on ${new Date().toLocaleString()}*`;
-
-      setUpdateText(update);
+      setUpdateText(generateUpdateText(mockMetrics));
       setGenerating(false);
-      toast.success('Investor update generated!');
-    }, 1500);
+      toast.success('Investor update drafted!');
+    }, 1000);
   };
 
-  const copyToClipboard = () => {
+  const handleCopy = () => {
     navigator.clipboard.writeText(updateText);
+    setCopied(true);
     toast.success('Copied to clipboard!');
+    setTimeout(() => setCopied(false), 2000);
   };
-
-  const downloadAsMarkdown = () => {
+  
+  const handleDownload = () => {
     const blob = new Blob([updateText], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `investor-update-${new Date().toISOString().split('T')[0]}.md`;
-    document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast.success('Downloaded!');
-  };
-
-  const formatCurrency = (amount: number) => new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-
-  if (loading) {
-    return (
-      <AuthGuard requireAuth={true}>
-        <MainLayout>
-          <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-          </div>
-        </MainLayout>
-      </AuthGuard>
-    );
   }
 
-  if (!dashboardData) {
-    return (
-      <AuthGuard requireAuth={true}>
-        <MainLayout>
-          <div className="text-center py-12">
-            <NewspaperIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">No Data Available</h3>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Connect your bank account to generate investor updates.
-            </p>
-          </div>
-        </MainLayout>
-      </AuthGuard>
-    );
-  }
-
-  return (
-    <AuthGuard requireAuth={true}>
-      <MainLayout>
-        <div className="space-y-8">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Investor Updates</h1>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                AI-powered investor update generator with key financial metrics.
-              </p>
-            </div>
+  const bentoItems = [
+    {
+      className: 'col-span-12',
+      content: (
+        <div className="p-6">
+          <SplitText
+            text="Investor Updates"
+            tag="h1"
+            className="text-3xl font-bold"
+          />
+          <p className="mt-1 text-muted-foreground">
+            Auto-draft investor updates with your key metrics.
+          </p>
+        </div>
+      ),
+    },
+    {
+      className: 'col-span-12 lg:col-span-8',
+      content: (
+        <div className="p-6 h-full flex flex-col">
+          <div className="flex justify-between items-center mb-4">
+             <h3 className="font-semibold flex items-center gap-2">
+              <Newspaper className="h-5 w-5 text-primary" />
+              Draft Your Update
+            </h3>
             <div className="flex items-center gap-2">
-              <select
-                value={period}
-                onChange={(e) => setPeriod(Number(e.target.value))}
-                className="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              >
-                <option value={7}>Last 7 days</option>
-                <option value={30}>Last 30 days</option>
-                <option value={90}>Last 90 days</option>
-              </select>
+              <button onClick={handleCopy} className="text-sm p-2 hover:bg-muted rounded-md flex items-center gap-1">
+                {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Clipboard className="h-4 w-4" />}
+                Copy
+              </button>
+               <button onClick={handleDownload} className="text-sm p-2 hover:bg-muted rounded-md flex items-center gap-1">
+                <Download className="h-4 w-4" />
+                Download
+              </button>
             </div>
           </div>
-
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-4">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Current Balance</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">
-                {formatCurrency(dashboardData.balance.total)}
-              </p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-4">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Net Cash Flow</p>
-              <p className={`text-xl font-bold mt-1 ${dashboardData.cashFlow.netCashFlow >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                {formatCurrency(dashboardData.cashFlow.netCashFlow)}
-              </p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-4">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Monthly Burn</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">
-                {formatCurrency(dashboardData.cashFlow.burnRate * 30)}
-              </p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-4">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Runway</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">
-                {(dashboardData.cashFlow.runway / 30).toFixed(1)}mo
-              </p>
-            </div>
-          </div>
-
-          {/* Generate Button */}
-          <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border dark:border-gray-700 rounded-lg p-8 text-center">
-            <SparklesIcon className="mx-auto h-12 w-12 text-indigo-600 dark:text-indigo-400 mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Generate AI-Powered Update</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-              Create a comprehensive investor update with your latest financial metrics and insights.
-            </p>
-            <button
-              onClick={generateUpdate}
+          <textarea
+            value={updateText}
+            onChange={(e) => setUpdateText(e.target.value)}
+            rows={20}
+            className="w-full h-full bg-transparent font-mono text-sm resize-none focus:outline-none"
+            placeholder="Click 'Generate Update' to draft your investor update..."
+          />
+        </div>
+      ),
+    },
+     {
+      className: 'col-span-12 lg:col-span-4',
+      content: (
+        <div className="p-6">
+          <button
+              onClick={handleGenerate}
               disabled={generating}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className={cn("w-full p-4 rounded-lg bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-2",
+                "hover:bg-primary/90 disabled:opacity-50"
+              )}
             >
               {generating ? (
                 <>
@@ -231,62 +159,41 @@ As always, we're available to discuss any aspects of our financial performance o
                 </>
               ) : (
                 <>
-                  <SparklesIcon className="h-5 w-5" />
+                  <Sparkles className="h-5 w-5" />
                   Generate Update
                 </>
               )}
             </button>
-          </div>
-
-          {/* Generated Update */}
-          {updateText && (
-            <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg overflow-hidden">
-              <div className="border-b dark:border-gray-700 p-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CheckCircleIcon className="h-5 w-5 text-green-500" />
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Generated Update</h3>
+            <div className="mt-6 space-y-4">
+              <h3 className="font-semibold">Key Metrics</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="glass p-3 rounded-md">
+                  <p className="text-xs text-muted-foreground">ARR</p>
+                  <p className="font-bold text-lg">{formatCurrency(mockMetrics.arr)}</p>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={copyToClipboard}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-colors"
-                  >
-                    <DocumentDuplicateIcon className="h-4 w-4" />
-                    Copy
-                  </button>
-                  <button
-                    onClick={downloadAsMarkdown}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-colors"
-                  >
-                    <ArrowDownTrayIcon className="h-4 w-4" />
-                    Download
-                  </button>
+                 <div className="glass p-3 rounded-md">
+                  <p className="text-xs text-muted-foreground">Runway</p>
+                  <p className="font-bold text-lg">{mockMetrics.runway} mo</p>
                 </div>
-              </div>
-              <div className="p-6">
-                <textarea
-                  value={updateText}
-                  onChange={(e) => setUpdateText(e.target.value)}
-                  rows={25}
-                  className="w-full font-mono text-sm border-0 focus:ring-0 dark:bg-gray-800 dark:text-gray-200 resize-none"
-                  placeholder="Your generated update will appear here..."
-                />
+                 <div className="glass p-3 rounded-md">
+                  <p className="text-xs text-muted-foreground">Net Cash Flow</p>
+                  <p className="font-bold text-lg">{formatCurrency(mockMetrics.netCashFlow)}</p>
+                </div>
+                 <div className="glass p-3 rounded-md">
+                  <p className="text-xs text-muted-foreground">Burn Rate</p>
+                  <p className="font-bold text-lg">{formatCurrency(mockMetrics.burnRate)}</p>
+                </div>
               </div>
             </div>
-          )}
-
-          {/* Tips */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900/30 rounded-lg p-6">
-            <h3 className="font-semibold text-blue-900 dark:text-blue-300 mb-3">💡 Pro Tips</h3>
-            <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-400">
-              <li>• Generate monthly updates to keep investors informed and engaged</li>
-              <li>• Customize the generated update before sending to add personal insights</li>
-              <li>• Include specific milestones achieved and upcoming goals</li>
-              <li>• Be transparent about challenges and how you're addressing them</li>
-              <li>• Download as Markdown and convert to PDF or HTML for distribution</li>
-            </ul>
-          </div>
         </div>
+      ),
+    },
+  ];
+
+  return (
+    <AuthGuard requireAuth={true}>
+      <MainLayout>
+        <MagicBento />
       </MainLayout>
     </AuthGuard>
   );
