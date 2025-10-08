@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { AuthenticatedRequest, ApiResponse } from '../types';
 import { prisma } from '../lib/prisma';
 
-const cfoRoutes = Router();
+const cfoRoutes: Router = Router();
 
 // Get all financial accounts for the tenant
 cfoRoutes.get('/accounts', async (req: AuthenticatedRequest, res: Response<ApiResponse>) => {
@@ -48,7 +48,7 @@ cfoRoutes.get('/accounts', async (req: AuthenticatedRequest, res: Response<ApiRe
       return sum + Number(account.currentBalance);
     }, 0);
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         accounts,
@@ -61,7 +61,7 @@ cfoRoutes.get('/accounts', async (req: AuthenticatedRequest, res: Response<ApiRe
     });
   } catch (error) {
     console.error('Error fetching accounts:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch accounts',
     });
@@ -181,7 +181,7 @@ cfoRoutes.get('/transactions', async (req: AuthenticatedRequest, res: Response<A
         .reduce((sum, transaction) => sum + Number(transaction.amount), 0)
     );
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         transactions,
@@ -203,7 +203,7 @@ cfoRoutes.get('/transactions', async (req: AuthenticatedRequest, res: Response<A
     });
   } catch (error) {
     console.error('Error fetching transactions:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch transactions',
     });
@@ -316,6 +316,37 @@ cfoRoutes.get('/dashboard/summary', async (req: AuthenticatedRequest, res: Respo
       institution: account.plaidItem.institutionName,
     }));
 
+    // Calculate daily breakdown for the chart
+    const dailyBreakdown = [];
+    for (let i = 0; i < days; i++) {
+      const dayDate = new Date(startDate);
+      dayDate.setDate(dayDate.getDate() + i);
+      const dayStart = new Date(dayDate.setHours(0, 0, 0, 0));
+      const dayEnd = new Date(dayDate.setHours(23, 59, 59, 999));
+
+      const dayTransactions = transactions.filter(t => {
+        const transDate = new Date(t.date);
+        return transDate >= dayStart && transDate <= dayEnd;
+      });
+
+      const dayIncome = dayTransactions
+        .filter(t => Number(t.amount) > 0)
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+
+      const dayExpenses = Math.abs(
+        dayTransactions
+          .filter(t => Number(t.amount) < 0)
+          .reduce((sum, t) => sum + Number(t.amount), 0)
+      );
+
+      dailyBreakdown.push({
+        date: dayStart.toISOString().split('T')[0],
+        income: dayIncome,
+        expenses: dayExpenses,
+        net: dayIncome - dayExpenses,
+      });
+    }
+
     // Calculate monthly trends (if we have enough data)
     const monthlyData = [];
     for (let i = 0; i < Math.min(6, Math.floor(days / 30)); i++) {
@@ -350,7 +381,7 @@ cfoRoutes.get('/dashboard/summary', async (req: AuthenticatedRequest, res: Respo
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         period: {
@@ -368,6 +399,7 @@ cfoRoutes.get('/dashboard/summary', async (req: AuthenticatedRequest, res: Respo
           netCashFlow,
           burnRate: Math.abs(burnRate),
           runway: Math.round(runway),
+          dailyBreakdown,
         },
         accounts: {
           total: accounts.length,
@@ -396,7 +428,7 @@ cfoRoutes.get('/dashboard/summary', async (req: AuthenticatedRequest, res: Respo
     });
   } catch (error) {
     console.error('Error fetching dashboard summary:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch dashboard summary',
     });
@@ -424,13 +456,13 @@ cfoRoutes.get('/categories', async (req: AuthenticatedRequest, res: Response<Api
       },
     });
 
-    res.json({
+    return res.json({
       success: true,
       data: categories,
     });
   } catch (error) {
     console.error('Error fetching categories:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch categories',
     });
@@ -524,7 +556,7 @@ cfoRoutes.get('/health-score', async (req: AuthenticatedRequest, res: Response<A
     else if (score >= 60) healthLevel = 'Good';
     else if (score >= 40) healthLevel = 'Fair';
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         score: Math.round(score),
@@ -542,7 +574,7 @@ cfoRoutes.get('/health-score', async (req: AuthenticatedRequest, res: Response<A
     });
   } catch (error) {
     console.error('Error calculating health score:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to calculate health score',
     });

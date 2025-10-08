@@ -83,7 +83,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
       name: user.tenant.name
     };
 
-    next();
+    return next();
   } catch (error) {
     console.error('Authentication error:', error);
     
@@ -142,10 +142,10 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
       };
     }
 
-    next();
+    return next();
   } catch (error) {
     // Continue without authentication if token is invalid
-    next();
+    return next();
   }
 };
 
@@ -171,7 +171,7 @@ export const requireRole = (allowedRoles: string[]) => {
       });
     }
 
-    next();
+    return next();
   };
 };
 
@@ -200,5 +200,5 @@ export const requireTenantAdmin = (req: Request, res: Response, next: NextFuncti
     });
   }
 
-  next();
+  return next();
 };

@@ -10,7 +10,7 @@ import {
 import { authenticateToken } from '../middleware/auth';
 import { ApiResponse } from '../types';
 
-const router = Router();
+const router: Router = Router();
 
 // Login endpoint
 router.post('/login', async (req: Request, res: Response) => {
@@ -61,7 +61,7 @@ router.post('/login', async (req: Request, res: Response) => {
       email: user.email
     });
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         user: {
@@ -75,7 +75,7 @@ router.post('/login', async (req: Request, res: Response) => {
     } as ApiResponse);
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error during login'
     } as ApiResponse);
@@ -154,7 +154,7 @@ router.post('/register', async (req: Request, res: Response) => {
       email: user.email
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       data: {
         user: {
@@ -168,7 +168,7 @@ router.post('/register', async (req: Request, res: Response) => {
     } as ApiResponse);
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error during registration'
     } as ApiResponse);
@@ -218,7 +218,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
       email: user.email
     });
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         user: {
@@ -232,7 +232,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
     } as ApiResponse);
   } catch (error) {
     console.error('Token refresh error:', error);
-    res.status(401).json({
+    return res.status(401).json({
       success: false,
       error: 'Invalid refresh token'
     } as ApiResponse);
@@ -261,7 +261,7 @@ router.get('/me', authenticateToken, async (req: Request, res: Response) => {
       } as ApiResponse);
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         user: {
@@ -276,7 +276,7 @@ router.get('/me', authenticateToken, async (req: Request, res: Response) => {
     } as ApiResponse);
   } catch (error) {
     console.error('Get profile error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error'
     } as ApiResponse);

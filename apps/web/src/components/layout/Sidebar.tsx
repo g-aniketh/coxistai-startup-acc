@@ -12,12 +12,22 @@ import {
   ChartBarIcon,
   DocumentTextIcon,
   BanknotesIcon,
+  HeartIcon,
+  SparklesIcon,
+  NewspaperIcon,
+  BellAlertIcon,
+  ArrowTrendingUpIcon,
 } from '@heroicons/react/24/outline';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
   { name: 'CFO Dashboard', href: '/cfo-dashboard', icon: ChartBarIcon },
   { name: 'Transactions', href: '/transactions', icon: DocumentTextIcon },
+  { name: 'Financial Health', href: '/financial-health', icon: HeartIcon },
+  { name: 'AI Forecasting', href: '/forecasting', icon: SparklesIcon },
+  { name: 'Investor Updates', href: '/investor-updates', icon: NewspaperIcon },
+  { name: 'Alerts', href: '/alerts', icon: BellAlertIcon },
+  { name: 'Revenue Metrics', href: '/revenue-metrics', icon: ArrowTrendingUpIcon },
   { name: 'Users', href: '/users', icon: UsersIcon },
   { name: 'Tenants', href: '/tenants', icon: BuildingOfficeIcon },
   { name: 'Settings', href: '/settings', icon: CogIcon },

@@ -13,7 +13,7 @@ import { TransactionSyncService } from './services/transactionSync';
 // Load environment variables
 dotenv.config();
 
-const app = express();
+const app: express.Application = express();
 const PORT = process.env.PORT || 3001;
 
 // Security middleware
@@ -304,12 +304,12 @@ v1Router.post('/tenants', async (req, res) => {
       }
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       data: tenant
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
     });

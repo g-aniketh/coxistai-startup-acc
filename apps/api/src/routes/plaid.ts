@@ -3,7 +3,7 @@ import { PlaidService } from '../services/plaid';
 import { AuthenticatedRequest, ApiResponse } from '../types';
 import { prisma } from '../lib/prisma';
 
-const plaidRoutes = Router();
+const plaidRoutes: Router = Router();
 
 // Create link token
 plaidRoutes.post('/create-link-token', async (req: AuthenticatedRequest, res: Response<ApiResponse>) => {
@@ -14,7 +14,7 @@ plaidRoutes.post('/create-link-token', async (req: AuthenticatedRequest, res: Re
 
     const linkToken = await PlaidService.createLinkToken(req.user.userId, req.user.tenantId);
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         linkToken,
@@ -22,7 +22,7 @@ plaidRoutes.post('/create-link-token', async (req: AuthenticatedRequest, res: Re
     });
   } catch (error) {
     console.error('Error creating link token:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to create link token',
     });
@@ -51,10 +51,10 @@ plaidRoutes.post('/exchange-public-token', async (req: AuthenticatedRequest, res
       req.user.tenantId
     );
 
-    res.json(result);
+    return res.json(result);
   } catch (error) {
     console.error('Error exchanging public token:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to exchange public token',
     });
@@ -70,13 +70,13 @@ plaidRoutes.get('/items', async (req: AuthenticatedRequest, res: Response<ApiRes
 
     const plaidItems = await PlaidService.getPlaidItems(req.user.tenantId);
 
-    res.json({
+    return res.json({
       success: true,
       data: plaidItems,
     });
   } catch (error) {
     console.error('Error fetching Plaid items:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch Plaid items',
     });
@@ -114,10 +114,10 @@ plaidRoutes.post('/sync-transactions/:plaidItemId', async (req: AuthenticatedReq
       endDate ? new Date(endDate) : undefined
     );
 
-    res.json(result);
+    return res.json(result);
   } catch (error) {
     console.error('Error syncing transactions:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to sync transactions',
     });
@@ -139,10 +139,10 @@ plaidRoutes.delete('/items/:plaidItemId', async (req: AuthenticatedRequest, res:
       req.user.tenantId
     );
 
-    res.json(result);
+    return res.json(result);
   } catch (error) {
     console.error('Error deleting Plaid item:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to delete Plaid item',
     });
@@ -184,10 +184,10 @@ plaidRoutes.post('/webhook', async (req: Request, res: Response) => {
         console.log(`Unhandled webhook type: ${webhook_type}`);
     }
 
-    res.json({ status: 'success' });
+    return res.json({ status: 'success' });
   } catch (error) {
     console.error('Webhook processing error:', error);
-    res.status(500).json({ error: 'Webhook processing failed' });
+    return res.status(500).json({ error: 'Webhook processing failed' });
   }
 });
 

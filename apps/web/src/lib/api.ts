@@ -140,10 +140,24 @@ export interface DashboardSummary {
     netCashFlow: number;
     burnRate: number;
     runway: number;
+    dailyBreakdown: Array<{
+      date: string;
+      income: number;
+      expenses: number;
+      net: number;
+    }>;
   };
   accounts: {
     total: number;
-    breakdown: Account[];
+    breakdown: Array<{
+      id: string;
+      name: string;
+      mask?: string;
+      type: string;
+      subtype: string;
+      balance: number;
+      institution?: string;
+    }>;
   };
   transactions: {
     total: number;
