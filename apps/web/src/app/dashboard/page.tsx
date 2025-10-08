@@ -8,6 +8,10 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Users, Building2, TrendingUp, Activity, Clock, DollarSign } from 'lucide-react';
+import SplitText from '@/components/SplitText';
+import CountUp from '@/components/CountUp';
+import GradientText from '@/components/GradientText';
+import SpotlightCard from '@/components/SpotlightCard';
 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuthStore();
@@ -49,9 +53,15 @@ export default function DashboardPage() {
       <div className="space-y-8">
         {/* Header */}
         <div className="animate-fade-in">
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <SplitText 
+            text="Dashboard" 
+            tag="h1"
+            className="text-3xl font-bold text-foreground"
+            textAlign="left"
+            delay={50}
+          />
           <p className="mt-2 text-muted-foreground">
-            Welcome back, {user?.email}! Here's what's happening with your account.
+            Welcome back, <GradientText className="inline-flex">{user?.email}</GradientText>! Here's what's happening with your account.
           </p>
         </div>
 
@@ -68,7 +78,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-foreground">
-                {loadingData ? '...' : users.length}
+                {loadingData ? '...' : <CountUp to={users.length} duration={1.5} />}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Active users across all tenants
@@ -87,7 +97,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-foreground">
-                {loadingData ? '...' : tenants.length}
+                {loadingData ? '...' : <CountUp to={tenants.length} duration={1.5} delay={0.2} />}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Organizations in the platform

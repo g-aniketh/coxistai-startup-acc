@@ -7,6 +7,9 @@ import { useAuthStore } from '@/store/auth';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Sparkles, Eye, EyeOff } from 'lucide-react';
+import GradientText from '@/components/GradientText';
+import Magnet from '@/components/Magnet';
+import Aurora from '@/components/Aurora';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,14 +40,26 @@ export default function LoginPage() {
 
   return (
     <AuthGuard requireAuth={false}>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-dark py-12 px-4 sm:px-6 lg:px-8 animate-fade-in">
-        <div className="max-w-md w-full">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-dark py-12 px-4 sm:px-6 lg:px-8 animate-fade-in relative overflow-hidden">
+        {/* Aurora Background */}
+        <div className="absolute inset-0 opacity-30 pointer-events-none">
+          <Aurora 
+            colorStops={['#6366f1', '#8b5cf6', '#6366f1']}
+            amplitude={1.2}
+            blend={0.6}
+          />
+        </div>
+        <div className="max-w-md w-full relative z-10">
           <Card className="glass">
             <CardHeader className="text-center">
               <div className="mx-auto h-12 w-12 rounded-lg gradient-primary flex items-center justify-center mb-4">
                 <Sparkles className="h-6 w-6 text-white" />
               </div>
-              <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
+              <CardTitle className="text-2xl font-bold">
+                <GradientText colors={['#6366f1', '#8b5cf6', '#ec4899']}>
+                  Welcome back
+                </GradientText>
+              </CardTitle>
               <CardDescription>
                 Sign in to your CoXist AI account
               </CardDescription>
@@ -101,13 +116,15 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full gradient-primary text-primary-foreground font-medium py-2.5 px-4 rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                >
-                  {isLoading ? 'Signing in...' : 'Sign in'}
-                </button>
+                <Magnet>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full gradient-primary text-primary-foreground font-medium py-2.5 px-4 rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  >
+                    {isLoading ? 'Signing in...' : 'Sign in'}
+                  </button>
+                </Magnet>
 
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground">

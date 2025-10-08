@@ -8,6 +8,9 @@ import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import SplitText from '@/components/SplitText';
+import CountUp from '@/components/CountUp';
+import GradientText from '@/components/GradientText';
 import { 
   DollarSign, 
   TrendingUp, 
@@ -162,9 +165,15 @@ export default function CFODashboardPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 animate-fade-in">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">CFO Dashboard</h1>
+          <SplitText 
+            text="CFO Dashboard" 
+            tag="h1"
+            className="text-3xl font-bold text-foreground"
+            textAlign="left"
+            delay={50}
+          />
           <p className="mt-2 text-muted-foreground">
-            Financial overview for the last {period} days.
+            Financial overview for the last <GradientText className="inline-flex">{period} days</GradientText>.
           </p>
         </div>
         <div className="flex items-center gap-3">

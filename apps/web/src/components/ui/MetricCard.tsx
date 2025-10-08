@@ -11,7 +11,7 @@ interface MetricCardProps {
   className?: string;
 }
 
-export function MetricCard({ title, value, change, changeType, icon, className }: MetricCardProps) {
+export function MetricCard({ title, value, change, changeType, icon, className }: MetricCardProps): React.JSX.Element {
   return (
     <Card className={cn("group hover:shadow-lg transition-all duration-300 hover:-translate-y-1", className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
