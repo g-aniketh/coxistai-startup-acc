@@ -437,6 +437,61 @@ export const apiClient = {
       return response.data;
     },
   },
+
+  // ============================================================================
+  // AI FEATURES (OpenAI Integration)
+  // ============================================================================
+  
+  ai: {
+    getInsights: async (): Promise<ApiResponse<{
+      burnAnalysis: string;
+      topSpendingCategories: string[];
+      costSavingSuggestions: string[];
+      revenueOpportunities: string[];
+      cashflowHealth: string;
+      keyMetrics: {
+        totalBalance: number;
+        monthlyBurn: number;
+        monthlyRevenue: number;
+        runway: number | null;
+      };
+    }>> => {
+      const response = await api.post('/ai/insights');
+      return response.data;
+    },
+
+    runWhatIfScenario: async (scenario: string): Promise<ApiResponse<{
+      scenario: string;
+      impact: {
+        runwayChange: string;
+        burnRateChange: string;
+        recommendation: string;
+      };
+      explanation: string;
+      risks: string[];
+      opportunities: string[];
+    }>> => {
+      const response = await api.post('/ai/scenarios', { scenario });
+      return response.data;
+    },
+
+    generateInvestorUpdate: async (periodStart: string, periodEnd: string): Promise<ApiResponse<{
+      id: string;
+      executiveSummary: string;
+      highlights: string[];
+      challenges: string[];
+      nextSteps: string[];
+      financialSummary: string;
+      financialData: {
+        revenue: number;
+        expenses: number;
+        netCashflow: number;
+      };
+    }>> => {
+      const response = await api.post('/ai/investor-update', { periodStart, periodEnd });
+      return response.data;
+    },
+  },
 };
 
 export default api;

@@ -11,6 +11,7 @@ import dashboardRoutes from './dashboard/dashboard.routes';
 import inventoryRoutes from './inventory/inventory.routes';
 import accountsRoutes from './accounts/accounts.routes';
 import teamRoutes from './team/team.routes';
+import aiRoutes from './ai/ai.routes';
 import plaidRoutes from './routes/plaid';
 import cfoRoutes from './routes/cfo';
 import stripeRoutes from './routes/stripe';
@@ -79,6 +80,7 @@ v1Router.use('/dashboard', dashboardRoutes);
 v1Router.use('/inventory', inventoryRoutes);
 v1Router.use('/accounts', accountsRoutes);
 v1Router.use('/team', teamRoutes);
+v1Router.use('/ai', aiRoutes);
 
 // CFO Plaid routes (protected by authentication)
 v1Router.use('/cfo/plaid', authenticateToken, plaidRoutes);

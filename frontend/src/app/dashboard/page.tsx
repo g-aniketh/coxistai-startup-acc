@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth';
+import { usePermissions } from '@/hooks/usePermissions';
 import { apiClient, DashboardSummary, Transaction, RecentActivity, BankAccount, Product } from '@/lib/api';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { Card } from '@/components/ui/Card';
@@ -17,7 +19,8 @@ import {
   ArrowDownRight,
   Package,
   ShoppingCart,
-  Building2
+  Building2,
+  Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AddTransactionModal from '@/components/dashboard/AddTransactionModal';
@@ -28,7 +31,9 @@ import RecentTransactionsTable from '@/components/dashboard/RecentTransactionsTa
 import toast from 'react-hot-toast';
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { user } = useAuthStore();
+  const { can } = usePermissions();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [accounts, setAccounts] = useState<BankAccount[]>([]);
@@ -101,6 +106,16 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex gap-2">
+            {can('read', 'analytics') && (
+              <Button
+                onClick={() => router.push('/ai-insights')}
+                variant="outline"
+                size="sm"
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                AI Insights
+              </Button>
+            )}
             <Button
               onClick={() => setIsCreateAccountOpen(true)}
               variant="outline"
