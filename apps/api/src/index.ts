@@ -8,6 +8,10 @@ import { authenticateToken, optionalAuth } from './middleware/auth';
 import authRoutes from './routes/auth';
 import plaidRoutes from './routes/plaid';
 import cfoRoutes from './routes/cfo';
+import stripeRoutes from './routes/stripe';
+import analyticsRoutes from './routes/analytics';
+import aiCFORoutes from './routes/aiCFO';
+import alertsRoutes from './routes/alerts';
 import { TransactionSyncService } from './services/transactionSync';
 
 // Load environment variables
@@ -69,6 +73,18 @@ v1Router.use('/cfo/plaid', authenticateToken, plaidRoutes);
 
 // CFO Assistant routes (protected by authentication)
 v1Router.use('/cfo', authenticateToken, cfoRoutes);
+
+// Stripe integration routes (protected by authentication)
+v1Router.use('/stripe', authenticateToken, stripeRoutes);
+
+// Analytics routes (protected by authentication)
+v1Router.use('/analytics', authenticateToken, analyticsRoutes);
+
+// AI CFO routes (protected by authentication)
+v1Router.use('/ai-cfo', authenticateToken, aiCFORoutes);
+
+// Alerts routes (protected by authentication)
+v1Router.use('/alerts', authenticateToken, alertsRoutes);
 
 // Health check endpoint
 v1Router.get('/health', async (req, res) => {

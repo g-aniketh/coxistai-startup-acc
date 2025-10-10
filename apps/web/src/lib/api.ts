@@ -419,6 +419,125 @@ export const api = {
       return response.data;
     },
   },
+
+  // Stripe Integration
+  stripe: {
+    connect: async (apiKey: string): Promise<ApiResponse> => {
+      const response = await apiClient.post('/stripe/connect', { apiKey });
+      return response.data;
+    },
+
+    sync: async (): Promise<ApiResponse> => {
+      const response = await apiClient.post('/stripe/sync');
+      return response.data;
+    },
+
+    getAccount: async (): Promise<ApiResponse> => {
+      const response = await apiClient.get('/stripe/account');
+      return response.data;
+    },
+
+    disconnect: async (): Promise<ApiResponse> => {
+      const response = await apiClient.delete('/stripe/disconnect');
+      return response.data;
+    },
+  },
+
+  // Analytics
+  analytics: {
+    calculate: async (): Promise<ApiResponse> => {
+      const response = await apiClient.post('/analytics/calculate');
+      return response.data;
+    },
+
+    latest: async (): Promise<ApiResponse> => {
+      const response = await apiClient.get('/analytics/latest');
+      return response.data;
+    },
+
+    history: async (months: number = 12): Promise<ApiResponse> => {
+      const response = await apiClient.get('/analytics/history', { params: { months } });
+      return response.data;
+    },
+
+    dashboard: async (): Promise<ApiResponse> => {
+      const response = await apiClient.get('/analytics/dashboard');
+      return response.data;
+    },
+
+    revenueBreakdown: async (startDate?: string, endDate?: string): Promise<ApiResponse> => {
+      const response = await apiClient.get('/analytics/revenue-breakdown', { 
+        params: { startDate, endDate } 
+      });
+      return response.data;
+    },
+  },
+
+  // AI CFO
+  aiCFO: {
+    forecast: async (months: number = 12): Promise<ApiResponse> => {
+      const response = await apiClient.post('/ai-cfo/forecast', { months });
+      return response.data;
+    },
+
+    runScenario: async (name: string, inputs: any): Promise<ApiResponse> => {
+      const response = await apiClient.post('/ai-cfo/scenario', { name, inputs });
+      return response.data;
+    },
+
+    getScenarios: async (): Promise<ApiResponse> => {
+      const response = await apiClient.get('/ai-cfo/scenarios');
+      return response.data;
+    },
+
+    getInsights: async (): Promise<ApiResponse> => {
+      const response = await apiClient.get('/ai-cfo/insights');
+      return response.data;
+    },
+
+    generateInvestorUpdate: async (periodStart: string, periodEnd: string): Promise<ApiResponse> => {
+      const response = await apiClient.post('/ai-cfo/investor-update', { periodStart, periodEnd });
+      return response.data;
+    },
+
+    getInvestorUpdates: async (): Promise<ApiResponse> => {
+      const response = await apiClient.get('/ai-cfo/investor-updates');
+      return response.data;
+    },
+
+    publishInvestorUpdate: async (id: string): Promise<ApiResponse> => {
+      const response = await apiClient.put(`/ai-cfo/investor-update/${id}/publish`);
+      return response.data;
+    },
+  },
+
+  // Alerts
+  alerts: {
+    list: async (includeRead: boolean = false): Promise<ApiResponse> => {
+      const response = await apiClient.get('/alerts', { params: { includeRead } });
+      return response.data;
+    },
+
+    getCounts: async (): Promise<ApiResponse> => {
+      const response = await apiClient.get('/alerts/counts');
+      return response.data;
+    },
+
+    generate: async (): Promise<ApiResponse> => {
+      const response = await apiClient.post('/alerts/generate');
+      return response.data;
+    },
+
+    markAsRead: async (id: string): Promise<ApiResponse> => {
+      const response = await apiClient.put(`/alerts/${id}/read`);
+      return response.data;
+    },
+
+    dismiss: async (id: string): Promise<ApiResponse> => {
+      const response = await apiClient.put(`/alerts/${id}/dismiss`);
+      return response.data;
+    },
+  },
 };
 
 export default apiClient;

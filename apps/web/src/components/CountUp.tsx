@@ -10,6 +10,9 @@ interface CountUpProps {
   className?: string;
   startWhen?: boolean;
   separator?: string;
+  prefix?: string;
+  suffix?: string;
+  decimals?: number;
   onStart?: () => void;
   onEnd?: () => void;
 }
@@ -23,6 +26,9 @@ export default function CountUp({
   className = '',
   startWhen = true,
   separator = '',
+  prefix = '',
+  suffix = '',
+  decimals,
   onStart,
   onEnd
 }: CountUpProps) {
@@ -50,13 +56,13 @@ export default function CountUp({
     return 0;
   };
 
-  const maxDecimals = Math.max(getDecimalPlaces(from), getDecimalPlaces(to));
+  const maxDecimals = decimals !== undefined ? decimals : Math.max(getDecimalPlaces(from), getDecimalPlaces(to));
 
   useEffect(() => {
     if (ref.current) {
-      ref.current.textContent = String(direction === 'down' ? to : from);
+      ref.current.textContent = `${prefix}${String(direction === 'down' ? to : from)}${suffix}`;
     }
-  }, [from, to, direction]);
+  }, [from, to, direction, prefix, suffix]);
 
   useEffect(() => {
     if (isInView && startWhen) {
@@ -96,8 +102,9 @@ export default function CountUp({
         };
 
         const formattedNumber = Intl.NumberFormat('en-US', options).format(latest);
+        const finalNumber = separator ? formattedNumber.replace(/,/g, separator) : formattedNumber;
 
-        ref.current.textContent = separator ? formattedNumber.replace(/,/g, separator) : formattedNumber;
+        ref.current.textContent = `${prefix}${finalNumber}${suffix}`;
       }
     });
 

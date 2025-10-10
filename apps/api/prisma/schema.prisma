@@ -8,12 +8,17 @@ datasource db {
 }
 
 model Tenant {
-  id         String      @id @default(cuid())
-  name       String
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  plaidItems PlaidItem[]
-  users      User[]
+  id              String            @id @default(cuid())
+  name            String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  plaidItems      PlaidItem[]
+  users           User[]
+  stripeAccounts  StripeAccount[]
+  cashflowMetrics CashflowMetric[]
+  scenarios       AIScenario[]
+  alerts          Alert[]
+  investorUpdates InvestorUpdate[]
 }
 
 model User {
@@ -79,4 +84,251 @@ model Transaction {
   updatedAt          DateTime             @updatedAt
   account            Account              @relation(fields: [accountId], references: [id])
   category           TransactionCategory? @relation(fields: [categoryId], references: [id])
+}
+
+// ============================================================================
+// STRIPE INTEGRATION MODELS
+// ============================================================================
+
+model StripeAccount {
+  id                   String              @id @default(cuid())
+  tenantId             String
+  stripeAccountId      String              @unique
+  accessTokenEncrypted Bytes?
+  refreshToken         String?
+  accountType          String              @default("standard") // standard, express, custom
+  email                String?
+  businessName         String?
+  country              String?
+  currency             String?
+  isActive             Boolean             @default(true)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  tenant               Tenant              @relation(fields: [tenantId], references: [id])
+  customers            StripeCustomer[]
+  subscriptions        StripeSubscription[]
+  invoices             StripeInvoice[]
+  payments             StripePayment[]
+}
+
+model StripeCustomer {
+  id                String              @id @default(cuid())
+  stripeAccountId   String
+  stripeCustomerId  String              @unique
+  email             String?
+  name              String?
+  description       String?
+  metadata          Json?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  stripeAccount     StripeAccount       @relation(fields: [stripeAccountId], references: [id])
+  subscriptions     StripeSubscription[]
+  invoices          StripeInvoice[]
+  payments          StripePayment[]
+}
+
+model StripeSubscription {
+  id                  String         @id @default(cuid())
+  stripeAccountId     String
+  stripeCustomerId    String
+  stripeSubscriptionId String        @unique
+  status              String         // active, canceled, past_due, etc.
+  currentPeriodStart  DateTime
+  currentPeriodEnd    DateTime
+  cancelAtPeriodEnd   Boolean        @default(false)
+  canceledAt          DateTime?
+  planName            String?
+  planAmount          Decimal
+  planInterval        String         // month, year
+  quantity            Int            @default(1)
+  metadata            Json?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  stripeAccount       StripeAccount  @relation(fields: [stripeAccountId], references: [id])
+  customer            StripeCustomer @relation(fields: [stripeCustomerId], references: [id])
+}
+
+model StripeInvoice {
+  id               String         @id @default(cuid())
+  stripeAccountId  String
+  stripeCustomerId String
+  stripeInvoiceId  String         @unique
+  status           String         // draft, open, paid, void, uncollectible
+  amountDue        Decimal
+  amountPaid       Decimal
+  amountRemaining  Decimal
+  currency         String
+  dueDate          DateTime?
+  paidAt           DateTime?
+  periodStart      DateTime
+  periodEnd        DateTime
+  metadata         Json?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  stripeAccount    StripeAccount  @relation(fields: [stripeAccountId], references: [id])
+  customer         StripeCustomer @relation(fields: [stripeCustomerId], references: [id])
+}
+
+model StripePayment {
+  id                String         @id @default(cuid())
+  stripeAccountId   String
+  stripeCustomerId  String?
+  stripePaymentId   String         @unique
+  amount            Decimal
+  currency          String
+  status            String         // succeeded, pending, failed
+  paymentMethod     String?        // card, bank_transfer, etc.
+  description       String?
+  receiptUrl        String?
+  paidAt            DateTime
+  metadata          Json?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  stripeAccount     StripeAccount  @relation(fields: [stripeAccountId], references: [id])
+  customer          StripeCustomer? @relation(fields: [stripeCustomerId], references: [id])
+}
+
+// ============================================================================
+// AI CFO FEATURES - ANALYTICS & METRICS
+// ============================================================================
+
+model CashflowMetric {
+  id                    String   @id @default(cuid())
+  tenantId              String
+  periodStart           DateTime
+  periodEnd             DateTime
+  
+  // Core Metrics
+  totalRevenue          Decimal  @default(0)
+  totalExpenses         Decimal  @default(0)
+  netCashflow           Decimal  @default(0)
+  burnRate              Decimal  @default(0) // Monthly burn rate
+  runway                Decimal  @default(0) // Months of runway
+  
+  // Revenue Metrics
+  mrr                   Decimal  @default(0) // Monthly Recurring Revenue
+  arr                   Decimal  @default(0) // Annual Recurring Revenue
+  growthRate            Decimal  @default(0) // Month-over-month growth %
+  
+  // Balance Metrics
+  cashBalance           Decimal  @default(0)
+  accountsReceivable    Decimal  @default(0)
+  accountsPayable       Decimal  @default(0)
+  
+  // Customer Metrics
+  activeCustomers       Int      @default(0)
+  newCustomers          Int      @default(0)
+  churnedCustomers      Int      @default(0)
+  customerAcquisitionCost Decimal @default(0)
+  lifetimeValue         Decimal  @default(0)
+  
+  // Additional Metrics
+  metadata              Json?
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  tenant                Tenant   @relation(fields: [tenantId], references: [id])
+  
+  @@index([tenantId, periodStart])
+}
+
+// ============================================================================
+// AI CFO FEATURES - SCENARIOS & FORECASTING
+// ============================================================================
+
+model AIScenario {
+  id                String   @id @default(cuid())
+  tenantId          String
+  name              String
+  description       String?
+  scenarioType      String   // forecast, what_if, sensitivity
+  
+  // Input Parameters
+  inputParameters   Json     // Store scenario variables
+  
+  // AI-Generated Results
+  projectedRevenue  Decimal?
+  projectedExpenses Decimal?
+  projectedCashflow Decimal?
+  projectedRunway   Decimal?
+  confidence        Decimal? // AI confidence score 0-1
+  
+  // AI Insights
+  insights          Json?    // Array of AI-generated insights
+  recommendations   Json?    // Array of AI recommendations
+  risks             Json?    // Array of identified risks
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  tenant            Tenant   @relation(fields: [tenantId], references: [id])
+  
+  @@index([tenantId, createdAt])
+}
+
+// ============================================================================
+// AI CFO FEATURES - ALERTS & NOTIFICATIONS
+// ============================================================================
+
+model Alert {
+  id          String   @id @default(cuid())
+  tenantId    String
+  type        String   // runway, burn_rate, anomaly, cash_low, churn
+  severity    String   // info, warning, critical
+  title       String
+  message     String
+  
+  // Alert Data
+  currentValue Decimal?
+  thresholdValue Decimal?
+  
+  // AI-Generated Recommendations
+  recommendations Json? // Array of actionable recommendations
+  
+  // Status
+  isRead      Boolean  @default(false)
+  isDismissed Boolean  @default(false)
+  dismissedAt DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  
+  @@index([tenantId, createdAt])
+  @@index([tenantId, isRead])
+}
+
+// ============================================================================
+// AI CFO FEATURES - INVESTOR UPDATES
+// ============================================================================
+
+model InvestorUpdate {
+  id            String   @id @default(cuid())
+  tenantId      String
+  title         String
+  periodStart   DateTime
+  periodEnd     DateTime
+  
+  // Key Metrics Summary
+  metrics       Json     // Snapshot of key metrics
+  
+  // AI-Generated Content
+  executiveSummary String @db.Text
+  highlights    Json     // Array of highlights
+  challenges    Json     // Array of challenges
+  nextSteps     Json     // Array of next steps
+  
+  // Financial Data
+  revenueGrowth Decimal?
+  burnRate      Decimal?
+  runway        Decimal?
+  
+  // Status
+  isDraft       Boolean  @default(true)
+  publishedAt   DateTime?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  
+  @@index([tenantId, periodStart])
 }

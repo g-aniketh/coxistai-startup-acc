@@ -10,7 +10,14 @@ export interface BentoCardProps {
   disableAnimations?: boolean;
 }
 
+export interface BentoItemProps {
+  className?: string;
+  background?: React.ReactNode;
+  content?: React.ReactNode;
+}
+
 export interface BentoProps {
+  items?: BentoItemProps[];
   textAutoHide?: boolean;
   enableStars?: boolean;
   enableSpotlight?: boolean;
@@ -516,6 +523,7 @@ const useMobileDetection = () => {
 };
 
 const MagicBento: React.FC<BentoProps> = ({
+  items,
   textAutoHide = true,
   enableStars = true,
   enableSpotlight = true,
@@ -673,7 +681,22 @@ const MagicBento: React.FC<BentoProps> = ({
 
       <BentoCardGrid gridRef={gridRef}>
         <div className="card-responsive grid gap-2">
-          {cardData.map((card, index) => {
+          {(items && items.length > 0 ? items.map((item, index) => ({ ...item, color: '#060010', title: '', description: '', label: '' })) : cardData).map((card, index) => {
+            // If custom items provided, render them
+            if (items && items.length > 0 && items[index]) {
+              const item = items[index];
+              return (
+                <div key={index} className={item.className || 'col-span-12'}>
+                  <div className="relative h-full">
+                    {item.background}
+                    <div className="relative z-10">
+                      {item.content}
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+            // Otherwise render default cards
             const baseClassName = `card flex flex-col justify-between relative aspect-[4/3] min-h-[200px] w-full max-w-full p-5 rounded-[20px] border border-solid font-light overflow-hidden transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.15)] ${
               enableBorderGlow ? 'card--border-glow' : ''
             }`;

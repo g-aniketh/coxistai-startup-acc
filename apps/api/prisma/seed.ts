@@ -1,68 +1,69 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Starting database seed...');
 
-  // Create sample tenants
-  const tenant1 = await prisma.tenant.upsert({
-    where: { id: 'tenant-1' },
-    update: {},
-    create: {
-      id: 'tenant-1',
-      name: 'CoXist AI Accelerator',
+  // Create a test tenant
+  const tenant = await prisma.tenant.create({
+    data: {
+      name: 'CoXist AI Demo',
     },
   });
+  console.log('✅ Created tenant:', tenant.name);
 
-  const tenant2 = await prisma.tenant.upsert({
-    where: { id: 'tenant-2' },
-    update: {},
-    create: {
-      id: 'tenant-2',
-      name: 'TechStart Inc',
-    },
-  });
-
-  console.log('✅ Created tenants:', { tenant1, tenant2 });
-
-  // Create sample users
-  const user1 = await prisma.user.upsert({
-    where: { email: 'admin@coxist.ai' },
-    update: {},
-    create: {
-      email: 'admin@coxist.ai',
-      passwordHash: 'hashed_password_here', // In real app, hash the password
+  // Create a test user with password "password123"
+  const hashedPassword = await bcrypt.hash('password123', 10);
+  const user = await prisma.user.create({
+    data: {
+      email: 'demo@coxistai.com',
+      passwordHash: hashedPassword,
       role: 'admin',
-      tenantId: tenant1.id,
+      tenantId: tenant.id,
     },
   });
+  console.log('✅ Created user:', user.email);
+  console.log('   Password: password123');
 
-  const user2 = await prisma.user.upsert({
-    where: { email: 'member@coxist.ai' },
-    update: {},
-    create: {
-      email: 'member@coxist.ai',
-      passwordHash: 'hashed_password_here', // In real app, hash the password
-      role: 'member',
-      tenantId: tenant1.id,
-    },
-  });
+  // Seed transaction categories
+  console.log('🏷️  Seeding transaction categories...');
+  
+  const categories = [
+    { name: 'Income', subcategories: ['Income - Salary', 'Income - Freelance', 'Income - Investment', 'Income - Other'] },
+    { name: 'Food and Drink', subcategories: ['Food - Restaurants', 'Food - Groceries', 'Food - Coffee Shops', 'Food - Fast Food'] },
+    { name: 'Shopping', subcategories: ['Shopping - Clothing', 'Shopping - Electronics', 'Shopping - General', 'Shopping - Online'] },
+    { name: 'Transportation', subcategories: ['Transport - Gas', 'Transport - Public Transit', 'Transport - Ride Share', 'Transport - Parking'] },
+    { name: 'Bills and Utilities', subcategories: ['Bills - Internet', 'Bills - Phone', 'Bills - Electric', 'Bills - Water', 'Bills - Gas Utility'] },
+    { name: 'Entertainment', subcategories: ['Entertainment - Movies', 'Entertainment - Music', 'Entertainment - Games', 'Entertainment - Events'] },
+    { name: 'Healthcare', subcategories: ['Healthcare - Doctor', 'Healthcare - Pharmacy', 'Healthcare - Insurance', 'Healthcare - Gym'] },
+    { name: 'Travel', subcategories: ['Travel - Flights', 'Travel - Hotels', 'Travel - Vacation', 'Travel - Car Rental'] },
+    { name: 'Business Expenses', subcategories: ['Business - Office Supplies', 'Business - Software', 'Business - Marketing', 'Business - Professional Services'] },
+  ];
 
-  const user3 = await prisma.user.upsert({
-    where: { email: 'ceo@techstart.com' },
-    update: {},
-    create: {
-      email: 'ceo@techstart.com',
-      passwordHash: 'hashed_password_here', // In real app, hash the password
-      role: 'admin',
-      tenantId: tenant2.id,
-    },
-  });
+  for (const category of categories) {
+    const parent = await prisma.transactionCategory.create({
+      data: { name: category.name },
+    });
+    
+    for (const subName of category.subcategories) {
+      await prisma.transactionCategory.create({
+        data: {
+          name: subName,
+          parentId: parent.id,
+        },
+      });
+    }
+  }
+  
+  console.log('✅ Seeded transaction categories');
 
-  console.log('✅ Created users:', { user1, user2, user3 });
-
-  console.log('🎉 Database seeded successfully!');
+  console.log('\n🎉 Database seeded successfully!');
+  console.log('\n📋 Test Credentials:');
+  console.log('   Email: demo@coxistai.com');
+  console.log('   Password: password123');
+  console.log('\n🚀 You can now login at http://localhost:3000/login');
 }
 
 main()
