@@ -52,28 +52,10 @@ export default function Sidebar() {
       permission: { action: 'read', subject: 'inventory_dashboard' }
     },
     {
-      name: 'Revenue Metrics',
-      href: '/revenue-metrics',
-      icon: TrendingUp,
-      permission: { action: 'read', subject: 'revenue_forecast' }
-    },
-    {
-      name: 'AI Insights',
-      href: '/ai-insights',
+      name: 'AI Copilot',
+      href: '/ai-copilot',
       icon: Sparkles,
       permission: { action: 'read', subject: 'analytics' }
-    },
-    {
-      name: 'What-If Scenarios',
-      href: '/scenarios',
-      icon: FileText,
-      permission: { action: 'use', subject: 'what_if_scenarios' }
-    },
-    {
-      name: 'Alerts',
-      href: '/alerts',
-      icon: Bell,
-      permission: { action: 'read', subject: 'alerts' }
     },
     {
       name: 'Team Management',

@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth';
 import { usePermissions } from '@/hooks/usePermissions';
-import { apiClient, DashboardSummary, Transaction, RecentActivity, BankAccount, Product } from '@/lib/api';
+import { apiClient, DashboardSummary, RecentActivity, BankAccount, Product, CashflowChartData } from '@/lib/api';
 import AuthGuard from '@/components/auth/AuthGuard';
+import MainLayout from '@/components/layout/MainLayout';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -23,6 +24,9 @@ import {
   Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import BlurIn from '@/components/ui/blur-in';
+import CashflowChart from '@/components/charts/cashflow-chart';
+import RunwayChart from '@/components/charts/runway-chart';
 import AddTransactionModal from '@/components/dashboard/AddTransactionModal';
 import SimulateSaleModal from '@/components/dashboard/SimulateSaleModal';
 import AddProductModal from '@/components/dashboard/AddProductModal';
@@ -35,6 +39,7 @@ export default function DashboardPage() {
   const { user } = useAuthStore();
   const { can } = usePermissions();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [cashflowData, setCashflowData] = useState<CashflowChartData[]>([]);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [accounts, setAccounts] = useState<BankAccount[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -49,14 +54,16 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const [summaryRes, activityRes, accountsRes, productsRes] = await Promise.all([
+      const [summaryRes, cashflowRes, activityRes, accountsRes, productsRes] = await Promise.all([
         apiClient.dashboard.summary(),
+        apiClient.dashboard.cashflowChart(6),
         apiClient.dashboard.recentActivity(10),
         apiClient.accounts.list(),
         apiClient.inventory.products.list(),
       ]);
 
       if (summaryRes.success && summaryRes.data) setSummary(summaryRes.data);
+      if (cashflowRes.success && cashflowRes.data) setCashflowData(cashflowRes.data);
       if (activityRes.success && activityRes.data) setRecentActivity(activityRes.data);
       if (accountsRes.success && accountsRes.data) setAccounts(accountsRes.data);
       if (productsRes.success && productsRes.data) setProducts(productsRes.data);
@@ -94,13 +101,16 @@ export default function DashboardPage() {
 
   return (
     <AuthGuard requireAuth={true}>
-      <div className="min-h-screen bg-background p-6 space-y-6">
+      <MainLayout>
+        <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">
-              Welcome back, {user?.firstName || user?.email}! 👋
-            </h1>
+            <BlurIn>
+              <h1 className="text-3xl font-bold">
+                Welcome back, {user?.firstName || user?.email}! 👋
+              </h1>
+            </BlurIn>
             <p className="text-muted-foreground mt-1">
               {user?.startup?.name || 'Your Startup'} • {user?.roles?.join(', ') || 'User'}
             </p>
@@ -169,7 +179,7 @@ export default function DashboardPage() {
           </Card>
         )}
 
-        {/* Key Metrics */}
+        {/* Key Metrics - Compact */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Total Balance */}
           <Card className="p-6">
@@ -230,47 +240,49 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        {/* Financial Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Income/Expenses */}
-          <Card className="p-6">
-            <h3 className="font-semibold mb-4">Cashflow (Last 3 Months)</h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ArrowUpRight className="h-4 w-4 text-green-500" />
-                  <span className="text-sm">Income</span>
-                </div>
-                <span className="font-semibold text-green-500">
-                  ${summary?.financial.income.toLocaleString() || '0'}
-                </span>
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Cashflow Overview Chart */}
+          {cashflowData.length > 0 ? (
+            <CashflowChart data={cashflowData} />
+          ) : (
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Cashflow Overview</h3>
+              <div className="text-center py-12 text-muted-foreground">
+                <ArrowUpRight className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                <p>No transaction data yet</p>
+                <p className="text-sm mt-1">Add transactions to see cashflow trends</p>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ArrowDownRight className="h-4 w-4 text-red-500" />
-                  <span className="text-sm">Expenses</span>
-                </div>
-                <span className="font-semibold text-red-500">
-                  ${summary?.financial.expenses.toLocaleString() || '0'}
-                </span>
-              </div>
-              <div className="pt-2 border-t">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Net Cashflow</span>
-                  <span className={cn(
-                    "font-bold",
-                    (summary?.financial.netCashflow || 0) >= 0 ? "text-green-500" : "text-red-500"
-                  )}>
-                    ${summary?.financial.netCashflow.toLocaleString() || '0'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          )}
 
+          {/* Runway Forecast Chart */}
+          {summary && summary.financial.monthlyBurn > 0 ? (
+            <RunwayChart
+              currentBalance={summary.financial.totalBalance}
+              monthlyBurn={summary.financial.monthlyBurn}
+              runwayMonths={summary.financial.runwayMonths}
+            />
+          ) : (
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Runway Forecast</h3>
+              <div className="text-center py-12 text-muted-foreground">
+                <Calendar className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                <p>Insufficient data for forecast</p>
+                <p className="text-sm mt-1">Add expenses to calculate runway</p>
+              </div>
+            </Card>
+          )}
+        </div>
+
+        {/* Summary Cards Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Inventory */}
           <Card className="p-6">
-            <h3 className="font-semibold mb-4">Inventory</h3>
+            <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <Package className="h-5 w-5 text-blue-500" />
+              Inventory
+            </h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm">Total Products</span>
@@ -298,7 +310,10 @@ export default function DashboardPage() {
 
           {/* Sales (Last 30 Days) */}
           <Card className="p-6">
-            <h3 className="font-semibold mb-4">Sales (Last 30 Days)</h3>
+            <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5 text-green-500" />
+              Sales (Last 30 Days)
+            </h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm">Total Sales</span>
@@ -317,6 +332,42 @@ export default function DashboardPage() {
                 <span className="font-semibold">
                   {summary?.sales.salesCount || 0}
                 </span>
+              </div>
+            </div>
+          </Card>
+
+          {/* Net Cashflow Summary */}
+          <Card className="p-6">
+            <h3 className="font-semibold mb-4">Cashflow Summary</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ArrowUpRight className="h-4 w-4 text-green-500" />
+                  <span className="text-sm">Income</span>
+                </div>
+                <span className="font-semibold text-green-500">
+                  ${summary?.financial.income.toLocaleString() || '0'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ArrowDownRight className="h-4 w-4 text-red-500" />
+                  <span className="text-sm">Expenses</span>
+                </div>
+                <span className="font-semibold text-red-500">
+                  ${summary?.financial.expenses.toLocaleString() || '0'}
+                </span>
+              </div>
+              <div className="pt-2 border-t">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Net</span>
+                  <span className={cn(
+                    "font-bold",
+                    (summary?.financial.netCashflow || 0) >= 0 ? "text-green-500" : "text-red-500"
+                  )}>
+                    ${summary?.financial.netCashflow.toLocaleString() || '0'}
+                  </span>
+                </div>
               </div>
             </div>
           </Card>
@@ -361,7 +412,8 @@ export default function DashboardPage() {
           accounts={accounts}
           products={products}
         />
-      </div>
+        </div>
+      </MainLayout>
     </AuthGuard>
   );
 }

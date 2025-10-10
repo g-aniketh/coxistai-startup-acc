@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { apiClient } from '@/lib/api';
 import AuthGuard from '@/components/auth/AuthGuard';
+import MainLayout from '@/components/layout/MainLayout';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,7 +49,8 @@ export default function ScenariosPage() {
 
   return (
     <AuthGuard requireAuth={true}>
-      <div className="min-h-screen bg-background p-6 space-y-6">
+      <MainLayout>
+        <div className="p-6 space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -189,7 +191,8 @@ export default function ScenariosPage() {
             </div>
           </div>
         )}
-      </div>
+        </div>
+      </MainLayout>
     </AuthGuard>
   );
 }

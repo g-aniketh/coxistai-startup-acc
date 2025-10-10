@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { apiClient, BankAccount, Product } from '@/lib/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -8,6 +10,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import toast from 'react-hot-toast';
+
+// Zod validation schema
+const saleSchema = z.object({
+  productId: z.string().min(1, 'Please select a product'),
+  quantitySold: z.number()
+    .int('Quantity must be a whole number')
+    .positive('Quantity must be greater than 0')
+    .max(10000, 'Quantity is too large'),
+  accountId: z.string().min(1, 'Please select an account'),
+});
+
+type SaleFormData = z.infer<typeof saleSchema>;
 
 interface SimulateSaleModalProps {
   isOpen: boolean;
@@ -24,30 +38,50 @@ export default function SimulateSaleModal({
   accounts,
   products 
 }: SimulateSaleModalProps) {
-  const [formData, setFormData] = useState({
-    productId: '',
-    quantitySold: '',
-    accountId: '',
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+    reset,
+    setError,
+  } = useForm<SaleFormData>({
+    resolver: zodResolver(saleSchema),
+    defaultValues: {
+      productId: '',
+      quantitySold: 1,
+      accountId: '',
+    },
   });
-  const [loading, setLoading] = useState(false);
 
-  const selectedProduct = products.find(p => p.id === formData.productId);
+  const selectedProductId = watch('productId');
+  const selectedAccountId = watch('accountId');
+  const quantitySold = watch('quantitySold');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const selectedProduct = products.find(p => p.id === selectedProductId);
+  const totalPrice = selectedProduct && quantitySold ? selectedProduct.price * quantitySold : 0;
+
+  const onSubmit = async (data: SaleFormData) => {
+    // Additional validation: check stock availability
+    if (selectedProduct && data.quantitySold > selectedProduct.quantity) {
+      setError('quantitySold', {
+        message: `Only ${selectedProduct.quantity} units available in stock`
+      });
+      return;
+    }
 
     try {
       const response = await apiClient.inventory.sales.simulate({
-        productId: formData.productId,
-        quantitySold: parseInt(formData.quantitySold),
-        accountId: formData.accountId,
+        productId: data.productId,
+        quantitySold: data.quantitySold,
+        accountId: data.accountId,
       });
 
       if (response.success) {
-        const totalPrice = response.data?.sale.totalPrice || 0;
-        toast.success(`Sale simulated! Revenue: $${totalPrice.toLocaleString()}`);
-        setFormData({ productId: '', quantitySold: '', accountId: '' });
+        const revenue = response.data?.sale.totalPrice || totalPrice;
+        toast.success(`Sale simulated! Revenue: $${revenue.toLocaleString()}`);
+        reset();
         onSuccess();
         onClose();
       } else {
@@ -55,14 +89,17 @@ export default function SimulateSaleModal({
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to simulate sale');
-    } finally {
-      setLoading(false);
     }
   };
 
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Simulate Product Sale</DialogTitle>
           <DialogDescription>
@@ -70,13 +107,13 @@ export default function SimulateSaleModal({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="product">Product</Label>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Product Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="product">Product *</Label>
             <Select
-              value={formData.productId}
-              onValueChange={(value) => setFormData({ ...formData, productId: value })}
-              required
+              value={selectedProductId}
+              onValueChange={(value) => setValue('productId', value, { shouldValidate: true })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select product" />
@@ -89,38 +126,48 @@ export default function SimulateSaleModal({
                 ))}
               </SelectContent>
             </Select>
+            {errors.productId && (
+              <p className="text-sm text-red-500">{errors.productId.message}</p>
+            )}
             {selectedProduct && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Available stock: {selectedProduct.quantity} units
+              <p className="text-xs text-muted-foreground">
+                Available stock: {selectedProduct.quantity} units at ${selectedProduct.price}/unit
               </p>
             )}
           </div>
 
-          <div>
-            <Label htmlFor="quantitySold">Quantity Sold</Label>
+          {/* Quantity Sold */}
+          <div className="space-y-2">
+            <Label htmlFor="quantitySold">Quantity Sold *</Label>
             <Input
               id="quantitySold"
               type="number"
               min="1"
-              max={selectedProduct?.quantity || undefined}
               placeholder="5"
-              value={formData.quantitySold}
-              onChange={(e) => setFormData({ ...formData, quantitySold: e.target.value })}
-              required
+              {...register('quantitySold', { valueAsNumber: true })}
+              className={errors.quantitySold ? 'border-red-500' : ''}
             />
-            {selectedProduct && formData.quantitySold && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Total: ${(selectedProduct.price * parseInt(formData.quantitySold)).toLocaleString()}
-              </p>
+            {errors.quantitySold && (
+              <p className="text-sm text-red-500">{errors.quantitySold.message}</p>
+            )}
+            {selectedProduct && quantitySold > 0 && (
+              <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                <p className="text-sm font-medium text-primary">
+                  Sale Total: ${totalPrice.toLocaleString()}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {quantitySold} × ${selectedProduct.price}
+                </p>
+              </div>
             )}
           </div>
 
-          <div>
-            <Label htmlFor="account">Deposit to Account</Label>
+          {/* Account Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="account">Deposit to Account *</Label>
             <Select
-              value={formData.accountId}
-              onValueChange={(value) => setFormData({ ...formData, accountId: value })}
-              required
+              value={selectedAccountId}
+              onValueChange={(value) => setValue('accountId', value, { shouldValidate: true })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select account" />
@@ -133,14 +180,30 @@ export default function SimulateSaleModal({
                 ))}
               </SelectContent>
             </Select>
+            {errors.accountId && (
+              <p className="text-sm text-red-500">{errors.accountId.message}</p>
+            )}
           </div>
 
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-2 pt-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleClose} 
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Processing...' : 'Simulate Sale'}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  Processing...
+                </>
+              ) : (
+                'Simulate Sale'
+              )}
             </Button>
           </div>
         </form>
@@ -148,4 +211,3 @@ export default function SimulateSaleModal({
     </Dialog>
   );
 }
-

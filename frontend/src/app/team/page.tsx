@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiClient, TeamMember } from '@/lib/api';
 import { usePermissions } from '@/hooks/usePermissions';
 import AuthGuard from '@/components/auth/AuthGuard';
+import MainLayout from '@/components/layout/MainLayout';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -105,7 +106,8 @@ export default function TeamPage() {
 
   return (
     <AuthGuard requireAuth={true}>
-      <div className="min-h-screen bg-background p-6 space-y-6">
+      <MainLayout>
+        <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -286,7 +288,8 @@ export default function TeamPage() {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
+        </div>
+      </MainLayout>
     </AuthGuard>
   );
 }

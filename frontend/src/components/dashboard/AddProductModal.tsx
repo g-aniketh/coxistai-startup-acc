@@ -1,12 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { apiClient } from '@/lib/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import toast from 'react-hot-toast';
+
+// Zod validation schema
+const productSchema = z.object({
+  name: z.string()
+    .min(2, 'Product name must be at least 2 characters')
+    .max(100, 'Product name must be less than 100 characters'),
+  quantity: z.number()
+    .int('Quantity must be a whole number')
+    .nonnegative('Quantity cannot be negative')
+    .max(1000000, 'Quantity is too large'),
+  price: z.number()
+    .positive('Price must be greater than 0')
+    .max(1000000, 'Price is too large'),
+});
+
+type ProductFormData = z.infer<typeof productSchema>;
 
 interface AddProductModalProps {
   isOpen: boolean;
@@ -15,27 +33,31 @@ interface AddProductModalProps {
 }
 
 export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProductModalProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    quantity: '',
-    price: '',
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<ProductFormData>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: '',
+      quantity: 0,
+      price: 0,
+    },
   });
-  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
+  const onSubmit = async (data: ProductFormData) => {
     try {
       const response = await apiClient.inventory.products.create({
-        name: formData.name,
-        quantity: parseInt(formData.quantity),
-        price: parseFloat(formData.price),
+        name: data.name,
+        quantity: data.quantity,
+        price: data.price,
       });
 
       if (response.success) {
         toast.success('Product added successfully!');
-        setFormData({ name: '', quantity: '', price: '' });
+        reset();
         onSuccess();
         onClose();
       } else {
@@ -43,14 +65,17 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to add product');
-    } finally {
-      setLoading(false);
     }
   };
 
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Add Product to Inventory</DialogTitle>
           <DialogDescription>
@@ -58,53 +83,74 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="productName">Product Name</Label>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Product Name */}
+          <div className="space-y-2">
+            <Label htmlFor="name">Product Name *</Label>
             <Input
-              id="productName"
-              placeholder="Widget A"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              required
+              id="name"
+              placeholder="Premium Widget"
+              {...register('name')}
+              className={errors.name ? 'border-red-500' : ''}
             />
+            {errors.name && (
+              <p className="text-sm text-red-500">{errors.name.message}</p>
+            )}
           </div>
 
+          {/* Quantity and Price Grid */}
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="quantity">Initial Stock</Label>
+            <div className="space-y-2">
+              <Label htmlFor="quantity">Initial Stock *</Label>
               <Input
                 id="quantity"
                 type="number"
                 min="0"
                 placeholder="100"
-                value={formData.quantity}
-                onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                required
+                {...register('quantity', { valueAsNumber: true })}
+                className={errors.quantity ? 'border-red-500' : ''}
               />
+              {errors.quantity && (
+                <p className="text-sm text-red-500">{errors.quantity.message}</p>
+              )}
             </div>
 
-            <div>
-              <Label htmlFor="price">Price per Unit</Label>
+            <div className="space-y-2">
+              <Label htmlFor="price">Price per Unit *</Label>
               <Input
                 id="price"
                 type="number"
                 step="0.01"
                 min="0.01"
                 placeholder="99.99"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                required
+                {...register('price', { valueAsNumber: true })}
+                className={errors.price ? 'border-red-500' : ''}
               />
+              {errors.price && (
+                <p className="text-sm text-red-500">{errors.price.message}</p>
+              )}
             </div>
           </div>
 
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-2 pt-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleClose} 
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Adding...' : 'Add Product'}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  Adding...
+                </>
+              ) : (
+                'Add Product'
+              )}
             </Button>
           </div>
         </form>
@@ -112,4 +158,3 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
     </Dialog>
   );
 }
-

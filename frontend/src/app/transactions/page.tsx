@@ -53,25 +53,22 @@ export default function TransactionsPage() {
     setLoading(true);
     setError(null);
     try {
-      const params = {
-        page: currentPage,
+      const params: any = {
         limit: filters.limit,
-        sortBy: sortConfig.key,
-        sortOrder:
-          sortConfig.direction === 'ascending' ? ('asc' as const) : ('desc' as const),
-        ...(debouncedSearch && { search: debouncedSearch }),
+        offset: (currentPage - 1) * filters.limit,
         ...(filters.startDate && { startDate: filters.startDate }),
         ...(filters.endDate && { endDate: filters.endDate }),
-        ...(filters.categoryId && { categoryId: parseInt(filters.categoryId) }),
         ...(filters.accountId && { accountId: filters.accountId }),
       };
-      const response = await apiClient.transactions.transactions(params);
+      
+      const response = await apiClient.transactions.list(params);
       if (response.success && response.data) {
-        setTransactions(response.data.transactions);
-        setTotalPages(response.data.pagination.totalPages);
-        setTotalCount(response.data.pagination.totalCount);
+        setTransactions(response.data);
+        const pagination = response.pagination || { total: response.data.length };
+        setTotalCount(pagination.total || 0);
+        setTotalPages(Math.ceil((pagination.total || 0) / filters.limit));
       } else {
-        setError(response.error || 'Failed to fetch transactions');
+        setError(response.message || 'Failed to fetch transactions');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -81,11 +78,8 @@ export default function TransactionsPage() {
   }, [
     currentPage,
     filters.limit,
-    sortConfig,
-    debouncedSearch,
     filters.startDate,
     filters.endDate,
-    filters.categoryId,
     filters.accountId,
   ]);
 
@@ -96,12 +90,8 @@ export default function TransactionsPage() {
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
-        const [catRes, accRes] = await Promise.all([
-          apiClient.transactions.categories(),
-          apiClient.transactions.accounts(),
-        ]);
-        if (catRes.success) setCategories(catRes.data || []);
-        if (accRes.success) setAccounts(accRes.data?.accounts || []);
+        const accRes = await apiClient.accounts.list();
+        // Note: accounts loaded for future filtering
       } catch (err) {
         console.error('Failed to fetch filter data:', err);
       }

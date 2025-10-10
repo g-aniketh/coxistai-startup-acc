@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { apiClient } from '@/lib/api';
 import AuthGuard from '@/components/auth/AuthGuard';
+import MainLayout from '@/components/layout/MainLayout';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/button';
 import { Sparkles, TrendingDown, TrendingUp, Lightbulb, AlertTriangle } from 'lucide-react';
@@ -31,7 +32,8 @@ export default function AIInsightsPage() {
 
   return (
     <AuthGuard requireAuth={true}>
-      <div className="min-h-screen bg-background p-6 space-y-6">
+      <MainLayout>
+        <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -178,7 +180,8 @@ export default function AIInsightsPage() {
             </Card>
           </div>
         )}
-      </div>
+        </div>
+      </MainLayout>
     </AuthGuard>
   );
 }

@@ -1,25 +1,65 @@
 'use client';
 
 import { ReactNode, useState } from 'react';
-import NewHeader from './NewHeader'; // Changed import
+import Sidebar from './Sidebar';
+import Header from './Header';
+import Vortex from '@/components/ui/vortex';
+import { cn } from '@/lib/utils';
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <NewHeader />
-      <main className="pt-24">
-        {' '}
-        {/* Add padding to account for fixed header */}
-        <div className="p-6">
-          <div className="mx-auto max-w-7xl">
-            <div className="animate-fade-in">{children}</div>
-          </div>
+    <div className="h-screen flex overflow-hidden bg-background">
+      {/* Sidebar - Desktop */}
+      <aside className="hidden lg:flex lg:flex-shrink-0">
+        <div className="w-64">
+          <Sidebar />
         </div>
-      </main>
+      </aside>
+
+      {/* Sidebar - Mobile (Overlay) */}
+      {isSidebarOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+          
+          {/* Sidebar */}
+          <aside className="fixed inset-y-0 left-0 w-64 z-50 lg:hidden">
+            <Sidebar />
+          </aside>
+        </>
+      )}
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col overflow-hidden relative">
+        {/* Animated Background */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <Vortex
+            className="w-full h-full"
+            particleCount={150}
+            baseHue={220}
+            rangeY={800}
+          />
+        </div>
+
+        {/* Header */}
+        <Header onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-y-auto bg-transparent relative z-10">
+          <div className="h-full">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

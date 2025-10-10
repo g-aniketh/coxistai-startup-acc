@@ -1,12 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { apiClient } from '@/lib/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import toast from 'react-hot-toast';
+
+// Zod validation schema
+const accountSchema = z.object({
+  accountName: z.string()
+    .min(3, 'Account name must be at least 3 characters')
+    .max(50, 'Account name must be less than 50 characters'),
+  balance: z.number()
+    .nonnegative('Balance cannot be negative')
+    .max(1000000000, 'Balance is too large'),
+});
+
+type AccountFormData = z.infer<typeof accountSchema>;
 
 interface CreateAccountModalProps {
   isOpen: boolean;
@@ -15,25 +29,29 @@ interface CreateAccountModalProps {
 }
 
 export default function CreateAccountModal({ isOpen, onClose, onSuccess }: CreateAccountModalProps) {
-  const [formData, setFormData] = useState({
-    accountName: '',
-    balance: '0',
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<AccountFormData>({
+    resolver: zodResolver(accountSchema),
+    defaultValues: {
+      accountName: '',
+      balance: 0,
+    },
   });
-  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
+  const onSubmit = async (data: AccountFormData) => {
     try {
       const response = await apiClient.accounts.create({
-        accountName: formData.accountName,
-        balance: parseFloat(formData.balance),
+        accountName: data.accountName,
+        balance: data.balance,
       });
 
       if (response.success) {
         toast.success('Bank account created successfully!');
-        setFormData({ accountName: '', balance: '0' });
+        reset();
         onSuccess();
         onClose();
       } else {
@@ -41,14 +59,17 @@ export default function CreateAccountModal({ isOpen, onClose, onSuccess }: Creat
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to create account');
-    } finally {
-      setLoading(false);
     }
   };
 
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Create Mock Bank Account</DialogTitle>
           <DialogDescription>
@@ -56,37 +77,62 @@ export default function CreateAccountModal({ isOpen, onClose, onSuccess }: Creat
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="accountName">Account Name</Label>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Account Name */}
+          <div className="space-y-2">
+            <Label htmlFor="accountName">Account Name *</Label>
             <Input
               id="accountName"
               placeholder="Main Checking Account"
-              value={formData.accountName}
-              onChange={(e) => setFormData({ ...formData, accountName: e.target.value })}
-              required
+              {...register('accountName')}
+              className={errors.accountName ? 'border-red-500' : ''}
             />
+            {errors.accountName && (
+              <p className="text-sm text-red-500">{errors.accountName.message}</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              e.g., "Main Checking", "Business Savings", "Payroll Account"
+            </p>
           </div>
 
-          <div>
-            <Label htmlFor="balance">Initial Balance</Label>
+          {/* Initial Balance */}
+          <div className="space-y-2">
+            <Label htmlFor="balance">Initial Balance *</Label>
             <Input
               id="balance"
               type="number"
               step="0.01"
               placeholder="50000"
-              value={formData.balance}
-              onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
-              required
+              {...register('balance', { valueAsNumber: true })}
+              className={errors.balance ? 'border-red-500' : ''}
             />
+            {errors.balance && (
+              <p className="text-sm text-red-500">{errors.balance.message}</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Enter your current account balance
+            </p>
           </div>
 
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-2 pt-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleClose} 
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Creating...' : 'Create Account'}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  Creating...
+                </>
+              ) : (
+                'Create Account'
+              )}
             </Button>
           </div>
         </form>
@@ -94,4 +140,3 @@ export default function CreateAccountModal({ isOpen, onClose, onSuccess }: Creat
     </Dialog>
   );
 }
-
