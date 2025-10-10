@@ -102,7 +102,7 @@ export default function DashboardPage() {
               Welcome back, {user?.firstName || user?.email}! 👋
             </h1>
             <p className="text-muted-foreground mt-1">
-              {user?.startup.name} • {user?.roles.join(', ')}
+              {user?.startup?.name || 'Your Startup'} • {user?.roles?.join(', ') || 'User'}
             </p>
           </div>
           <div className="flex gap-2">

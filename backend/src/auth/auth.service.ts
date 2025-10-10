@@ -97,7 +97,11 @@ export const signup = async (data: SignupData) => {
       email: user.email
     },
     process.env.JWT_SECRET!,
-    { expiresIn: '7d' }
+    { 
+      expiresIn: '7d',
+      issuer: 'coxist-ai-accelerator',
+      audience: 'coxist-ai-users'
+    }
   );
 
   return { 
@@ -116,7 +120,8 @@ export const signup = async (data: SignupData) => {
         trialEndsAt: startup.trialEndsAt
       },
       roles: roleNames,
-      permissions: permissions
+      permissions: permissions,
+      isActive: true
     }
   };
 };
@@ -172,7 +177,11 @@ export const login = async (data: LoginData) => {
       email: user.email
     },
     process.env.JWT_SECRET!,
-    { expiresIn: '7d' }
+    { 
+      expiresIn: '7d',
+      issuer: 'coxist-ai-accelerator',
+      audience: 'coxist-ai-users'
+    }
   );
 
   return { 
@@ -191,7 +200,8 @@ export const login = async (data: LoginData) => {
         trialEndsAt: user.startup.trialEndsAt
       },
       roles: roleNames,
-      permissions: permissions
+      permissions: permissions,
+      isActive: user.isActive
     }
   };
 };
