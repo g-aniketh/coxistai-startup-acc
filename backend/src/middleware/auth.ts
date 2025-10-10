@@ -8,12 +8,38 @@ declare global {
     interface Request {
       user?: {
         userId: string;
-        tenantId: string;
-        role: string;
+        startupId: string;
+        roles: string[];
+        permissions: string[];
         email: string;
+      };
+      startup?: {
+        id: string;
+        name: string;
+      };
+      // Legacy support for old tenant references
+      tenantId?: string;
+      tenant?: {
+        id: string;
+        name: string;
       };
     }
   }
+}
+
+// Type alias for authenticated requests
+export interface AuthRequest extends Request {
+  user: {
+    userId: string;
+    startupId: string;
+    roles: string[];
+    permissions: string[];
+    email: string;
+  };
+  startup: {
+    id: string;
+    name: string;
+  };
 }
 
 /**
@@ -35,12 +61,22 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
       select: {
         id: true,
         email: true,
-        role: true,
-        tenantId: true,
-        tenant: {
+        isActive: true,
+        startupId: true,
+        startup: {
           select: {
             id: true,
-            name: true
+            name: true,
+            subscriptionStatus: true
+          }
+        },
+        roles: {
+          include: {
+            role: {
+              include: {
+                permissions: true
+              }
+            }
           }
         }
       }
@@ -53,34 +89,56 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
       });
     }
 
-    // Verify tenant still exists
-    if (!user.tenant) {
+    // Check if user is active
+    if (!user.isActive) {
       return res.status(401).json({
         success: false,
-        error: 'User tenant not found or has been deleted'
+        error: 'Account is inactive. Please contact your administrator.'
       });
     }
 
-    // Verify token tenant matches user's current tenant
-    if (payload.tenantId !== user.tenantId) {
+    // Verify startup still exists
+    if (!user.startup) {
       return res.status(401).json({
         success: false,
-        error: 'Token tenant does not match user\'s current tenant'
+        error: 'Startup not found or has been deleted'
       });
     }
+
+    // Verify token startup matches user's current startup
+    if (payload.startupId !== user.startupId) {
+      return res.status(401).json({
+        success: false,
+        error: 'Token startup does not match user\'s current startup'
+      });
+    }
+
+    // Extract roles and permissions
+    const roleNames = user.roles.map(ur => ur.role.name);
+    const permissions = user.roles.flatMap(ur => 
+      ur.role.permissions.map(p => `${p.action}_${p.subject}`)
+    );
 
     // Attach user information to request
     req.user = {
       userId: user.id,
-      tenantId: user.tenantId,
-      role: user.role,
+      startupId: user.startupId,
+      roles: roleNames,
+      permissions: permissions,
       email: user.email
     };
 
-    // Attach tenant information to request
+    // Attach startup information to request
+    req.startup = {
+      id: user.startup.id,
+      name: user.startup.name
+    };
+
+    // Legacy support - also set tenant fields
+    req.tenantId = user.startupId;
     req.tenant = {
-      id: user.tenant.id,
-      name: user.tenant.name
+      id: user.startup.id,
+      name: user.startup.name
     };
 
     return next();
@@ -118,27 +176,47 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
       select: {
         id: true,
         email: true,
-        role: true,
-        tenantId: true,
-        tenant: {
+        isActive: true,
+        startupId: true,
+        startup: {
           select: {
             id: true,
             name: true
+          }
+        },
+        roles: {
+          include: {
+            role: {
+              include: {
+                permissions: true
+              }
+            }
           }
         }
       }
     });
 
-    if (user && user.tenant && payload.tenantId === user.tenantId) {
+    if (user && user.isActive && user.startup && payload.startupId === user.startupId) {
+      const roleNames = user.roles.map(ur => ur.role.name);
+      const permissions = user.roles.flatMap(ur => 
+        ur.role.permissions.map(p => `${p.action}_${p.subject}`)
+      );
+
       req.user = {
         userId: user.id,
-        tenantId: user.tenantId,
-        role: user.role,
+        startupId: user.startupId,
+        roles: roleNames,
+        permissions: permissions,
         email: user.email
       };
+      req.startup = {
+        id: user.startup.id,
+        name: user.startup.name
+      };
+      req.tenantId = user.startupId;
       req.tenant = {
-        id: user.tenant.id,
-        name: user.tenant.name
+        id: user.startup.id,
+        name: user.startup.name
       };
     }
 
@@ -162,12 +240,40 @@ export const requireRole = (allowedRoles: string[]) => {
       });
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
+    const hasRole = req.user.roles.some(role => allowedRoles.includes(role));
+    
+    if (!hasRole) {
       return res.status(403).json({
         success: false,
         error: 'Insufficient permissions',
         required: allowedRoles,
-        current: req.user.role
+        current: req.user.roles
+      });
+    }
+
+    return next();
+  };
+};
+
+/**
+ * Permission-based Authorization Middleware
+ * Checks if user has required permission
+ */
+export const requirePermission = (requiredPermission: string) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required'
+      });
+    }
+
+    if (!req.user.permissions.includes(requiredPermission)) {
+      return res.status(403).json({
+        success: false,
+        error: 'Insufficient permissions',
+        required: requiredPermission,
+        available: req.user.permissions
       });
     }
 
@@ -179,26 +285,66 @@ export const requireRole = (allowedRoles: string[]) => {
  * Admin-only Middleware
  * Shortcut for admin role requirement
  */
-export const requireAdmin = requireRole(['admin']);
+export const requireAdmin = requireRole(['Admin']);
 
 /**
- * Tenant Admin Middleware
- * Ensures user is admin of their current tenant
+ * Startup Admin Middleware
+ * Ensures user is admin of their current startup
  */
-export const requireTenantAdmin = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.user || !req.tenant) {
+export const requireStartupAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.user || !req.startup) {
     return res.status(401).json({
       success: false,
-      error: 'Authentication and tenant context required'
+      error: 'Authentication and startup context required'
     });
   }
 
-  if (req.user.role !== 'admin') {
+  if (!req.user.roles.includes('Admin')) {
     return res.status(403).json({
       success: false,
-      error: 'Tenant admin role required'
+      error: 'Admin role required'
     });
   }
 
   return next();
+};
+
+// Legacy alias for backward compatibility
+export const requireTenantAdmin = requireStartupAdmin;
+
+/**
+ * Permission-based Authorization Middleware (Object Format)
+ * Checks if user has required permission using action and subject
+ * Admins always have access
+ */
+export const checkPermission = (requiredPermission: { action: string; subject: string }) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required'
+      });
+    }
+
+    // Check if user is Admin (Admins can do anything)
+    const isAdmin = req.user.roles.includes('Admin');
+    if (isAdmin) {
+      return next();
+    }
+
+    // Check if user has the specific permission
+    const permissionString = `${requiredPermission.action}_${requiredPermission.subject}`;
+    const hasPermission = req.user.permissions.includes(permissionString);
+
+    if (hasPermission) {
+      return next();
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Insufficient permissions',
+        required: requiredPermission,
+        available: req.user.permissions
+      });
+    }
+  };
 };

@@ -5,7 +5,12 @@ import dotenv from 'dotenv';
 import { prisma } from './lib/prisma';
 import { tenantMiddleware, optionalTenantMiddleware } from './middleware/tenant';
 import { authenticateToken, optionalAuth } from './middleware/auth';
-import authRoutes from './routes/auth';
+import authRoutes from './auth/auth.routes';
+import transactionsRoutes from './transactions/transactions.routes';
+import dashboardRoutes from './dashboard/dashboard.routes';
+import inventoryRoutes from './inventory/inventory.routes';
+import accountsRoutes from './accounts/accounts.routes';
+import teamRoutes from './team/team.routes';
 import plaidRoutes from './routes/plaid';
 import cfoRoutes from './routes/cfo';
 import stripeRoutes from './routes/stripe';
@@ -67,6 +72,13 @@ const v1Router = express.Router();
 
 // Authentication routes (no auth required)
 v1Router.use('/auth', authRoutes);
+
+// Mock Feature Routes (protected by authentication + permissions)
+v1Router.use('/transactions', transactionsRoutes);
+v1Router.use('/dashboard', dashboardRoutes);
+v1Router.use('/inventory', inventoryRoutes);
+v1Router.use('/accounts', accountsRoutes);
+v1Router.use('/team', teamRoutes);
 
 // CFO Plaid routes (protected by authentication)
 v1Router.use('/cfo/plaid', authenticateToken, plaidRoutes);
@@ -278,13 +290,13 @@ v1Router.get('/docs', (req, res) => {
 });
 
 // Protected routes (require authentication)
-v1Router.use('/tenants', authenticateToken);
+v1Router.use('/startups', authenticateToken);
 v1Router.use('/users', authenticateToken);
 
-// Tenant routes
-v1Router.get('/tenants', async (req, res) => {
+// Startup routes
+v1Router.get('/startups', async (req, res) => {
   try {
-    const tenants = await prisma.tenant.findMany({
+    const startups = await prisma.startup.findMany({
       include: {
         users: true
       }
@@ -292,8 +304,8 @@ v1Router.get('/tenants', async (req, res) => {
     
     res.json({
       success: true,
-      data: tenants,
-      context: req.tenant ? { currentTenant: req.tenant } : null
+      data: startups,
+      context: req.startup ? { currentStartup: req.startup } : null
     });
   } catch (error) {
     res.status(500).json({
@@ -303,17 +315,17 @@ v1Router.get('/tenants', async (req, res) => {
   }
 });
 
-v1Router.post('/tenants', async (req, res) => {
+v1Router.post('/startups', async (req, res) => {
   try {
     const { name } = req.body;
     if (!name) {
       return res.status(400).json({
         success: false,
-        error: 'Tenant name is required'
+        error: 'Startup name is required'
       });
     }
 
-    const tenant = await prisma.tenant.create({
+    const startup = await prisma.startup.create({
       data: { name },
       include: {
         users: true
@@ -322,7 +334,7 @@ v1Router.post('/tenants', async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      data: tenant
+      data: startup
     });
   } catch (error) {
     return res.status(500).json({
@@ -337,7 +349,7 @@ v1Router.get('/users', async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       include: {
-        tenant: true
+        startup: true
       }
     });
     res.json({

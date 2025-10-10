@@ -56,10 +56,17 @@ export interface TenantRequest extends Request {
 export interface AuthenticatedRequest extends Request {
   user?: {
     userId: string;
-    tenantId: string;
-    role: string;
+    startupId: string;
+    roles: string[];
+    permissions: string[];
     email: string;
   };
+  startup?: {
+    id: string;
+    name: string;
+  };
+  // Legacy support for old tenant references
+  tenantId?: string;
   tenant?: {
     id: string;
     name: string;
@@ -70,11 +77,17 @@ export interface AuthenticatedRequest extends Request {
 export interface AuthenticatedTenantRequest extends Request {
   user: {
     userId: string;
-    tenantId: string;
-    role: string;
+    startupId: string;
+    roles: string[];
+    permissions: string[];
     email: string;
   };
-  tenant: {
+  startup: {
+    id: string;
+    name: string;
+  };
+  // Legacy support
+  tenant?: {
     id: string;
     name: string;
   };

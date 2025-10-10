@@ -7,203 +7,152 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Tenant {
-  id              String            @id @default(cuid())
-  name            String
-  subscriptionPlan String           @default("pro_trial") // pro_trial, starter, pro, enterprise
-  subscriptionStatus String         @default("active") // active, cancelled, expired
-  trialEndsAt     DateTime?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  plaidItems      PlaidItem[]
-  users           User[]
-  stripeAccounts  StripeAccount[]
-  cashflowMetrics CashflowMetric[]
-  scenarios       AIScenario[]
-  alerts          Alert[]
-  investorUpdates InvestorUpdate[]
-  products        Product[]
-  productTransactions ProductTransaction[]
-  simulatedTransactions SimulatedTransaction[]
+// ============================================================================
+// MULTI-TENANCY CORE MODELS
+// ============================================================================
+
+model Startup {
+  id                 String   @id @default(cuid())
+  name               String
+  subscriptionPlan   String   @default("pro_trial") // pro_trial, starter, pro, enterprise
+  subscriptionStatus String   @default("active") // active, cancelled, expired
+  trialEndsAt        DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  users            User[]
+  mockBankAccounts MockBankAccount[]
+  transactions     Transaction[]
+  products         Product[]
+  sales            Sale[]
+  cashflowMetrics  CashflowMetric[]
+  scenarios        AIScenario[]
+  alerts           Alert[]
+  investorUpdates  InvestorUpdate[]
 }
 
 model User {
-  id           String      @id @default(cuid())
-  email        String      @unique
-  passwordHash String
-  role         UserRole    @default(MEMBER)
-  firstName    String?
-  lastName     String?
-  isActive     Boolean     @default(true)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  tenantId     String
-  plaidItems   PlaidItem[]
-  tenant       Tenant      @relation(fields: [tenantId], references: [id])
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String?
+  lastName  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  startupId String
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  roles UserRole[]
 }
 
-enum UserRole {
-  ADMIN
-  ACCOUNTANT
-  CTO
-  OPERATIONS_MANAGER
-  SALES_MANAGER
-  MEMBER
+model Role {
+  id          String       @id @default(cuid())
+  name        String       @unique // e.g., "Admin", "Accountant", "CTO", "CFO", "Operations Manager"
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  permissions Permission[]
+  users       UserRole[]
 }
 
-model PlaidItem {
-  id                   String    @id @default(cuid())
-  tenantId             String
-  userId               String
-  plaidItemId          String    @unique
-  accessTokenEncrypted Bytes
-  institutionName      String?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
-  accounts             Account[]
-  tenant               Tenant    @relation(fields: [tenantId], references: [id])
-  user                 User      @relation(fields: [userId], references: [id])
+model Permission {
+  id          String   @id @default(cuid())
+  action      String   // e.g., "manage", "create", "read", "update", "delete"
+  subject     String   // e.g., "users", "transactions", "inventory", "dashboard", "analytics"
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  roles Role[]
+
+  @@unique([action, subject])
 }
 
-model Account {
-  id             String        @id @default(cuid())
-  plaidItemId    String
-  plaidAccountId String        @unique
-  name           String
-  mask           String?
-  type           String
-  subtype        String
-  currentBalance Decimal
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  plaidItem      PlaidItem     @relation(fields: [plaidItemId], references: [id])
-  transactions   Transaction[]
+model UserRole {
+  userId String
+  roleId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  assignedAt DateTime @default(now())
+
+  @@id([userId, roleId])
 }
 
-model TransactionCategory {
-  id            Int                   @id @default(autoincrement())
-  name          String                @unique
-  parentId      Int?
-  transactions  Transaction[]
-  parent        TransactionCategory?  @relation("SubCategories", fields: [parentId], references: [id])
-  subcategories TransactionCategory[] @relation("SubCategories")
+// ============================================================================
+// SIMULATED FINANCIAL DATA MODELS
+// ============================================================================
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+}
+
+model MockBankAccount {
+  id          String   @id @default(cuid())
+  accountName String   // e.g., "Main Checking Account"
+  balance     Float    @default(0.0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  startupId String
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  transactions Transaction[]
 }
 
 model Transaction {
-  id                 String               @id @default(cuid())
-  accountId          String
-  categoryId         Int?
-  plaidTransactionId String               @unique
-  amount             Decimal
-  description        String
-  date               DateTime
-  pending            Boolean              @default(false)
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  account            Account              @relation(fields: [accountId], references: [id])
-  category           TransactionCategory? @relation(fields: [categoryId], references: [id])
+  id          String          @id @default(cuid())
+  amount      Float
+  type        TransactionType
+  description String
+  date        DateTime        @default(now())
+  
+  startupId String
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  accountId String
+  account   MockBankAccount @relation(fields: [accountId], references: [id])
+
+  sale Sale?
 }
 
 // ============================================================================
-// STRIPE INTEGRATION MODELS
+// INVENTORY MANAGEMENT MODELS
 // ============================================================================
 
-model StripeAccount {
-  id                   String              @id @default(cuid())
-  tenantId             String
-  stripeAccountId      String              @unique
-  accessTokenEncrypted Bytes?
-  refreshToken         String?
-  accountType          String              @default("standard") // standard, express, custom
-  email                String?
-  businessName         String?
-  country              String?
-  currency             String?
-  isActive             Boolean             @default(true)
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @updatedAt
-  tenant               Tenant              @relation(fields: [tenantId], references: [id])
-  customers            StripeCustomer[]
-  subscriptions        StripeSubscription[]
-  invoices             StripeInvoice[]
-  payments             StripePayment[]
+model Product {
+  id        String   @id @default(cuid())
+  name      String
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  startupId String
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  
+  sales Sale[]
 }
 
-model StripeCustomer {
-  id                String              @id @default(cuid())
-  stripeAccountId   String
-  stripeCustomerId  String              @unique
-  email             String?
-  name              String?
-  description       String?
-  metadata          Json?
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  stripeAccount     StripeAccount       @relation(fields: [stripeAccountId], references: [id])
-  subscriptions     StripeSubscription[]
-  invoices          StripeInvoice[]
-  payments          StripePayment[]
-}
+model Sale {
+  id           String   @id @default(cuid())
+  quantitySold Int
+  totalPrice   Float
+  saleDate     DateTime @default(now())
 
-model StripeSubscription {
-  id                  String         @id @default(cuid())
-  stripeAccountId     String
-  stripeCustomerId    String
-  stripeSubscriptionId String        @unique
-  status              String         // active, canceled, past_due, etc.
-  currentPeriodStart  DateTime
-  currentPeriodEnd    DateTime
-  cancelAtPeriodEnd   Boolean        @default(false)
-  canceledAt          DateTime?
-  planName            String?
-  planAmount          Decimal
-  planInterval        String         // month, year
-  quantity            Int            @default(1)
-  metadata            Json?
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
-  stripeAccount       StripeAccount  @relation(fields: [stripeAccountId], references: [id])
-  customer            StripeCustomer @relation(fields: [stripeCustomerId], references: [id])
-}
+  startupId String
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
 
-model StripeInvoice {
-  id               String         @id @default(cuid())
-  stripeAccountId  String
-  stripeCustomerId String
-  stripeInvoiceId  String         @unique
-  status           String         // draft, open, paid, void, uncollectible
-  amountDue        Decimal
-  amountPaid       Decimal
-  amountRemaining  Decimal
-  currency         String
-  dueDate          DateTime?
-  paidAt           DateTime?
-  periodStart      DateTime
-  periodEnd        DateTime
-  metadata         Json?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  stripeAccount    StripeAccount  @relation(fields: [stripeAccountId], references: [id])
-  customer         StripeCustomer @relation(fields: [stripeCustomerId], references: [id])
-}
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
 
-model StripePayment {
-  id                String         @id @default(cuid())
-  stripeAccountId   String
-  stripeCustomerId  String?
-  stripePaymentId   String         @unique
-  amount            Decimal
-  currency          String
-  status            String         // succeeded, pending, failed
-  paymentMethod     String?        // card, bank_transfer, etc.
-  description       String?
-  receiptUrl        String?
-  paidAt            DateTime
-  metadata          Json?
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  stripeAccount     StripeAccount  @relation(fields: [stripeAccountId], references: [id])
-  customer          StripeCustomer? @relation(fields: [stripeCustomerId], references: [id])
+  transactionId String      @unique
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
 }
 
 // ============================================================================
@@ -211,43 +160,47 @@ model StripePayment {
 // ============================================================================
 
 model CashflowMetric {
-  id                    String   @id @default(cuid())
-  tenantId              String
-  periodStart           DateTime
-  periodEnd             DateTime
+  id           String   @id @default(cuid())
+  startupId    String
+  periodStart  DateTime
+  periodEnd    DateTime
   
   // Core Metrics
-  totalRevenue          Decimal  @default(0)
-  totalExpenses         Decimal  @default(0)
-  netCashflow           Decimal  @default(0)
-  burnRate              Decimal  @default(0) // Monthly burn rate
-  runway                Decimal  @default(0) // Months of runway
+  totalRevenue          Decimal @default(0)
+  totalExpenses         Decimal @default(0)
+  netCashflow           Decimal @default(0)
+  burnRate              Decimal @default(0) // Monthly burn rate
+  runway                Decimal @default(0) // Months of runway
   
   // Revenue Metrics
-  mrr                   Decimal  @default(0) // Monthly Recurring Revenue
-  arr                   Decimal  @default(0) // Annual Recurring Revenue
-  growthRate            Decimal  @default(0) // Month-over-month growth %
+  mrr                   Decimal @default(0) // Monthly Recurring Revenue
+  arr                   Decimal @default(0) // Annual Recurring Revenue
+  growthRate            Decimal @default(0) // Month-over-month growth %
   
   // Balance Metrics
-  cashBalance           Decimal  @default(0)
-  accountsReceivable    Decimal  @default(0)
-  accountsPayable       Decimal  @default(0)
+  cashBalance           Decimal @default(0)
+  accountsReceivable    Decimal @default(0)
+  accountsPayable       Decimal @default(0)
   
-  // Customer Metrics
-  activeCustomers       Int      @default(0)
-  newCustomers          Int      @default(0)
-  churnedCustomers      Int      @default(0)
+  // Customer Metrics (from inventory sales)
+  activeCustomers       Int     @default(0)
+  newCustomers          Int     @default(0)
+  churnedCustomers      Int     @default(0)
   customerAcquisitionCost Decimal @default(0)
-  lifetimeValue         Decimal  @default(0)
+  lifetimeValue         Decimal @default(0)
+  
+  // Inventory Metrics
+  totalInventoryValue   Decimal @default(0)
+  inventoryTurnover     Decimal @default(0)
   
   // Additional Metrics
   metadata              Json?
   
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  tenant                Tenant   @relation(fields: [tenantId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  startup   Startup  @relation(fields: [startupId], references: [id], onDelete: Cascade)
   
-  @@index([tenantId, periodStart])
+  @@index([startupId, periodStart])
 }
 
 // ============================================================================
@@ -255,32 +208,39 @@ model CashflowMetric {
 // ============================================================================
 
 model AIScenario {
-  id                String   @id @default(cuid())
-  tenantId          String
-  name              String
-  description       String?
-  scenarioType      String   // forecast, what_if, sensitivity
+  id               String   @id @default(cuid())
+  startupId        String
+  name             String
+  description      String?
+  scenarioType     String   // forecast, what_if, sensitivity, stress_test
   
   // Input Parameters
-  inputParameters   Json     // Store scenario variables
+  inputParameters  Json     // Store scenario variables (e.g., revenue growth %, cost reduction %)
   
   // AI-Generated Results
   projectedRevenue  Decimal?
   projectedExpenses Decimal?
   projectedCashflow Decimal?
   projectedRunway   Decimal?
-  confidence        Decimal? // AI confidence score 0-1
+  projectedMRR      Decimal?
+  projectedARR      Decimal?
+  confidence        Decimal? // AI confidence score 0-100
   
   // AI Insights
   insights          Json?    // Array of AI-generated insights
   recommendations   Json?    // Array of AI recommendations
   risks             Json?    // Array of identified risks
+  opportunities     Json?    // Array of identified opportunities
   
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  tenant            Tenant   @relation(fields: [tenantId], references: [id])
+  // Metadata
+  createdBy    String?  // User ID who created this scenario
+  isBookmarked Boolean  @default(false)
   
-  @@index([tenantId, createdAt])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  startup   Startup  @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  
+  @@index([startupId, createdAt])
 }
 
 // ============================================================================
@@ -289,30 +249,34 @@ model AIScenario {
 
 model Alert {
   id          String   @id @default(cuid())
-  tenantId    String
-  type        String   // runway, burn_rate, anomaly, cash_low, churn
+  startupId   String
+  type        String   // runway, burn_rate, anomaly, cash_low, churn, inventory_low
   severity    String   // info, warning, critical
   title       String
-  message     String
+  message     String   @db.Text
   
   // Alert Data
-  currentValue Decimal?
+  currentValue   Decimal?
   thresholdValue Decimal?
   
   // AI-Generated Recommendations
   recommendations Json? // Array of actionable recommendations
+  
+  // Related Entity (optional)
+  relatedEntityType String? // product, transaction, account
+  relatedEntityId   String?
   
   // Status
   isRead      Boolean  @default(false)
   isDismissed Boolean  @default(false)
   dismissedAt DateTime?
   
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  startup   Startup  @relation(fields: [startupId], references: [id], onDelete: Cascade)
   
-  @@index([tenantId, createdAt])
-  @@index([tenantId, isRead])
+  @@index([startupId, createdAt])
+  @@index([startupId, isRead])
 }
 
 // ============================================================================
@@ -320,20 +284,21 @@ model Alert {
 // ============================================================================
 
 model InvestorUpdate {
-  id            String   @id @default(cuid())
-  tenantId      String
-  title         String
-  periodStart   DateTime
-  periodEnd     DateTime
+  id           String   @id @default(cuid())
+  startupId    String
+  title        String
+  periodStart  DateTime
+  periodEnd    DateTime
   
   // Key Metrics Summary
-  metrics       Json     // Snapshot of key metrics
+  metrics      Json     // Snapshot of key metrics
   
   // AI-Generated Content
   executiveSummary String @db.Text
-  highlights    Json     // Array of highlights
-  challenges    Json     // Array of challenges
-  nextSteps     Json     // Array of next steps
+  highlights       Json   // Array of highlights
+  challenges       Json   // Array of challenges
+  nextSteps        Json   // Array of next steps
+  financialData    Json?  // Detailed financial breakdown
   
   // Financial Data
   revenueGrowth Decimal?
@@ -341,78 +306,12 @@ model InvestorUpdate {
   runway        Decimal?
   
   // Status
-  isDraft       Boolean  @default(true)
-  publishedAt   DateTime?
+  isDraft     Boolean   @default(true)
+  publishedAt DateTime?
   
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  startup   Startup  @relation(fields: [startupId], references: [id], onDelete: Cascade)
   
-  @@index([tenantId, periodStart])
-}
-
-// ============================================================================
-// INVENTORY MANAGEMENT MODELS
-// ============================================================================
-
-model Product {
-  id                  String              @id @default(cuid())
-  tenantId            String
-  name                String
-  description         String?
-  sku                 String?
-  price               Decimal
-  costPrice           Decimal             @default(0)
-  currentStock        Int                 @default(0)
-  lowStockThreshold   Int                 @default(10)
-  category            String?
-  isActive            Boolean             @default(true)
-  
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  tenant              Tenant              @relation(fields: [tenantId], references: [id])
-  transactions        ProductTransaction[]
-  
-  @@index([tenantId])
-}
-
-model ProductTransaction {
-  id              String      @id @default(cuid())
-  tenantId        String
-  productId       String
-  transactionType String      // purchase, sale, adjustment, return
-  quantity        Int
-  unitPrice       Decimal?
-  totalAmount     Decimal?
-  notes           String?
-  referenceNumber String?
-  
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  tenant          Tenant      @relation(fields: [tenantId], references: [id])
-  product         Product     @relation(fields: [productId], references: [id])
-  
-  @@index([tenantId, createdAt])
-  @@index([productId])
-}
-
-// ============================================================================
-// SIMULATED TRANSACTION MODELS (For Demo/Testing)
-// ============================================================================
-
-model SimulatedTransaction {
-  id              String      @id @default(cuid())
-  tenantId        String
-  amount          Decimal
-  description     String
-  transactionType String      // credit, debit
-  category        String?
-  date            DateTime    @default(now())
-  isProcessed     Boolean     @default(false)
-  
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  tenant          Tenant      @relation(fields: [tenantId], references: [id])
-  
-  @@index([tenantId, date])
+  @@index([startupId, periodStart])
 }
