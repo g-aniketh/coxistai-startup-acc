@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
-import { api, DashboardSummary } from '@/lib/api';
+import { apiClient, DashboardSummary } from '@/lib/api';
 import PlaidLink from '@/components/ui/PlaidLink';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
@@ -65,7 +65,7 @@ export default function CFODashboardPage() {
     try {
       setLoading(true);
       setError(null);
-      const response = await api.cfo.dashboard(period);
+      const response = await apiClient.dashboard.dashboard(period);
       if (response.success && response.data) {
         setDashboardData(response.data);
       } else if (response.error?.includes('No Plaid items found')) {
@@ -92,7 +92,7 @@ export default function CFODashboardPage() {
     try {
       toast.loading('Exchanging public token...', { id: 'plaid-exchange' });
       const exchangeResponse =
-        await api.cfo.plaid.exchangePublicToken(public_token);
+        await apiClient.dashboard.plaid.exchangePublicToken(public_token);
 
       if (exchangeResponse.success && exchangeResponse.data) {
         toast.success('Bank account connected successfully!', {
@@ -101,7 +101,7 @@ export default function CFODashboardPage() {
 
         const plaidItemId = exchangeResponse.data.plaidItem.id;
         toast.loading('Syncing transactions...', { id: 'plaid-sync' });
-        await api.cfo.plaid.syncTransactions(plaidItemId);
+        await apiClient.dashboard.plaid.syncTransactions(plaidItemId);
         toast.success('Transactions synced!', { id: 'plaid-sync' });
 
         fetchDashboardData();

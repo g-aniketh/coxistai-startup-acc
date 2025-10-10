@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { api, Transaction, TransactionCategory, Account } from '@/lib/api';
+import { apiClient, Transaction } from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
 import {
@@ -27,8 +27,6 @@ type SortConfig = {
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [categories, setCategories] = useState<TransactionCategory[]>([]);
-  const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,7 +65,7 @@ export default function TransactionsPage() {
         ...(filters.categoryId && { categoryId: parseInt(filters.categoryId) }),
         ...(filters.accountId && { accountId: filters.accountId }),
       };
-      const response = await api.cfo.transactions(params);
+      const response = await apiClient.transactions.transactions(params);
       if (response.success && response.data) {
         setTransactions(response.data.transactions);
         setTotalPages(response.data.pagination.totalPages);
@@ -99,8 +97,8 @@ export default function TransactionsPage() {
     const fetchDropdownData = async () => {
       try {
         const [catRes, accRes] = await Promise.all([
-          api.cfo.categories(),
-          api.cfo.accounts(),
+          apiClient.transactions.categories(),
+          apiClient.transactions.accounts(),
         ]);
         if (catRes.success) setCategories(catRes.data || []);
         if (accRes.success) setAccounts(accRes.data?.accounts || []);
@@ -219,10 +217,10 @@ export default function TransactionsPage() {
                          <tr key={transaction.id} className="hover:bg-muted/50">
                            <td className="px-6 py-4 whitespace-nowrap text-sm">{formatDate(transaction.date)}</td>
                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium max-w-xs truncate">{transaction.description}</td>
-                           <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{transaction.account.name}</td>
+                           <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{transaction.account?.accountName || 'N/A'}</td>
                            <td className="px-6 py-4 whitespace-nowrap text-sm">
                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary/10 text-primary">
-                               {transaction.category?.name || 'Uncategorized'}
+                               {transaction.type}
                              </span>
                            </td>
                            <td className={cn("px-6 py-4 whitespace-nowrap text-sm font-medium", transaction.amount < 0 ? 'text-red-400' : 'text-green-400')}>

@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
-import { api } from '@/lib/api';
+import { apiClient } from '@/lib/api';
 import { useAuthStore } from '@/store/auth';
 import { PlusIcon } from '@heroicons/react/24/solid';
 
@@ -18,7 +18,7 @@ export default function PlaidLink({ onSuccess, onError, variant = 'button' }: Pl
   const handlePlaidLink = async () => {
     setLoading(true);
     try {
-      const response = await api.cfo.plaid.createLinkToken();
+      const response = await apiClient.accounts.plaid.createLinkToken();
       if (response.success && response.data) {
         localStorage.setItem('plaid_link_token', response.data.linkToken);
         open();

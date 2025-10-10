@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { api, User } from '@/lib/api';
+import { apiClient, User } from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { 
@@ -18,7 +18,7 @@ export default function UsersPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await api.users.list();
+        const response = await apiClient.team.list();
         if (response.success && response.data) {
           setUsers(response.data);
         } else {
@@ -74,11 +74,11 @@ export default function UsersPage() {
                           </div>
                           <div className="flex items-center gap-4 mt-1">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 capitalize">
-                              {user.role}
+                              {user.roles.join(', ')}
                             </span>
                             <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                               <BuildingOfficeIcon className="h-3 w-3" />
-                              {user.tenant.name}
+                              {user.startup.name}
                             </div>
                           </div>
                         </div>

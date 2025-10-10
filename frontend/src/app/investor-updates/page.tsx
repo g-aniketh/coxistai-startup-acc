@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import { apiClient } from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
 import {
@@ -37,7 +37,7 @@ export default function InvestorUpdatesPage() {
   const loadUpdates = async () => {
     try {
       setLoading(true);
-      const response = await api.aiCFO.getInvestorUpdates();
+      const response = await apiClient.dashboard.getInvestorUpdates();
       if (response.success && response.data) {
         setUpdates(response.data);
       }
@@ -53,7 +53,7 @@ export default function InvestorUpdatesPage() {
 
     try {
       setGenerating(true);
-      const response = await api.aiCFO.generateInvestorUpdate(
+      const response = await apiClient.dashboard.generateInvestorUpdate(
         formData.periodStart,
         formData.periodEnd
       );
@@ -72,7 +72,7 @@ export default function InvestorUpdatesPage() {
 
   const publishUpdate = async (id: string) => {
     try {
-      await api.aiCFO.publishInvestorUpdate(id);
+      await apiClient.dashboard.publishInvestorUpdate(id);
       await loadUpdates();
     } catch (error) {
       console.error('Failed to publish update:', error);

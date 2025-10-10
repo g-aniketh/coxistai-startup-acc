@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import { apiClient } from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
 import {
@@ -42,9 +42,9 @@ export default function FinancialHealthPage() {
     try {
       setLoading(true);
       const [metricsRes, historyRes, insightsRes] = await Promise.all([
-        api.analytics.latest(),
-        api.analytics.history(12),
-        api.aiCFO.getInsights(),
+        apiClient.dashboard.summary(),
+        apiClient.dashboard.cashflowChart(12),
+        apiClient.dashboard.summary(),
       ]);
 
       if (metricsRes.success && metricsRes.data) {

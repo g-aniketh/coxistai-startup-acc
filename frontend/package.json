@@ -12,6 +12,11 @@
   "dependencies": {
     "@gsap/react": "^2.1.2",
     "@heroicons/react": "^2.2.0",
+    "@hookform/resolvers": "^5.2.2",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-select": "^2.2.6",
+    "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@react-three/drei": "^10.7.6",
     "@react-three/fiber": "^9.3.0",
@@ -29,11 +34,13 @@
     "ogl": "^1.0.11",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "react-hook-form": "^7.64.0",
     "react-hot-toast": "^2.6.0",
     "react-plaid-link": "^4.1.1",
     "recharts": "^3.2.1",
     "tailwind-merge": "^3.3.1",
     "three": "^0.180.0",
+    "zod": "^4.1.12",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

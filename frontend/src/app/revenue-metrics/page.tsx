@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import { apiClient } from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
 import {
@@ -43,8 +43,8 @@ export default function RevenueMetricsPage() {
     try {
       setLoading(true);
       const [metricsRes, historyRes] = await Promise.all([
-        api.analytics.latest(),
-        api.analytics.history(12),
+        apiClient.dashboard.latest(),
+        apiClient.dashboard.history(12),
       ]);
 
       if (metricsRes.success && metricsRes.data) {
@@ -64,7 +64,7 @@ export default function RevenueMetricsPage() {
     try {
       setSyncing(true);
       await api.stripe.sync();
-      await api.analytics.calculate();
+      await apiClient.dashboard.calculate();
       await loadData();
     } catch (error) {
       console.error('Sync failed:', error);

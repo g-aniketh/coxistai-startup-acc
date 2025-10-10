@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import { apiClient } from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
 import {
@@ -31,8 +31,8 @@ export default function AlertsPage() {
     try {
       setLoading(true);
       const [alertsRes, countsRes] = await Promise.all([
-        api.alerts.list(false),
-        api.alerts.getCounts(),
+        apiClient.dashboard.list(false),
+        apiClient.dashboard.getCounts(),
       ]);
 
       if (alertsRes.success && alertsRes.data) {
@@ -51,7 +51,7 @@ export default function AlertsPage() {
   const generateAlerts = async () => {
     try {
       setGenerating(true);
-      await api.alerts.generate();
+      await apiClient.dashboard.generate();
       await loadAlerts();
     } catch (error) {
       console.error('Failed to generate alerts:', error);
@@ -62,7 +62,7 @@ export default function AlertsPage() {
 
   const markAsRead = async (id: string) => {
     try {
-      await api.alerts.markAsRead(id);
+      await apiClient.dashboard.markAsRead(id);
       await loadAlerts();
     } catch (error) {
       console.error('Failed to mark as read:', error);
@@ -71,7 +71,7 @@ export default function AlertsPage() {
 
   const dismissAlert = async (id: string) => {
     try {
-      await api.alerts.dismiss(id);
+      await apiClient.dashboard.dismiss(id);
       await loadAlerts();
     } catch (error) {
       console.error('Failed to dismiss alert:', error);

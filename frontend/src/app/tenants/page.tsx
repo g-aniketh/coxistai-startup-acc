@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { api, Tenant } from '@/lib/api';
+import { apiClient, Startup } from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { 
@@ -10,14 +10,14 @@ import {
 } from '@heroicons/react/24/outline';
 
 export default function TenantsPage() {
-  const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [tenants, setTenants] = useState<Startup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTenants = async () => {
       try {
-        const response = await api.tenants.list();
+        const response = await apiClient.team.list();
         if (response.success && response.data) {
           setTenants(response.data);
         } else {

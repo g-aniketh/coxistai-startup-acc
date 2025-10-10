@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import { apiClient } from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
 import {
@@ -48,7 +48,7 @@ export default function ForecastingPage() {
   const loadScenarios = async () => {
     try {
       setLoading(true);
-      const response = await api.aiCFO.getScenarios();
+      const response = await apiClient.dashboard.getScenarios();
       if (response.success && response.data) {
         setScenarios(response.data);
       }
@@ -62,7 +62,7 @@ export default function ForecastingPage() {
   const generateForecast = async () => {
     try {
       setGenerating(true);
-      const response = await api.aiCFO.forecast(12);
+      const response = await apiClient.dashboard.forecast(12);
       if (response.success) {
         await loadScenarios();
       }
@@ -78,7 +78,7 @@ export default function ForecastingPage() {
 
     try {
       setGenerating(true);
-      const response = await api.aiCFO.runScenario(scenarioInputs.name, {
+      const response = await apiClient.dashboard.runScenario(scenarioInputs.name, {
         revenueChange: scenarioInputs.revenueChange || undefined,
         expenseChange: scenarioInputs.expenseChange || undefined,
         newHires: scenarioInputs.newHires || undefined,
