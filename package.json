@@ -1,17 +1,22 @@
 {
   "name": "coxistai-startup-accelerator",
   "version": "1.0.0",
-  "description": "CoXist AI Startup Accelerator Monorepo",
+  "description": "CoXist AI - AI Finance & Cashflow Copilot for Startups",
   "private": true,
   "scripts": {
-    "dev": "pnpm --parallel --recursive dev",
-    "build": "pnpm --recursive build",
-    "test": "pnpm --recursive test",
-    "lint": "pnpm --recursive lint",
-    "type-check": "pnpm --recursive type-check"
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "build:all": "cd backend && npm run build && cd ../frontend && npm run build"
   },
-  "keywords": ["monorepo", "startup", "accelerator", "ai"],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.13.1"
+  "keywords": [
+    "ai",
+    "finance",
+    "cashflow",
+    "startup",
+    "cfo"
+  ],
+  "author": "CoXist AI",
+  "license": "MIT"
 }
+

@@ -10,6 +10,9 @@ datasource db {
 model Tenant {
   id              String            @id @default(cuid())
   name            String
+  subscriptionPlan String           @default("pro_trial") // pro_trial, starter, pro, enterprise
+  subscriptionStatus String         @default("active") // active, cancelled, expired
+  trialEndsAt     DateTime?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   plaidItems      PlaidItem[]
@@ -19,18 +22,33 @@ model Tenant {
   scenarios       AIScenario[]
   alerts          Alert[]
   investorUpdates InvestorUpdate[]
+  products        Product[]
+  productTransactions ProductTransaction[]
+  simulatedTransactions SimulatedTransaction[]
 }
 
 model User {
   id           String      @id @default(cuid())
   email        String      @unique
   passwordHash String
-  role         String      @default("member")
+  role         UserRole    @default(MEMBER)
+  firstName    String?
+  lastName     String?
+  isActive     Boolean     @default(true)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   tenantId     String
   plaidItems   PlaidItem[]
   tenant       Tenant      @relation(fields: [tenantId], references: [id])
+}
+
+enum UserRole {
+  ADMIN
+  ACCOUNTANT
+  CTO
+  OPERATIONS_MANAGER
+  SALES_MANAGER
+  MEMBER
 }
 
 model PlaidItem {
@@ -331,4 +349,70 @@ model InvestorUpdate {
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
   
   @@index([tenantId, periodStart])
+}
+
+// ============================================================================
+// INVENTORY MANAGEMENT MODELS
+// ============================================================================
+
+model Product {
+  id                  String              @id @default(cuid())
+  tenantId            String
+  name                String
+  description         String?
+  sku                 String?
+  price               Decimal
+  costPrice           Decimal             @default(0)
+  currentStock        Int                 @default(0)
+  lowStockThreshold   Int                 @default(10)
+  category            String?
+  isActive            Boolean             @default(true)
+  
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  tenant              Tenant              @relation(fields: [tenantId], references: [id])
+  transactions        ProductTransaction[]
+  
+  @@index([tenantId])
+}
+
+model ProductTransaction {
+  id              String      @id @default(cuid())
+  tenantId        String
+  productId       String
+  transactionType String      // purchase, sale, adjustment, return
+  quantity        Int
+  unitPrice       Decimal?
+  totalAmount     Decimal?
+  notes           String?
+  referenceNumber String?
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  tenant          Tenant      @relation(fields: [tenantId], references: [id])
+  product         Product     @relation(fields: [productId], references: [id])
+  
+  @@index([tenantId, createdAt])
+  @@index([productId])
+}
+
+// ============================================================================
+// SIMULATED TRANSACTION MODELS (For Demo/Testing)
+// ============================================================================
+
+model SimulatedTransaction {
+  id              String      @id @default(cuid())
+  tenantId        String
+  amount          Decimal
+  description     String
+  transactionType String      // credit, debit
+  category        String?
+  date            DateTime    @default(now())
+  isProcessed     Boolean     @default(false)
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  tenant          Tenant      @relation(fields: [tenantId], references: [id])
+  
+  @@index([tenantId, date])
 }
