@@ -39,17 +39,15 @@ export default function ProfitChart({ summary }: ProfitChartProps) {
   const totalValue = data.reduce((sum, entry) => sum + entry.value, 0);
 
   return (
-    <Card className="rounded-2xl shadow-lg border-0 bg-white">
-      <CardHeader className="flex flex-row justify-between items-start">
+    <Card className="rounded-2xl shadow-lg border-0 bg-white p-4">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div>
           <CardTitle className="text-lg font-semibold text-gray-800">Monthly Profits</CardTitle>
           <CardDescription className="text-sm text-gray-500">
             Total Profit Growth of 26%
           </CardDescription>
         </div>
-        <button className="text-gray-400 hover:text-gray-600">
-          <MoreHorizontal />
-        </button>
+        <MoreHorizontal className="h-5 w-5 text-gray-400" />
       </CardHeader>
       <CardContent className="flex flex-col md:flex-row items-center justify-between gap-4 pt-4">
         <div className="w-full md:w-1/2 h-40">

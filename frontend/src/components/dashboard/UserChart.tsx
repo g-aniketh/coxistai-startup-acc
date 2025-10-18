@@ -64,9 +64,9 @@ export default function UserChart({ data = [] }: UserChartProps) {
                 cursor={{ fill: 'transparent' }} 
                 content={<CustomTooltip />} 
               />
-              <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={20}>
+              <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={50} background={{ fill: '#E4E1DC' }}>
                  {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill="#374151" />
+                  <Cell key={`cell-${index}`} fill={'#2C2C2C'} />
                 ))}
               </Bar>
             </BarChart>

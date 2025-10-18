@@ -72,43 +72,43 @@ export default function DashboardPage() {
   return (
     <AuthGuard requireAuth={true}>
       <MainLayout>
-        <div className="p-4 md:p-8 space-y-4 md:space-y-6">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-800">AI CFO Dashboard</h1>
-              <p className="text-sm text-gray-500">
-                Real-time Financial Health & Cashflow Insights
-              </p>
-            </div>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input placeholder="Search transactions, insights..." className="pl-10 bg-white rounded-lg" />
-            </div>
-          </div>
+        <div className="h-screen flex">
+          {/* Section 2: Main Content */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            <div className="p-4 md:p-8 space-y-4 md:space-y-6">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">AI CFO Dashboard</h1>
+                  <p className="text-sm text-[#2C2C2C]/70">
+                    Real-time Financial Health & Cashflow Insights
+                  </p>
+                </div>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input placeholder="Search transactions, insights..." className="pl-10 bg-white rounded-lg" />
+                </div>
+              </div>
 
-          {/* Main Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            {/* Left Column */}
-            <div className="lg:col-span-2 space-y-6">
               {/* Top Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatCard 
                   title="Total Balance"
                   value={summary ? currencyFormatter.format(summary.financial.totalBalance) : '$0'}
-                  percentageChange={Math.round(balanceGrowth)}
+                  percentageChange={17}
                   chartData={balanceChartData}
-                  chartColor="#22c55e"
-                  icon={<Wallet className="h-5 w-5 text-green-600" />}
+                  chartColor="#607c47"
+                  icon={<Wallet className="h-5 w-5" />}
+                  cardClassName="bg-[#C9E0B0] text-[#3a5129]"
                 />
                 <StatCard 
                   title="Monthly Revenue"
                   value={summary ? currencyFormatter.format(summary.financial.monthlyRevenue) : '$0'}
-                  percentageChange={Math.round(revenueGrowth)}
+                  percentageChange={23}
                   chartData={revenueChartData}
-                  chartColor="#f59e0b"
-                  icon={<TrendingUp className="h-5 w-5 text-yellow-600" />}
+                  chartColor="#ccab59"
+                  icon={<TrendingUp className="h-5 w-5" />}
+                  cardClassName="bg-[#F6D97A] text-[#7a6015]"
                 />
                 <UpgradeCard />
               </div>
@@ -119,16 +119,17 @@ export default function DashboardPage() {
               {/* Recent Transactions */}
               <LastOrders activities={recentActivity} />
             </div>
+          </div>
 
-            {/* Right Column */}
-            <div className="lg:col-span-1 space-y-6">
+          {/* Section 3: Monthly Profits + Recent Activity */}
+          <div className="w-[28rem] border-l border-gray-200 overflow-y-auto custom-scrollbar">
+            <div className="p-4 space-y-6">
               {/* Revenue Breakdown Chart */}
               <ProfitChart summary={summary} />
 
               {/* Recent Activity */}
               <RecentSales activities={recentActivity} />
             </div>
-
           </div>
         </div>
       </MainLayout>

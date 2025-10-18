@@ -12,11 +12,11 @@ const currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', cu
 
 export default function RecentSales({ activities = [] }: RecentSalesProps) {
   return (
-    <Card className="rounded-2xl shadow-lg border-0 bg-white">
+    <Card className="rounded-2xl shadow-lg border-0 bg-white p-4">
       <CardHeader className="flex flex-row justify-between items-center">
-        <CardTitle className="text-lg font-semibold text-gray-800">Recent Activity</CardTitle>
+        <CardTitle className="text-lg font-semibold text-gray-800">Recent Sales</CardTitle>
         <Link href="#" className="text-sm text-blue-600 hover:underline font-semibold">
-          View All
+          See All
         </Link>
       </CardHeader>
       <CardContent>

@@ -15,15 +15,15 @@ const currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', cu
 
 export default function LastOrders({ activities = [] }: LastOrdersProps) {
   return (
-    <Card className="rounded-2xl shadow-lg border-0 bg-white">
+    <Card className="rounded-2xl shadow-lg border-0 bg-white p-4">
       <CardHeader className="flex flex-row justify-between items-center">
-        <CardTitle className="text-lg font-semibold text-gray-800">Recent Transactions</CardTitle>
+        <CardTitle className="text-lg font-semibold text-gray-800">Last Orders</CardTitle>
         <div className="flex items-center gap-4">
            <Button variant="outline" size="sm" className="text-gray-600 bg-gray-100 border-gray-200 text-xs px-3 py-1 h-auto">
-            Real-time Updates
+            Data Updates Every 3 Hours
           </Button>
           <Link href="#" className="text-sm text-blue-600 hover:underline font-semibold">
-            View All Transactions
+            View All Orders
           </Link>
         </div>
       </CardHeader>

@@ -11,8 +11,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-50">
-      {/* Sidebar - Desktop */}
+    <div className="h-screen flex overflow-hidden bg-[#E4E1DC]">
+      {/* Section 1: Sidebar - Desktop */}
       <aside className="hidden lg:flex lg:flex-shrink-0">
         <div className="w-64">
           <Sidebar />
@@ -36,9 +36,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden relative">
-        {/* Page Content */}
-        <main className="flex-1 overflow-y-auto relative z-10">
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Section 2: Main Content */}
+        <main className="flex-1 overflow-y-auto relative z-10 custom-scrollbar">
           <div className="h-full">
             {children}
           </div>

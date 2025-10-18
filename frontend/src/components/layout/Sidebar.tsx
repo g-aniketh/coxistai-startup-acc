@@ -38,7 +38,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="flex flex-col h-full bg-gray-900 text-white">
+    <div className="flex flex-col h-full bg-[#1E1E1E] text-white">
       {/* Header */}
       <div className="p-6 flex items-center gap-3">
          <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center">
@@ -76,8 +76,8 @@ export default function Sidebar() {
               className={cn(
                 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors relative',
                 isActive
-                  ? 'bg-gray-800 text-white'
-                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                  ? 'bg-gray-700/50 text-white'
+                  : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'
               )}
             >
               {isActive && (
@@ -91,14 +91,14 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-800">
+      <div className="p-4 border-t border-gray-700">
          <Link
           href="/settings"
           className={cn(
             'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors mb-2',
             pathname === '/settings'
-               ? 'bg-gray-700 text-white'
-               : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+               ? 'bg-gray-700/50 text-white'
+               : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'
           )}
         >
           <Settings className="h-5 w-5" />
@@ -107,7 +107,7 @@ export default function Sidebar() {
         
         <button
           onClick={logout}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white w-full transition-colors"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-700/50 hover:text-white w-full transition-colors"
         >
           <LogOut className="h-5 w-5" />
           Log Out
