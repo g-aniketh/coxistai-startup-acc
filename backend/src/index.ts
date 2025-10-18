@@ -19,6 +19,7 @@ import analyticsRoutes from './routes/analytics';
 import aiCFORoutes from './routes/aiCFO';
 import alertsRoutes from './routes/alerts';
 import { TransactionSyncService } from './services/transactionSync';
+import { startJobs } from './jobs';
 
 // Load environment variables
 dotenv.config();
@@ -408,6 +409,9 @@ const server = app.listen(PORT, () => {
   // Start transaction sync service
   TransactionSyncService.start();
   console.log(`🔄 Transaction sync service started`);
+  // Start background jobs
+  startJobs();
+  console.log(`🔄 Background jobs started`);
 });
 
 // Graceful shutdown

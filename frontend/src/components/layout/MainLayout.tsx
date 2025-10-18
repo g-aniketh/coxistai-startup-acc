@@ -40,21 +40,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden relative">
-        {/* Animated Background */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <Vortex
-            className="w-full h-full"
-            particleCount={150}
-            baseHue={220}
-            rangeY={800}
-          />
-        </div>
-
         {/* Header */}
         <Header onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-transparent relative z-10">
+        <main className="flex-1 overflow-y-auto bg-background relative z-10">
           <div className="h-full">
             {children}
           </div>

@@ -4,32 +4,32 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.07 0.02 230); /* Dark blue-ish background */
-  --foreground: oklch(0.95 0.01 230); /* Light text */
-  --card: oklch(0.1 0.02 230);
-  --card-foreground: oklch(0.95 0.01 230);
-  --popover: oklch(0.1 0.02 230);
-  --popover-foreground: oklch(0.95 0.01 230);
-  --primary: oklch(0.6 0.15 260); /* Vibrant purple */
+  --background: oklch(0.98 0.01 230); /* Light background */
+  --foreground: oklch(0.15 0.01 230); /* Dark text */
+  --card: oklch(1 0 0); /* White cards */
+  --card-foreground: oklch(0.15 0.01 230);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.01 230);
+  --primary: oklch(0.4 0.15 260); /* Professional purple */
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.2 0.03 230);
-  --secondary-foreground: oklch(0.95 0.01 230);
-  --muted: oklch(0.15 0.02 230);
-  --muted-foreground: oklch(0.6 0.01 230);
-  --accent: oklch(0.3 0.05 260);
-  --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.5 0.2 15);
+  --secondary: oklch(0.95 0.01 230);
+  --secondary-foreground: oklch(0.15 0.01 230);
+  --muted: oklch(0.95 0.01 230);
+  --muted-foreground: oklch(0.5 0.01 230);
+  --accent: oklch(0.9 0.05 260);
+  --accent-foreground: oklch(0.15 0.01 230);
+  --destructive: oklch(0.6 0.2 15);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.2 0.02 230);
-  --input: oklch(0.2 0.02 230);
-  --ring: oklch(0.6 0.15 260);
-  --radius: 0.75rem;
+  --border: oklch(0.9 0.01 230);
+  --input: oklch(0.95 0.01 230);
+  --ring: oklch(0.4 0.15 260);
+  --radius: 0.5rem;
 
-  --chart-1: oklch(0.6 0.15 260);
-  --chart-2: oklch(0.7 0.15 220);
-  --chart-3: oklch(0.8 0.15 180);
-  --chart-4: oklch(0.7 0.15 140);
-  --chart-5: oklch(0.6 0.15 100);
+  --chart-1: oklch(0.4 0.15 260);
+  --chart-2: oklch(0.5 0.15 220);
+  --chart-3: oklch(0.6 0.15 180);
+  --chart-4: oklch(0.5 0.15 140);
+  --chart-5: oklch(0.4 0.15 100);
 }
 
 @theme inline {
@@ -84,11 +84,7 @@
     @apply bg-background text-foreground;
     min-height: 100vh;
     font-family: var(--font-sans, 'Inter', sans-serif);
-    background-image: radial-gradient(
-      circle at top,
-      oklch(0.12 0.02 240 / 0.7),
-      transparent 30%
-    );
+    background-color: oklch(0.98 0.01 230);
   }
 }
 

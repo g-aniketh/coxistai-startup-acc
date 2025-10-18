@@ -15,9 +15,13 @@ import {
   FileText,
   Sparkles,
   LogOut,
-  Building2
+  Building2,
+  MessageSquare,
+  HelpCircle,
+  Coffee
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
+import { Button } from '@/components/ui/button';
 
 interface NavItem {
   name: string;
@@ -34,39 +38,28 @@ export default function Sidebar() {
 
   const navigation: NavItem[] = [
     {
-      name: 'Dashboard',
+      name: 'Analytics',
       href: '/dashboard',
       icon: LayoutDashboard,
       permission: { action: 'read', subject: 'cashflow_dashboard' }
     },
     {
-      name: 'Transactions',
-      href: '/transactions',
-      icon: Receipt,
-      permission: { action: 'read', subject: 'transactions' }
-    },
-    {
-      name: 'Inventory',
+      name: 'Products',
       href: '/inventory',
       icon: Package,
       permission: { action: 'read', subject: 'inventory_dashboard' }
     },
     {
-      name: 'AI Copilot',
+      name: 'Messages',
       href: '/ai-copilot',
-      icon: Sparkles,
+      icon: MessageSquare,
       permission: { action: 'read', subject: 'analytics' }
     },
     {
-      name: 'Team Management',
+      name: 'Customers',
       href: '/team',
       icon: Users,
-      roles: ['Admin'] // Only admins can see this
-    },
-    {
-      name: 'Settings',
-      href: '/settings',
-      icon: Settings,
+      roles: ['Admin']
     },
   ];
 
@@ -91,43 +84,13 @@ export default function Sidebar() {
       {/* Header */}
       <div className="p-6 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Sparkles className="h-6 w-6 text-primary" />
+          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+            <div className="h-4 w-4 bg-white rounded-sm"></div>
           </div>
           <div>
-            <h2 className="font-bold text-lg">CoXist AI</h2>
-            <p className="text-xs text-muted-foreground">Your AI CFO</p>
+            <h2 className="font-bold text-lg">Business</h2>
           </div>
         </div>
-      </div>
-
-      {/* User Info */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <Building2 className="h-5 w-5 text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">
-              {user?.firstName || user?.email}
-            </p>
-            <p className="text-xs text-muted-foreground truncate">
-              {user?.startup?.name || 'Your Startup'}
-            </p>
-          </div>
-        </div>
-        {user && user.roles && user.roles.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1">
-            {user.roles.map(role => (
-              <span
-                key={role}
-                className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary"
-              >
-                {role}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Navigation */}
@@ -143,7 +106,7 @@ export default function Sidebar() {
               className={cn(
                 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                 isActive
-                  ? 'bg-primary text-primary-foreground'
+                  ? 'bg-muted text-foreground'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               )}
             >
@@ -152,17 +115,49 @@ export default function Sidebar() {
             </Link>
           );
         })}
-      </nav>
-
-      {/* Footer - Logout */}
-      <div className="p-4 border-t border-border">
+        
+        {/* Separator */}
+        <div className="my-4 border-t border-border"></div>
+        
+        {/* Settings */}
+        <Link
+          href="/settings"
+          className={cn(
+            'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+            pathname === '/settings'
+              ? 'bg-muted text-foreground'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+          )}
+        >
+          <Settings className="h-5 w-5" />
+          Settings
+        </Link>
+        
         <button
           onClick={logout}
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground w-full transition-colors"
         >
           <LogOut className="h-5 w-5" />
-          Logout
+          Sign Out
         </button>
+      </nav>
+
+      {/* Help Section */}
+      <div className="p-4 border-t border-border">
+        <div className="bg-muted/50 rounded-lg p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+              <Coffee className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <h4 className="text-sm font-medium">Need help</h4>
+              <p className="text-xs text-muted-foreground">feel free to contact</p>
+            </div>
+          </div>
+          <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+            Get support
+          </Button>
+        </div>
       </div>
     </div>
   );

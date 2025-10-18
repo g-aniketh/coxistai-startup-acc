@@ -10,9 +10,9 @@ export class AlertsService {
   /**
    * Generate all alerts for a tenant
    */
-  static async generateAlerts(tenantId: string): Promise<void> {
+  static async generateAlerts(startupId: string): Promise<void> {
     const latestMetrics = await prisma.cashflowMetric.findFirst({
-      where: { tenantId },
+      where: { startupId },
       orderBy: { periodEnd: 'desc' },
     });
 
@@ -21,25 +21,25 @@ export class AlertsService {
     }
 
     // Check runway
-    await this.checkRunway(tenantId, latestMetrics);
+    await this.checkRunway(startupId, latestMetrics);
 
     // Check burn rate
-    await this.checkBurnRate(tenantId, latestMetrics);
+    await this.checkBurnRate(startupId, latestMetrics);
 
     // Check cash low
-    await this.checkCashLow(tenantId, latestMetrics);
+    await this.checkCashLow(startupId, latestMetrics);
 
     // Check customer churn
-    await this.checkChurn(tenantId, latestMetrics);
+    await this.checkChurn(startupId, latestMetrics);
 
     // Check for anomalies
-    await this.checkAnomalies(tenantId, latestMetrics);
+    await this.checkAnomalies(startupId, latestMetrics);
   }
 
   /**
    * Check runway and generate alert if critical
    */
-  private static async checkRunway(tenantId: string, metrics: any) {
+  private static async checkRunway(startupId: string, metrics: any) {
     const runway = metrics.runway.toNumber();
 
     if (runway <= 0) {
@@ -68,7 +68,7 @@ export class AlertsService {
     // Create alert
     await prisma.alert.create({
       data: {
-        tenantId,
+        startupId,
         type: 'runway',
         severity,
         title: 'Runway Alert',
@@ -83,11 +83,11 @@ export class AlertsService {
   /**
    * Check burn rate changes
    */
-  private static async checkBurnRate(tenantId: string, metrics: any) {
+  private static async checkBurnRate(startupId: string, metrics: any) {
     // Get previous month's metrics
     const previousMetrics = await prisma.cashflowMetric.findFirst({
       where: {
-        tenantId,
+        startupId,
         periodEnd: { lt: metrics.periodStart },
       },
       orderBy: { periodEnd: 'desc' },
@@ -112,7 +112,7 @@ export class AlertsService {
 
       await prisma.alert.create({
         data: {
-          tenantId,
+          startupId,
           type: 'burn_rate',
           severity: burnChange > 50 ? 'critical' : 'warning',
           title: 'Burn Rate Increase',
@@ -126,7 +126,7 @@ export class AlertsService {
       // Burn rate decreased significantly (good news!)
       await prisma.alert.create({
         data: {
-          tenantId,
+          startupId,
           type: 'burn_rate',
           severity: 'info',
           title: 'Burn Rate Improvement',
@@ -142,7 +142,7 @@ export class AlertsService {
   /**
    * Check if cash balance is critically low
    */
-  private static async checkCashLow(tenantId: string, metrics: any) {
+  private static async checkCashLow(startupId: string, metrics: any) {
     const cashBalance = metrics.cashBalance.toNumber();
     const burnRate = metrics.burnRate.toNumber();
 
@@ -157,7 +157,7 @@ export class AlertsService {
 
       await prisma.alert.create({
         data: {
-          tenantId,
+          startupId,
           type: 'cash_low',
           severity: 'critical',
           title: 'Critical Cash Level',
@@ -173,7 +173,7 @@ export class AlertsService {
   /**
    * Check customer churn
    */
-  private static async checkChurn(tenantId: string, metrics: any) {
+  private static async checkChurn(startupId: string, metrics: any) {
     if (metrics.activeCustomers === 0) {
       return;
     }
@@ -187,7 +187,7 @@ export class AlertsService {
 
       await prisma.alert.create({
         data: {
-          tenantId,
+          startupId,
           type: 'churn',
           severity: churnRate > 10 ? 'critical' : 'warning',
           title: 'High Customer Churn',
@@ -203,9 +203,9 @@ export class AlertsService {
   /**
    * Check for financial anomalies
    */
-  private static async checkAnomalies(tenantId: string, metrics: any) {
+  private static async checkAnomalies(startupId: string, metrics: any) {
     const history = await prisma.cashflowMetric.findMany({
-      where: { tenantId },
+      where: { startupId },
       orderBy: { periodStart: 'asc' },
       take: 6,
     });
@@ -244,7 +244,7 @@ export class AlertsService {
 
       await prisma.alert.create({
         data: {
-          tenantId,
+          startupId,
           type: 'anomaly',
           severity: 'info',
           title: 'Financial Anomaly Detected',
@@ -408,8 +408,8 @@ Respond in JSON format:
   /**
    * Get all alerts for a tenant
    */
-  static async getAlerts(tenantId: string, includeRead: boolean = false) {
-    const where: any = { tenantId, isDismissed: false };
+  static async getAlerts(startupId: string, includeRead: boolean = false) {
+    const where: any = { startupId, isDismissed: false };
     
     if (!includeRead) {
       where.isRead = false;
@@ -444,10 +444,10 @@ Respond in JSON format:
   /**
    * Get alert counts by severity
    */
-  static async getAlertCounts(tenantId: string) {
+  static async getAlertCounts(startupId: string) {
     const alerts = await prisma.alert.findMany({
       where: {
-        tenantId,
+        startupId,
         isDismissed: false,
         isRead: false,
       },
