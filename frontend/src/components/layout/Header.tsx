@@ -1,9 +1,8 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth';
-import { useTheme } from '@/components/ThemeProvider';
 import { Button } from '@/components/ui/button';
-import { Bell, Sun, Moon, User, LogOut, Menu } from 'lucide-react';
+import { Bell, User, LogOut, Menu } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 
 interface HeaderProps {
@@ -12,11 +11,6 @@ interface HeaderProps {
 
 export default function Header({ onMenuClick }: HeaderProps) {
   const { user, logout } = useAuthStore();
-  const { theme, setTheme } = useTheme();
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -52,15 +46,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
             >
               3
             </Badge>
-          </Button>
-
-          {/* Theme Toggle */}
-          <Button variant="ghost" size="sm" onClick={toggleTheme}>
-            {theme === 'dark' ? (
-              <Sun className="h-5 w-5" />
-            ) : (
-              <Moon className="h-5 w-5" />
-            )}
           </Button>
 
           {/* User Menu */}

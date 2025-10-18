@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { apiClient } from '@/lib/api';
 import AuthGuard from '@/components/auth/AuthGuard';
 import MainLayout from '@/components/layout/MainLayout';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -370,13 +370,6 @@ export default function AICopilotPage() {
               )}
             </div>
           )}
-
-          {/* AI Disclaimer */}
-          <Card className="p-4 bg-blue-500/5 border-blue-500/20">
-            <p className="text-xs text-blue-500">
-              💡 AI insights are generated using GPT-4 based on your financial data. Always consult with a financial advisor for major decisions.
-            </p>
-          </Card>
         </div>
       </MainLayout>
     </AuthGuard>

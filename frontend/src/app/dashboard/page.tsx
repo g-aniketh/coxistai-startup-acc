@@ -7,7 +7,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { apiClient, DashboardSummary, RecentActivity, BankAccount, Product, CashflowChartData } from '@/lib/api';
 import AuthGuard from '@/components/auth/AuthGuard';
 import MainLayout from '@/components/layout/MainLayout';
-import { Card } from '@/components/ui/Card';
+import { BentoCard, BentoGrid } from '@/components/ui/BentoCard';
 import { Button } from '@/components/ui/button';
 import { 
   TrendingUp, 
@@ -21,18 +21,23 @@ import {
   Package,
   ShoppingCart,
   Building2,
-  Sparkles
+  Sparkles,
+  Activity,
+  Target,
+  Zap,
+  BarChart3
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import BlurIn from '@/components/ui/blur-in';
-import CashflowChart from '@/components/charts/cashflow-chart';
-import RunwayChart from '@/components/charts/runway-chart';
+import { AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import AddTransactionModal from '@/components/dashboard/AddTransactionModal';
 import SimulateSaleModal from '@/components/dashboard/SimulateSaleModal';
 import AddProductModal from '@/components/dashboard/AddProductModal';
 import CreateAccountModal from '@/components/dashboard/CreateAccountModal';
 import RecentTransactionsTable from '@/components/dashboard/RecentTransactionsTable';
 import toast from 'react-hot-toast';
+
+const COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b'];
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -99,319 +104,444 @@ export default function DashboardPage() {
   const hasAccounts = accounts.length > 0;
   const hasProducts = products.length > 0;
 
+  // Prepare chart data
+  const chartData = cashflowData.map(item => ({
+    month: new Date(item.date + '-01').toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+    income: item.income,
+    expenses: item.expenses,
+    net: item.netCashflow
+  }));
+
+  // Runway data
+  const runwayData = Array.from({ length: Math.min((summary?.financial.runwayMonths || 12), 12) }, (_, i) => ({
+    month: `M${i + 1}`,
+    balance: Math.max(0, (summary?.financial.totalBalance || 0) - ((summary?.financial.monthlyBurn || 0) * i))
+  }));
+
   return (
     <AuthGuard requireAuth={true}>
       <MainLayout>
         <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <BlurIn>
-              <h1 className="text-3xl font-bold">
-                Welcome back, {user?.firstName || user?.email}! 👋
-              </h1>
-            </BlurIn>
-            <p className="text-muted-foreground mt-1">
-              {user?.startup?.name || 'Your Startup'} • {user?.roles?.join(', ') || 'User'}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            {can('read', 'analytics') && (
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <BlurIn>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+                  Welcome back, {user?.firstName || user?.email}! 👋
+                </h1>
+              </BlurIn>
+              <p className="text-muted-foreground mt-2 text-lg">
+                {user?.startup?.name || 'Your Startup'} • {user?.roles?.join(', ') || 'User'}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              {can('read', 'analytics') && (
+                <Button
+                  onClick={() => router.push('/ai-copilot')}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                  size="sm"
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  AI Copilot
+                </Button>
+              )}
               <Button
-                onClick={() => router.push('/ai-insights')}
+                onClick={() => setIsCreateAccountOpen(true)}
                 variant="outline"
                 size="sm"
               >
-                <Sparkles className="h-4 w-4 mr-2" />
-                AI Insights
+                <Building2 className="h-4 w-4 mr-2" />
+                Add Account
               </Button>
-            )}
-            <Button
-              onClick={() => setIsCreateAccountOpen(true)}
-              variant="outline"
-              size="sm"
-            >
-              <Building2 className="h-4 w-4 mr-2" />
-              Add Account
-            </Button>
-            <Button
-              onClick={() => setIsAddProductOpen(true)}
-              variant="outline"
-              size="sm"
-            >
-              <Package className="h-4 w-4 mr-2" />
-              Add Product
-            </Button>
-            <Button
-              onClick={() => setIsAddTransactionOpen(true)}
-              disabled={!hasAccounts}
-              size="sm"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Transaction
-            </Button>
-            <Button
-              onClick={() => setIsSimulateSaleOpen(true)}
-              disabled={!hasAccounts || !hasProducts}
-              size="sm"
-              variant="secondary"
-            >
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Simulate Sale
-            </Button>
+              <Button
+                onClick={() => setIsAddProductOpen(true)}
+                variant="outline"
+                size="sm"
+              >
+                <Package className="h-4 w-4 mr-2" />
+                Add Product
+              </Button>
+              <Button
+                onClick={() => setIsAddTransactionOpen(true)}
+                disabled={!hasAccounts}
+                size="sm"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Transaction
+              </Button>
+            </div>
           </div>
-        </div>
 
-        {/* Onboarding Alert */}
-        {(!hasAccounts || !hasProducts) && (
-          <Card className="bg-blue-500/10 border-blue-500/20 p-4">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5" />
-              <div className="flex-1">
-                <h3 className="font-semibold text-blue-500">Get Started</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {!hasAccounts && !hasProducts && 'Create a bank account and add products to start simulating your financial data.'}
-                  {!hasAccounts && hasProducts && 'Create a bank account to start adding transactions.'}
-                  {hasAccounts && !hasProducts && 'Add products to simulate sales and revenue.'}
+          {/* Onboarding Alert */}
+          {(!hasAccounts || !hasProducts) && (
+            <BentoCard gradient className="border-blue-500/30">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-blue-400 mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-blue-400">Get Started</h3>
+                  <p className="text-sm text-gray-300 mt-1">
+                    {!hasAccounts && !hasProducts && 'Create a bank account and add products to start simulating your financial data.'}
+                    {!hasAccounts && hasProducts && 'Create a bank account to start adding transactions.'}
+                    {hasAccounts && !hasProducts && 'Add products to simulate sales and revenue.'}
+                  </p>
+                </div>
+              </div>
+            </BentoCard>
+          )}
+
+          {/* Bento Grid Layout */}
+          <BentoGrid>
+            {/* Total Balance - Large */}
+            <BentoCard className="col-span-12 md:col-span-6 lg:col-span-3 row-span-1 group" glow>
+              <div className="flex flex-col h-full">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center">
+                    <DollarSign className="h-6 w-6 text-green-400" />
+                  </div>
+                  <TrendingUp className="h-5 w-5 text-green-400" />
+                </div>
+                <p className="text-sm text-gray-400 mb-2">Total Balance</p>
+                <h3 className="text-3xl font-bold text-white mb-1">
+                  ${summary?.financial.totalBalance.toLocaleString() || '0'}
+                </h3>
+                <p className="text-xs text-gray-500">
+                  Across {summary?.accounts || 0} account{summary?.accounts !== 1 ? 's' : ''}
                 </p>
               </div>
-            </div>
-          </Card>
-        )}
+            </BentoCard>
 
-        {/* Key Metrics - Compact */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Total Balance */}
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-muted-foreground">Total Balance</p>
-              <DollarSign className="h-5 w-5 text-green-500" />
-            </div>
-            <h3 className="text-2xl font-bold">
-              ${summary?.financial.totalBalance.toLocaleString() || '0'}
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              Across {summary?.accounts || 0} account{summary?.accounts !== 1 ? 's' : ''}
-            </p>
-          </Card>
-
-          {/* Monthly Burn Rate */}
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-muted-foreground">Monthly Burn</p>
-              <TrendingDown className="h-5 w-5 text-red-500" />
-            </div>
-            <h3 className="text-2xl font-bold">
-              ${summary?.financial.monthlyBurn.toLocaleString() || '0'}
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              Last 3 months average
-            </p>
-          </Card>
-
-          {/* Runway */}
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-muted-foreground">Runway</p>
-              <Calendar className="h-5 w-5 text-blue-500" />
-            </div>
-            <h3 className="text-2xl font-bold">
-              {summary?.financial.runwayMonths 
-                ? `${summary.financial.runwayMonths} months`
-                : '∞'}
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              Based on current burn rate
-            </p>
-          </Card>
-
-          {/* Monthly Revenue */}
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-muted-foreground">Monthly Revenue</p>
-              <TrendingUp className="h-5 w-5 text-green-500" />
-            </div>
-            <h3 className="text-2xl font-bold">
-              ${summary?.financial.monthlyRevenue.toLocaleString() || '0'}
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              Last 3 months average
-            </p>
-          </Card>
-        </div>
-
-        {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Cashflow Overview Chart */}
-          {cashflowData.length > 0 ? (
-            <CashflowChart data={cashflowData} />
-          ) : (
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Cashflow Overview</h3>
-              <div className="text-center py-12 text-muted-foreground">
-                <ArrowUpRight className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                <p>No transaction data yet</p>
-                <p className="text-sm mt-1">Add transactions to see cashflow trends</p>
-              </div>
-            </Card>
-          )}
-
-          {/* Runway Forecast Chart */}
-          {summary && summary.financial.monthlyBurn > 0 ? (
-            <RunwayChart
-              currentBalance={summary.financial.totalBalance}
-              monthlyBurn={summary.financial.monthlyBurn}
-              runwayMonths={summary.financial.runwayMonths}
-            />
-          ) : (
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Runway Forecast</h3>
-              <div className="text-center py-12 text-muted-foreground">
-                <Calendar className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                <p>Insufficient data for forecast</p>
-                <p className="text-sm mt-1">Add expenses to calculate runway</p>
-              </div>
-            </Card>
-          )}
-        </div>
-
-        {/* Summary Cards Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Inventory */}
-          <Card className="p-6">
-            <h3 className="font-semibold mb-4 flex items-center gap-2">
-              <Package className="h-5 w-5 text-blue-500" />
-              Inventory
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Total Products</span>
-                <span className="font-semibold">
-                  {summary?.inventory.totalProducts || 0}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Total Value</span>
-                <span className="font-semibold">
-                  ${summary?.inventory.totalInventoryValue.toLocaleString() || '0'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Low Stock Items</span>
-                <span className={cn(
-                  "font-semibold",
-                  (summary?.inventory.lowStockProducts || 0) > 0 ? "text-red-500" : "text-green-500"
-                )}>
-                  {summary?.inventory.lowStockProducts || 0}
-                </span>
-              </div>
-            </div>
-          </Card>
-
-          {/* Sales (Last 30 Days) */}
-          <Card className="p-6">
-            <h3 className="font-semibold mb-4 flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5 text-green-500" />
-              Sales (Last 30 Days)
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Total Sales</span>
-                <span className="font-semibold">
-                  ${summary?.sales.totalSales30Days.toLocaleString() || '0'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Units Sold</span>
-                <span className="font-semibold">
-                  {summary?.sales.unitsSold30Days || 0}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Transactions</span>
-                <span className="font-semibold">
-                  {summary?.sales.salesCount || 0}
-                </span>
-              </div>
-            </div>
-          </Card>
-
-          {/* Net Cashflow Summary */}
-          <Card className="p-6">
-            <h3 className="font-semibold mb-4">Cashflow Summary</h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ArrowUpRight className="h-4 w-4 text-green-500" />
-                  <span className="text-sm">Income</span>
+            {/* Monthly Burn Rate */}
+            <BentoCard className="col-span-12 md:col-span-6 lg:col-span-3 row-span-1 group" glow>
+              <div className="flex flex-col h-full">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-red-500/20 to-orange-500/20 flex items-center justify-center">
+                    <TrendingDown className="h-6 w-6 text-red-400" />
+                  </div>
+                  <Activity className="h-5 w-5 text-red-400" />
                 </div>
-                <span className="font-semibold text-green-500">
-                  ${summary?.financial.income.toLocaleString() || '0'}
-                </span>
+                <p className="text-sm text-gray-400 mb-2">Monthly Burn</p>
+                <h3 className="text-3xl font-bold text-white mb-1">
+                  ${summary?.financial.monthlyBurn.toLocaleString() || '0'}
+                </h3>
+                <p className="text-xs text-gray-500">Last 3 months average</p>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ArrowDownRight className="h-4 w-4 text-red-500" />
-                  <span className="text-sm">Expenses</span>
+            </BentoCard>
+
+            {/* Runway */}
+            <BentoCard className="col-span-12 md:col-span-6 lg:col-span-3 row-span-1 group" glow>
+              <div className="flex flex-col h-full">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center">
+                    <Calendar className="h-6 w-6 text-blue-400" />
+                  </div>
+                  <Target className="h-5 w-5 text-blue-400" />
                 </div>
-                <span className="font-semibold text-red-500">
-                  ${summary?.financial.expenses.toLocaleString() || '0'}
-                </span>
+                <p className="text-sm text-gray-400 mb-2">Runway</p>
+                <h3 className="text-3xl font-bold text-white mb-1">
+                  {summary?.financial.runwayMonths 
+                    ? `${summary.financial.runwayMonths}mo`
+                    : '∞'}
+                </h3>
+                <p className="text-xs text-gray-500">Based on current burn</p>
               </div>
-              <div className="pt-2 border-t">
+            </BentoCard>
+
+            {/* Monthly Revenue */}
+            <BentoCard className="col-span-12 md:col-span-6 lg:col-span-3 row-span-1 group" glow>
+              <div className="flex flex-col h-full">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+                    <Zap className="h-6 w-6 text-purple-400" />
+                  </div>
+                  <TrendingUp className="h-5 w-5 text-purple-400" />
+                </div>
+                <p className="text-sm text-gray-400 mb-2">Monthly Revenue</p>
+                <h3 className="text-3xl font-bold text-white mb-1">
+                  ${summary?.financial.monthlyRevenue.toLocaleString() || '0'}
+                </h3>
+                <p className="text-xs text-gray-500">Last 3 months average</p>
+              </div>
+            </BentoCard>
+
+            {/* Cashflow Chart - Large */}
+            <BentoCard className="col-span-12 lg:col-span-8 row-span-2" gradient>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-white">Cashflow Overview</h3>
+                  <p className="text-sm text-gray-400 mt-1">6-month income vs expenses trend</p>
+                </div>
+                <BarChart3 className="h-6 w-6 text-purple-400" />
+              </div>
+              {chartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="expensesGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+                    <XAxis 
+                      dataKey="month" 
+                      tick={{ fill: '#9ca3af', fontSize: 12 }}
+                      stroke="#4b5563"
+                    />
+                    <YAxis 
+                      tick={{ fill: '#9ca3af', fontSize: 12 }}
+                      stroke="#4b5563"
+                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '12px',
+                        color: '#fff',
+                        backdropFilter: 'blur(10px)'
+                      }}
+                      formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="income" 
+                      stroke="#10b981" 
+                      strokeWidth={2}
+                      fill="url(#incomeGradient)"
+                      name="Income"
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="expenses" 
+                      stroke="#ef4444" 
+                      strokeWidth={2}
+                      fill="url(#expensesGradient)"
+                      name="Expenses"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-[300px] text-gray-500">
+                  <div className="text-center">
+                    <BarChart3 className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                    <p>No data available yet</p>
+                  </div>
+                </div>
+              )}
+            </BentoCard>
+
+            {/* Runway Forecast */}
+            <BentoCard className="col-span-12 lg:col-span-4 row-span-2" gradient>
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-white">Runway Forecast</h3>
+                <p className="text-sm text-gray-400 mt-1">Cash depletion timeline</p>
+              </div>
+              {runwayData.length > 0 && summary && summary.financial.monthlyBurn > 0 ? (
+                <ResponsiveContainer width="100%" height={280}>
+                  <LineChart data={runwayData}>
+                    <defs>
+                      <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+                    <XAxis 
+                      dataKey="month" 
+                      tick={{ fill: '#9ca3af', fontSize: 12 }}
+                      stroke="#4b5563"
+                    />
+                    <YAxis 
+                      tick={{ fill: '#9ca3af', fontSize: 12 }}
+                      stroke="#4b5563"
+                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '12px',
+                        color: '#fff',
+                        backdropFilter: 'blur(10px)'
+                      }}
+                      formatter={(value: number) => [`$${value.toLocaleString()}`, 'Balance']}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="balance" 
+                      stroke="#8b5cf6" 
+                      strokeWidth={3}
+                      dot={{ fill: '#8b5cf6', r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-[280px] text-gray-500">
+                  <div className="text-center">
+                    <Calendar className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                    <p>Insufficient data</p>
+                  </div>
+                </div>
+              )}
+            </BentoCard>
+
+            {/* Inventory Summary */}
+            <BentoCard className="col-span-12 md:col-span-6 lg:col-span-4 row-span-1" gradient>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center">
+                  <Package className="h-6 w-6 text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white">Inventory</h3>
+                  <p className="text-xs text-gray-400">Product management</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-2xl font-bold text-white">{summary?.inventory.totalProducts || 0}</p>
+                  <p className="text-xs text-gray-400">Total Products</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white">${summary?.inventory.totalInventoryValue.toLocaleString() || '0'}</p>
+                  <p className="text-xs text-gray-400">Total Value</p>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-white/10">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Net</span>
+                  <span className="text-sm text-gray-400">Low Stock Items</span>
                   <span className={cn(
-                    "font-bold",
-                    (summary?.financial.netCashflow || 0) >= 0 ? "text-green-500" : "text-red-500"
+                    "font-bold text-xl",
+                    (summary?.inventory.lowStockProducts || 0) > 0 ? "text-red-400" : "text-green-400"
+                  )}>
+                    {summary?.inventory.lowStockProducts || 0}
+                  </span>
+                </div>
+              </div>
+            </BentoCard>
+
+            {/* Sales Summary */}
+            <BentoCard className="col-span-12 md:col-span-6 lg:col-span-4 row-span-1" gradient>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center">
+                  <ShoppingCart className="h-6 w-6 text-green-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white">Sales (30 Days)</h3>
+                  <p className="text-xs text-gray-400">Recent performance</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-2xl font-bold text-white">${summary?.sales.totalSales30Days.toLocaleString() || '0'}</p>
+                  <p className="text-xs text-gray-400">Total Sales</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white">{summary?.sales.unitsSold30Days || 0}</p>
+                  <p className="text-xs text-gray-400">Units Sold</p>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-400">Transactions</span>
+                  <span className="font-bold text-xl text-purple-400">
+                    {summary?.sales.salesCount || 0}
+                  </span>
+                </div>
+              </div>
+            </BentoCard>
+
+            {/* Cashflow Summary */}
+            <BentoCard className="col-span-12 md:col-span-12 lg:col-span-4 row-span-1" gradient>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+                  <Activity className="h-6 w-6 text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white">Cashflow Summary</h3>
+                  <p className="text-xs text-gray-400">Income vs Expenses</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-green-500/10">
+                  <div className="flex items-center gap-2">
+                    <ArrowUpRight className="h-4 w-4 text-green-400" />
+                    <span className="text-sm text-gray-300">Income</span>
+                  </div>
+                  <span className="font-bold text-green-400">
+                    ${summary?.financial.income.toLocaleString() || '0'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-red-500/10">
+                  <div className="flex items-center gap-2">
+                    <ArrowDownRight className="h-4 w-4 text-red-400" />
+                    <span className="text-sm text-gray-300">Expenses</span>
+                  </div>
+                  <span className="font-bold text-red-400">
+                    ${summary?.financial.expenses.toLocaleString() || '0'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                  <span className="text-sm font-medium text-gray-300">Net Cashflow</span>
+                  <span className={cn(
+                    "font-bold text-xl",
+                    (summary?.financial.netCashflow || 0) >= 0 ? "text-blue-400" : "text-orange-400"
                   )}>
                     ${summary?.financial.netCashflow.toLocaleString() || '0'}
                   </span>
                 </div>
               </div>
-            </div>
-          </Card>
-        </div>
+            </BentoCard>
 
-        {/* Recent Activity */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold">Recent Activity</h3>
-            <Button variant="ghost" size="sm">View All</Button>
-          </div>
-          <RecentTransactionsTable 
-            activities={recentActivity}
-            onRefresh={handleDataUpdate}
+            {/* Recent Activity */}
+            <BentoCard className="col-span-12 row-span-1">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-white">Recent Activity</h3>
+                  <p className="text-sm text-gray-400 mt-1">Latest transactions and events</p>
+                </div>
+                <Button variant="ghost" size="sm" className="text-purple-400 hover:text-purple-300">
+                  View All →
+                </Button>
+              </div>
+              <RecentTransactionsTable 
+                activities={recentActivity}
+                onRefresh={handleDataUpdate}
+              />
+            </BentoCard>
+          </BentoGrid>
+
+          {/* Modals */}
+          <CreateAccountModal
+            isOpen={isCreateAccountOpen}
+            onClose={() => setIsCreateAccountOpen(false)}
+            onSuccess={handleDataUpdate}
           />
-        </Card>
 
-        {/* Modals */}
-        <CreateAccountModal
-          isOpen={isCreateAccountOpen}
-          onClose={() => setIsCreateAccountOpen(false)}
-          onSuccess={handleDataUpdate}
-        />
+          <AddProductModal
+            isOpen={isAddProductOpen}
+            onClose={() => setIsAddProductOpen(false)}
+            onSuccess={handleDataUpdate}
+          />
 
-        <AddProductModal
-          isOpen={isAddProductOpen}
-          onClose={() => setIsAddProductOpen(false)}
-          onSuccess={handleDataUpdate}
-        />
+          <AddTransactionModal
+            isOpen={isAddTransactionOpen}
+            onClose={() => setIsAddTransactionOpen(false)}
+            onSuccess={handleDataUpdate}
+            accounts={accounts}
+          />
 
-        <AddTransactionModal
-          isOpen={isAddTransactionOpen}
-          onClose={() => setIsAddTransactionOpen(false)}
-          onSuccess={handleDataUpdate}
-          accounts={accounts}
-        />
-
-        <SimulateSaleModal
-          isOpen={isSimulateSaleOpen}
-          onClose={() => setIsSimulateSaleOpen(false)}
-          onSuccess={handleDataUpdate}
-          accounts={accounts}
-          products={products}
-        />
+          <SimulateSaleModal
+            isOpen={isSimulateSaleOpen}
+            onClose={() => setIsSimulateSaleOpen(false)}
+            onSuccess={handleDataUpdate}
+            accounts={accounts}
+            products={products}
+          />
         </div>
       </MainLayout>
     </AuthGuard>

@@ -112,11 +112,11 @@ export default function Sidebar() {
               {user?.firstName || user?.email}
             </p>
             <p className="text-xs text-muted-foreground truncate">
-              {user?.startup.name}
+              {user?.startup?.name || 'Your Startup'}
             </p>
           </div>
         </div>
-        {user && (
+        {user && user.roles && user.roles.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
             {user.roles.map(role => (
               <span
