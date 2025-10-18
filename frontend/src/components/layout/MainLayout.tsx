@@ -2,9 +2,6 @@
 
 import { ReactNode, useState } from 'react';
 import Sidebar from './Sidebar';
-import Header from './Header';
-import Vortex from '@/components/ui/vortex';
-import { cn } from '@/lib/utils';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -14,7 +11,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="h-screen flex overflow-hidden bg-background">
+    <div className="h-screen flex overflow-hidden bg-gray-50">
       {/* Sidebar - Desktop */}
       <aside className="hidden lg:flex lg:flex-shrink-0">
         <div className="w-64">
@@ -40,11 +37,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden relative">
-        {/* Header */}
-        <Header onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
-
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-background relative z-10">
+        <main className="flex-1 overflow-y-auto relative z-10">
           <div className="h-full">
             {children}
           </div>
