@@ -5,12 +5,11 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import StatCard from '@/components/dashboard/StatCard';
-import UpgradeCard from '@/components/dashboard/UpgradeCard';
 import UserChart from '@/components/dashboard/UserChart';
 import ProfitChart from '@/components/dashboard/ProfitChart';
 import RecentSales from '@/components/dashboard/RecentSales';
 import LastOrders from '@/components/dashboard/LastOrders';
-import { DollarSign, TrendingUp, Search, Wallet, Calendar } from 'lucide-react';
+import { DollarSign, Percent, Search, Wallet, TrendingUp, Calendar } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { apiClient, DashboardSummary, CashflowChartData, RecentActivity } from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -93,24 +92,29 @@ export default function DashboardPage() {
               {/* Top Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatCard 
-                  title="Total Balance"
+                  title="Balance"
                   value={summary ? currencyFormatter.format(summary.financial.totalBalance) : '$0'}
                   percentageChange={17}
                   chartData={balanceChartData}
                   chartColor="#607c47"
-                  icon={<Wallet className="h-5 w-5" />}
+                  icon={<DollarSign className="h-5 w-5" />}
                   cardClassName="bg-[#C9E0B0] text-[#3a5129]"
                 />
                 <StatCard 
-                  title="Monthly Revenue"
+                  title="Sales"
                   value={summary ? currencyFormatter.format(summary.financial.monthlyRevenue) : '$0'}
                   percentageChange={23}
                   chartData={revenueChartData}
                   chartColor="#ccab59"
-                  icon={<TrendingUp className="h-5 w-5" />}
+                  icon={<Percent className="h-5 w-5" />}
                   cardClassName="bg-[#F6D97A] text-[#7a6015]"
                 />
-                <UpgradeCard />
+                <StatCard 
+                  title="Runway"
+                  value={summary?.financial.runwayMonths ? `${summary.financial.runwayMonths.toFixed(1)} mo` : 'N/A'}
+                  icon={<Calendar className="h-5 w-5" />}
+                  cardClassName="bg-[#B7B3E6] text-[#2C2C2C]"
+                />
               </div>
 
               {/* Cashflow Chart */}
