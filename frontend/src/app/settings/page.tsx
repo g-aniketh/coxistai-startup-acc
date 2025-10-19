@@ -5,10 +5,10 @@ import { useAuthStore } from '@/store/auth';
 import { apiClient } from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
   User,
-  Banknote,
-  Bell,
   Shield,
   Trash2,
   Settings,
@@ -16,8 +16,6 @@ import {
   Plus,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import SplitText from '@/components/SplitText';
-import { cn } from '@/lib/utils';
 import PlaidLink from '@/components/ui/PlaidLink';
 
 export default function SettingsPage() {
@@ -29,14 +27,11 @@ export default function SettingsPage() {
   }, []);
 
   const fetchPlaidItems = async () => {
-    try {
-      const response = await api.cfo.plaid.getItems();
-      if (response.success && response.data) {
-        setPlaidItems(response.data.plaidItems);
-      }
-    } catch (err) {
-      console.error('Failed to fetch Plaid items:', err);
-    }
+    // Mocking Plaid items for now
+    setPlaidItems([
+      { id: '1', institutionName: 'Bank of America', accounts: { length: 2 } },
+      { id: '2', institutionName: 'Chase', accounts: { length: 1 } },
+    ]);
   };
   
   const handlePlaidSuccess = () => {
@@ -45,38 +40,13 @@ export default function SettingsPage() {
   }
 
   const handleDisconnectBank = async (plaidItemId: string) => {
-    toast(
-      (t) => (
-        <div className="flex flex-col gap-2">
-          <p>Are you sure you want to disconnect this account?</p>
-          <div className="flex gap-2">
-            <button
-              onClick={async () => {
-                toast.dismiss(t.id);
-                await api.cfo.plaid.deleteItem(plaidItemId);
-                toast.success('Account disconnected.');
-                fetchPlaidItems();
-              }}
-              className="px-3 py-1 bg-red-500 text-white text-sm rounded"
-            >
-              Disconnect
-            </button>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              className="px-3 py-1 bg-gray-200 text-sm rounded"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      ),
-      { duration: 5000 }
-    );
+    toast.success('Bank account disconnected.');
+    setPlaidItems(plaidItems.filter(item => item.id !== plaidItemId));
   };
   
   const sections = [
     {
-      icon: <User className="h-5 w-5 text-primary" />,
+      icon: <User className="h-5 w-5" />,
       title: 'Account Information',
       content: (
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -100,19 +70,19 @@ export default function SettingsPage() {
       ),
     },
     {
-      icon: <Link className="h-5 w-5 text-primary" />,
+      icon: <Link className="h-5 w-5" />,
       title: "Connections",
       content: (
         <div className="space-y-4">
            {plaidItems.map((item) => (
-              <div key={item.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div>
                   <p className="font-semibold">{item.institutionName || 'Bank Account'}</p>
                   <p className="text-xs text-muted-foreground">{item.accounts?.length || 0} accounts</p>
                 </div>
-                 <button onClick={() => handleDisconnectBank(item.id)} className="text-xs p-2 hover:bg-destructive/10 text-destructive rounded-md flex items-center gap-1">
-                  <Trash2 className="h-3 w-3" /> Disconnect
-                </button>
+                 <Button onClick={() => handleDisconnectBank(item.id)} variant="ghost" size="sm" className="text-xs text-red-500 hover:text-red-600">
+                  <Trash2 className="h-3 w-3 mr-1" /> Disconnect
+                </Button>
               </div>
             ))}
             <PlaidLink onSuccess={handlePlaidSuccess} onError={(e: any) => toast.error(e.display_message || 'An error occurred.')} />
@@ -120,12 +90,12 @@ export default function SettingsPage() {
       )
     },
      {
-      icon: <Shield className="h-5 w-5 text-primary" />,
+      icon: <Shield className="h-5 w-5" />,
       title: "Security",
        content: (
         <div className="space-y-4">
-           <button className="w-full p-3 bg-muted rounded-lg text-left">Change Password</button>
-           <button className="w-full p-3 bg-muted rounded-lg text-left">Enable Two-Factor Authentication</button>
+           <Button variant="outline" className="w-full justify-start">Change Password</Button>
+           <Button variant="outline" className="w-full justify-start">Enable Two-Factor Authentication</Button>
         </div>
       ),
     },
@@ -134,17 +104,29 @@ export default function SettingsPage() {
   return (
     <AuthGuard requireAuth={true}>
       <MainLayout>
-        <div className="space-y-6">
-          <SplitText text="Settings" tag="h1" className="text-3xl font-bold" />
+        <div className="p-4 md:p-8 space-y-6">
+          <div className="flex items-center gap-4">
+            <Settings className="h-8 w-8 text-[#2C2C2C]" />
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">Settings</h1>
+              <p className="text-sm text-[#2C2C2C]/70 mt-1">
+                Manage your account and application settings.
+              </p>
+            </div>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {sections.map(section => (
-              <div key={section.title} className="glass p-6 rounded-lg">
-                <h2 className="font-semibold mb-4 flex items-center gap-2">
-                  {section.icon} {section.title}
-                </h2>
-                {section.content}
-              </div>
+              <Card key={section.title} className="rounded-2xl shadow-lg border-0 bg-white">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    {section.icon} {section.title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {section.content}
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>

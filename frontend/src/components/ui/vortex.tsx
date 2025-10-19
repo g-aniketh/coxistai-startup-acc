@@ -47,8 +47,8 @@ export default function Vortex({
       hue: number;
 
       constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * rangeY + canvas.height / 2 - rangeY / 2;
+        this.x = Math.random() * canvas!.width;
+        this.y = Math.random() * rangeY + canvas!.height / 2 - rangeY / 2;
         this.radius = Math.random() * rangeRadius + baseRadius;
         this.speed = Math.random() * rangeSpeed + baseSpeed;
         this.angle = Math.random() * Math.PI * 2;
@@ -60,19 +60,19 @@ export default function Vortex({
         this.y += Math.sin(this.angle) * this.speed;
 
         // Swirl effect
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
+        const centerX = canvas!.width / 2;
+        const centerY = canvas!.height / 2;
         const dx = this.x - centerX;
         const dy = this.y - centerY;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        this.angle += 0.02 * (1 - distance / (canvas.width / 2));
+        this.angle += 0.02 * (1 - distance / (canvas!.width / 2));
 
         // Wrap around edges
-        if (this.x < 0) this.x = canvas.width;
-        if (this.x > canvas.width) this.x = 0;
-        if (this.y < 0) this.y = canvas.height;
-        if (this.y > canvas.height) this.y = 0;
+        if (this.x < 0) this.x = canvas!.width;
+        if (this.x > canvas!.width) this.x = 0;
+        if (this.y < 0) this.y = canvas!.height;
+        if (this.y > canvas!.height) this.y = 0;
       }
 
       draw() {

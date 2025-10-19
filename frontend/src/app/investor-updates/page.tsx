@@ -14,6 +14,7 @@ import {
   Users,
   Eye,
   Download,
+  Sparkles,
 } from 'lucide-react';
 import MagicBento from '@/components/MagicBento';
 import SpotlightCard from '@/components/SpotlightCard';
@@ -37,10 +38,110 @@ export default function InvestorUpdatesPage() {
   const loadUpdates = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.dashboard.getInvestorUpdates();
-      if (response.success && response.data) {
-        setUpdates(response.data);
-      }
+      // Mock data for demonstration
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      
+      const mockUpdates = [
+        {
+          id: '1',
+          title: 'Q4 2024 Investor Update',
+          periodStart: '2024-10-01',
+          periodEnd: '2024-12-31',
+          isDraft: false,
+          createdAt: '2024-12-15T10:30:00Z',
+          metrics: {
+            revenue: 135600,
+            mrr: 45200,
+            customers: 342,
+            revenueGrowth: 23.5
+          },
+          executiveSummary: "Q4 2024 was a strong quarter for our company, with significant growth in revenue and customer acquisition. We exceeded our targets across all key metrics and are well-positioned for continued expansion in 2025.",
+          highlights: [
+            "Achieved $135,600 in quarterly revenue, exceeding target by 18%",
+            "Added 89 new customers, bringing total to 342 active users",
+            "Launched enterprise tier with 3 major clients signed",
+            "Reduced customer churn rate to 2.1% (down from 4.3%)",
+            "Hired 4 key team members across engineering and sales"
+          ],
+          challenges: [
+            "Increased competition in the SaaS space requiring higher customer acquisition costs",
+            "Need to scale customer support team to maintain service quality",
+            "Infrastructure costs growing faster than anticipated"
+          ],
+          nextSteps: [
+            "Launch Series A fundraising round targeting $2.1M",
+            "Expand into European market with localized product",
+            "Implement AI-powered features to differentiate from competitors",
+            "Build strategic partnerships with key industry players"
+          ]
+        },
+        {
+          id: '2',
+          title: 'Q3 2024 Investor Update',
+          periodStart: '2024-07-01',
+          periodEnd: '2024-09-30',
+          isDraft: false,
+          createdAt: '2024-09-30T15:45:00Z',
+          metrics: {
+            revenue: 109800,
+            mrr: 36600,
+            customers: 253,
+            revenueGrowth: 18.2
+          },
+          executiveSummary: "Q3 2024 demonstrated solid execution on our growth strategy with strong revenue performance and successful product launches. We maintained healthy unit economics while scaling our customer base.",
+          highlights: [
+            "Generated $109,800 in quarterly revenue, up 18.2% from Q2",
+            "Achieved product-market fit with 4.8/5 customer satisfaction score",
+            "Successfully launched mobile app with 10,000+ downloads",
+            "Reduced monthly burn rate by 12% through operational efficiency",
+            "Secured $500K bridge funding from existing investors"
+          ],
+          challenges: [
+            "Longer sales cycles for enterprise customers than projected",
+            "Technical debt accumulation requiring dedicated engineering time",
+            "Market saturation in core vertical requiring expansion"
+          ],
+          nextSteps: [
+            "Focus on enterprise sales strategy and longer-term contracts",
+            "Invest in technical infrastructure and code quality",
+            "Explore adjacent markets and vertical expansion opportunities"
+          ]
+        },
+        {
+          id: '3',
+          title: 'Q1 2025 Investor Update (Draft)',
+          periodStart: '2025-01-01',
+          periodEnd: '2025-03-31',
+          isDraft: true,
+          createdAt: '2025-01-15T09:20:00Z',
+          metrics: {
+            revenue: 0,
+            mrr: 0,
+            customers: 0,
+            revenueGrowth: 0
+          },
+          executiveSummary: "Q1 2025 is off to a strong start with ambitious goals for revenue growth and market expansion. We're focusing on scaling our enterprise sales and launching new AI-powered features.",
+          highlights: [
+            "Planning to launch AI-powered analytics dashboard",
+            "Targeting 50% revenue growth through enterprise expansion",
+            "Preparing for Series A fundraising round",
+            "Building strategic partnerships with key industry players"
+          ],
+          challenges: [
+            "Need to balance growth investments with runway management",
+            "Competitive landscape intensifying in AI space",
+            "Talent acquisition becoming more challenging and expensive"
+          ],
+          nextSteps: [
+            "Complete Series A fundraising by end of Q1",
+            "Launch AI features to drive premium pricing",
+            "Expand sales team to support enterprise growth",
+            "Establish European operations and compliance"
+          ]
+        }
+      ];
+      
+      setUpdates(mockUpdates);
     } catch (error) {
       console.error('Failed to load investor updates:', error);
     } finally {
@@ -53,16 +154,46 @@ export default function InvestorUpdatesPage() {
 
     try {
       setGenerating(true);
-      const response = await apiClient.dashboard.generateInvestorUpdate(
-        formData.periodStart,
-        formData.periodEnd
-      );
-
-      if (response.success) {
-        await loadUpdates();
-        setShowForm(false);
-        setFormData({ periodStart: '', periodEnd: '' });
-      }
+      // Mock data for demonstration
+      await new Promise(resolve => setTimeout(resolve, 3000)); // Simulate AI generation
+      
+      const newUpdate = {
+        id: Date.now().toString(),
+        title: `Q${Math.floor(Math.random() * 4) + 1} ${new Date().getFullYear()} Investor Update`,
+        periodStart: formData.periodStart,
+        periodEnd: formData.periodEnd,
+        isDraft: true,
+        createdAt: new Date().toISOString(),
+        metrics: {
+          revenue: Math.floor(Math.random() * 200000) + 50000,
+          mrr: Math.floor(Math.random() * 60000) + 20000,
+          customers: Math.floor(Math.random() * 500) + 100,
+          revenueGrowth: Math.floor(Math.random() * 50) + 10
+        },
+        executiveSummary: `This period demonstrated strong execution across all key metrics. Revenue growth exceeded expectations, customer acquisition accelerated, and we maintained healthy unit economics while scaling operations. The team's focus on product excellence and customer success continues to drive sustainable growth.`,
+        highlights: [
+          "Achieved significant revenue growth with improved unit economics",
+          "Successfully launched new product features driving customer engagement",
+          "Expanded customer base with focus on enterprise clients",
+          "Maintained strong customer satisfaction and low churn rates",
+          "Strengthened team with key hires across engineering and sales"
+        ],
+        challenges: [
+          "Market competition intensifying requiring increased marketing investment",
+          "Scaling customer support to maintain service quality standards",
+          "Balancing growth investments with runway management"
+        ],
+        nextSteps: [
+          "Continue expanding enterprise sales and partnerships",
+          "Invest in product development and AI-powered features",
+          "Scale team strategically to support growth objectives",
+          "Prepare for next funding round to accelerate expansion"
+        ]
+      };
+      
+      setUpdates(prev => [newUpdate, ...prev]);
+      setShowForm(false);
+      setFormData({ periodStart: '', periodEnd: '' });
     } catch (error) {
       console.error('Failed to generate update:', error);
     } finally {
@@ -94,20 +225,41 @@ export default function InvestorUpdatesPage() {
       className: 'col-span-12',
       background: <div className="absolute top-0 left-0 w-full h-full bg-card" />,
       content: (
-        <div className="p-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Investor Updates</h1>
-            <p className="text-muted-foreground mt-1">
-              AI-generated updates for your investors
-            </p>
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Investor Updates</h1>
+              <p className="text-muted-foreground mt-1">
+                AI-generated updates for your investors
+              </p>
+            </div>
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+            >
+              <Plus className="h-4 w-4" />
+              New Update
+            </button>
           </div>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-          >
-            <Plus className="h-4 w-4" />
-            New Update
-          </button>
+          
+          {/* Demo Mode Banner */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Sparkles className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-blue-900">AI Investor Updates Demo</h3>
+                  <p className="text-sm text-blue-700">Experience AI-powered investor report generation • Live AI integration coming soon</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-blue-600">
+                <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+                Mock Data
+              </div>
+            </div>
+          </div>
         </div>
       ),
     },

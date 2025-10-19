@@ -18,17 +18,26 @@ async function main() {
     { action: 'update', subject: 'User' },
     { action: 'delete', subject: 'User' },
     // Financials
-    { action: 'manage', subject: 'Transaction' },
-    { action: 'read', subject: 'Transaction' },
+    { action: 'manage', subject: 'transactions' },
+    { action: 'read', subject: 'transactions' },
     { action: 'manage', subject: 'Account' },
     { action: 'read', subject: 'Account' },
+    { action: 'read', subject: 'cashflow_dashboard' },
+    { action: 'manage', subject: 'billing' },
     // Inventory
-    { action: 'manage', subject: 'Inventory' },
-    { action: 'read', subject: 'Inventory' },
+    { action: 'manage', subject: 'inventory' },
+    { action: 'read', subject: 'inventory' },
+    { action: 'read', subject: 'inventory_dashboard' },
+    // Team Management
+    { action: 'manage', subject: 'team' },
+    { action: 'read', subject: 'team' },
     // AI Features
     { action: 'manage', subject: 'CFO' },
     { action: 'read', subject: 'CFO' },
     { action: 'read', subject: 'Dashboard' },
+    { action: 'read', subject: 'analytics' },
+    { action: 'use', subject: 'what_if_scenarios' },
+    { action: 'manage', subject: 'investor_updates' },
   ];
 
   const createdPermissions = await Promise.all(
@@ -39,14 +48,14 @@ async function main() {
 
   // 3. Create Roles and Assign Permissions
   const roles = {
-    Admin: ['manage-User', 'manage-Transaction', 'manage-Account', 'manage-Inventory', 'manage-CFO', 'read-Dashboard'],
-    CFO: ['read-User', 'manage-Transaction', 'manage-Account', 'read-Inventory', 'manage-CFO', 'read-Dashboard'],
-    Accountant: ['read-User', 'manage-Transaction', 'manage-Account', 'read-Inventory', 'read-CFO', 'read-Dashboard'],
-    OperationsManager: ['read-User', 'read-Transaction', 'read-Account', 'manage-Inventory', 'read-CFO', 'read-Dashboard'],
-    SalesManager: ['read-Transaction', 'read-Account', 'read-Inventory', 'read-CFO', 'read-Dashboard'],
-    Engineer: ['read-Dashboard'],
-    MarketingLead: ['read-Dashboard', 'read-CFO'],
-    ReadOnly: ['read-User', 'read-Transaction', 'read-Account', 'read-Inventory', 'read-CFO', 'read-Dashboard'],
+    Admin: ['manage-User', 'manage-transactions', 'manage-Account', 'manage-inventory', 'manage-CFO', 'read-Dashboard', 'read-cashflow_dashboard', 'manage-billing', 'manage-team', 'read-analytics', 'use-what_if_scenarios', 'manage-investor_updates'],
+    CFO: ['read-User', 'manage-transactions', 'manage-Account', 'read-inventory', 'manage-CFO', 'read-Dashboard', 'read-cashflow_dashboard', 'manage-billing', 'read-team', 'read-analytics', 'use-what_if_scenarios', 'manage-investor_updates'],
+    Accountant: ['read-User', 'manage-transactions', 'manage-Account', 'read-inventory', 'read-CFO', 'read-Dashboard', 'read-cashflow_dashboard', 'manage-billing', 'read-team', 'read-analytics'],
+    OperationsManager: ['read-User', 'read-transactions', 'read-Account', 'manage-inventory', 'read-CFO', 'read-Dashboard', 'read-cashflow_dashboard', 'read-inventory_dashboard', 'read-team'],
+    SalesManager: ['read-transactions', 'read-Account', 'read-inventory', 'read-CFO', 'read-Dashboard', 'read-cashflow_dashboard', 'read-team'],
+    Engineer: ['read-Dashboard', 'read-cashflow_dashboard'],
+    MarketingLead: ['read-Dashboard', 'read-CFO', 'read-cashflow_dashboard', 'read-analytics'],
+    ReadOnly: ['read-User', 'read-transactions', 'read-Account', 'read-inventory', 'read-CFO', 'read-Dashboard', 'read-cashflow_dashboard', 'read-team'],
   };
 
   const createdRoles = await Promise.all(
@@ -64,145 +73,259 @@ async function main() {
   const roleMap = new Map(createdRoles.map((r) => [r.name, r]));
   console.log('✓ Created roles and assigned permissions');
 
-  // 4. Create a demo startup
-  const startup = await prisma.startup.create({
-    data: {
-      name: 'TechNova Solutions',
-      subscriptionPlan: 'pro_trial',
-      subscriptionStatus: 'active',
-      trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-    },
-  });
-  console.log('✓ Created startup:', startup.name);
+  // 4. Create 5 demo startups for comprehensive demo
+  const startups = await Promise.all([
+    prisma.startup.create({
+      data: {
+        name: 'TechNova Solutions',
+        subscriptionPlan: 'pro_trial',
+        subscriptionStatus: 'active',
+        trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      },
+    }),
+    prisma.startup.create({
+      data: {
+        name: 'CloudScale Inc',
+        subscriptionPlan: 'pro',
+        subscriptionStatus: 'active',
+        trialEndsAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+      },
+    }),
+    prisma.startup.create({
+      data: {
+        name: 'DataFlow Analytics',
+        subscriptionPlan: 'enterprise',
+        subscriptionStatus: 'active',
+        trialEndsAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
+      },
+    }),
+    prisma.startup.create({
+      data: {
+        name: 'AI Innovations Lab',
+        subscriptionPlan: 'starter',
+        subscriptionStatus: 'active',
+        trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    }),
+    prisma.startup.create({
+      data: {
+        name: 'GreenTech Ventures',
+        subscriptionPlan: 'pro_trial',
+        subscriptionStatus: 'active',
+        trialEndsAt: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
+      },
+    }),
+  ]);
+  console.log('✓ Created 5 demo startups');
 
-  // 5. Create 8 users with different roles
+  // 5. Create users for each startup
   const hashedPassword = await bcrypt.hash('password123', 10);
-  const usersToCreate = [
-    { email: 'admin@technova.com', firstName: 'Alex', lastName: 'Johnson', roleName: 'Admin' },
-    { email: 'cfo@technova.com', firstName: 'Brenda', lastName: 'Chen', roleName: 'CFO' },
-    { email: 'accountant@technova.com', firstName: 'Carlos', lastName: 'Mendoza', roleName: 'Accountant' },
-    { email: 'ops@technova.com', firstName: 'Diana', lastName: 'Smith', roleName: 'OperationsManager' },
-    { email: 'sales@technova.com', firstName: 'Ethan', lastName: 'Gupta', roleName: 'SalesManager' },
-    { email: 'engineer@technova.com', firstName: 'Fiona', lastName: 'Wang', roleName: 'Engineer' },
-    { email: 'marketing@technova.com', firstName: 'George', lastName: 'Miller', roleName: 'MarketingLead' },
-    { email: 'viewer@technova.com', firstName: 'Hannah', lastName: 'Davis', roleName: 'ReadOnly' },
-  ];
-
-  const createdUsers = await Promise.all(
-    usersToCreate.map(async (userData) => {
-      const user = await prisma.user.create({
-    data: {
-          email: userData.email,
-          password: hashedPassword,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-      isActive: true,
-          startupId: startup.id,
-    },
-  });
-      const role = roleMap.get(userData.roleName);
-      if (role) {
-        await prisma.userRole.create({
-    data: {
-            userId: user.id,
-            roleId: role.id,
-    },
-  });
-      }
-      return user;
-    })
-  );
-  console.log('✓ Created 8 users with different roles');
-
-  // 6. Create Mock Bank Accounts
-  const accounts = await Promise.all([
-    prisma.mockBankAccount.create({ data: { startupId: startup.id, accountName: 'Main Checking Account', balance: 125000 } }),
-    prisma.mockBankAccount.create({ data: { startupId: startup.id, accountName: 'High-Yield Savings', balance: 500000 } }),
-    prisma.mockBankAccount.create({ data: { startupId: startup.id, accountName: 'Stripe Payouts', balance: 75000 } }),
-  ]);
-  console.log('✓ Created 3 mock bank accounts');
-
-  // 7. Create Transactions to simulate activity
-  const transactions: {
-    accountId: string;
-    type: TransactionType;
-    amount: number;
-    description: string;
-    date: Date;
-  }[] = [];
-  const currentDate = new Date();
-
-  // Initial deposits
-  transactions.push({ accountId: accounts[0].id, type: 'CREDIT', amount: 125000, description: 'Initial seed funding', date: new Date(new Date().setDate(currentDate.getDate() - 90)) });
-  transactions.push({ accountId: accounts[1].id, type: 'CREDIT', amount: 500000, description: 'Series A funding', date: new Date(new Date().setDate(currentDate.getDate() - 85)) });
-  transactions.push({ accountId: accounts[2].id, type: 'CREDIT', amount: 75000, description: 'Initial Stripe balance', date: new Date(new Date().setDate(currentDate.getDate() - 80)) });
   
-  const expenseEvents = [
-    { amount: 5000, description: 'AWS Cloud Services' }, { amount: 3500, description: 'Office Rent' },
-    { amount: 25000, description: 'Payroll - Team Salaries' }, { amount: 1200, description: 'Marketing - Google Ads' },
-    { amount: 800, description: 'Software Subscriptions (HubSpot, Slack)' }, { amount: 2500, description: 'Contractor Payment - Design' },
-  ];
-  const revenueEvents = [
-    { amount: 15000, description: 'Customer Payment - Acme Corp' }, { amount: 8500, description: 'Subscription Renewal - TechCo' },
-    { amount: 22000, description: 'Enterprise Contract - BigClient Inc' }, { amount: 5500, description: 'API Usage Fees - StartupXYZ' },
+  // Create users for TechNova Solutions (main demo account)
+  const techNovaUsers = await Promise.all([
+    { email: 'admin@technova.com', firstName: 'Alex', lastName: 'Johnson', roleName: 'Admin', startupId: startups[0].id },
+    { email: 'cfo@technova.com', firstName: 'Brenda', lastName: 'Chen', roleName: 'CFO', startupId: startups[0].id },
+    { email: 'accountant@technova.com', firstName: 'Carlos', lastName: 'Mendoza', roleName: 'Accountant', startupId: startups[0].id },
+    { email: 'demo@technova.com', firstName: 'Demo', lastName: 'User', roleName: 'Admin', startupId: startups[0].id },
+  ].map(async (userData) => {
+    const user = await prisma.user.create({
+      data: {
+        email: userData.email,
+        password: hashedPassword,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        isActive: true,
+        startupId: userData.startupId,
+      },
+    });
+    const role = roleMap.get(userData.roleName);
+    if (role) {
+      await prisma.userRole.create({
+        data: {
+          userId: user.id,
+          roleId: role.id,
+        },
+      });
+    }
+    return user;
+  }));
+
+  // Create users for other startups
+  const otherStartupUsers = await Promise.all([
+    { email: 'ceo@cloudscale.com', firstName: 'Sarah', lastName: 'Wilson', roleName: 'Admin', startupId: startups[1].id },
+    { email: 'ceo@dataflow.com', firstName: 'Michael', lastName: 'Brown', roleName: 'Admin', startupId: startups[2].id },
+    { email: 'ceo@aiinnovations.com', firstName: 'Lisa', lastName: 'Garcia', roleName: 'Admin', startupId: startups[3].id },
+    { email: 'ceo@greentech.com', firstName: 'David', lastName: 'Lee', roleName: 'Admin', startupId: startups[4].id },
+  ].map(async (userData) => {
+    const user = await prisma.user.create({
+      data: {
+        email: userData.email,
+        password: hashedPassword,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        isActive: true,
+        startupId: userData.startupId,
+      },
+    });
+    const role = roleMap.get(userData.roleName);
+    if (role) {
+      await prisma.userRole.create({
+        data: {
+          userId: user.id,
+          roleId: role.id,
+        },
+      });
+    }
+    return user;
+  }));
+
+  console.log('✓ Created users for all startups');
+
+  // 6. Create Mock Bank Accounts for each startup
+  const startupAccounts = new Map();
+  
+  for (let i = 0; i < startups.length; i++) {
+    const startup = startups[i];
+    const accounts = await Promise.all([
+      prisma.mockBankAccount.create({ 
+        data: { 
+          startupId: startup.id, 
+          accountName: 'Main Checking Account', 
+          balance: 0 // Will be calculated from transactions
+        } 
+      }),
+      prisma.mockBankAccount.create({ 
+        data: { 
+          startupId: startup.id, 
+          accountName: 'Business Savings', 
+          balance: 0 
+        } 
+      }),
+      prisma.mockBankAccount.create({ 
+        data: { 
+          startupId: startup.id, 
+          accountName: 'Stripe Payouts', 
+          balance: 0 
+        } 
+      }),
+    ]);
+    startupAccounts.set(startup.id, accounts);
+  }
+  console.log('✓ Created bank accounts for all startups');
+
+  // 7. Create Transactions for each startup
+  const currentDate = new Date();
+  
+  // Different financial profiles for each startup
+  const startupProfiles = [
+    { name: 'TechNova Solutions', initialFunding: 500000, monthlyRevenue: 45000, monthlyExpenses: 35000 },
+    { name: 'CloudScale Inc', initialFunding: 200000, monthlyRevenue: 25000, monthlyExpenses: 20000 },
+    { name: 'DataFlow Analytics', initialFunding: 1000000, monthlyRevenue: 80000, monthlyExpenses: 60000 },
+    { name: 'AI Innovations Lab', initialFunding: 50000, monthlyRevenue: 12000, monthlyExpenses: 15000 },
+    { name: 'GreenTech Ventures', initialFunding: 300000, monthlyRevenue: 30000, monthlyExpenses: 25000 },
   ];
 
-  for (let i = 0; i < 90; i++) {
-    const transactionDate = new Date();
-    transactionDate.setDate(transactionDate.getDate() - i);
-    // Add expenses
-    if (i % 30 === 0) { // Monthly payroll
-        const event = expenseEvents[2];
-        transactions.push({ accountId: accounts[0].id, type: 'DEBIT', amount: event.amount * (0.95 + Math.random() * 0.1), description: event.description, date: transactionDate });
+  for (let startupIndex = 0; startupIndex < startups.length; startupIndex++) {
+    const startup = startups[startupIndex];
+    const profile = startupProfiles[startupIndex];
+    const accounts = startupAccounts.get(startup.id);
+    
+    const transactions: {
+      accountId: string;
+      type: TransactionType;
+      amount: number;
+      description: string;
+      date: Date;
+    }[] = [];
+
+    // Initial funding
+    transactions.push({
+      accountId: accounts[0].id,
+      type: 'CREDIT',
+      amount: profile.initialFunding,
+      description: 'Initial seed funding',
+      date: new Date(new Date().setDate(currentDate.getDate() - 90))
+    });
+
+    // Generate 90 days of transactions
+    for (let i = 0; i < 90; i++) {
+      const transactionDate = new Date();
+      transactionDate.setDate(transactionDate.getDate() - i);
+      
+      // Monthly expenses (payroll, rent, etc.)
+      if (i % 30 === 0) {
+        transactions.push({
+          accountId: accounts[0].id,
+          type: 'DEBIT',
+          amount: profile.monthlyExpenses * 0.6, // 60% of expenses
+          description: 'Monthly payroll',
+          date: transactionDate
+        });
+      }
+      
+      // Weekly expenses
+      if (i % 7 === 0) {
+        const expenseAmount = profile.monthlyExpenses * 0.1; // 10% of monthly expenses
+        transactions.push({
+          accountId: accounts[0].id,
+          type: 'DEBIT',
+          amount: expenseAmount * (0.8 + Math.random() * 0.4),
+          description: 'Operating expenses',
+          date: transactionDate
+        });
+      }
+      
+      // Revenue transactions
+      if (i % 3 === 0) {
+        const revenueAmount = profile.monthlyRevenue / 10; // Distribute monthly revenue
+        transactions.push({
+          accountId: accounts[2].id, // Stripe account
+          type: 'CREDIT',
+          amount: revenueAmount * (0.8 + Math.random() * 0.4),
+          description: 'Customer payment',
+          date: transactionDate
+        });
+      }
     }
-    if (i % 7 === 0) { // Weekly smaller expenses
-        const event = expenseEvents[Math.floor(Math.random() * expenseEvents.length)];
-        if (event.description.includes('Payroll')) continue;
-        transactions.push({ accountId: accounts[0].id, type: 'DEBIT', amount: event.amount * (0.9 + Math.random() * 0.2), description: event.description, date: transactionDate });
-    }
-    // Add revenues
-    if (i % 5 === 0) { // Regular revenue
-        const event = revenueEvents[Math.floor(Math.random() * revenueEvents.length)];
-        transactions.push({ accountId: accounts[2].id, type: 'CREDIT', amount: event.amount * (0.9 + Math.random() * 0.2), description: event.description, date: transactionDate });
+
+    // Create all transactions for this startup
+    await prisma.transaction.createMany({
+      data: transactions.map(t => ({ ...t, startupId: startup.id })),
+    });
+
+    // Recalculate account balances
+    for (const account of accounts) {
+      const credits = await prisma.transaction.aggregate({
+        _sum: { amount: true },
+        where: { accountId: account.id, type: 'CREDIT' },
+      });
+      const debits = await prisma.transaction.aggregate({
+        _sum: { amount: true },
+        where: { accountId: account.id, type: 'DEBIT' },
+      });
+      
+      const balance = (credits._sum.amount || 0) - (debits._sum.amount || 0);
+      
+      await prisma.mockBankAccount.update({
+        where: { id: account.id },
+        data: { balance },
+      });
     }
   }
 
-  await prisma.transaction.createMany({
-    data: transactions.map(t => ({ ...t, startupId: startup.id })),
-  });
+  console.log('✓ Created transactions and updated balances for all startups');
 
-  // Recalculate final balances
-  for (const account of accounts) {
-    const result = await prisma.transaction.aggregate({
-      _sum: { amount: true },
-      where: { accountId: account.id, type: 'CREDIT' },
-    });
-    const credits = result._sum.amount || 0;
-
-    const debitsResult = await prisma.transaction.aggregate({
-      _sum: { amount: true },
-      where: { accountId: account.id, type: 'DEBIT' },
-    });
-    const debits = debitsResult._sum.amount || 0;
-
-    await prisma.mockBankAccount.update({
-      where: { id: account.id },
-      data: { balance: credits - debits },
-    });
-  }
-
-  console.log(`✓ Created ${transactions.length} transactions and updated account balances`);
-
-  // 8. Create Products and Sales
+  // 8. Create Products and Sales for TechNova Solutions (main demo)
+  const mainStartup = startups[0];
+  const mainAccounts = startupAccounts.get(mainStartup.id);
+  
   const products = await Promise.all([
-    prisma.product.create({ data: { startupId: startup.id, name: 'Premium SaaS License', quantity: 1000, price: 299.99 } }),
-    prisma.product.create({ data: { startupId: startup.id, name: 'API Credits - 10K', quantity: 5000, price: 49.99 } }),
-    prisma.product.create({ data: { startupId: startup.id, name: 'Consulting Hours - 5hr Pack', quantity: 200, price: 750.00 } }),
+    prisma.product.create({ data: { startupId: mainStartup.id, name: 'Premium SaaS License', quantity: 1000, price: 299.99 } }),
+    prisma.product.create({ data: { startupId: mainStartup.id, name: 'API Credits - 10K', quantity: 5000, price: 49.99 } }),
+    prisma.product.create({ data: { startupId: mainStartup.id, name: 'Consulting Hours - 5hr Pack', quantity: 200, price: 750.00 } }),
   ]);
 
-  // Create sales linked to transactions
-  const salesToCreate = [];
-  const salesTransactions = [];
+  // Create sales linked to transactions for main startup
   for(let i = 0; i < 20; i++) {
     const product = products[Math.floor(Math.random() * products.length)];
     const quantity = Math.floor(Math.random() * 5) + 1;
@@ -212,8 +335,8 @@ async function main() {
     
     const transaction = await prisma.transaction.create({
       data: {
-        startupId: startup.id,
-        accountId: accounts[2].id, // Sales revenue to Stripe
+        startupId: mainStartup.id,
+        accountId: mainAccounts[2].id, // Sales revenue to Stripe
         type: 'CREDIT',
         amount: totalPrice,
         description: `Sale: ${quantity} x ${product.name}`,
@@ -222,8 +345,8 @@ async function main() {
     });
 
     await prisma.sale.create({
-          data: {
-        startupId: startup.id,
+      data: {
+        startupId: mainStartup.id,
         productId: product.id,
         quantitySold: quantity,
         totalPrice: totalPrice,
@@ -233,9 +356,9 @@ async function main() {
     });
   }
 
-  console.log(`✓ Created ${products.length} products and simulated sales`);
+  console.log(`✓ Created ${products.length} products and simulated sales for main startup`);
   
-  // 9. Create Cashflow Metrics (for the last 6 months)
+  // 9. Create Cashflow Metrics for main startup (last 6 months)
   const cashflowMetrics: Promise<any>[] = [];
   for (let i = 0; i < 6; i++) {
     const monthStart = new Date();
@@ -246,44 +369,44 @@ async function main() {
     monthEnd.setMonth(monthEnd.getMonth() + 1);
     monthEnd.setDate(0);
 
-    const revenue = 50000 + (i * 8000) + Math.random() * 10000;
-    const expenses = 35000 + (i * 2000) + Math.random() * 5000;
-    const customers = 150 + (i * 25);
+    const revenue = 45000 + (i * 5000) + Math.random() * 8000;
+    const expenses = 35000 + (i * 2000) + Math.random() * 3000;
+    const customers = 150 + (i * 20);
 
     cashflowMetrics.push(
       prisma.cashflowMetric.create({
         data: {
-          startupId: startup.id,
+          startupId: mainStartup.id,
           periodStart: monthStart,
           periodEnd: monthEnd,
           totalRevenue: revenue,
           totalExpenses: expenses,
           netCashflow: revenue - expenses,
           burnRate: expenses,
-          runway: (250000 / expenses), // Assuming $250k in bank
+          runway: (500000 / expenses), // Based on initial funding
           mrr: revenue * 0.85, // 85% recurring
           arr: revenue * 0.85 * 12,
-          growthRate: i > 0 ? ((revenue / (50000 + ((i-1) * 8000))) - 1) * 100 : 0,
-          cashBalance: 250000 + ((revenue - expenses) * i),
+          growthRate: i > 0 ? ((revenue / (45000 + ((i-1) * 5000))) - 1) * 100 : 0,
+          cashBalance: 500000 + ((revenue - expenses) * i),
           accountsReceivable: revenue * 0.15,
           accountsPayable: expenses * 0.2,
           activeCustomers: customers,
-          newCustomers: 15 + Math.floor(Math.random() * 10),
-          churnedCustomers: Math.floor(Math.random() * 5),
-          customerAcquisitionCost: 500 + Math.random() * 200,
-          lifetimeValue: 5000 + Math.random() * 2000,
+          newCustomers: 12 + Math.floor(Math.random() * 8),
+          churnedCustomers: Math.floor(Math.random() * 3),
+          customerAcquisitionCost: 400 + Math.random() * 150,
+          lifetimeValue: 4000 + Math.random() * 1500,
         },
       })
     );
   }
   await Promise.all(cashflowMetrics);
-  console.log('✓ Created 6 months of cashflow metrics');
+  console.log('✓ Created 6 months of cashflow metrics for main startup');
 
-  // 10. Create AI Scenarios
+  // 10. Create AI Scenarios for main startup
   await Promise.all([
     prisma.aIScenario.create({
       data: {
-        startupId: startup.id,
+        startupId: mainStartup.id,
         name: 'Hire 3 Engineers',
         description: 'Simulate financial impact of hiring 3 Senior Software Engineers at $150k/yr each.',
         scenarioType: 'what_if',
@@ -298,7 +421,7 @@ async function main() {
     }),
     prisma.aIScenario.create({
       data: {
-        startupId: startup.id,
+        startupId: mainStartup.id,
         name: 'Revenue Growth - Best Case',
         description: '30% MoM growth with reduced churn',
         scenarioType: 'forecast',
@@ -311,59 +434,69 @@ async function main() {
       },
     }),
   ]);
-  console.log('✓ Created 2 AI scenarios');
+  console.log('✓ Created 2 AI scenarios for main startup');
 
-  // 11. Create Alerts
+  // 11. Create Alerts for main startup
   await Promise.all([
     prisma.alert.create({
       data: {
-        startupId: startup.id,
+        startupId: mainStartup.id,
         type: 'runway',
         severity: 'warning',
-        title: 'Runway is down to 4.5 months',
-        message: 'Based on your current burn rate of $41,000/mo and cash balance of $184,500, your runway is approximately 4.5 months. This is below the recommended 6-month threshold.',
-        currentValue: 4.5,
+        title: 'Runway is down to 8.2 months',
+        message: 'Based on your current burn rate of $35,000/mo and cash balance of $287,500, your runway is approximately 8.2 months. This is above the recommended 6-month threshold but trending down.',
+        currentValue: 8.2,
         thresholdValue: 6,
-        recommendations: ['Recommend cutting $15k/mo in SaaS spend and non-essential contractors.', 'Model a hiring freeze scenario.', 'Accelerate Q4 sales pipeline outreach.'],
+        recommendations: ['Consider optimizing SaaS spend to extend runway.', 'Monitor customer acquisition costs closely.', 'Prepare for Series A fundraising in Q2.'],
         isRead: false,
       },
     }),
     prisma.alert.create({
       data: {
-        startupId: startup.id,
+        startupId: mainStartup.id,
         type: 'burn_rate',
         severity: 'info',
         title: 'Burn Rate Trending Up',
-        message: 'Monthly burn rate increased 8% from last month to $41,000.',
-        currentValue: 41000,
-        thresholdValue: 38000,
+        message: 'Monthly burn rate increased 5% from last month to $35,000.',
+        currentValue: 35000,
+        thresholdValue: 33000,
         recommendations: ['Audit cloud infrastructure costs', 'Review contractor and freelancer spending', 'Optimize marketing spend efficiency'],
         isRead: false,
       },
     }),
   ]);
-  console.log('✓ Created 2 alerts');
+  console.log('✓ Created 2 alerts for main startup');
 
-  // 12. Create Investor Updates
+  // 12. Create Investor Updates for main startup
   await prisma.investorUpdate.create({
-      data: {
-      startupId: startup.id,
-        title: 'Q4 2024 - Strong Growth & Product Launch',
-        periodStart: new Date('2024-10-01'),
-        periodEnd: new Date('2024-12-31'),
-      metrics: { revenue: 68000, mrr: 57800, arr: 693600, customers: 215, churnRate: 2.3, nps: 67, },
-        executiveSummary: `We had an exceptional Q4, achieving 42% revenue growth and successfully launching our Enterprise tier. Our ARR now stands at $694K, putting us on track for our $1M target by Q2 2025. Key highlights include landing 3 enterprise customers, reducing churn by 35%, and expanding our team with critical hires in engineering and customer success.`,
-      highlights: [ 'Revenue grew 42% QoQ to $68K MRR', 'Launched Enterprise tier with 3 early customers at $2K/mo each', 'Product NPS improved from 58 to 67', ],
+    data: {
+      startupId: mainStartup.id,
+      title: 'Q4 2024 - Strong Growth & Product Launch',
+      periodStart: new Date('2024-10-01'),
+      periodEnd: new Date('2024-12-31'),
+      metrics: { revenue: 45000, mrr: 38250, arr: 459000, customers: 215, churnRate: 2.3, nps: 67, },
+      executiveSummary: `We had an exceptional Q4, achieving 25% revenue growth and successfully launching our Enterprise tier. Our ARR now stands at $459K, putting us on track for our $600K target by Q2 2025. Key highlights include landing 3 enterprise customers, reducing churn by 35%, and expanding our team with critical hires in engineering and customer success.`,
+      highlights: [ 'Revenue grew 25% QoQ to $45K MRR', 'Launched Enterprise tier with 3 early customers at $2K/mo each', 'Product NPS improved from 58 to 67', ],
       challenges: [ 'Customer acquisition cost increased 15% due to competitive landscape', 'Enterprise sales cycle longer than anticipated (avg 60 days)', ],
       nextSteps: [ 'Launch self-service onboarding to reduce CAC', 'Develop case studies from enterprise customers', 'Begin Series A fundraising conversations', ],
-      revenueGrowth: 42, burnRate: 41000, runway: 15.8, isDraft: false, publishedAt: new Date(),
+      revenueGrowth: 25, burnRate: 35000, runway: 8.2, isDraft: false, publishedAt: new Date(),
     },
   });
-  console.log('✓ Created 1 investor update');
+  console.log('✓ Created 1 investor update for main startup');
 
   console.log('\n✅ Comprehensive seed completed successfully!');
   console.log('\n🔑 Login Credentials (password for all is "password123"):');
-  usersToCreate.forEach(u => console.log(`  - ${u.roleName}: ${u.email}`));
+  console.log('\n📊 Main Demo Account (TechNova Solutions):');
+  console.log('  - Admin: admin@technova.com');
+  console.log('  - CFO: cfo@technova.com');
+  console.log('  - Accountant: accountant@technova.com');
+  console.log('  - Demo User: demo@technova.com');
+  console.log('\n🏢 Other Demo Accounts:');
+  console.log('  - CloudScale Inc: ceo@cloudscale.com');
+  console.log('  - DataFlow Analytics: ceo@dataflow.com');
+  console.log('  - AI Innovations Lab: ceo@aiinnovations.com');
+  console.log('  - GreenTech Ventures: ceo@greentech.com');
+  console.log('\n💡 Use demo@technova.com for the best demo experience with full transaction history!');
 }
 
 main()

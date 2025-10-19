@@ -5,7 +5,7 @@ import { apiClient, TeamMember } from '@/lib/api';
 import { usePermissions } from '@/hooks/usePermissions';
 import AuthGuard from '@/components/auth/AuthGuard';
 import MainLayout from '@/components/layout/MainLayout';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';

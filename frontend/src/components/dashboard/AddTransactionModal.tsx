@@ -15,7 +15,7 @@ import toast from 'react-hot-toast';
 const transactionSchema = z.object({
   accountId: z.string().min(1, 'Please select an account'),
   type: z.enum(['CREDIT', 'DEBIT'], {
-    required_error: 'Please select a transaction type'
+    message: 'Please select a transaction type'
   }),
   description: z.string()
     .min(3, 'Description must be at least 3 characters')

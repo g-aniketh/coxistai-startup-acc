@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { Card, CardContent, CardHeader } from './Card';
+import { Card, CardContent, CardHeader } from './card';
 import { TrendingUp, TrendingDown, CheckCircle, Circle } from 'lucide-react';
 
 interface MetricCardProps {

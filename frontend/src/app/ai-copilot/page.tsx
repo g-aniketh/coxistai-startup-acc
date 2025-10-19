@@ -44,15 +44,36 @@ export default function AICopilotPage() {
   const generateInsights = async () => {
     setInsightsLoading(true);
     try {
-      const response = await apiClient.ai.getInsights();
-      if (response.success) {
-        setInsights(response.data);
-        toast.success('AI insights generated successfully!');
-      } else {
-        toast.error(response.message || 'Failed to generate insights');
-      }
+      // Mock data for demonstration
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+      
+      const mockInsights = {
+        keyMetrics: {
+          totalBalance: 127450,
+          monthlyBurn: 15400,
+          monthlyRevenue: 45200,
+          runway: 8.2
+        },
+        cashflowHealth: "Your cashflow is healthy with a positive net cashflow of $29,800/month. The AI CFO recommends maintaining current growth trajectory while monitoring burn rate closely. Your runway of 8.2 months provides adequate buffer for strategic investments.",
+        burnAnalysis: "Current burn rate of $15,400/month is 12% above forecast. Primary drivers: increased contractor costs (+$2,100), new SaaS tools (+$800), and office rent (+$1,200). Consider optimizing contractor utilization and reviewing SaaS subscriptions.",
+        costSavingSuggestions: [
+          "Cancel unused Slack Pro licenses: Save $240/month",
+          "Switch to annual billing for Figma: Save $180/month", 
+          "Optimize AWS usage: Potential $400/month savings",
+          "Negotiate better rates with contractors: Save $1,200/month"
+        ],
+        revenueOpportunities: [
+          "Implement usage-based pricing: +15% revenue potential",
+          "Expand to enterprise tier: +$5,000/month ARR",
+          "Launch partner program: +$2,000/month",
+          "Optimize conversion funnel: +8% revenue growth"
+        ]
+      };
+      
+      setInsights(mockInsights);
+      toast.success('AI insights generated successfully!');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to generate insights');
+      toast.error('Failed to generate insights');
     } finally {
       setInsightsLoading(false);
     }
@@ -66,15 +87,76 @@ export default function AICopilotPage() {
 
     setScenarioLoading(true);
     try {
-      const response = await apiClient.ai.runWhatIfScenario(scenario);
-      if (response.success) {
-        setScenarioResult(response.data);
-        toast.success('Scenario analyzed successfully!');
-      } else {
-        toast.error(response.message || 'Failed to analyze scenario');
-      }
+      // Mock data for demonstration
+      await new Promise(resolve => setTimeout(resolve, 3000)); // Simulate AI analysis
+      
+      const mockScenarioResult = {
+        scenario: scenario,
+        explanation: "Based on your current financial data and growth patterns, here's how this scenario would impact your business:",
+        impact: {
+          burnRateChange: scenario.includes('hire') ? "Monthly burn increases by $8,000 (from $15,400 to $23,400)" : 
+                        scenario.includes('reduce') ? "Monthly burn decreases by $1,500 (from $15,400 to $13,900)" :
+                        scenario.includes('revenue') ? "Monthly revenue increases by $9,040 (from $45,200 to $54,240)" :
+                        scenario.includes('funding') ? "Cash balance increases by $500,000, extending runway significantly" :
+                        "Burn rate decreases by $4,620 (from $15,400 to $10,780)",
+          runwayChange: scenario.includes('hire') ? "Runway reduces from 8.2 months to 6.1 months" :
+                       scenario.includes('reduce') ? "Runway extends from 8.2 months to 9.1 months" :
+                       scenario.includes('revenue') ? "Runway extends from 8.2 months to 10.4 months" :
+                       scenario.includes('funding') ? "Runway extends from 8.2 months to 18.7 months" :
+                       "Runway extends from 8.2 months to 11.8 months",
+          recommendation: scenario.includes('hire') ? "Consider hiring if revenue growth can support increased burn. Monitor runway closely." :
+                         scenario.includes('reduce') ? "Excellent cost optimization opportunity. Implement immediately." :
+                         scenario.includes('revenue') ? "Focus on achieving this growth through marketing and product improvements." :
+                         scenario.includes('funding') ? "Perfect timing for fundraising. Use extended runway for growth initiatives." :
+                         "Good cost-cutting strategy. Monitor impact on growth metrics."
+        },
+        risks: scenario.includes('hire') ? [
+          "Increased burn rate reduces financial runway",
+          "Higher fixed costs reduce flexibility",
+          "May need additional funding sooner"
+        ] : scenario.includes('reduce') ? [
+          "Potential impact on team productivity",
+          "May slow down development velocity"
+        ] : scenario.includes('revenue') ? [
+          "Aggressive growth targets may be unrealistic",
+          "Increased customer acquisition costs",
+          "Potential quality issues with rapid scaling"
+        ] : scenario.includes('funding') ? [
+          "Dilution of equity",
+          "Pressure to meet investor expectations",
+          "Increased reporting requirements"
+        ] : [
+          "Reduced marketing reach",
+          "Potential impact on brand awareness",
+          "May slow customer acquisition"
+        ],
+        opportunities: scenario.includes('hire') ? [
+          "Faster product development",
+          "Better customer support",
+          "Increased revenue potential"
+        ] : scenario.includes('reduce') ? [
+          "Improved profit margins",
+          "Extended runway for strategic investments",
+          "Better cash flow management"
+        ] : scenario.includes('revenue') ? [
+          "Higher valuation potential",
+          "Better unit economics",
+          "Increased market share"
+        ] : scenario.includes('funding') ? [
+          "Accelerated growth",
+          "Competitive advantage",
+          "Ability to hire top talent"
+        ] : [
+          "Improved efficiency",
+          "Better ROI on marketing spend",
+          "Focus on high-converting channels"
+        ]
+      };
+      
+      setScenarioResult(mockScenarioResult);
+      toast.success('Scenario analyzed successfully!');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to analyze scenario');
+      toast.error('Failed to analyze scenario');
     } finally {
       setScenarioLoading(false);
     }
@@ -93,6 +175,25 @@ export default function AICopilotPage() {
             <p className="text-muted-foreground mt-1">
               Get AI-powered financial insights and run scenario analysis
             </p>
+          </div>
+
+          {/* Demo Mode Banner */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Sparkles className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-blue-900">AI CFO Demo Mode</h3>
+                  <p className="text-sm text-blue-700">Experience AI-powered financial analysis with mock data • Live AI integration coming soon</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-blue-600">
+                <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+                Mock Analysis
+              </div>
+            </div>
           </div>
 
           {/* Tabs */}

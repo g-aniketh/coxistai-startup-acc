@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { apiClient } from '@/lib/api';
 import AuthGuard from '@/components/auth/AuthGuard';
 import MainLayout from '@/components/layout/MainLayout';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sparkles, TrendingDown, TrendingUp, Lightbulb, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';

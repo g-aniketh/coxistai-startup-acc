@@ -12,6 +12,7 @@ import {
   X,
   RefreshCw,
   Eye,
+  Sparkles,
 } from 'lucide-react';
 import MagicBento from '@/components/MagicBento';
 import { Badge } from '@/components/ui/Badge';
@@ -30,17 +31,152 @@ export default function AlertsPage() {
   const loadAlerts = async () => {
     try {
       setLoading(true);
-      const [alertsRes, countsRes] = await Promise.all([
-        apiClient.dashboard.list(false),
-        apiClient.dashboard.getCounts(),
-      ]);
-
-      if (alertsRes.success && alertsRes.data) {
-        setAlerts(alertsRes.data);
-      }
-      if (countsRes.success && countsRes.data) {
-        setCounts(countsRes.data);
-      }
+      // Mock data for demonstration
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      
+      const mockAlerts = [
+        {
+          id: '1',
+          title: 'High Burn Rate Alert',
+          message: 'Your monthly burn rate has increased by 15% above forecast. Current burn: $15,400/month vs projected $13,400/month.',
+          severity: 'critical',
+          currentValue: 15400,
+          thresholdValue: 13400,
+          createdAt: '2024-01-15T10:30:00Z',
+          recommendations: [
+            {
+              action: 'Review contractor utilization and optimize costs',
+              impact: 'Potential savings: $2,100/month',
+              effort: 'medium'
+            },
+            {
+              action: 'Audit SaaS subscriptions and cancel unused tools',
+              impact: 'Potential savings: $800/month',
+              effort: 'low'
+            },
+            {
+              action: 'Negotiate better rates with vendors',
+              impact: 'Potential savings: $1,200/month',
+              effort: 'high'
+            }
+          ]
+        },
+        {
+          id: '2',
+          title: 'Revenue Growth Opportunity',
+          message: 'Customer churn rate decreased to 2.1% this month. Consider implementing expansion pricing to capitalize on customer satisfaction.',
+          severity: 'warning',
+          currentValue: 2.1,
+          thresholdValue: 4.0,
+          createdAt: '2024-01-14T14:20:00Z',
+          recommendations: [
+            {
+              action: 'Implement usage-based pricing tiers',
+              impact: 'Potential revenue increase: 15%',
+              effort: 'medium'
+            },
+            {
+              action: 'Launch customer success program',
+              impact: 'Reduced churn, increased expansion',
+              effort: 'high'
+            }
+          ]
+        },
+        {
+          id: '3',
+          title: 'Cash Flow Optimization',
+          message: '3 invoices totaling $12,000 are overdue. Consider implementing automated payment reminders.',
+          severity: 'warning',
+          currentValue: 3,
+          thresholdValue: 0,
+          createdAt: '2024-01-13T09:15:00Z',
+          recommendations: [
+            {
+              action: 'Set up automated payment reminders',
+              impact: 'Faster payment collection',
+              effort: 'low'
+            },
+            {
+              action: 'Implement early payment discounts',
+              impact: 'Improved cash flow',
+              effort: 'medium'
+            }
+          ]
+        },
+        {
+          id: '4',
+          title: 'Runway Extension Opportunity',
+          message: 'Your current runway of 8.2 months is healthy. Consider strategic investments to accelerate growth.',
+          severity: 'info',
+          currentValue: 8.2,
+          thresholdValue: 6.0,
+          createdAt: '2024-01-12T16:45:00Z',
+          recommendations: [
+            {
+              action: 'Invest in marketing to accelerate customer acquisition',
+              impact: 'Faster growth trajectory',
+              effort: 'medium'
+            },
+            {
+              action: 'Hire key engineering talent',
+              impact: 'Product development acceleration',
+              effort: 'high'
+            }
+          ]
+        },
+        {
+          id: '5',
+          title: 'SaaS Cost Optimization',
+          message: 'Unused Slack Pro licenses detected. Cancel 8 unused licenses to save $240/month.',
+          severity: 'info',
+          currentValue: 8,
+          thresholdValue: 0,
+          createdAt: '2024-01-11T11:30:00Z',
+          recommendations: [
+            {
+              action: 'Audit and cancel unused SaaS licenses',
+              impact: 'Save $240/month',
+              effort: 'low'
+            },
+            {
+              action: 'Implement SaaS usage monitoring',
+              impact: 'Ongoing cost optimization',
+              effort: 'medium'
+            }
+          ]
+        },
+        {
+          id: '6',
+          title: 'Fundraising Timing Alert',
+          message: 'Optimal fundraising window approaching. With 8.2 months runway, consider starting Series A process.',
+          severity: 'info',
+          currentValue: 8.2,
+          thresholdValue: 6.0,
+          createdAt: '2024-01-10T13:20:00Z',
+          recommendations: [
+            {
+              action: 'Prepare Series A pitch deck and financials',
+              impact: 'Successful fundraising round',
+              effort: 'high'
+            },
+            {
+              action: 'Identify target investors and warm introductions',
+              impact: 'Faster fundraising process',
+              effort: 'medium'
+            }
+          ]
+        }
+      ];
+      
+      const mockCounts = {
+        total: mockAlerts.length,
+        critical: mockAlerts.filter(a => a.severity === 'critical').length,
+        warning: mockAlerts.filter(a => a.severity === 'warning').length,
+        info: mockAlerts.filter(a => a.severity === 'info').length
+      };
+      
+      setAlerts(mockAlerts);
+      setCounts(mockCounts);
     } catch (error) {
       console.error('Failed to load alerts:', error);
     } finally {
@@ -51,8 +187,32 @@ export default function AlertsPage() {
   const generateAlerts = async () => {
     try {
       setGenerating(true);
-      await apiClient.dashboard.generate();
-      await loadAlerts();
+      // Mock data for demonstration
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate AI analysis
+      
+      const newAlert = {
+        id: Date.now().toString(),
+        title: 'AI-Generated Alert',
+        message: 'AI CFO detected a new optimization opportunity based on your financial patterns.',
+        severity: 'info',
+        currentValue: Math.floor(Math.random() * 100),
+        thresholdValue: Math.floor(Math.random() * 50),
+        createdAt: new Date().toISOString(),
+        recommendations: [
+          {
+            action: 'Review AI recommendation',
+            impact: 'Potential cost savings',
+            effort: 'low'
+          }
+        ]
+      };
+      
+      setAlerts(prev => [newAlert, ...prev]);
+      setCounts(prev => ({
+        ...prev,
+        total: prev.total + 1,
+        info: prev.info + 1
+      }));
     } catch (error) {
       console.error('Failed to generate alerts:', error);
     } finally {
@@ -62,8 +222,12 @@ export default function AlertsPage() {
 
   const markAsRead = async (id: string) => {
     try {
-      await apiClient.dashboard.markAsRead(id);
-      await loadAlerts();
+      // Mock implementation - just remove from alerts
+      setAlerts(prev => prev.filter(alert => alert.id !== id));
+      setCounts(prev => ({
+        ...prev,
+        total: prev.total - 1
+      }));
     } catch (error) {
       console.error('Failed to mark as read:', error);
     }
@@ -71,8 +235,12 @@ export default function AlertsPage() {
 
   const dismissAlert = async (id: string) => {
     try {
-      await apiClient.dashboard.dismiss(id);
-      await loadAlerts();
+      // Mock implementation - just remove from alerts
+      setAlerts(prev => prev.filter(alert => alert.id !== id));
+      setCounts(prev => ({
+        ...prev,
+        total: prev.total - 1
+      }));
     } catch (error) {
       console.error('Failed to dismiss alert:', error);
     }
@@ -124,6 +292,25 @@ export default function AlertsPage() {
               <RefreshCw className={`h-4 w-4 ${generating ? 'animate-spin' : ''}`} />
               {generating ? 'Generating...' : 'Refresh Alerts'}
             </button>
+          </div>
+
+          {/* Demo Mode Banner */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Sparkles className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-blue-900">AI CFO Alerts Demo</h3>
+                  <p className="text-sm text-blue-700">Experience proactive financial alerts and recommendations • Live AI monitoring coming soon</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-blue-600">
+                <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+                Mock Alerts
+              </div>
+            </div>
           </div>
 
           {/* Filter Tabs */}

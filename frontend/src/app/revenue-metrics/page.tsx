@@ -63,7 +63,7 @@ export default function RevenueMetricsPage() {
   const syncData = async () => {
     try {
       setSyncing(true);
-      await api.stripe.sync();
+      await apiClient.stripe.sync();
       await apiClient.dashboard.calculate();
       await loadData();
     } catch (error) {
