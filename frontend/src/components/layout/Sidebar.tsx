@@ -49,11 +49,13 @@ export default function Sidebar() {
     <div className="flex flex-col h-full bg-[#1E1E1E] text-white">
       {/* Header */}
       <div className="p-6 flex items-center gap-3">
-         <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center">
-            <svg className="h-6 w-6 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-        </div>
+        <Image
+          src="/favicon-32x32.png"
+          alt="Coxist AI CFO Logo"
+          width={32}
+          height={32}
+          className="rounded-lg"
+        />
         <h2 className="font-bold text-xl">Coxist AI CFO</h2>
       </div>
 

@@ -5,11 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/auth';
 import AuthGuard from '@/components/auth/AuthGuard';
-import { Sparkles, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import GradientText from '@/components/GradientText';
-import Magnet from '@/components/Magnet';
 import Aurora from '@/components/Aurora';
-import { cn } from '@/lib/utils';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -109,11 +107,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className={cn(
-                  'w-full bg-primary text-primary-foreground font-medium py-3 px-4 rounded-lg',
-                  'hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background',
-                  'disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200'
-                )}
+                className="w-full bg-blue-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </button>
