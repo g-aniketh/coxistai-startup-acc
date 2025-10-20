@@ -39,11 +39,6 @@ export default function LoginPage() {
         </div>
         <div className="w-full max-w-md relative z-10 space-y-8">
           <div className="text-center">
-            <div className="inline-block p-2 bg-card/50 border border-border rounded-full mb-4">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Sparkles className="h-6 w-6 text-primary" />
-              </div>
-            </div>
             <h1 className="text-3xl font-bold">
               <GradientText>Welcome Back</GradientText>
             </h1>
@@ -111,19 +106,17 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <Magnet>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className={cn(
-                    'w-full bg-primary text-primary-foreground font-medium py-3 px-4 rounded-lg',
-                    'hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background',
-                    'disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200'
-                  )}
-                >
-                  {isLoading ? 'Signing in...' : 'Sign In'}
-                </button>
-              </Magnet>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={cn(
+                  'w-full bg-primary text-primary-foreground font-medium py-3 px-4 rounded-lg',
+                  'hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background',
+                  'disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200'
+                )}
+              >
+                {isLoading ? 'Signing in...' : 'Sign In'}
+              </button>
             </form>
           </div>
           <p className="text-center text-sm text-muted-foreground">

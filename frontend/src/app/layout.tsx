@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full bg-background text-foreground`}>
-        <ThemeProvider defaultTheme="dark" storageKey="coxistai-theme">
+        <ThemeProvider defaultTheme="light" storageKey="coxistai-theme">
           <AuthProvider>
             <Toaster 
               position="top-center" 

@@ -39,7 +39,7 @@ export default function AIChatbot({ className }: AIChatbotProps) {
     {
       id: '1',
       type: 'ai',
-      content: "Hi! I'm your AI CFO assistant. I can help you with financial questions about your business. Try asking me about your revenue, expenses, runway, or any other financial metrics!",
+      content: "Hi! I'm your AI CFO assistant. How can I help you with your startup's finances today?",
       timestamp: new Date()
     }
   ]);
@@ -274,7 +274,7 @@ export default function AIChatbot({ className }: AIChatbotProps) {
             {data.breakdown && (
               <div className="space-y-1">
                 {data.breakdown.map((item: any, index: number) => (
-                  <div key={index} className="flex justify-between text-sm">
+                  <div key={index} className="flex justify-between text-sm text-gray-700">
                     <span>{item.source}</span>
                     <span className="font-medium">{formatCurrency(item.amount)}</span>
                   </div>
@@ -297,7 +297,7 @@ export default function AIChatbot({ className }: AIChatbotProps) {
             {data.breakdown && (
               <div className="space-y-1">
                 {data.breakdown.map((item: any, index: number) => (
-                  <div key={index} className="flex justify-between text-sm">
+                  <div key={index} className="flex justify-between text-sm text-gray-700">
                     <span>{item.category}</span>
                     <span className="font-medium">{formatCurrency(item.amount)}</span>
                   </div>
@@ -320,7 +320,7 @@ export default function AIChatbot({ className }: AIChatbotProps) {
             {data.accounts && (
               <div className="space-y-1">
                 {data.accounts.map((account: any, index: number) => (
-                  <div key={index} className="flex justify-between text-sm">
+                  <div key={index} className="flex justify-between text-sm text-gray-700">
                     <span>{account.name}</span>
                     <span className="font-medium">{formatCurrency(account.balance)}</span>
                   </div>
@@ -341,7 +341,7 @@ export default function AIChatbot({ className }: AIChatbotProps) {
               {data.months} months
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant={data.status === 'healthy' ? 'default' : 'destructive'}>
+              <Badge className={data.status === 'healthy' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
                 {data.status}
               </Badge>
               <span className="text-sm text-purple-700">{data.recommendation}</span>
@@ -386,7 +386,11 @@ export default function AIChatbot({ className }: AIChatbotProps) {
             </div>
             <div className="space-y-1">
               {data.suggestions.map((suggestion: string, index: number) => (
-                <div key={index} className="text-sm text-gray-700 cursor-pointer hover:text-gray-900">
+                <div 
+                  key={index} 
+                  className="text-sm text-gray-700 cursor-pointer hover:text-gray-900 hover:bg-gray-100 p-1 rounded"
+                  onClick={() => setInputValue(suggestion)}
+                >
                   • {suggestion}
                 </div>
               ))}
@@ -400,61 +404,53 @@ export default function AIChatbot({ className }: AIChatbotProps) {
   };
 
   return (
-    <Card className={cn("w-full max-w-2xl mx-auto", className)}>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-primary" />
-          AI CFO Assistant
-          <Badge variant="outline" className="ml-auto">Demo Mode</Badge>
-        </CardTitle>
-      </CardHeader>
+    <Card className={cn("w-full shadow-lg border-0 rounded-xl bg-white", className)}>
       <CardContent className="p-0">
-        {/* Messages */}
-        <ScrollArea ref={scrollAreaRef} className="h-96 px-4">
+        <ScrollArea ref={scrollAreaRef} className="h-[60vh] p-4 bg-white">
           <div className="space-y-4 pb-4">
             {messages.map((message) => (
               <div
                 key={message.id}
                 className={cn(
-                  "flex gap-3",
+                  "flex items-start gap-3",
                   message.type === 'user' ? 'justify-end' : 'justify-start'
                 )}
               >
                 {message.type === 'ai' && (
-                  <div className="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                    {getMessageIcon(message.type)}
+                  <div className="flex-shrink-0 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                    <Bot className="h-4 w-4 text-gray-600" />
                   </div>
                 )}
                 <div
                   className={cn(
-                    "max-w-[80%] rounded-lg px-3 py-2",
+                    "max-w-[80%] rounded-lg px-4 py-3",
                     message.type === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
+                      ? 'bg-[#607c47] text-white'
+                      : 'bg-gray-100 text-gray-800'
                   )}
                 >
                   <div className="text-sm whitespace-pre-wrap">{message.content}</div>
                   {message.data && renderDataVisualization(message.data)}
-                  <div className="text-xs opacity-70 mt-1">
-                    {message.timestamp.toLocaleTimeString()}
+                  <div className="text-xs opacity-70 mt-1 text-right">
+                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
                 {message.type === 'user' && (
-                  <div className="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                    {getMessageIcon(message.type)}
+                  <div className="flex-shrink-0 w-8 h-8 bg-[#607c47] rounded-full flex items-center justify-center">
+                    <User className="h-4 w-4 text-white" />
                   </div>
                 )}
               </div>
             ))}
             {isLoading && (
-              <div className="flex gap-3 justify-start">
-                <div className="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Bot className="h-4 w-4" />
+              <div className="flex items-start gap-3 justify-start">
+                <div className="flex-shrink-0 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                  <Bot className="h-4 w-4 text-gray-600" />
                 </div>
-                <div className="bg-muted rounded-lg px-3 py-2">
+                <div className="bg-gray-100 rounded-lg px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-sm">AI is thinking...</span>
+                    <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+                    <span className="text-sm text-gray-600">AI is thinking...</span>
                   </div>
                 </div>
               </div>
@@ -463,17 +459,22 @@ export default function AIChatbot({ className }: AIChatbotProps) {
         </ScrollArea>
 
         {/* Input */}
-        <form onSubmit={handleSubmit} className="p-4 border-t">
-          <div className="flex gap-2">
+        <form onSubmit={handleSubmit} className="p-4 border-t bg-gray-50/50 rounded-b-xl">
+          <div className="relative">
             <Input
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Ask me about your finances..."
-              className="flex-1"
+              placeholder="Ask your AI CFO anything..."
+              className="pr-12 bg-white rounded-lg h-12"
               disabled={isLoading}
             />
-            <Button type="submit" disabled={isLoading || !inputValue.trim()}>
-              <Send className="h-4 w-4" />
+            <Button 
+              type="submit" 
+              size="icon"
+              disabled={isLoading || !inputValue.trim()}
+              className="absolute top-1/2 right-2 -translate-y-1/2 h-8 w-8 rounded-md bg-[#607c47] hover:bg-[#4a6129]"
+            >
+              <Send className="h-4 w-4 text-white" />
             </Button>
           </div>
         </form>

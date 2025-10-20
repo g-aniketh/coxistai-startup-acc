@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,17 +20,21 @@ import {
   Hash, 
   Tag, 
   FileText,
-  Plus,
+  Save,
   X,
   TrendingUp,
-  AlertTriangle
+  AlertTriangle,
+  Plus,
+  Minus
 } from 'lucide-react';
+import { Product } from '@/lib/api';
 import toast from 'react-hot-toast';
 
-interface AddProductModalProps {
+interface EditProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (productData: any) => void;
+  product: Product | null;
 }
 
 const productCategories = [
@@ -43,23 +47,42 @@ const productCategories = [
   'Other'
 ];
 
-export default function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalProps) {
+export default function EditProductModal({ isOpen, onClose, onSubmit, product }: EditProductModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     category: '',
     price: '',
-    initialStock: '',
+    quantity: '',
     minStockLevel: '',
     sku: '',
     cost: ''
   });
   const [loading, setLoading] = useState(false);
+  const [stockAdjustment, setStockAdjustment] = useState({
+    type: 'set' as 'set' | 'add' | 'subtract',
+    amount: ''
+  });
+
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        name: product.name,
+        description: product.description || '',
+        category: product.category,
+        price: product.price.toString(),
+        quantity: product.quantity.toString(),
+        minStockLevel: (product.minStockLevel || 0).toString(),
+        sku: product.sku || '',
+        cost: (product.cost || 0).toString()
+      });
+    }
+  }, [product]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.price || !formData.initialStock) {
+    if (!formData.name || !formData.price || !formData.quantity) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -68,22 +91,23 @@ export default function AddProductModal({ isOpen, onClose, onSubmit }: AddProduc
       setLoading(true);
       
       const productData = {
+        id: product?.id,
         name: formData.name,
         description: formData.description,
         category: formData.category,
         price: parseFloat(formData.price),
-        quantity: parseInt(formData.initialStock),
+        quantity: parseInt(formData.quantity),
         minStockLevel: parseInt(formData.minStockLevel) || 0,
         sku: formData.sku,
         cost: parseFloat(formData.cost) || 0,
-        salesCount: 0
+        salesCount: product?.salesCount || 0
       };
       
       onSubmit(productData);
       handleClose();
     } catch (error) {
-      console.error('Failed to add product:', error);
-      toast.error('Failed to add product');
+      console.error('Failed to update product:', error);
+      toast.error('Failed to update product');
     } finally {
       setLoading(false);
     }
@@ -95,12 +119,38 @@ export default function AddProductModal({ isOpen, onClose, onSubmit }: AddProduc
       description: '',
       category: '',
       price: '',
-      initialStock: '',
+      quantity: '',
       minStockLevel: '',
       sku: '',
       cost: ''
     });
+    setStockAdjustment({ type: 'set', amount: '' });
     onClose();
+  };
+
+  const handleStockAdjustment = () => {
+    if (!stockAdjustment.amount) return;
+    
+    const adjustmentAmount = parseInt(stockAdjustment.amount);
+    const currentQuantity = parseInt(formData.quantity);
+    
+    let newQuantity = currentQuantity;
+    
+    switch (stockAdjustment.type) {
+      case 'add':
+        newQuantity = currentQuantity + adjustmentAmount;
+        break;
+      case 'subtract':
+        newQuantity = Math.max(0, currentQuantity - adjustmentAmount);
+        break;
+      case 'set':
+        newQuantity = adjustmentAmount;
+        break;
+    }
+    
+    setFormData({ ...formData, quantity: newQuantity.toString() });
+    setStockAdjustment({ type: 'set', amount: '' });
+    toast.success('Stock updated successfully');
   };
 
   const formatCurrency = (value: string) => {
@@ -122,13 +172,28 @@ export default function AddProductModal({ isOpen, onClose, onSubmit }: AddProduc
     return null;
   };
 
+  const getStockStatus = () => {
+    const currentStock = parseInt(formData.quantity) || 0;
+    const minLevel = parseInt(formData.minStockLevel) || 0;
+    
+    if (currentStock === 0) {
+      return { type: 'error', message: 'Out of Stock', color: 'text-red-600' };
+    } else if (currentStock <= minLevel) {
+      return { type: 'warning', message: 'Low Stock', color: 'text-yellow-600' };
+    } else {
+      return { type: 'success', message: 'In Stock', color: 'text-green-600' };
+    }
+  };
+
+  if (!product) return null;
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-[#2C2C2C] flex items-center gap-2">
-            <Plus className="h-5 w-5 text-[#607c47]" />
-            Add New Product
+            <Package className="h-5 w-5 text-[#607c47]" />
+            Edit Product: {product.name}
           </DialogTitle>
         </DialogHeader>
 
@@ -160,7 +225,7 @@ export default function AddProductModal({ isOpen, onClose, onSubmit }: AddProduc
 
               <div className="space-y-2">
                 <Label htmlFor="sku" className="text-sm font-medium text-[#2C2C2C]">
-                  SKU (Optional)
+                  SKU
                 </Label>
                 <div className="relative">
                   <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -294,23 +359,23 @@ export default function AddProductModal({ isOpen, onClose, onSubmit }: AddProduc
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="initialStock" className="text-sm font-medium text-[#2C2C2C]">
-                  Initial Stock *
+                <Label htmlFor="quantity" className="text-sm font-medium text-[#2C2C2C]">
+                  Current Stock *
                 </Label>
                 <div className="relative">
                   <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
-                    id="initialStock"
+                    id="quantity"
                     type="number"
                     placeholder="0"
                     className="pl-10"
-                    value={formData.initialStock}
-                    onChange={(e) => setFormData({ ...formData, initialStock: e.target.value })}
+                    value={formData.quantity}
+                    onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
                     required
                   />
                 </div>
                 <div className="text-xs text-gray-600">
-                  Starting quantity in inventory
+                  Current quantity in inventory
                 </div>
               </div>
 
@@ -335,62 +400,96 @@ export default function AddProductModal({ isOpen, onClose, onSubmit }: AddProduc
               </div>
             </div>
 
-            {/* Stock Status Preview */}
-            {formData.initialStock && formData.minStockLevel && (
-              <Card className={`border ${
-                parseInt(formData.initialStock) <= parseInt(formData.minStockLevel) 
-                  ? 'bg-red-50 border-red-200' 
-                  : 'bg-green-50 border-green-200'
-              }`}>
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-2">
-                    {parseInt(formData.initialStock) <= parseInt(formData.minStockLevel) ? (
-                      <AlertTriangle className="h-4 w-4 text-red-600" />
-                    ) : (
-                      <Package className="h-4 w-4 text-green-600" />
-                    )}
-                    <span className={`text-sm font-medium ${
-                      parseInt(formData.initialStock) <= parseInt(formData.minStockLevel) 
-                        ? 'text-red-900' 
-                        : 'text-green-900'
-                    }`}>
-                      {parseInt(formData.initialStock) <= parseInt(formData.minStockLevel) 
-                        ? 'Low Stock Alert' 
-                        : 'Stock Level OK'
-                      }
-                    </span>
-                  </div>
-                  <div className={`text-xs mt-1 ${
-                    parseInt(formData.initialStock) <= parseInt(formData.minStockLevel) 
-                      ? 'text-red-700' 
-                      : 'text-green-700'
-                  }`}>
-                    Initial stock ({formData.initialStock}) is {parseInt(formData.initialStock) <= parseInt(formData.minStockLevel) ? 'below' : 'above'} minimum level ({formData.minStockLevel})
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Product Summary */}
-          {formData.name && formData.price && formData.initialStock && (
-            <Card className="bg-gray-50 border-gray-200">
+            {/* Quick Stock Adjustment */}
+            <Card className="bg-blue-50 border-blue-200">
               <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Package className="h-4 w-4 text-[#607c47]" />
-                  <span className="font-medium text-[#2C2C2C]">Product Summary</span>
+                <div className="flex items-center gap-2 mb-3">
+                  <Hash className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium text-blue-900">Quick Stock Adjustment</span>
                 </div>
-                <div className="space-y-1 text-sm text-gray-600">
-                  <div><strong>Name:</strong> {formData.name}</div>
-                  <div><strong>Price:</strong> {formatCurrency(formData.price)}</div>
-                  <div><strong>Initial Stock:</strong> {formData.initialStock} units</div>
-                  {formData.category && <div><strong>Category:</strong> {formData.category}</div>}
-                  {formData.sku && <div><strong>SKU:</strong> {formData.sku}</div>}
-                  {calculateProfitMargin() && <div><strong>Profit Margin:</strong> {calculateProfitMargin()}%</div>}
+                <div className="flex gap-2 items-end">
+                  <div className="flex-1">
+                    <Label className="text-sm text-blue-700">Adjustment Type</Label>
+                    <Select value={stockAdjustment.type} onValueChange={(value: 'set' | 'add' | 'subtract') => setStockAdjustment({ ...stockAdjustment, type: value })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="set">Set to</SelectItem>
+                        <SelectItem value="add">Add</SelectItem>
+                        <SelectItem value="subtract">Subtract</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex-1">
+                    <Label className="text-sm text-blue-700">Amount</Label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      value={stockAdjustment.amount}
+                      onChange={(e) => setStockAdjustment({ ...stockAdjustment, amount: e.target.value })}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleStockAdjustment}
+                    disabled={!stockAdjustment.amount}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Apply
+                  </Button>
                 </div>
               </CardContent>
             </Card>
-          )}
+
+            {/* Stock Status */}
+            <Card className={`border ${
+              getStockStatus().type === 'error' ? 'bg-red-50 border-red-200' :
+              getStockStatus().type === 'warning' ? 'bg-yellow-50 border-yellow-200' :
+              'bg-green-50 border-green-200'
+            }`}>
+              <CardContent className="p-3">
+                <div className="flex items-center gap-2">
+                  {getStockStatus().type === 'error' ? (
+                    <AlertTriangle className="h-4 w-4 text-red-600" />
+                  ) : getStockStatus().type === 'warning' ? (
+                    <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                  ) : (
+                    <Package className="h-4 w-4 text-green-600" />
+                  )}
+                  <span className={`text-sm font-medium ${getStockStatus().color}`}>
+                    {getStockStatus().message}
+                  </span>
+                </div>
+                <div className={`text-xs mt-1 ${
+                  getStockStatus().type === 'error' ? 'text-red-700' :
+                  getStockStatus().type === 'warning' ? 'text-yellow-700' :
+                  'text-green-700'
+                }`}>
+                  Current stock: {formData.quantity} units | Min level: {formData.minStockLevel || 0} units
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Product Summary */}
+          <Card className="bg-gray-50 border-gray-200">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Package className="h-4 w-4 text-[#607c47]" />
+                <span className="font-medium text-[#2C2C2C]">Product Summary</span>
+              </div>
+              <div className="space-y-1 text-sm text-gray-600">
+                <div><strong>Name:</strong> {formData.name}</div>
+                <div><strong>Price:</strong> {formatCurrency(formData.price)}</div>
+                <div><strong>Current Stock:</strong> {formData.quantity} units</div>
+                <div><strong>Status:</strong> {getStockStatus().message}</div>
+                {formData.category && <div><strong>Category:</strong> {formData.category}</div>}
+                {formData.sku && <div><strong>SKU:</strong> {formData.sku}</div>}
+                {calculateProfitMargin() && <div><strong>Profit Margin:</strong> {calculateProfitMargin()}%</div>}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Actions */}
           <div className="flex gap-3 pt-4 border-t border-gray-200">
@@ -405,10 +504,11 @@ export default function AddProductModal({ isOpen, onClose, onSubmit }: AddProduc
             </Button>
             <Button
               type="submit"
-              disabled={loading || !formData.name || !formData.price || !formData.initialStock}
+              disabled={loading || !formData.name || !formData.price || !formData.quantity}
               className="flex-1 bg-[#607c47] hover:bg-[#4a6129] text-white"
             >
-              {loading ? 'Adding...' : 'Add Product'}
+              <Save className="h-4 w-4 mr-2" />
+              {loading ? 'Updating...' : 'Update Product'}
             </Button>
           </div>
         </form>

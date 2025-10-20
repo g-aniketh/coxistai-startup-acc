@@ -1,192 +1,341 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { apiClient, BankAccount } from '@/lib/api';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
+import { 
+  DollarSign, 
+  Calendar, 
+  FileText, 
+  Tag, 
+  Building2,
+  TrendingUp,
+  TrendingDown,
+  Plus,
+  X
+} from 'lucide-react';
+import { BankAccount } from '@/lib/api';
 import toast from 'react-hot-toast';
 
-// Zod validation schema
-const transactionSchema = z.object({
-  accountId: z.string().min(1, 'Please select an account'),
-  type: z.enum(['CREDIT', 'DEBIT'], {
-    message: 'Please select a transaction type'
-  }),
-  description: z.string()
-    .min(3, 'Description must be at least 3 characters')
-    .max(200, 'Description must be less than 200 characters'),
-  amount: z.number()
-    .positive('Amount must be greater than 0')
-    .max(1000000000, 'Amount is too large'),
-});
-
-type TransactionFormData = z.infer<typeof transactionSchema>;
+// Demo Account interface for the modal
+interface DemoAccount {
+  id: string;
+  name: string;
+  balance: number;
+}
 
 interface AddTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  accounts: BankAccount[];
+  accounts: DemoAccount[];
 }
 
+const transactionCategories = [
+  { value: 'income', label: 'Income', icon: TrendingUp, color: 'text-green-600' },
+  { value: 'expense', label: 'Expense', icon: TrendingDown, color: 'text-red-600' },
+];
+
+const incomeSubcategories = [
+  'Sales Revenue',
+  'Investment',
+  'Grant',
+  'Interest Income',
+  'Other Income'
+];
+
+const expenseSubcategories = [
+  'Office Rent',
+  'Salaries',
+  'Marketing',
+  'Software/SaaS',
+  'Equipment',
+  'Travel',
+  'Professional Services',
+  'Utilities',
+  'Insurance',
+  'Other Expenses'
+];
+
 export default function AddTransactionModal({ isOpen, onClose, onSuccess, accounts }: AddTransactionModalProps) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    setValue,
-    watch,
-    reset,
-  } = useForm<TransactionFormData>({
-    resolver: zodResolver(transactionSchema),
-    defaultValues: {
-      type: 'CREDIT',
-      description: '',
-    },
+  const [formData, setFormData] = useState({
+    description: '',
+    amount: '',
+    type: 'expense' as 'income' | 'expense',
+    category: '',
+    accountId: '',
+    date: new Date().toISOString().split('T')[0],
+    notes: ''
   });
+  const [loading, setLoading] = useState(false);
 
-  const selectedType = watch('type');
-  const selectedAccountId = watch('accountId');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.description || !formData.amount || !formData.category || !formData.accountId) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
 
-  const onSubmit = async (data: TransactionFormData) => {
     try {
-      const response = await apiClient.transactions.create({
-        amount: data.amount,
-        type: data.type,
-        description: data.description,
-        accountId: data.accountId,
-      });
-
-      if (response.success) {
-        toast.success(`${data.type === 'CREDIT' ? 'Income' : 'Expense'} transaction added successfully!`);
-        reset();
-        onSuccess();
-        onClose();
-      } else {
-        toast.error(response.message || 'Failed to add transaction');
-      }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to add transaction');
+      setLoading(true);
+      
+      // Mock API call - in real implementation, this would call the backend
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast.success('Transaction added successfully!');
+      onSuccess();
+      handleClose();
+    } catch (error) {
+      console.error('Failed to add transaction:', error);
+      toast.error('Failed to add transaction');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleClose = () => {
-    reset();
+    setFormData({
+      description: '',
+      amount: '',
+      type: 'expense',
+      category: '',
+      accountId: '',
+      date: new Date().toISOString().split('T')[0],
+      notes: ''
+    });
     onClose();
   };
 
+  const formatCurrency = (value: string) => {
+    const number = parseFloat(value);
+    if (isNaN(number)) return '';
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(number);
+  };
+
+  const selectedCategory = transactionCategories.find(cat => cat.value === formData.type);
+  const subcategories = formData.type === 'income' ? incomeSubcategories : expenseSubcategories;
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add Transaction</DialogTitle>
-          <DialogDescription>
-            Simulate a financial transaction (income or expense).
-          </DialogDescription>
+          <DialogTitle className="text-xl font-semibold text-[#2C2C2C] flex items-center gap-2">
+            <Plus className="h-5 w-5 text-[#607c47]" />
+            Add New Transaction
+          </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Bank Account Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="account">Bank Account *</Label>
-            <Select
-              value={selectedAccountId}
-              onValueChange={(value) => setValue('accountId', value, { shouldValidate: true })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select account" />
-              </SelectTrigger>
-              <SelectContent>
-                {accounts.map((account) => (
-                  <SelectItem key={account.id} value={account.id}>
-                    {account.accountName} (${account.balance.toLocaleString()})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.accountId && (
-              <p className="text-sm text-red-500">{errors.accountId.message}</p>
-            )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Transaction Type Selection */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium text-[#2C2C2C]">Transaction Type *</Label>
+            <div className="grid grid-cols-2 gap-3">
+              {transactionCategories.map((category) => (
+                <Card 
+                  key={category.value}
+                  className={`cursor-pointer transition-all ${
+                    formData.type === category.value 
+                      ? 'ring-2 ring-[#607c47] bg-[#607c47]/5' 
+                      : 'hover:shadow-md'
+                  }`}
+                  onClick={() => setFormData({ ...formData, type: category.value as 'income' | 'expense', category: '' })}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <category.icon className={`h-5 w-5 ${category.color}`} />
+                      <div>
+                        <div className="font-medium text-[#2C2C2C]">{category.label}</div>
+                        <div className="text-xs text-gray-600">
+                          {category.value === 'income' ? 'Money coming in' : 'Money going out'}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
 
-          {/* Transaction Type */}
-          <div className="space-y-2">
-            <Label htmlFor="type">Transaction Type *</Label>
-            <Select
-              value={selectedType}
-              onValueChange={(value: 'CREDIT' | 'DEBIT') => setValue('type', value, { shouldValidate: true })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="CREDIT">
-                  <span className="text-green-500">💰 Income (Credit)</span>
-                </SelectItem>
-                <SelectItem value="DEBIT">
-                  <span className="text-red-500">💸 Expense (Debit)</span>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            {errors.type && (
-              <p className="text-sm text-red-500">{errors.type.message}</p>
-            )}
+          {/* Basic Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-sm font-medium text-[#2C2C2C]">
+                Description *
+              </Label>
+              <div className="relative">
+                <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  id="description"
+                  placeholder="e.g., Office rent payment"
+                  className="pl-10"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="amount" className="text-sm font-medium text-[#2C2C2C]">
+                Amount *
+              </Label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  className="pl-10"
+                  value={formData.amount}
+                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                  required
+                />
+              </div>
+              {formData.amount && (
+                <div className="text-sm text-gray-600">
+                  {formatCurrency(formData.amount)}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Description */}
+          {/* Category and Account */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-[#2C2C2C]">
+                Category *
+              </Label>
+              <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {subcategories.map((subcategory) => (
+                    <SelectItem key={subcategory} value={subcategory}>
+                      <div className="flex items-center gap-2">
+                        <Tag className="h-4 w-4 text-gray-500" />
+                        {subcategory}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-[#2C2C2C]">
+                Bank Account *
+              </Label>
+              <Select value={formData.accountId} onValueChange={(value) => setFormData({ ...formData, accountId: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select account" />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4 text-gray-500" />
+                        <div>
+                          <div className="font-medium">{account.name}</div>
+                          <div className="text-xs text-gray-500">
+                            Balance: {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(account.balance)}
+                          </div>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Date */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description *</Label>
-            <Input
-              id="description"
-              placeholder="Client payment, Office rent, etc."
-              {...register('description')}
-              className={errors.description ? 'border-red-500' : ''}
+            <Label htmlFor="date" className="text-sm font-medium text-[#2C2C2C]">
+              Transaction Date *
+            </Label>
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                id="date"
+                type="date"
+                className="pl-10"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div className="space-y-2">
+            <Label htmlFor="notes" className="text-sm font-medium text-[#2C2C2C]">
+              Notes (Optional)
+            </Label>
+            <Textarea
+              id="notes"
+              placeholder="Additional details about this transaction..."
+              rows={3}
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
             />
-            {errors.description && (
-              <p className="text-sm text-red-500">{errors.description.message}</p>
-            )}
           </div>
 
-          {/* Amount */}
-          <div className="space-y-2">
-            <Label htmlFor="amount">Amount *</Label>
-            <Input
-              id="amount"
-              type="number"
-              step="0.01"
-              placeholder="5000.00"
-              {...register('amount', { valueAsNumber: true })}
-              className={errors.amount ? 'border-red-500' : ''}
-            />
-            {errors.amount && (
-              <p className="text-sm text-red-500">{errors.amount.message}</p>
-            )}
-          </div>
+          {/* Transaction Summary */}
+          {formData.description && formData.amount && formData.category && (
+            <Card className="bg-gray-50 border-gray-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1 bg-white rounded">
+                    {selectedCategory?.icon && <selectedCategory.icon className={`h-4 w-4 ${selectedCategory.color}`} />}
+                  </div>
+                  <span className="font-medium text-[#2C2C2C]">Transaction Summary</span>
+                </div>
+                <div className="space-y-1 text-sm text-gray-600">
+                  <div><strong>Description:</strong> {formData.description}</div>
+                  <div><strong>Amount:</strong> {formatCurrency(formData.amount)}</div>
+                  <div><strong>Type:</strong> {selectedCategory?.label}</div>
+                  <div><strong>Category:</strong> {formData.category}</div>
+                  <div><strong>Date:</strong> {new Date(formData.date).toLocaleDateString()}</div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-2 pt-4">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={handleClose} 
-              disabled={isSubmitting}
+          {/* Actions */}
+          <div className="flex gap-3 pt-4 border-t border-gray-200">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              className="flex-1 border-gray-300 text-[#2C2C2C]"
             >
+              <X className="h-4 w-4 mr-2" />
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Adding...
-                </>
-              ) : (
-                'Add Transaction'
-              )}
+            <Button
+              type="submit"
+              disabled={loading || !formData.description || !formData.amount || !formData.category || !formData.accountId}
+              className="flex-1 bg-[#607c47] hover:bg-[#4a6129] text-white"
+            >
+              {loading ? 'Adding...' : 'Add Transaction'}
             </Button>
           </div>
         </form>

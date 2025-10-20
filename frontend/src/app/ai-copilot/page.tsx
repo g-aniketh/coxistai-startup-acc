@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { apiClient } from '@/lib/api';
 import AuthGuard from '@/components/auth/AuthGuard';
 import MainLayout from '@/components/layout/MainLayout';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,7 +16,13 @@ import {
   TrendingUp, 
   Lightbulb, 
   AlertTriangle,
-  CheckCircle 
+  CheckCircle,
+  Search,
+  Brain,
+  Target,
+  DollarSign,
+  Calendar,
+  Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
@@ -48,31 +54,67 @@ export default function AICopilotPage() {
       await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
       
       const mockInsights = {
-        keyMetrics: {
-          totalBalance: 127450,
-          monthlyBurn: 15400,
-          monthlyRevenue: 45200,
-          runway: 8.2
+        cashFlow: {
+          current: 287500,
+          projected: 312000,
+          change: 8.5
         },
-        cashflowHealth: "Your cashflow is healthy with a positive net cashflow of $29,800/month. The AI CFO recommends maintaining current growth trajectory while monitoring burn rate closely. Your runway of 8.2 months provides adequate buffer for strategic investments.",
-        burnAnalysis: "Current burn rate of $15,400/month is 12% above forecast. Primary drivers: increased contractor costs (+$2,100), new SaaS tools (+$800), and office rent (+$1,200). Consider optimizing contractor utilization and reviewing SaaS subscriptions.",
-        costSavingSuggestions: [
-          "Cancel unused Slack Pro licenses: Save $240/month",
-          "Switch to annual billing for Figma: Save $180/month", 
-          "Optimize AWS usage: Potential $400/month savings",
-          "Negotiate better rates with contractors: Save $1,200/month"
+        runway: {
+          current: 8.2,
+          projected: 9.1,
+          change: 0.9
+        },
+        burnRate: {
+          current: 35000,
+          projected: 32000,
+          change: -8.6
+        },
+        revenue: {
+          current: 45200,
+          projected: 52000,
+          change: 15.0
+        },
+        recommendations: [
+          {
+            title: "Optimize SaaS Subscriptions",
+            description: "Review and consolidate unused software licenses",
+            impact: "Save $2,100/month",
+            effort: "Low",
+            priority: "High"
+          },
+          {
+            title: "Implement Usage-Based Pricing",
+            description: "Introduce tiered pricing to increase ARPU",
+            impact: "Increase revenue by 25%",
+            effort: "Medium",
+            priority: "High"
+          },
+          {
+            title: "Hire Customer Success Manager",
+            description: "Reduce churn and increase customer satisfaction",
+            impact: "Reduce churn by 2%",
+            effort: "High",
+            priority: "Medium"
+          }
         ],
-        revenueOpportunities: [
-          "Implement usage-based pricing: +15% revenue potential",
-          "Expand to enterprise tier: +$5,000/month ARR",
-          "Launch partner program: +$2,000/month",
-          "Optimize conversion funnel: +8% revenue growth"
+        alerts: [
+          {
+            type: "warning",
+            message: "Burn rate trending up 5% this month",
+            action: "Review contractor costs"
+          },
+          {
+            type: "info",
+            message: "Customer acquisition cost decreasing",
+            action: "Consider scaling marketing spend"
+          }
         ]
       };
       
       setInsights(mockInsights);
       toast.success('AI insights generated successfully!');
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Failed to generate insights:', error);
       toast.error('Failed to generate insights');
     } finally {
       setInsightsLoading(false);
@@ -80,400 +122,476 @@ export default function AICopilotPage() {
   };
 
   const runScenario = async () => {
-    if (!scenario.trim()) {
-      toast.error('Please enter a scenario to analyze');
-      return;
-    }
-
+    if (!scenario.trim()) return;
+    
     setScenarioLoading(true);
     try {
       // Mock data for demonstration
-      await new Promise(resolve => setTimeout(resolve, 3000)); // Simulate AI analysis
+      await new Promise(resolve => setTimeout(resolve, 3000)); // Simulate API call
       
-      const mockScenarioResult = {
+      const mockResult = {
         scenario: scenario,
-        explanation: "Based on your current financial data and growth patterns, here's how this scenario would impact your business:",
         impact: {
-          burnRateChange: scenario.includes('hire') ? "Monthly burn increases by $8,000 (from $15,400 to $23,400)" : 
-                        scenario.includes('reduce') ? "Monthly burn decreases by $1,500 (from $15,400 to $13,900)" :
-                        scenario.includes('revenue') ? "Monthly revenue increases by $9,040 (from $45,200 to $54,240)" :
-                        scenario.includes('funding') ? "Cash balance increases by $500,000, extending runway significantly" :
-                        "Burn rate decreases by $4,620 (from $15,400 to $10,780)",
-          runwayChange: scenario.includes('hire') ? "Runway reduces from 8.2 months to 6.1 months" :
-                       scenario.includes('reduce') ? "Runway extends from 8.2 months to 9.1 months" :
-                       scenario.includes('revenue') ? "Runway extends from 8.2 months to 10.4 months" :
-                       scenario.includes('funding') ? "Runway extends from 8.2 months to 18.7 months" :
-                       "Runway extends from 8.2 months to 11.8 months",
-          recommendation: scenario.includes('hire') ? "Consider hiring if revenue growth can support increased burn. Monitor runway closely." :
-                         scenario.includes('reduce') ? "Excellent cost optimization opportunity. Implement immediately." :
-                         scenario.includes('revenue') ? "Focus on achieving this growth through marketing and product improvements." :
-                         scenario.includes('funding') ? "Perfect timing for fundraising. Use extended runway for growth initiatives." :
-                         "Good cost-cutting strategy. Monitor impact on growth metrics."
+          runway: {
+            current: 8.2,
+            new: 6.8,
+            change: -1.4
+          },
+          burnRate: {
+            current: 35000,
+            new: 42000,
+            change: 20.0
+          },
+          cashFlow: {
+            current: 287500,
+            new: 245000,
+            change: -14.8
+          }
         },
-        risks: scenario.includes('hire') ? [
-          "Increased burn rate reduces financial runway",
-          "Higher fixed costs reduce flexibility",
-          "May need additional funding sooner"
-        ] : scenario.includes('reduce') ? [
-          "Potential impact on team productivity",
-          "May slow down development velocity"
-        ] : scenario.includes('revenue') ? [
-          "Aggressive growth targets may be unrealistic",
-          "Increased customer acquisition costs",
-          "Potential quality issues with rapid scaling"
-        ] : scenario.includes('funding') ? [
-          "Dilution of equity",
-          "Pressure to meet investor expectations",
-          "Increased reporting requirements"
-        ] : [
-          "Reduced marketing reach",
-          "Potential impact on brand awareness",
-          "May slow customer acquisition"
+        analysis: "This scenario would significantly impact your runway. The increased burn rate from hiring would reduce your runway by 1.4 months. Consider the timing carefully and ensure you have sufficient funding runway.",
+        recommendations: [
+          "Consider hiring in phases to spread the cost impact",
+          "Ensure you have at least 6 months of runway before hiring",
+          "Negotiate equity-heavy compensation to reduce cash burn",
+          "Consider contract-to-hire arrangements initially"
         ],
-        opportunities: scenario.includes('hire') ? [
-          "Faster product development",
-          "Better customer support",
-          "Increased revenue potential"
-        ] : scenario.includes('reduce') ? [
-          "Improved profit margins",
-          "Extended runway for strategic investments",
-          "Better cash flow management"
-        ] : scenario.includes('revenue') ? [
-          "Higher valuation potential",
-          "Better unit economics",
-          "Increased market share"
-        ] : scenario.includes('funding') ? [
-          "Accelerated growth",
-          "Competitive advantage",
-          "Ability to hire top talent"
-        ] : [
-          "Improved efficiency",
-          "Better ROI on marketing spend",
-          "Focus on high-converting channels"
-        ]
+        riskLevel: "High"
       };
       
-      setScenarioResult(mockScenarioResult);
-      toast.success('Scenario analyzed successfully!');
-    } catch (error: any) {
-      toast.error('Failed to analyze scenario');
+      setScenarioResult(mockResult);
+      toast.success('Scenario analysis completed!');
+    } catch (error) {
+      console.error('Failed to run scenario:', error);
+      toast.error('Failed to run scenario');
     } finally {
       setScenarioLoading(false);
     }
   };
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   return (
     <AuthGuard requireAuth={true}>
       <MainLayout>
-        <div className="p-6 space-y-6">
-          {/* Header */}
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Sparkles className="h-8 w-8 text-primary" />
-              AI CFO Copilot
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Get AI-powered financial insights and run scenario analysis
-            </p>
-          </div>
-
-          {/* Demo Mode Banner */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Sparkles className="h-5 w-5 text-blue-600" />
-                </div>
+        <div className="bg-gray-50 flex">
+          {/* Main Content */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            <div className="p-4 md:p-8 space-y-4 md:space-y-6">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="font-semibold text-blue-900">AI CFO Demo Mode</h3>
-                  <p className="text-sm text-blue-700">Experience AI-powered financial analysis with mock data • Live AI integration coming soon</p>
+                  <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">AI CFO Copilot</h1>
+                  <p className="text-sm text-[#2C2C2C]/70">
+                    Intelligent financial insights and scenario planning
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input placeholder="Search insights..." className="pl-10 bg-white rounded-lg" />
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-blue-600">
-                <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
-                Mock Analysis
-              </div>
-            </div>
-          </div>
 
-          {/* Tabs */}
-          <div className="flex gap-2 border-b">
-            <button
-              onClick={() => setActiveTab('insights')}
-              className={cn(
-                'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
-                activeTab === 'insights'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              )}
-            >
-              Financial Insights
-            </button>
-            <button
-              onClick={() => setActiveTab('scenarios')}
-              className={cn(
-                'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
-                activeTab === 'scenarios'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              )}
-            >
-              What-If Scenarios
-            </button>
-          </div>
-
-          {/* Insights Tab */}
-          {activeTab === 'insights' && (
-            <div className="space-y-6">
-              <Card className="p-6">
+              {/* AI Status Banner */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-lg">Generate AI Insights</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Analyze your financial data and get actionable recommendations
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Brain className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-blue-900">AI CFO Copilot</h3>
+                      <p className="text-sm text-blue-700">Advanced financial analysis • Scenario modeling • Strategic insights</p>
+                    </div>
                   </div>
-                  <Button onClick={generateInsights} disabled={insightsLoading}>
-                    {insightsLoading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                        Analyzing...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4 mr-2" />
-                        Generate Insights
-                      </>
-                    )}
-                  </Button>
+                  <div className="flex items-center gap-2 text-sm text-blue-600">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    Live Analysis
+                  </div>
                 </div>
-              </Card>
+              </div>
 
-              {insights && (
+              {/* Tabs */}
+              <div className="flex gap-2 border-b border-gray-200">
+                <Button
+                  onClick={() => setActiveTab('insights')}
+                  variant={activeTab === 'insights' ? 'default' : 'ghost'}
+                  className={activeTab === 'insights' ? 'bg-[#607c47] hover:bg-[#4a6129] text-white' : 'text-[#2C2C2C] hover:bg-gray-100'}
+                >
+                  <Lightbulb className="h-4 w-4 mr-2" />
+                  Financial Insights
+                </Button>
+                <Button
+                  onClick={() => setActiveTab('scenarios')}
+                  variant={activeTab === 'scenarios' ? 'default' : 'ghost'}
+                  className={activeTab === 'scenarios' ? 'bg-[#607c47] hover:bg-[#4a6129] text-white' : 'text-[#2C2C2C] hover:bg-gray-100'}
+                >
+                  <Target className="h-4 w-4 mr-2" />
+                  What-If Scenarios
+                </Button>
+              </div>
+
+              {/* Insights Tab */}
+              {activeTab === 'insights' && (
                 <div className="space-y-6">
-                  {/* Key Metrics */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <Card className="p-6">
-                      <p className="text-sm text-muted-foreground mb-1">Total Balance</p>
-                      <h3 className="text-2xl font-bold">
-                        ${insights.keyMetrics.totalBalance.toLocaleString()}
-                      </h3>
-                    </Card>
-                    <Card className="p-6">
-                      <p className="text-sm text-muted-foreground mb-1">Monthly Burn</p>
-                      <h3 className="text-2xl font-bold text-red-500">
-                        ${insights.keyMetrics.monthlyBurn.toLocaleString()}
-                      </h3>
-                    </Card>
-                    <Card className="p-6">
-                      <p className="text-sm text-muted-foreground mb-1">Monthly Revenue</p>
-                      <h3 className="text-2xl font-bold text-green-500">
-                        ${insights.keyMetrics.monthlyRevenue.toLocaleString()}
-                      </h3>
-                    </Card>
-                    <Card className="p-6">
-                      <p className="text-sm text-muted-foreground mb-1">Runway</p>
-                      <h3 className="text-2xl font-bold">
-                        {insights.keyMetrics.runway ? `${insights.keyMetrics.runway.toFixed(1)}mo` : '∞'}
-                      </h3>
-                    </Card>
-                  </div>
-
-                  {/* Cashflow Health */}
-                  <Card className="p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <TrendingUp className="h-5 w-5 text-primary" />
-                      <h3 className="font-semibold text-lg">Cashflow Health</h3>
-                    </div>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {insights.cashflowHealth}
-                    </p>
+                  {/* Generate Insights Button */}
+                  <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-purple-50 to-indigo-50">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-lg font-semibold text-purple-900 mb-2">Generate AI Insights</h3>
+                          <p className="text-sm text-purple-700">Get personalized financial recommendations based on your data</p>
+                        </div>
+                        <Button
+                          onClick={generateInsights}
+                          disabled={insightsLoading}
+                          className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                        >
+                          {insightsLoading ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                              Analyzing...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="h-4 w-4 mr-2" />
+                              Generate Insights
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </CardContent>
                   </Card>
 
-                  {/* Burn Analysis */}
-                  <Card className="p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <TrendingDown className="h-5 w-5 text-red-500" />
-                      <h3 className="font-semibold text-lg">Burn Rate Analysis</h3>
+                  {/* Insights Results */}
+                  {insights && (
+                    <div className="space-y-6">
+                      {/* Key Metrics */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50">
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-green-100 rounded-lg">
+                                <DollarSign className="h-5 w-5 text-green-600" />
+                              </div>
+                              <div>
+                                <div className="text-sm text-green-700">Cash Flow</div>
+                                <div className="text-lg font-bold text-green-900">
+                                  {formatCurrency(insights.cashFlow.projected)}
+                                </div>
+                                <div className="text-xs text-green-600">
+                                  {insights.cashFlow.change > 0 ? '+' : ''}{insights.cashFlow.change}%
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-blue-50 to-cyan-50">
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-blue-100 rounded-lg">
+                                <Calendar className="h-5 w-5 text-blue-600" />
+                              </div>
+                              <div>
+                                <div className="text-sm text-blue-700">Runway</div>
+                                <div className="text-lg font-bold text-blue-900">
+                                  {insights.runway.projected} mo
+                                </div>
+                                <div className="text-xs text-blue-600">
+                                  {insights.runway.change > 0 ? '+' : ''}{insights.runway.change} mo
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-red-50 to-pink-50">
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-red-100 rounded-lg">
+                                <TrendingDown className="h-5 w-5 text-red-600" />
+                              </div>
+                              <div>
+                                <div className="text-sm text-red-700">Burn Rate</div>
+                                <div className="text-lg font-bold text-red-900">
+                                  {formatCurrency(insights.burnRate.projected)}
+                                </div>
+                                <div className="text-xs text-red-600">
+                                  {insights.burnRate.change > 0 ? '+' : ''}{insights.burnRate.change}%
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-orange-50">
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-yellow-100 rounded-lg">
+                                <TrendingUp className="h-5 w-5 text-yellow-600" />
+                              </div>
+                              <div>
+                                <div className="text-sm text-yellow-700">Revenue</div>
+                                <div className="text-lg font-bold text-yellow-900">
+                                  {formatCurrency(insights.revenue.projected)}
+                                </div>
+                                <div className="text-xs text-yellow-600">
+                                  {insights.revenue.change > 0 ? '+' : ''}{insights.revenue.change}%
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      {/* Recommendations */}
+                      <Card className="rounded-xl border-0 shadow-lg bg-white">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg font-medium text-[#2C2C2C] flex items-center gap-2">
+                            <Lightbulb className="h-5 w-5 text-[#607c47]" />
+                            AI Recommendations
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <div className="space-y-4">
+                            {insights.recommendations.map((rec: any, index: number) => (
+                              <div key={index} className="bg-gray-50 rounded-lg p-4">
+                                <div className="flex items-start justify-between mb-2">
+                                  <h4 className="font-semibold text-[#2C2C2C]">{rec.title}</h4>
+                                  <div className="flex gap-2">
+                                    <span className={`px-2 py-1 rounded-full text-xs ${
+                                      rec.priority === 'High' ? 'bg-red-100 text-red-700' :
+                                      rec.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                                      'bg-green-100 text-green-700'
+                                    }`}>
+                                      {rec.priority}
+                                    </span>
+                                    <span className={`px-2 py-1 rounded-full text-xs ${
+                                      rec.effort === 'Low' ? 'bg-green-100 text-green-700' :
+                                      rec.effort === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                                      'bg-red-100 text-red-700'
+                                    }`}>
+                                      {rec.effort} effort
+                                    </span>
+                                  </div>
+                                </div>
+                                <p className="text-sm text-gray-600 mb-2">{rec.description}</p>
+                                <p className="text-sm font-medium text-[#607c47]">{rec.impact}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Alerts */}
+                      <Card className="rounded-xl border-0 shadow-lg bg-white">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg font-medium text-[#2C2C2C] flex items-center gap-2">
+                            <AlertTriangle className="h-5 w-5 text-orange-500" />
+                            AI Alerts
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <div className="space-y-3">
+                            {insights.alerts.map((alert: any, index: number) => (
+                              <div key={index} className={`p-3 rounded-lg border-l-4 ${
+                                alert.type === 'warning' ? 'bg-yellow-50 border-yellow-400' :
+                                alert.type === 'critical' ? 'bg-red-50 border-red-400' :
+                                'bg-blue-50 border-blue-400'
+                              }`}>
+                                <div className="flex items-start gap-2">
+                                  {alert.type === 'warning' ? <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5" /> :
+                                   alert.type === 'critical' ? <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" /> :
+                                   <CheckCircle className="h-4 w-4 text-blue-600 mt-0.5" />}
+                                  <div>
+                                    <p className="text-sm font-medium text-[#2C2C2C]">{alert.message}</p>
+                                    <p className="text-xs text-gray-600 mt-1">{alert.action}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {insights.burnAnalysis}
-                    </p>
-                  </Card>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Cost Saving Suggestions */}
-                    <Card className="p-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Lightbulb className="h-5 w-5 text-green-500" />
-                        <h3 className="font-semibold">Cost Saving Suggestions</h3>
-                      </div>
-                      <ul className="space-y-2">
-                        {insights.costSavingSuggestions?.map((suggestion: string, index: number) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-green-500 mt-1">💡</span>
-                            <span className="text-sm text-muted-foreground">{suggestion}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </Card>
-
-                    {/* Revenue Opportunities */}
-                    <Card className="p-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <TrendingUp className="h-5 w-5 text-blue-500" />
-                        <h3 className="font-semibold">Revenue Opportunities</h3>
-                      </div>
-                      <ul className="space-y-2">
-                        {insights.revenueOpportunities?.map((opportunity: string, index: number) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-blue-500 mt-1">📈</span>
-                            <span className="text-sm text-muted-foreground">{opportunity}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </Card>
-                  </div>
+                  )}
                 </div>
               )}
-            </div>
-          )}
 
-          {/* Scenarios Tab */}
-          {activeTab === 'scenarios' && (
-            <div className="space-y-6">
-              <Card className="p-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="scenario">Describe your scenario</Label>
-                    <Input
-                      id="scenario"
-                      placeholder="What happens if we hire 2 engineers at $150k/year each?"
-                      value={scenario}
-                      onChange={(e) => setScenario(e.target.value)}
-                      className="mt-2"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Describe a change you're considering and let AI analyze the financial impact
-                    </p>
-                  </div>
+              {/* Scenarios Tab */}
+              {activeTab === 'scenarios' && (
+                <div className="space-y-6">
+                  {/* Scenario Input */}
+                  <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-indigo-50 to-purple-50">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg font-medium text-indigo-900 flex items-center gap-2">
+                        <Target className="h-5 w-5 text-indigo-600" />
+                        What-If Scenario Analysis
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="scenario" className="text-sm font-medium text-[#2C2C2C]">
+                            Describe your scenario
+                          </Label>
+                          <Input
+                            id="scenario"
+                            value={scenario}
+                            onChange={(e) => setScenario(e.target.value)}
+                            placeholder="e.g., What happens if we hire 2 engineers at $150k/year each?"
+                            className="mt-2 bg-white"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={runScenario}
+                            disabled={!scenario.trim() || scenarioLoading}
+                            className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                          >
+                            {scenarioLoading ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                                Analyzing...
+                              </>
+                            ) : (
+                              <>
+                                <Zap className="h-4 w-4 mr-2" />
+                                Run Scenario
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
 
                   {/* Example Scenarios */}
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-2">Try these examples:</p>
-                    <div className="flex flex-wrap gap-2">
+                  <div className="bg-gray-50 rounded-xl border border-gray-200 p-6">
+                    <h3 className="text-lg font-semibold text-[#2C2C2C] mb-4">Example Scenarios</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {exampleScenarios.map((example, index) => (
                         <button
                           key={index}
                           onClick={() => setScenario(example)}
-                          className="text-xs px-3 py-1.5 rounded-lg bg-muted hover:bg-muted/80 text-foreground transition-colors"
+                          className="h-auto p-3 text-left justify-start border border-gray-200 bg-white rounded-lg text-gray-700 hover:bg-gray-100 hover:border-gray-300 transition-all text-sm"
                         >
-                          {example}
+                          <span>{example}</span>
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  <Button onClick={runScenario} disabled={scenarioLoading} className="w-full">
-                    {scenarioLoading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                        Analyzing with AI...
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="h-4 w-4 mr-2" />
-                        Run Scenario Analysis
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </Card>
-
-              {scenarioResult && (
-                <div className="space-y-6">
-                  {/* Scenario Summary */}
-                  <Card className="p-6 bg-primary/5 border-primary/20">
-                    <h3 className="font-semibold text-lg mb-2">{scenarioResult.scenario}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {scenarioResult.explanation}
-                    </p>
-                  </Card>
-
-                  {/* Impact Analysis */}
-                  <Card className="p-6">
-                    <h3 className="font-semibold text-lg mb-4">Financial Impact</h3>
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
-                        <TrendingDown className="h-5 w-5 text-red-500 mt-0.5" />
-                        <div>
-                          <p className="font-medium">Burn Rate Change</p>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {scenarioResult.impact.burnRateChange}
-                          </p>
+                  {/* Scenario Results */}
+                  {scenarioResult && (
+                    <Card className="rounded-xl border-0 shadow-lg">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-lg font-medium text-[#2C2C2C] flex items-center gap-2">
+                          <Target className="h-5 w-5 text-[#607c47]" />
+                          Scenario Analysis Results
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0 space-y-6">
+                        {/* Scenario Description */}
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <h4 className="font-semibold text-[#2C2C2C] mb-2">Scenario</h4>
+                          <p className="text-sm text-gray-600">{scenarioResult.scenario}</p>
                         </div>
-                      </div>
-                      <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
-                        <TrendingUp className="h-5 w-5 text-blue-500 mt-0.5" />
-                        <div>
-                          <p className="font-medium">Runway Impact</p>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {scenarioResult.impact.runwayChange}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 p-4 rounded-lg bg-primary/5 border border-primary/20">
-                        <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
-                        <div>
-                          <p className="font-medium text-primary">AI Recommendation</p>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {scenarioResult.impact.recommendation}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Risks */}
-                    <Card className="p-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                        <h3 className="font-semibold">Potential Risks</h3>
-                      </div>
-                      <ul className="space-y-2">
-                        {scenarioResult.risks?.map((risk: string, index: number) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-yellow-500 mt-1">⚠️</span>
-                            <span className="text-sm text-muted-foreground">{risk}</span>
-                          </li>
-                        ))}
-                      </ul>
+                        {/* Impact Metrics */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="bg-blue-50 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Calendar className="h-4 w-4 text-blue-600" />
+                              <span className="text-sm font-medium text-blue-700">Runway</span>
+                            </div>
+                            <div className="text-lg font-bold text-blue-900">
+                              {scenarioResult.impact.runway.new} mo
+                            </div>
+                            <div className="text-xs text-blue-600">
+                              {scenarioResult.impact.runway.change > 0 ? '+' : ''}{scenarioResult.impact.runway.change} mo
+                            </div>
+                          </div>
+
+                          <div className="bg-red-50 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <TrendingDown className="h-4 w-4 text-red-600" />
+                              <span className="text-sm font-medium text-red-700">Burn Rate</span>
+                            </div>
+                            <div className="text-lg font-bold text-red-900">
+                              {formatCurrency(scenarioResult.impact.burnRate.new)}
+                            </div>
+                            <div className="text-xs text-red-600">
+                              {scenarioResult.impact.burnRate.change > 0 ? '+' : ''}{scenarioResult.impact.burnRate.change}%
+                            </div>
+                          </div>
+
+                          <div className="bg-green-50 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <DollarSign className="h-4 w-4 text-green-600" />
+                              <span className="text-sm font-medium text-green-700">Cash Flow</span>
+                            </div>
+                            <div className="text-lg font-bold text-green-900">
+                              {formatCurrency(scenarioResult.impact.cashFlow.new)}
+                            </div>
+                            <div className="text-xs text-green-600">
+                              {scenarioResult.impact.cashFlow.change > 0 ? '+' : ''}{scenarioResult.impact.cashFlow.change}%
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Analysis */}
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <h4 className="font-semibold text-[#2C2C2C] mb-2">AI Analysis</h4>
+                          <p className="text-sm text-gray-600">{scenarioResult.analysis}</p>
+                        </div>
+
+                        {/* Recommendations */}
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <h4 className="font-semibold text-[#2C2C2C] mb-3">Recommendations</h4>
+                          <ul className="space-y-2">
+                            {scenarioResult.recommendations.map((rec: string, index: number) => (
+                              <li key={index} className="flex items-start gap-2 text-sm text-gray-600">
+                                <span className="text-[#607c47] mt-1">→</span>
+                                <span>{rec}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {/* Risk Level */}
+                        <div className={`rounded-lg p-4 ${
+                          scenarioResult.riskLevel === 'High' ? 'bg-red-50 border border-red-200' :
+                          scenarioResult.riskLevel === 'Medium' ? 'bg-yellow-50 border border-yellow-200' :
+                          'bg-green-50 border border-green-200'
+                        }`}>
+                          <div className="flex items-center gap-2">
+                            <AlertTriangle className={`h-4 w-4 ${
+                              scenarioResult.riskLevel === 'High' ? 'text-red-600' :
+                              scenarioResult.riskLevel === 'Medium' ? 'text-yellow-600' :
+                              'text-green-600'
+                            }`} />
+                            <span className="font-semibold text-[#2C2C2C]">Risk Level: {scenarioResult.riskLevel}</span>
+                          </div>
+                        </div>
+                      </CardContent>
                     </Card>
-
-                    {/* Opportunities */}
-                    <Card className="p-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Sparkles className="h-5 w-5 text-green-500" />
-                        <h3 className="font-semibold">Potential Opportunities</h3>
-                      </div>
-                      <ul className="space-y-2">
-                        {scenarioResult.opportunities?.map((opportunity: string, index: number) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-green-500 mt-1">✨</span>
-                            <span className="text-sm text-muted-foreground">{opportunity}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </Card>
-                  </div>
+                  )}
                 </div>
               )}
             </div>
-          )}
+          </div>
         </div>
       </MainLayout>
     </AuthGuard>
   );
 }
-

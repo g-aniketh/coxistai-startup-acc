@@ -60,7 +60,7 @@ export default function SettingsPage() {
             </div>
              <div>
               <dt className="text-muted-foreground">Organization</dt>
-              <dd className="mt-1 font-semibold">{user?.startup.name}</dd>
+              <dd className="mt-1 font-semibold">{user?.startup?.name}</dd>
             </div>
              <div>
               <dt className="text-muted-foreground">Member Since</dt>

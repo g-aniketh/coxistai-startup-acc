@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   FileText,
   Bot,
+  User,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
 import Image from 'next/image';
@@ -41,7 +42,6 @@ export default function Sidebar() {
     { name: 'Payment', href: '/payment', icon: CreditCard },
     { name: 'Transactions', href: '/transactions', icon: Repeat },
     { name: 'Products', href: '/products', icon: Package },
-    { name: 'Customer', href: '/customers', icon: Users },
     { name: 'Messages', href: '/messages', icon: MessageSquare },
   ];
 
@@ -54,20 +54,18 @@ export default function Sidebar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
         </div>
-        <h2 className="font-bold text-xl">Zarss</h2>
+        <h2 className="font-bold text-xl">Coxist AI CFO</h2>
       </div>
 
       {/* User Profile */}
       <div className="p-6 mt-4 flex flex-col items-center text-center">
-        <Image
-          src="https://i.pravatar.cc/150?u=markjohnson"
-          alt="User Avatar"
-          width={80}
-          height={80}
-          className="rounded-full"
-        />
-        <h3 className="mt-4 font-semibold text-lg">Welcome Back,</h3>
-        <p className="text-gray-400">Mark Johnson</p>
+        <div className="h-20 w-20 rounded-full bg-gray-700 flex items-center justify-center mb-4">
+          <User className="h-10 w-10 text-gray-400" />
+        </div>
+        <h3 className="mt-4 font-semibold text-lg">
+          Welcome Back,
+        </h3>
+        <p className="text-gray-400">{user ? `${user.firstName} ${user.lastName}` : 'Guest'}</p>
       </div>
 
 
@@ -100,19 +98,6 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className="p-4 border-t border-gray-700">
-         <Link
-          href="/settings"
-          className={cn(
-            'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors mb-2',
-            pathname === '/settings'
-               ? 'bg-gray-700/50 text-white'
-               : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'
-          )}
-        >
-          <Settings className="h-5 w-5" />
-          Settings
-        </Link>
-        
         <button
           onClick={logout}
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-700/50 hover:text-white w-full transition-colors"

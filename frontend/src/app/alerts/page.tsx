@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   AlertCircle,
   AlertTriangle,
@@ -13,9 +16,13 @@ import {
   RefreshCw,
   Eye,
   Sparkles,
+  Search,
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
 } from 'lucide-react';
-import MagicBento from '@/components/MagicBento';
 import { Badge } from '@/components/ui/Badge';
+import toast from 'react-hot-toast';
 
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState<any[]>([]);
@@ -50,135 +57,98 @@ export default function AlertsPage() {
               effort: 'medium'
             },
             {
-              action: 'Audit SaaS subscriptions and cancel unused tools',
+              action: 'Audit SaaS subscriptions and remove unused tools',
               impact: 'Potential savings: $800/month',
               effort: 'low'
-            },
-            {
-              action: 'Negotiate better rates with vendors',
-              impact: 'Potential savings: $1,200/month',
-              effort: 'high'
             }
-          ]
+          ],
+          isRead: false,
+          isDismissed: false
         },
         {
           id: '2',
           title: 'Revenue Growth Opportunity',
-          message: 'Customer churn rate decreased to 2.1% this month. Consider implementing expansion pricing to capitalize on customer satisfaction.',
-          severity: 'warning',
+          message: 'Your churn rate has decreased by 2.3% this month. Consider implementing expansion pricing to capitalize on customer satisfaction.',
+          severity: 'info',
           currentValue: 2.1,
-          thresholdValue: 4.0,
+          thresholdValue: 4.4,
           createdAt: '2024-01-14T14:20:00Z',
           recommendations: [
             {
               action: 'Implement usage-based pricing tiers',
-              impact: 'Potential revenue increase: 15%',
-              effort: 'medium'
+              impact: 'Potential revenue increase: 15-25%',
+              effort: 'high'
             },
             {
               action: 'Launch customer success program',
-              impact: 'Reduced churn, increased expansion',
-              effort: 'high'
+              impact: 'Reduce churn by additional 1-2%',
+              effort: 'medium'
             }
-          ]
+          ],
+          isRead: true,
+          isDismissed: false
         },
         {
           id: '3',
-          title: 'Cash Flow Optimization',
-          message: '3 invoices totaling $12,000 are overdue. Consider implementing automated payment reminders.',
+          title: 'Cash Flow Warning',
+          message: 'You have 3 overdue invoices totaling $12,500. This represents 8% of your monthly revenue.',
           severity: 'warning',
-          currentValue: 3,
-          thresholdValue: 0,
+          currentValue: 12500,
+          thresholdValue: 5000,
           createdAt: '2024-01-13T09:15:00Z',
           recommendations: [
             {
-              action: 'Set up automated payment reminders',
-              impact: 'Faster payment collection',
+              action: 'Send automated payment reminders',
+              impact: 'Expected collection: 70-80%',
               effort: 'low'
             },
             {
-              action: 'Implement early payment discounts',
-              impact: 'Improved cash flow',
+              action: 'Implement stricter payment terms',
+              impact: 'Reduce future overdue amounts',
               effort: 'medium'
             }
-          ]
+          ],
+          isRead: false,
+          isDismissed: false
         },
         {
           id: '4',
-          title: 'Runway Extension Opportunity',
-          message: 'Your current runway of 8.2 months is healthy. Consider strategic investments to accelerate growth.',
+          title: 'Runway Status Update',
+          message: 'Based on current burn rate, you have 8.2 months of runway remaining. Consider fundraising timeline.',
           severity: 'info',
           currentValue: 8.2,
           thresholdValue: 6.0,
           createdAt: '2024-01-12T16:45:00Z',
           recommendations: [
             {
-              action: 'Invest in marketing to accelerate customer acquisition',
-              impact: 'Faster growth trajectory',
-              effort: 'medium'
-            },
-            {
-              action: 'Hire key engineering talent',
-              impact: 'Product development acceleration',
-              effort: 'high'
-            }
-          ]
-        },
-        {
-          id: '5',
-          title: 'SaaS Cost Optimization',
-          message: 'Unused Slack Pro licenses detected. Cancel 8 unused licenses to save $240/month.',
-          severity: 'info',
-          currentValue: 8,
-          thresholdValue: 0,
-          createdAt: '2024-01-11T11:30:00Z',
-          recommendations: [
-            {
-              action: 'Audit and cancel unused SaaS licenses',
-              impact: 'Save $240/month',
-              effort: 'low'
-            },
-            {
-              action: 'Implement SaaS usage monitoring',
-              impact: 'Ongoing cost optimization',
-              effort: 'medium'
-            }
-          ]
-        },
-        {
-          id: '6',
-          title: 'Fundraising Timing Alert',
-          message: 'Optimal fundraising window approaching. With 8.2 months runway, consider starting Series A process.',
-          severity: 'info',
-          currentValue: 8.2,
-          thresholdValue: 6.0,
-          createdAt: '2024-01-10T13:20:00Z',
-          recommendations: [
-            {
-              action: 'Prepare Series A pitch deck and financials',
-              impact: 'Successful fundraising round',
+              action: 'Begin Series A fundraising process',
+              impact: 'Extend runway to 18+ months',
               effort: 'high'
             },
             {
-              action: 'Identify target investors and warm introductions',
-              impact: 'Faster fundraising process',
+              action: 'Optimize burn rate for extended runway',
+              impact: 'Extend runway by 2-3 months',
               effort: 'medium'
             }
-          ]
+          ],
+          isRead: true,
+          isDismissed: false
         }
       ];
       
-      const mockCounts = {
+      setAlerts(mockAlerts);
+      
+      // Calculate counts
+      const newCounts = {
         total: mockAlerts.length,
         critical: mockAlerts.filter(a => a.severity === 'critical').length,
         warning: mockAlerts.filter(a => a.severity === 'warning').length,
-        info: mockAlerts.filter(a => a.severity === 'info').length
+        info: mockAlerts.filter(a => a.severity === 'info').length,
       };
-      
-      setAlerts(mockAlerts);
-      setCounts(mockCounts);
+      setCounts(newCounts);
     } catch (error) {
       console.error('Failed to load alerts:', error);
+      toast.error('Failed to load alerts');
     } finally {
       setLoading(false);
     }
@@ -188,33 +158,33 @@ export default function AlertsPage() {
     try {
       setGenerating(true);
       // Mock data for demonstration
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate AI analysis
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate AI generation
       
       const newAlert = {
         id: Date.now().toString(),
         title: 'AI-Generated Alert',
-        message: 'AI CFO detected a new optimization opportunity based on your financial patterns.',
+        message: 'AI analysis detected a potential optimization opportunity in your expense categories.',
         severity: 'info',
-        currentValue: Math.floor(Math.random() * 100),
-        thresholdValue: Math.floor(Math.random() * 50),
+        currentValue: Math.floor(Math.random() * 10000) + 5000,
+        thresholdValue: Math.floor(Math.random() * 8000) + 3000,
         createdAt: new Date().toISOString(),
         recommendations: [
           {
-            action: 'Review AI recommendation',
-            impact: 'Potential cost savings',
-            effort: 'low'
+            action: 'Review and optimize identified expense category',
+            impact: 'Potential savings: 10-15%',
+            effort: 'medium'
           }
-        ]
+        ],
+        isRead: false,
+        isDismissed: false
       };
       
       setAlerts(prev => [newAlert, ...prev]);
-      setCounts(prev => ({
-        ...prev,
-        total: prev.total + 1,
-        info: prev.info + 1
-      }));
+      setCounts(prev => ({ ...prev, total: prev.total + 1, info: prev.info + 1 }));
+      toast.success('New AI alert generated!');
     } catch (error) {
       console.error('Failed to generate alerts:', error);
+      toast.error('Failed to generate alerts');
     } finally {
       setGenerating(false);
     }
@@ -222,27 +192,26 @@ export default function AlertsPage() {
 
   const markAsRead = async (id: string) => {
     try {
-      // Mock implementation - just remove from alerts
-      setAlerts(prev => prev.filter(alert => alert.id !== id));
-      setCounts(prev => ({
-        ...prev,
-        total: prev.total - 1
-      }));
+      setAlerts(prev => prev.map(alert => 
+        alert.id === id ? { ...alert, isRead: true } : alert
+      ));
+      toast.success('Alert marked as read');
     } catch (error) {
-      console.error('Failed to mark as read:', error);
+      console.error('Failed to mark alert as read:', error);
+      toast.error('Failed to mark alert as read');
     }
   };
 
   const dismissAlert = async (id: string) => {
     try {
-      // Mock implementation - just remove from alerts
-      setAlerts(prev => prev.filter(alert => alert.id !== id));
-      setCounts(prev => ({
-        ...prev,
-        total: prev.total - 1
-      }));
+      setAlerts(prev => prev.map(alert => 
+        alert.id === id ? { ...alert, isDismissed: true } : alert
+      ));
+      setCounts(prev => ({ ...prev, total: prev.total - 1 }));
+      toast.success('Alert dismissed');
     } catch (error) {
       console.error('Failed to dismiss alert:', error);
+      toast.error('Failed to dismiss alert');
     }
   };
 
@@ -252,254 +221,330 @@ export default function AlertsPage() {
         return <AlertCircle className="h-5 w-5 text-red-500" />;
       case 'warning':
         return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
-      default:
+      case 'info':
         return <Info className="h-5 w-5 text-blue-500" />;
+      default:
+        return <CheckCircle className="h-5 w-5 text-green-500" />;
     }
   };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical':
-        return 'bg-red-500/10 border-red-500/20';
+        return 'bg-red-50 border-red-200';
       case 'warning':
-        return 'bg-yellow-500/10 border-yellow-500/20';
+        return 'bg-yellow-50 border-yellow-200';
+      case 'info':
+        return 'bg-blue-50 border-blue-200';
       default:
-        return 'bg-blue-500/10 border-blue-500/20';
+        return 'bg-green-50 border-green-200';
     }
   };
 
-  const filteredAlerts = filter === 'all' 
-    ? alerts 
-    : alerts.filter(a => a.severity === filter);
+  const getSeverityBadgeColor = (severity: string) => {
+    switch (severity) {
+      case 'critical':
+        return 'bg-red-100 text-red-700';
+      case 'warning':
+        return 'bg-yellow-100 text-yellow-700';
+      case 'info':
+        return 'bg-blue-100 text-blue-700';
+      default:
+        return 'bg-green-100 text-green-700';
+    }
+  };
 
-  const bentoItems = [
-    // Header
-    {
-      className: 'col-span-12',
-      background: <div className="absolute top-0 left-0 w-full h-full bg-card" />,
-      content: (
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Alerts & Recommendations</h1>
-              <p className="text-muted-foreground mt-1">Proactive insights from your AI CFO</p>
-            </div>
-            <button
-              onClick={generateAlerts}
-              disabled={generating}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
-            >
-              <RefreshCw className={`h-4 w-4 ${generating ? 'animate-spin' : ''}`} />
-              {generating ? 'Generating...' : 'Refresh Alerts'}
-            </button>
-          </div>
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
 
-          {/* Demo Mode Banner */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Sparkles className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-blue-900">AI CFO Alerts Demo</h3>
-                  <p className="text-sm text-blue-700">Experience proactive financial alerts and recommendations • Live AI monitoring coming soon</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-blue-600">
-                <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
-                Mock Alerts
-              </div>
+  const filteredAlerts = alerts.filter(alert => {
+    if (filter === 'all') return !alert.isDismissed;
+    return alert.severity === filter && !alert.isDismissed;
+  });
+
+  if (loading) {
+    return (
+      <AuthGuard requireAuth={true}>
+        <MainLayout>
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-4 text-muted-foreground">Loading Alerts...</p>
             </div>
           </div>
-
-          {/* Filter Tabs */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                filter === 'all'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
-            >
-              All ({counts.total})
-            </button>
-            <button
-              onClick={() => setFilter('critical')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                filter === 'critical'
-                  ? 'bg-red-500 text-white'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
-            >
-              Critical ({counts.critical})
-            </button>
-            <button
-              onClick={() => setFilter('warning')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                filter === 'warning'
-                  ? 'bg-yellow-500 text-white'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
-            >
-              Warning ({counts.warning})
-            </button>
-            <button
-              onClick={() => setFilter('info')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                filter === 'info'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
-            >
-              Info ({counts.info})
-            </button>
-          </div>
-        </div>
-      ),
-    },
-
-    // Alerts List
-    ...filteredAlerts.map((alert) => ({
-      className: 'col-span-12 lg:col-span-6',
-      background: <div className="absolute top-0 left-0 w-full h-full bg-card" />,
-      content: (
-        <div className={`p-6 h-full flex flex-col border ${getSeverityColor(alert.severity)} rounded-lg`}>
-          <div className="flex items-start gap-4 mb-4">
-            <div className="mt-1">{getSeverityIcon(alert.severity)}</div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <h3 className="text-lg font-semibold text-foreground">{alert.title}</h3>
-                <Badge variant={alert.severity === 'critical' ? 'destructive' : 'default'} className="capitalize">
-                  {alert.severity}
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">{alert.message}</p>
-            </div>
-          </div>
-
-          {/* Alert Details */}
-          {(alert.currentValue || alert.thresholdValue) && (
-            <div className="grid grid-cols-2 gap-3 mb-4 p-3 rounded-lg bg-muted/30">
-              {alert.currentValue && (
-                <div>
-                  <div className="text-xs text-muted-foreground">Current Value</div>
-                  <div className="text-sm font-bold text-foreground">
-                    {typeof alert.currentValue === 'number'
-                      ? alert.currentValue.toFixed(2)
-                      : alert.currentValue}
-                  </div>
-                </div>
-              )}
-              {alert.thresholdValue && (
-                <div>
-                  <div className="text-xs text-muted-foreground">Threshold</div>
-                  <div className="text-sm font-bold text-foreground">
-                    {typeof alert.thresholdValue === 'number'
-                      ? alert.thresholdValue.toFixed(2)
-                      : alert.thresholdValue}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* AI Recommendations */}
-          {alert.recommendations && alert.recommendations.length > 0 && (
-            <div className="flex-grow mb-4">
-              <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" />
-                Recommended Actions
-              </h4>
-              <div className="space-y-2">
-                {alert.recommendations.map((rec: any, i: number) => (
-                  <div key={i} className="p-3 rounded-lg bg-primary/10 border border-primary/20">
-                    <div className="flex items-start gap-2">
-                      <div className="text-xs text-muted-foreground mt-0.5">•</div>
-                      <div className="flex-1">
-                        <p className="text-sm text-foreground font-medium">{rec.action || rec}</p>
-                        {rec.impact && (
-                          <p className="text-xs text-muted-foreground mt-1">Impact: {rec.impact}</p>
-                        )}
-                        {rec.effort && (
-                          <Badge variant="outline" className="mt-2 capitalize text-xs">
-                            {rec.effort} effort
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex gap-2 pt-4 border-t border-border">
-            <button
-              onClick={() => markAsRead(alert.id)}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-muted text-foreground rounded-md hover:bg-muted/80"
-            >
-              <Eye className="h-3 w-3" />
-              Mark as Read
-            </button>
-            <button
-              onClick={() => dismissAlert(alert.id)}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-muted text-foreground rounded-md hover:bg-muted/80"
-            >
-              <X className="h-3 w-3" />
-              Dismiss
-            </button>
-            <div className="ml-auto text-xs text-muted-foreground">
-              {new Date(alert.createdAt).toLocaleString()}
-            </div>
-          </div>
-        </div>
-      ),
-    })),
-  ];
-
-  // Empty state
-  if (!loading && filteredAlerts.length === 0) {
-    bentoItems.push({
-      className: 'col-span-12',
-      background: <div className="absolute top-0 left-0 w-full h-full bg-card" />,
-      content: (
-        <div className="p-12 text-center">
-          <CheckCircle className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-foreground mb-2">
-            {filter === 'all' ? 'No Active Alerts' : `No ${filter} Alerts`}
-          </h3>
-          <p className="text-muted-foreground mb-6">
-            {filter === 'all'
-              ? "You're all caught up! Your financial health looks good."
-              : `No ${filter} alerts at this time.`}
-          </p>
-          {filter === 'all' && (
-            <button
-              onClick={generateAlerts}
-              className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-            >
-              <RefreshCw className="h-4 w-4 inline mr-2" />
-              Check for New Alerts
-            </button>
-          )}
-        </div>
-      ),
-    });
+        </MainLayout>
+      </AuthGuard>
+    );
   }
 
   return (
     <AuthGuard requireAuth={true}>
       <MainLayout>
-        {loading ? (
-          <div className="flex items-center justify-center min-h-screen">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="h-screen flex">
+          {/* Main Content */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            <div className="p-4 md:p-8 space-y-4 md:space-y-6">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">AI Alerts</h1>
+                  <p className="text-sm text-[#2C2C2C]/70">
+                    Proactive financial insights and recommendations
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input placeholder="Search alerts..." className="pl-10 bg-white rounded-lg" />
+                  </div>
+                  <Button
+                    onClick={generateAlerts}
+                    disabled={generating}
+                    className="flex items-center gap-2 bg-[#607c47] hover:bg-[#4a6129] text-white"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${generating ? 'animate-spin' : ''}`} />
+                    {generating ? 'Generating...' : 'Generate Alerts'}
+                  </Button>
+                </div>
+              </div>
+
+              {/* AI Status Banner */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Sparkles className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-blue-900">AI-Powered Alerts</h3>
+                      <p className="text-sm text-blue-700">Real-time financial monitoring • Proactive recommendations</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-blue-600">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    Live Monitoring
+                  </div>
+                </div>
+              </div>
+
+              {/* Alert Counts */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-red-50 to-pink-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-red-100 rounded-lg">
+                        <AlertCircle className="h-5 w-5 text-red-600" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-red-900">{counts.critical}</div>
+                        <div className="text-sm text-red-700">Critical</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-orange-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-yellow-100 rounded-lg">
+                        <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-yellow-900">{counts.warning}</div>
+                        <div className="text-sm text-yellow-700">Warning</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-blue-50 to-cyan-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Info className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-blue-900">{counts.info}</div>
+                        <div className="text-sm text-blue-700">Info</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-green-900">{counts.total}</div>
+                        <div className="text-sm text-green-700">Total</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Filter Buttons */}
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setFilter('all')}
+                  variant={filter === 'all' ? 'default' : 'outline'}
+                  className={filter === 'all' ? 'bg-[#607c47] hover:bg-[#4a6129] text-white' : 'border-gray-300 text-[#2C2C2C]'}
+                >
+                  All ({counts.total})
+                </Button>
+                <Button
+                  onClick={() => setFilter('critical')}
+                  variant={filter === 'critical' ? 'default' : 'outline'}
+                  className={filter === 'critical' ? 'bg-red-500 hover:bg-red-600 text-white' : 'border-gray-300 text-[#2C2C2C]'}
+                >
+                  Critical ({counts.critical})
+                </Button>
+                <Button
+                  onClick={() => setFilter('warning')}
+                  variant={filter === 'warning' ? 'default' : 'outline'}
+                  className={filter === 'warning' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'border-gray-300 text-[#2C2C2C]'}
+                >
+                  Warning ({counts.warning})
+                </Button>
+                <Button
+                  onClick={() => setFilter('info')}
+                  variant={filter === 'info' ? 'default' : 'outline'}
+                  className={filter === 'info' ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'border-gray-300 text-[#2C2C2C]'}
+                >
+                  Info ({counts.info})
+                </Button>
+              </div>
+
+              {/* Alerts List */}
+              {filteredAlerts.length === 0 ? (
+                <Card className="rounded-xl border-0 shadow-lg">
+                  <CardContent className="p-12 text-center">
+                    <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-[#2C2C2C] mb-2">No Alerts</h3>
+                    <p className="text-gray-600 mb-6">
+                      {filter === 'all' ? 'No alerts at this time' : `No ${filter} alerts`}
+                    </p>
+                    <Button
+                      onClick={generateAlerts}
+                      disabled={generating}
+                      className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                    >
+                      <RefreshCw className={`h-4 w-4 mr-2 ${generating ? 'animate-spin' : ''}`} />
+                      Generate AI Alerts
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {filteredAlerts.map((alert) => (
+                    <Card key={alert.id} className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-shadow ${getSeverityColor(alert.severity)}`}>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start gap-3 flex-1">
+                            {getSeverityIcon(alert.severity)}
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <CardTitle className="text-lg font-medium text-[#2C2C2C]">{alert.title}</CardTitle>
+                                <Badge className={getSeverityBadgeColor(alert.severity)}>
+                                  {alert.severity}
+                                </Badge>
+                                {!alert.isRead && (
+                                  <Badge variant="outline" className="border-blue-300 text-blue-700">
+                                    New
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-600 mb-3">{alert.message}</p>
+                              
+                              {/* Metrics */}
+                              <div className="flex items-center gap-4 text-sm">
+                                <div className="flex items-center gap-1">
+                                  <DollarSign className="h-4 w-4 text-gray-500" />
+                                  <span className="text-gray-600">Current: {formatCurrency(alert.currentValue)}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <TrendingUp className="h-4 w-4 text-gray-500" />
+                                  <span className="text-gray-600">Threshold: {formatCurrency(alert.thresholdValue)}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            {!alert.isRead && (
+                              <Button
+                                onClick={() => markAsRead(alert.id)}
+                                variant="outline"
+                                size="sm"
+                                className="border-gray-300 text-[#2C2C2C]"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button
+                              onClick={() => dismissAlert(alert.id)}
+                              variant="outline"
+                              size="sm"
+                              className="border-gray-300 text-[#2C2C2C]"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+
+                      <CardContent className="pt-0">
+                        {/* Recommendations */}
+                        {alert.recommendations && alert.recommendations.length > 0 && (
+                          <div className="border-t border-gray-200 pt-4">
+                            <h4 className="text-sm font-semibold text-[#2C2C2C] mb-3">AI Recommendations</h4>
+                            <div className="space-y-3">
+                              {alert.recommendations.map((rec: any, index: number) => (
+                                <div key={index} className="bg-white/60 rounded-lg p-3">
+                                  <div className="flex items-start justify-between mb-2">
+                                    <p className="text-sm font-medium text-[#2C2C2C]">{rec.action}</p>
+                                    <Badge variant="outline" className="text-xs">
+                                      {rec.effort} effort
+                                    </Badge>
+                                  </div>
+                                  <p className="text-xs text-gray-600">{rec.impact}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Timestamp */}
+                        <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-200">
+                          <span className="text-xs text-gray-500">
+                            {new Date(alert.createdAt).toLocaleString()}
+                          </span>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-gray-300 text-[#2C2C2C]"
+                            >
+                              View Details
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        ) : (
-          <MagicBento items={bentoItems} />
-        )}
+        </div>
       </MainLayout>
     </AuthGuard>
   );

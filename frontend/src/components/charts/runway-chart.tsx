@@ -1,7 +1,7 @@
 'use client';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { BentoCard } from '@/components/ui/BentoCard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, AlertCircle, TrendingDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -16,14 +16,14 @@ export default function RunwayChart({ currentBalance, monthlyBurn, runwayMonths 
   const generateForecast = () => {
     const months = [];
     let balance = currentBalance;
-    const monthsToProject = runwayMonths ? Math.ceil(runwayMonths) + 2 : 12;
+    const monthsToProject = runwayMonths ? Math.ceil(runwayMonths) + 3 : 12;
 
     for (let i = 0; i <= monthsToProject; i++) {
       const date = new Date();
       date.setMonth(date.getMonth() + i);
       
       months.push({
-        month: date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+        month: date.toLocaleDateString('en-US', { month: 'short' }),
         balance: Math.max(0, balance),
         projected: i > 0,
         monthNumber: i
@@ -38,117 +38,111 @@ export default function RunwayChart({ currentBalance, monthlyBurn, runwayMonths 
   const forecastData = generateForecast();
   const runwayReached = forecastData.find(d => d.balance === 0);
   const isHealthy = runwayMonths === null || runwayMonths > 12;
+  const isCritical = runwayMonths !== null && runwayMonths < 6;
 
   return (
-    <BentoCard gradient glow>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-xl font-bold text-white">Runway Forecast</h3>
-          <p className="text-sm text-gray-400 mt-1">
-            Projected balance based on current burn rate
-          </p>
-        </div>
-        <Calendar className="h-6 w-6 text-purple-400" />
-      </div>
-
-      {/* Runway Summary */}
-      <div className="flex items-center justify-between mb-6 p-4 rounded-xl bg-black/40 border border-white/10">
-        <div className="flex items-center gap-3">
-          <div className={cn(
-            "h-12 w-12 rounded-xl flex items-center justify-center",
-            isHealthy ? "bg-gradient-to-br from-green-500/20 to-emerald-500/20" : "bg-gradient-to-br from-red-500/20 to-orange-500/20"
-          )}>
-            <TrendingDown className={cn(
-              "h-6 w-6",
-              isHealthy ? "text-green-400" : "text-red-400"
-            )} />
-          </div>
+    <Card className="rounded-xl border-0 shadow-lg h-full">
+      <CardHeader>
+        <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-400">Current Runway</p>
-            <p className={cn(
-              "text-2xl font-bold",
-              isHealthy ? "text-green-400" : "text-red-400"
-            )}>
-              {runwayMonths ? `${runwayMonths.toFixed(1)}mo` : '∞'}
+            <CardTitle className="text-lg font-medium text-[#2C2C2C] flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-[#607c47]" />
+              Runway Forecast
+            </CardTitle>
+            <p className="text-sm text-gray-500 mt-1">
+              Projected balance based on current burn rate
             </p>
           </div>
         </div>
-
-        {!isHealthy && runwayMonths && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20">
-            <AlertCircle className="h-4 w-4 text-red-400" />
-            <span className="text-sm text-red-400 font-medium">
-              {runwayMonths < 6 ? 'Critical' : 'Warning'}
-            </span>
+      </CardHeader>
+      <CardContent>
+        {/* Runway Summary */}
+        <div className="flex items-center justify-between mb-6 p-4 rounded-xl bg-gray-50 border border-gray-200">
+          <div className="flex items-center gap-4">
+            <div className={cn(
+              "h-12 w-12 rounded-lg flex items-center justify-center",
+              isHealthy ? "bg-green-100" : isCritical ? "bg-red-100" : "bg-yellow-100"
+            )}>
+              <TrendingDown className={cn(
+                "h-6 w-6",
+                isHealthy ? "text-green-600" : isCritical ? "text-red-600" : "text-yellow-600"
+              )} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Estimated Runway</p>
+              <p className={cn(
+                "text-2xl font-bold",
+                isHealthy ? "text-green-700" : isCritical ? "text-red-700" : "text-yellow-700"
+              )}>
+                {runwayMonths ? `${runwayMonths.toFixed(1)} months` : 'Healthy'}
+              </p>
+            </div>
           </div>
-        )}
-      </div>
 
-      {/* Chart */}
-      <ResponsiveContainer width="100%" height={280}>
-        <LineChart data={forecastData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-          <defs>
-            <linearGradient id="runwayGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
-          <XAxis 
-            dataKey="month" 
-            tick={{ fill: '#9ca3af', fontSize: 12 }}
-            stroke="#4b5563"
-          />
-          <YAxis 
-            tick={{ fill: '#9ca3af', fontSize: 12 }}
-            stroke="#4b5563"
-            tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-          />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: 'rgba(0, 0, 0, 0.9)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '12px',
-              color: '#fff',
-              backdropFilter: 'blur(10px)'
-            }}
-            formatter={(value: number) => [`$${value.toLocaleString()}`, 'Balance']}
-            labelFormatter={(label) => `Month: ${label}`}
-          />
-          {runwayReached && (
-            <ReferenceLine 
-              x={runwayReached.monthNumber} 
-              stroke="#ef4444" 
-              strokeDasharray="3 3"
-              label={{ 
-                value: 'Runway End', 
-                position: 'top',
-                fill: '#ef4444',
-                fontSize: 12
-              }}
-            />
+          {!isHealthy && runwayMonths && (
+            <div className={cn(
+              "flex items-center gap-2 px-3 py-1.5 rounded-full",
+              isCritical ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"
+            )}>
+              <AlertCircle className="h-4 w-4" />
+              <span className="text-xs font-medium">
+                {isCritical ? 'Critical' : 'Warning'}
+              </span>
+            </div>
           )}
-          <Line
-            type="monotone"
-            dataKey="balance"
-            stroke="#8b5cf6"
-            strokeWidth={3}
-            dot={{ fill: '#8b5cf6', r: 4 }}
-            activeDot={{ r: 6 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-
-      {/* Forecast Info */}
-      <div className="mt-4 flex items-center gap-2 text-xs text-gray-500">
-        <div className="flex items-center gap-1">
-          <div className="h-2 w-2 rounded-full bg-purple-500" />
-          <span>Current balance</span>
         </div>
-        <span>•</span>
-        <span>Projected at ${monthlyBurn.toLocaleString()}/month burn</span>
-      </div>
-    </BentoCard>
+
+        {/* Chart */}
+        <ResponsiveContainer width="100%" height={250}>
+          <LineChart data={forecastData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <XAxis 
+              dataKey="month" 
+              tick={{ fill: '#6b7280', fontSize: 12 }}
+              stroke="#d1d5db"
+            />
+            <YAxis 
+              tick={{ fill: '#6b7280', fontSize: 12 }}
+              stroke="#d1d5db"
+              tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: '#ffffff',
+                border: '1px solid #e5e7eb',
+                borderRadius: '0.75rem',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
+              }}
+              formatter={(value: number) => [`$${value.toLocaleString()}`, 'Balance']}
+              labelFormatter={(label) => `Month: ${label}`}
+            />
+            {runwayReached && (
+              <ReferenceLine 
+                x={runwayReached.month} 
+                stroke="#ef4444" 
+                strokeDasharray="4 4"
+                label={{ 
+                  value: 'Runway End', 
+                  position: 'insideTopRight',
+                  fill: '#ef4444',
+                  fontSize: 12,
+                  dy: -10,
+                  dx: -10
+                }}
+              />
+            )}
+            <Line
+              type="monotone"
+              dataKey="balance"
+              stroke="#607c47"
+              strokeWidth={2}
+              dot={{ r: 4, fill: '#607c47' }}
+              activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
   );
 }
 

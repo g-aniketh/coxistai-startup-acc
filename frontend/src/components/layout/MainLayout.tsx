@@ -11,7 +11,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="h-screen flex overflow-hidden bg-[#E4E1DC]">
+    <div className="h-screen flex overflow-hidden bg-white">
       {/* Section 1: Sidebar - Desktop */}
       <aside className="hidden lg:flex lg:flex-shrink-0">
         <div className="w-64">
