@@ -20,6 +20,17 @@ import {
   DollarSign,
   TrendingUp,
   TrendingDown,
+  Bot,
+  Zap,
+  Bell,
+  Settings,
+  Filter,
+  Download,
+  Calendar,
+  Target,
+  Activity,
+  Brain,
+  Shield,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import toast from 'react-hot-toast';
@@ -30,6 +41,18 @@ export default function AlertsPage() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [filter, setFilter] = useState<'all' | 'critical' | 'warning' | 'info'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [aiInsights, setAiInsights] = useState<any>(null);
+  const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
+  const [alertSettings, setAlertSettings] = useState({
+    burnRateThreshold: 15,
+    cashFlowThreshold: 5000,
+    revenueGrowthThreshold: 10,
+    churnRateThreshold: 5,
+    enableProactiveAlerts: true,
+    enableWeeklyDigest: true,
+    enableEmailNotifications: true
+  });
 
   useEffect(() => {
     loadAlerts();
@@ -176,7 +199,8 @@ export default function AlertsPage() {
           }
         ],
         isRead: false,
-        isDismissed: false
+        isDismissed: false,
+        aiGenerated: true
       };
       
       setAlerts(prev => [newAlert, ...prev]);
@@ -187,6 +211,80 @@ export default function AlertsPage() {
       toast.error('Failed to generate alerts');
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const generateAIInsights = async () => {
+    setIsGeneratingInsights(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      
+      const insights = {
+        patterns: [
+          {
+            type: 'Spending Pattern',
+            description: 'SaaS expenses have increased 23% month-over-month',
+            impact: 'High',
+            trend: 'increasing',
+            recommendation: 'Implement subscription management tool'
+          },
+          {
+            type: 'Revenue Pattern',
+            description: 'Customer acquisition cost decreased by 15%',
+            impact: 'Positive',
+            trend: 'improving',
+            recommendation: 'Scale marketing spend while maintaining efficiency'
+          },
+          {
+            type: 'Cash Flow Pattern',
+            description: 'Payment collection time improved by 3 days',
+            impact: 'Medium',
+            trend: 'improving',
+            recommendation: 'Continue automated payment reminders'
+          }
+        ],
+        predictions: [
+          {
+            metric: 'Burn Rate',
+            prediction: 'Will increase by 8% next month',
+            confidence: 85,
+            action: 'Monitor hiring plans and optimize costs'
+          },
+          {
+            metric: 'Revenue',
+            prediction: 'Will grow by 12% next quarter',
+            confidence: 78,
+            action: 'Prepare for increased customer support needs'
+          },
+          {
+            metric: 'Runway',
+            prediction: 'Will extend to 11.2 months',
+            confidence: 92,
+            action: 'Consider growth investments'
+          }
+        ],
+        anomalies: [
+          {
+            type: 'Unusual Transaction',
+            description: 'Large payment of $25,000 received 5 days early',
+            severity: 'info',
+            impact: 'Positive cash flow impact'
+          },
+          {
+            type: 'Expense Spike',
+            description: 'Marketing spend increased 40% this week',
+            severity: 'warning',
+            impact: 'Monitor ROI and budget allocation'
+          }
+        ]
+      };
+      
+      setAiInsights(insights);
+      toast.success('AI insights generated successfully!');
+    } catch (error) {
+      toast.error('Failed to generate AI insights');
+    } finally {
+      setIsGeneratingInsights(false);
     }
   };
 
@@ -301,8 +399,30 @@ export default function AlertsPage() {
                 <div className="flex gap-3">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input placeholder="Search alerts..." className="pl-10 bg-white rounded-lg" />
+                    <Input 
+                      placeholder="Search alerts..." 
+                      className="pl-10 bg-white rounded-lg"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                   </div>
+                  <Button
+                    onClick={generateAIInsights}
+                    disabled={isGeneratingInsights}
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    {isGeneratingInsights ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <Brain className="h-4 w-4 mr-2" />
+                        AI Insights
+                      </>
+                    )}
+                  </Button>
                   <Button
                     onClick={generateAlerts}
                     disabled={generating}
@@ -423,6 +543,98 @@ export default function AlertsPage() {
                   Info ({counts.info})
                 </Button>
               </div>
+
+              {/* AI Insights Section */}
+              {aiInsights && (
+                <div className="space-y-6">
+                  <Card className="bg-white rounded-xl border-0 shadow-lg">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg font-medium text-[#2C2C2C] flex items-center gap-2">
+                        <Brain className="h-5 w-5 text-purple-600" />
+                        AI Pattern Analysis
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {aiInsights.patterns.map((pattern: any, index: number) => (
+                          <div key={index} className="bg-gray-50 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-semibold text-[#2C2C2C]">{pattern.type}</h4>
+                              <Badge className={
+                                pattern.impact === 'High' ? 'bg-red-100 text-red-800' :
+                                pattern.impact === 'Positive' ? 'bg-green-100 text-green-800' :
+                                'bg-yellow-100 text-yellow-800'
+                              }>
+                                {pattern.impact}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-3">{pattern.description}</p>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-500">Recommendation:</span>
+                              <span className="text-xs text-[#607c47] font-medium">{pattern.recommendation}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card className="bg-white rounded-xl border-0 shadow-lg">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-lg font-medium text-[#2C2C2C] flex items-center gap-2">
+                          <TrendingUp className="h-5 w-5 text-blue-600" />
+                          Predictive Analytics
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="space-y-4">
+                          {aiInsights.predictions.map((prediction: any, index: number) => (
+                            <div key={index} className="border-l-4 border-blue-200 pl-4">
+                              <div className="flex items-center justify-between mb-1">
+                                <h4 className="font-semibold text-[#2C2C2C]">{prediction.metric}</h4>
+                                <Badge className="bg-blue-100 text-blue-800">
+                                  {prediction.confidence}% confidence
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-gray-600 mb-2">{prediction.prediction}</p>
+                              <p className="text-xs text-[#607c47] font-medium">{prediction.action}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-white rounded-xl border-0 shadow-lg">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-lg font-medium text-[#2C2C2C] flex items-center gap-2">
+                          <Shield className="h-5 w-5 text-orange-600" />
+                          Anomaly Detection
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="space-y-4">
+                          {aiInsights.anomalies.map((anomaly: any, index: number) => (
+                            <div key={index} className="bg-gray-50 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="font-semibold text-[#2C2C2C]">{anomaly.type}</h4>
+                                <Badge className={
+                                  anomaly.severity === 'warning' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-blue-100 text-blue-800'
+                                }>
+                                  {anomaly.severity}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-gray-600 mb-1">{anomaly.description}</p>
+                              <p className="text-xs text-gray-500">{anomaly.impact}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              )}
 
               {/* Alerts List */}
               {filteredAlerts.length === 0 ? (

@@ -77,8 +77,17 @@ export interface Transaction {
 export interface Product {
   id: string;
   name: string;
+  description?: string;
+  category?: string;
   quantity: number;
   price: number;
+  cost?: number;
+  sku?: string;
+  reorderLevel?: number;
+  maxStock?: number;
+  supplier?: string;
+  lastRestocked?: string;
+  salesCount?: number;
   startupId: string;
   createdAt: string;
   updatedAt: string;

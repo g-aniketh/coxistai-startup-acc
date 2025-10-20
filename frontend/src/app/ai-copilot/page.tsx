@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Sparkles, 
   Zap, 
@@ -28,7 +29,7 @@ import { cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
 
 export default function AICopilotPage() {
-  const [activeTab, setActiveTab] = useState<'insights' | 'scenarios'>('insights');
+  const [activeTab, setActiveTab] = useState<'insights' | 'scenarios' | 'forecasting'>('insights');
   
   // Insights state
   const [insights, setInsights] = useState<any>(null);
@@ -38,6 +39,11 @@ export default function AICopilotPage() {
   const [scenario, setScenario] = useState('');
   const [scenarioResult, setScenarioResult] = useState<any>(null);
   const [scenarioLoading, setScenarioLoading] = useState(false);
+  
+  // Forecasting state
+  const [forecastData, setForecastData] = useState<any>(null);
+  const [forecastLoading, setForecastLoading] = useState(false);
+  const [forecastPeriod, setForecastPeriod] = useState<'3months' | '6months' | '12months'>('6months');
 
   const exampleScenarios = [
     "What happens if we hire 2 engineers at $150k/year each?",
@@ -168,6 +174,80 @@ export default function AICopilotPage() {
     }
   };
 
+  const generateForecast = async () => {
+    setForecastLoading(true);
+    try {
+      // Mock data for demonstration
+      await new Promise(resolve => setTimeout(resolve, 2500)); // Simulate API call
+      
+      const periods = {
+        '3months': 3,
+        '6months': 6,
+        '12months': 12
+      };
+      
+      const months = periods[forecastPeriod];
+      const forecastResult = {
+        period: forecastPeriod,
+        months: months,
+        revenue: {
+          current: 52000,
+          projected: Array.from({ length: months }, (_, i) => ({
+            month: `Month ${i + 1}`,
+            amount: 52000 + (i * 3000) + Math.random() * 2000,
+            growth: 5 + Math.random() * 10
+          }))
+        },
+        expenses: {
+          current: 35000,
+          projected: Array.from({ length: months }, (_, i) => ({
+            month: `Month ${i + 1}`,
+            amount: 35000 + (i * 1000) + Math.random() * 1000,
+            growth: 2 + Math.random() * 5
+          }))
+        },
+        cashFlow: {
+          current: 17000,
+          projected: Array.from({ length: months }, (_, i) => ({
+            month: `Month ${i + 1}`,
+            amount: 17000 + (i * 2000) + Math.random() * 1000,
+            cumulative: 287500 + (i * 2000) + Math.random() * 1000
+          }))
+        },
+        runway: {
+          current: 8.2,
+          projected: 8.2 + (months * 0.3) + Math.random() * 0.5
+        },
+        insights: [
+          "Revenue growth is projected to accelerate in Q2 due to seasonal trends",
+          "Expense growth is manageable and within budget constraints",
+          "Cash runway extends to 12+ months under current projections",
+          "Consider investing surplus cash in growth initiatives"
+        ],
+        risks: [
+          "Market volatility could impact revenue projections",
+          "Unexpected expenses could reduce runway",
+          "Customer acquisition costs may increase",
+          "Competition could pressure pricing"
+        ],
+        recommendations: [
+          "Implement revenue optimization strategies",
+          "Monitor expense growth closely",
+          "Prepare contingency plans for market changes",
+          "Consider fundraising timeline based on runway projections"
+        ]
+      };
+      
+      setForecastData(forecastResult);
+      toast.success('Financial forecast generated!');
+    } catch (error) {
+      console.error('Failed to generate forecast:', error);
+      toast.error('Failed to generate forecast');
+    } finally {
+      setForecastLoading(false);
+    }
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -236,6 +316,14 @@ export default function AICopilotPage() {
                 >
                   <Target className="h-4 w-4 mr-2" />
                   What-If Scenarios
+                </Button>
+                <Button
+                  onClick={() => setActiveTab('forecasting')}
+                  variant={activeTab === 'forecasting' ? 'default' : 'ghost'}
+                  className={activeTab === 'forecasting' ? 'bg-[#607c47] hover:bg-[#4a6129] text-white' : 'text-[#2C2C2C] hover:bg-gray-100'}
+                >
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  AI Forecasting
                 </Button>
               </div>
 
@@ -585,6 +673,206 @@ export default function AICopilotPage() {
                         </div>
                       </CardContent>
                     </Card>
+                  )}
+                </div>
+              )}
+
+              {/* Forecasting Tab */}
+              {activeTab === 'forecasting' && (
+                <div className="space-y-6">
+                  {/* Forecast Generation */}
+                  <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-indigo-50 to-purple-50">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg font-medium text-indigo-900 flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5 text-indigo-600" />
+                        AI Financial Forecasting
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                          <div>
+                            <Label htmlFor="forecast-period" className="text-sm font-medium text-[#2C2C2C]">
+                              Forecast Period
+                            </Label>
+                            <Select value={forecastPeriod} onValueChange={(value: any) => setForecastPeriod(value)}>
+                              <SelectTrigger className="w-[200px] mt-2 bg-white">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="3months">3 Months</SelectItem>
+                                <SelectItem value="6months">6 Months</SelectItem>
+                                <SelectItem value="12months">12 Months</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <Button
+                            onClick={generateForecast}
+                            disabled={forecastLoading}
+                            className="bg-[#607c47] hover:bg-[#4a6129] text-white mt-6"
+                          >
+                            {forecastLoading ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                                Generating...
+                              </>
+                            ) : (
+                              <>
+                                <Brain className="h-4 w-4 mr-2" />
+                                Generate Forecast
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Forecast Results */}
+                  {forecastData && (
+                    <div className="space-y-6">
+                      {/* Forecast Summary */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50">
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-green-100 rounded-lg">
+                                <DollarSign className="h-5 w-5 text-green-600" />
+                              </div>
+                              <div>
+                                <div className="text-sm text-green-700">Projected Revenue</div>
+                                <div className="text-lg font-bold text-green-900">
+                                  {formatCurrency(forecastData.revenue.projected[forecastData.months - 1]?.amount || 0)}
+                                </div>
+                                <div className="text-xs text-green-600">
+                                  +{forecastData.revenue.projected[forecastData.months - 1]?.growth?.toFixed(1)}% growth
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-red-50 to-pink-50">
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-red-100 rounded-lg">
+                                <TrendingDown className="h-5 w-5 text-red-600" />
+                              </div>
+                              <div>
+                                <div className="text-sm text-red-700">Projected Expenses</div>
+                                <div className="text-lg font-bold text-red-900">
+                                  {formatCurrency(forecastData.expenses.projected[forecastData.months - 1]?.amount || 0)}
+                                </div>
+                                <div className="text-xs text-red-600">
+                                  +{forecastData.expenses.projected[forecastData.months - 1]?.growth?.toFixed(1)}% growth
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-blue-50 to-cyan-50">
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-blue-100 rounded-lg">
+                                <Calendar className="h-5 w-5 text-blue-600" />
+                              </div>
+                              <div>
+                                <div className="text-sm text-blue-700">Projected Runway</div>
+                                <div className="text-lg font-bold text-blue-900">
+                                  {forecastData.runway.projected.toFixed(1)} mo
+                                </div>
+                                <div className="text-xs text-blue-600">
+                                  +{(forecastData.runway.projected - forecastData.runway.current).toFixed(1)} mo change
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-purple-50 to-indigo-50">
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-purple-100 rounded-lg">
+                                <TrendingUp className="h-5 w-5 text-purple-600" />
+                              </div>
+                              <div>
+                                <div className="text-sm text-purple-700">Cash Flow Growth</div>
+                                <div className="text-lg font-bold text-purple-900">
+                                  {formatCurrency(forecastData.cashFlow.projected[forecastData.months - 1]?.amount || 0)}
+                                </div>
+                                <div className="text-xs text-purple-600">Monthly projection</div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      {/* Forecast Insights */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <Card className="bg-white rounded-xl border-0 shadow-lg">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-lg font-medium text-[#2C2C2C] flex items-center gap-2">
+                              <Lightbulb className="h-5 w-5 text-[#607c47]" />
+                              AI Insights
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="pt-0">
+                            <div className="space-y-3">
+                              {forecastData.insights.map((insight: string, index: number) => (
+                                <div key={index} className="flex items-start gap-2 text-sm text-gray-600">
+                                  <span className="text-[#607c47] mt-1">→</span>
+                                  <span>{insight}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="bg-white rounded-xl border-0 shadow-lg">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-lg font-medium text-[#2C2C2C] flex items-center gap-2">
+                              <AlertTriangle className="h-5 w-5 text-orange-500" />
+                              Risk Factors
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="pt-0">
+                            <div className="space-y-3">
+                              {forecastData.risks.map((risk: string, index: number) => (
+                                <div key={index} className="flex items-start gap-2 text-sm text-gray-600">
+                                  <span className="text-orange-500 mt-1">⚠</span>
+                                  <span>{risk}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      {/* Forecast Recommendations */}
+                      <Card className="bg-white rounded-xl border-0 shadow-lg">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg font-medium text-[#2C2C2C] flex items-center gap-2">
+                            <Target className="h-5 w-5 text-[#607c47]" />
+                            Strategic Recommendations
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {forecastData.recommendations.map((rec: string, index: number) => (
+                              <div key={index} className="bg-gray-50 rounded-lg p-4">
+                                <div className="flex items-start gap-2">
+                                  <div className="p-1 bg-[#607c47] rounded-full">
+                                    <CheckCircle className="h-3 w-3 text-white" />
+                                  </div>
+                                  <span className="text-sm text-gray-700">{rec}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
                   )}
                 </div>
               )}

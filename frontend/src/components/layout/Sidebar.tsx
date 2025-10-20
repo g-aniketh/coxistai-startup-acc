@@ -18,6 +18,7 @@ import {
   FileText,
   Bot,
   User,
+  Calculator,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
 import Image from 'next/image';
@@ -36,13 +37,15 @@ export default function Sidebar() {
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'AI Copilot', href: '/ai-copilot', icon: Sparkles },
     { name: 'AI Chatbot', href: '/ai-chatbot', icon: Bot },
-    { name: 'Alerts', href: '/alerts', icon: AlertTriangle },
-    { name: 'Investor Updates', href: '/investor-updates', icon: FileText },
+    { name: 'Tax & Compliance', href: '/tax-compliance', icon: Calculator },
+    { name: 'Bookkeeping', href: '/bookkeeping', icon: Repeat },
+    { name: 'Expense Management', href: '/expense-management', icon: FileText },
+    { name: 'Multi-Bank Sync', href: '/multi-bank-sync', icon: CreditCard },
+    { name: 'Smart Invoicing', href: '/invoicing', icon: FileText },
+    { name: 'Smart Alerts', href: '/alerts', icon: AlertTriangle },
     { name: 'Statistics', href: '/statistics', icon: BarChart2 },
-    { name: 'Payment', href: '/payment', icon: CreditCard },
     { name: 'Transactions', href: '/transactions', icon: Repeat },
     { name: 'Products', href: '/products', icon: Package },
-    { name: 'Messages', href: '/messages', icon: MessageSquare },
   ];
 
   return (
