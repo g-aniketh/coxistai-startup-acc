@@ -77,7 +77,7 @@ async function main() {
   const startups = await Promise.all([
     prisma.startup.create({
       data: {
-        name: 'TechNova Solutions',
+        name: 'Coxist AI',
         subscriptionPlan: 'pro_trial',
         subscriptionStatus: 'active',
         trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
@@ -85,7 +85,7 @@ async function main() {
     }),
     prisma.startup.create({
       data: {
-        name: 'CloudScale Inc',
+        name: 'Coxist AI Cloud',
         subscriptionPlan: 'pro',
         subscriptionStatus: 'active',
         trialEndsAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
@@ -93,7 +93,7 @@ async function main() {
     }),
     prisma.startup.create({
       data: {
-        name: 'DataFlow Analytics',
+        name: 'Coxist AI Analytics',
         subscriptionPlan: 'enterprise',
         subscriptionStatus: 'active',
         trialEndsAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
@@ -101,7 +101,7 @@ async function main() {
     }),
     prisma.startup.create({
       data: {
-        name: 'AI Innovations Lab',
+        name: 'Coxist AI Innovations',
         subscriptionPlan: 'starter',
         subscriptionStatus: 'active',
         trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -109,7 +109,7 @@ async function main() {
     }),
     prisma.startup.create({
       data: {
-        name: 'GreenTech Ventures',
+        name: 'Coxist AI Ventures',
         subscriptionPlan: 'pro_trial',
         subscriptionStatus: 'active',
         trialEndsAt: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
@@ -121,12 +121,12 @@ async function main() {
   // 5. Create users for each startup
   const hashedPassword = await bcrypt.hash('password123', 10);
   
-  // Create users for TechNova Solutions (main demo account)
-  const techNovaUsers = await Promise.all([
-    { email: 'admin@technova.com', firstName: 'Alex', lastName: 'Johnson', roleName: 'Admin', startupId: startups[0].id },
-    { email: 'cfo@technova.com', firstName: 'Brenda', lastName: 'Chen', roleName: 'CFO', startupId: startups[0].id },
-    { email: 'accountant@technova.com', firstName: 'Carlos', lastName: 'Mendoza', roleName: 'Accountant', startupId: startups[0].id },
-    { email: 'demo@technova.com', firstName: 'Demo', lastName: 'User', roleName: 'Admin', startupId: startups[0].id },
+  // Create users for Coxist AI (main demo account)
+  const coxistAIUsers = await Promise.all([
+    { email: 'admin@coxistai.com', firstName: 'Alex', lastName: 'Johnson', roleName: 'Admin', startupId: startups[0].id },
+    { email: 'cfo@coxistai.com', firstName: 'Brenda', lastName: 'Chen', roleName: 'CFO', startupId: startups[0].id },
+    { email: 'accountant@coxistai.com', firstName: 'Carlos', lastName: 'Mendoza', roleName: 'Accountant', startupId: startups[0].id },
+    { email: 'demo@coxistai.com', firstName: 'Demo', lastName: 'User', roleName: 'Admin', startupId: startups[0].id },
   ].map(async (userData) => {
     const user = await prisma.user.create({
       data: {
@@ -152,10 +152,10 @@ async function main() {
 
   // Create users for other startups
   const otherStartupUsers = await Promise.all([
-    { email: 'ceo@cloudscale.com', firstName: 'Sarah', lastName: 'Wilson', roleName: 'Admin', startupId: startups[1].id },
-    { email: 'ceo@dataflow.com', firstName: 'Michael', lastName: 'Brown', roleName: 'Admin', startupId: startups[2].id },
-    { email: 'ceo@aiinnovations.com', firstName: 'Lisa', lastName: 'Garcia', roleName: 'Admin', startupId: startups[3].id },
-    { email: 'ceo@greentech.com', firstName: 'David', lastName: 'Lee', roleName: 'Admin', startupId: startups[4].id },
+    { email: 'ceo@coxistai.cloud', firstName: 'Sarah', lastName: 'Wilson', roleName: 'Admin', startupId: startups[1].id },
+    { email: 'ceo@coxistai.analytics', firstName: 'Michael', lastName: 'Brown', roleName: 'Admin', startupId: startups[2].id },
+    { email: 'ceo@coxistai.innovations', firstName: 'Lisa', lastName: 'Garcia', roleName: 'Admin', startupId: startups[3].id },
+    { email: 'ceo@coxistai.ventures', firstName: 'David', lastName: 'Lee', roleName: 'Admin', startupId: startups[4].id },
   ].map(async (userData) => {
     const user = await prisma.user.create({
       data: {
@@ -486,17 +486,17 @@ async function main() {
 
   console.log('\n✅ Comprehensive seed completed successfully!');
   console.log('\n🔑 Login Credentials (password for all is "password123"):');
-  console.log('\n📊 Main Demo Account (TechNova Solutions):');
-  console.log('  - Admin: admin@technova.com');
-  console.log('  - CFO: cfo@technova.com');
-  console.log('  - Accountant: accountant@technova.com');
-  console.log('  - Demo User: demo@technova.com');
+  console.log('\n📊 Main Demo Account (Coxist AI):');
+  console.log('  - Admin: admin@coxistai.com');
+  console.log('  - CFO: cfo@coxistai.com');
+  console.log('  - Accountant: accountant@coxistai.com');
+  console.log('  - Demo User: demo@coxistai.com');
   console.log('\n🏢 Other Demo Accounts:');
-  console.log('  - CloudScale Inc: ceo@cloudscale.com');
-  console.log('  - DataFlow Analytics: ceo@dataflow.com');
-  console.log('  - AI Innovations Lab: ceo@aiinnovations.com');
-  console.log('  - GreenTech Ventures: ceo@greentech.com');
-  console.log('\n💡 Use demo@technova.com for the best demo experience with full transaction history!');
+  console.log('  - Coxist AI Cloud: ceo@coxistai.cloud');
+  console.log('  - Coxist AI Analytics: ceo@coxistai.analytics');
+  console.log('  - Coxist AI Innovations: ceo@coxistai.innovations');
+  console.log('  - Coxist AI Ventures: ceo@coxistai.ventures');
+  console.log('\n💡 Use demo@coxistai.com for the best demo experience with full transaction history!');
 }
 
 main()

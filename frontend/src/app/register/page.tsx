@@ -10,6 +10,7 @@ import GradientText from '@/components/GradientText';
 import Magnet from '@/components/Magnet';
 import Aurora from '@/components/Aurora';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -103,12 +104,11 @@ export default function RegisterPage() {
                   <Building2 className="h-4 w-4 inline mr-1" />
                   Startup Name
                 </label>
-                <input
+                <Input
                   id="startupName"
                   name="startupName"
                   type="text"
                   required
-                  className="w-full px-4 py-2 border border-border rounded-lg bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="My Amazing Startup"
                   value={formData.startupName}
                   onChange={handleChange}
@@ -124,11 +124,10 @@ export default function RegisterPage() {
                   >
                     First Name
                   </label>
-                  <input
+                  <Input
                     id="firstName"
                     name="firstName"
                     type="text"
-                    className="w-full px-4 py-2 border border-border rounded-lg bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                     placeholder="John"
                     value={formData.firstName}
                     onChange={handleChange}
@@ -141,11 +140,10 @@ export default function RegisterPage() {
                   >
                     Last Name
                   </label>
-                  <input
+                  <Input
                     id="lastName"
                     name="lastName"
                     type="text"
-                    className="w-full px-4 py-2 border border-border rounded-lg bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                     placeholder="Doe"
                     value={formData.lastName}
                     onChange={handleChange}
@@ -161,12 +159,11 @@ export default function RegisterPage() {
                 >
                   Email Address
                 </label>
-                <input
+                <Input
                   id="email"
                   name="email"
                   type="email"
                   required
-                  className="w-full px-4 py-2 border border-border rounded-lg bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="founder@startup.com"
                   value={formData.email}
                   onChange={handleChange}
@@ -182,12 +179,12 @@ export default function RegisterPage() {
                   Password
                 </label>
                 <div className="relative">
-                  <input
+                  <Input
                     id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
-                    className="w-full px-4 py-2 pr-10 border border-border rounded-lg bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="pr-10"
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={handleChange}
@@ -218,12 +215,12 @@ export default function RegisterPage() {
                   Confirm Password
                 </label>
                 <div className="relative">
-                  <input
+                  <Input
                     id="confirmPassword"
                     name="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
                     required
-                    className="w-full px-4 py-2 pr-10 border border-border rounded-lg bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="pr-10"
                     placeholder="••••••••"
                     value={formData.confirmPassword}
                     onChange={handleChange}

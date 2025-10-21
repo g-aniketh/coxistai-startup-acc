@@ -8,6 +8,7 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import { Eye, EyeOff } from 'lucide-react';
 import GradientText from '@/components/GradientText';
 import Aurora from '@/components/Aurora';
+import { Input } from '@/components/ui/input';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -60,12 +61,11 @@ export default function LoginPage() {
                   >
                     Email address
                   </label>
-                  <input
+                  <Input
                     id="email"
                     name="email"
                     type="email"
                     required
-                    className="w-full px-4 py-2 border border-border rounded-lg bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                     placeholder="you@company.com"
                     value={formData.email}
                     onChange={handleChange}
@@ -79,12 +79,12 @@ export default function LoginPage() {
                     Password
                   </label>
                   <div className="relative">
-                    <input
+                    <Input
                       id="password"
                       name="password"
                       type={showPassword ? 'text' : 'password'}
                       required
-                      className="w-full px-4 py-2 pr-10 border border-border rounded-lg bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="pr-10"
                       placeholder="••••••••"
                       value={formData.password}
                       onChange={handleChange}

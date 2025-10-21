@@ -15,6 +15,7 @@ import {
 import MagicBento from '@/components/MagicBento';
 import SpotlightCard from '@/components/SpotlightCard';
 import { Badge } from '@/components/ui/Badge';
+import { Input } from '@/components/ui/input';
 import {
   LineChart,
   Line,
@@ -164,78 +165,71 @@ export default function ForecastingPage() {
                     <label className="block text-sm font-medium text-foreground mb-2">
                       Scenario Name *
                     </label>
-                    <input
+                    <Input
                       type="text"
                       value={scenarioInputs.name}
                       onChange={(e) => setScenarioInputs({ ...scenarioInputs, name: e.target.value })}
                       placeholder="e.g., Hire 3 Engineers"
-                      className="w-full px-4 py-2 rounded-md border border-border bg-background text-foreground"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">
                       Revenue Change (%)
                     </label>
-                    <input
+                    <Input
                       type="number"
                       value={scenarioInputs.revenueChange}
                       onChange={(e) => setScenarioInputs({ ...scenarioInputs, revenueChange: Number(e.target.value) })}
-                      className="w-full px-4 py-2 rounded-md border border-border bg-background text-foreground"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">
                       Expense Change (%)
                     </label>
-                    <input
+                    <Input
                       type="number"
                       value={scenarioInputs.expenseChange}
                       onChange={(e) => setScenarioInputs({ ...scenarioInputs, expenseChange: Number(e.target.value) })}
-                      className="w-full px-4 py-2 rounded-md border border-border bg-background text-foreground"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">
                       New Hires
                     </label>
-                    <input
+                    <Input
                       type="number"
                       value={scenarioInputs.newHires}
                       onChange={(e) => setScenarioInputs({ ...scenarioInputs, newHires: Number(e.target.value) })}
-                      className="w-full px-4 py-2 rounded-md border border-border bg-background text-foreground"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">
                       Average Salary/Month ($)
                     </label>
-                    <input
+                    <Input
                       type="number"
                       value={scenarioInputs.averageSalary}
                       onChange={(e) => setScenarioInputs({ ...scenarioInputs, averageSalary: Number(e.target.value) })}
-                      className="w-full px-4 py-2 rounded-md border border-border bg-background text-foreground"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">
                       Additional Funding ($)
                     </label>
-                    <input
+                    <Input
                       type="number"
                       value={scenarioInputs.additionalFunding}
                       onChange={(e) => setScenarioInputs({ ...scenarioInputs, additionalFunding: Number(e.target.value) })}
-                      className="w-full px-4 py-2 rounded-md border border-border bg-background text-foreground"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">
                       Time Horizon (months)
                     </label>
-                    <input
+                    <Input
                       type="number"
                       value={scenarioInputs.timeHorizon}
                       onChange={(e) => setScenarioInputs({ ...scenarioInputs, timeHorizon: Number(e.target.value) })}
-                      className="w-full px-4 py-2 rounded-md border border-border bg-background text-foreground"
                     />
                   </div>
                 </div>

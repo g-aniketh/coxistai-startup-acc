@@ -35,16 +35,11 @@ export default function Sidebar() {
 
   const navigation: NavItem[] = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'AI Copilot', href: '/ai-copilot', icon: Sparkles },
-    { name: 'AI Chatbot', href: '/ai-chatbot', icon: Bot },
-    { name: 'Tax & Compliance', href: '/tax-compliance', icon: Calculator },
-    { name: 'Bookkeeping', href: '/bookkeeping', icon: Repeat },
-    { name: 'Expense Management', href: '/expense-management', icon: FileText },
-    { name: 'Multi-Bank Sync', href: '/multi-bank-sync', icon: CreditCard },
-    { name: 'Smart Invoicing', href: '/invoicing', icon: FileText },
+    { name: 'AI Assistant', href: '/ai-assistant', icon: Sparkles },
+    { name: 'Compliance Hub', href: '/compliance-hub', icon: Calculator },
+    { name: 'Banking & Payments', href: '/banking-payments', icon: CreditCard },
     { name: 'Smart Alerts', href: '/alerts', icon: AlertTriangle },
-    { name: 'Statistics', href: '/statistics', icon: BarChart2 },
-    { name: 'Transactions', href: '/transactions', icon: Repeat },
+    { name: 'Financial Dashboard', href: '/financial-dashboard', icon: BarChart2 },
     { name: 'Products', href: '/products', icon: Package },
   ];
 

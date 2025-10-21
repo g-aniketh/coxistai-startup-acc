@@ -424,11 +424,11 @@ export default function AlertsPage() {
                     )}
                   </Button>
                   <Button
-                    onClick={generateAlerts}
-                    disabled={generating}
+              onClick={generateAlerts}
+              disabled={generating}
                     className="flex items-center gap-2 bg-[#607c47] hover:bg-[#4a6129] text-white"
-                  >
-                    <RefreshCw className={`h-4 w-4 ${generating ? 'animate-spin' : ''}`} />
+            >
+              <RefreshCw className={`h-4 w-4 ${generating ? 'animate-spin' : ''}`} />
                     {generating ? 'Generating...' : 'Generate Alerts'}
                   </Button>
                 </div>
@@ -510,37 +510,37 @@ export default function AlertsPage() {
                     </div>
                   </CardContent>
                 </Card>
-              </div>
+          </div>
 
               {/* Filter Buttons */}
-              <div className="flex gap-2">
+          <div className="flex gap-2">
                 <Button
-                  onClick={() => setFilter('all')}
+              onClick={() => setFilter('all')}
                   variant={filter === 'all' ? 'default' : 'outline'}
                   className={filter === 'all' ? 'bg-[#607c47] hover:bg-[#4a6129] text-white' : 'border-gray-300 text-[#2C2C2C]'}
-                >
-                  All ({counts.total})
+            >
+              All ({counts.total})
                 </Button>
                 <Button
-                  onClick={() => setFilter('critical')}
+              onClick={() => setFilter('critical')}
                   variant={filter === 'critical' ? 'default' : 'outline'}
                   className={filter === 'critical' ? 'bg-red-500 hover:bg-red-600 text-white' : 'border-gray-300 text-[#2C2C2C]'}
-                >
-                  Critical ({counts.critical})
+            >
+              Critical ({counts.critical})
                 </Button>
                 <Button
-                  onClick={() => setFilter('warning')}
+              onClick={() => setFilter('warning')}
                   variant={filter === 'warning' ? 'default' : 'outline'}
                   className={filter === 'warning' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'border-gray-300 text-[#2C2C2C]'}
-                >
-                  Warning ({counts.warning})
+            >
+              Warning ({counts.warning})
                 </Button>
                 <Button
-                  onClick={() => setFilter('info')}
+              onClick={() => setFilter('info')}
                   variant={filter === 'info' ? 'default' : 'outline'}
                   className={filter === 'info' ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'border-gray-300 text-[#2C2C2C]'}
-                >
-                  Info ({counts.info})
+            >
+              Info ({counts.info})
                 </Button>
               </div>
 
@@ -572,8 +572,8 @@ export default function AlertsPage() {
                             <div className="flex items-center gap-2">
                               <span className="text-xs text-gray-500">Recommendation:</span>
                               <span className="text-xs text-[#607c47] font-medium">{pattern.recommendation}</span>
-                            </div>
-                          </div>
+          </div>
+        </div>
                         ))}
                       </div>
                     </CardContent>
@@ -595,13 +595,13 @@ export default function AlertsPage() {
                                 <h4 className="font-semibold text-[#2C2C2C]">{prediction.metric}</h4>
                                 <Badge className="bg-blue-100 text-blue-800">
                                   {prediction.confidence}% confidence
-                                </Badge>
-                              </div>
+                </Badge>
+              </div>
                               <p className="text-sm text-gray-600 mb-2">{prediction.prediction}</p>
                               <p className="text-xs text-[#607c47] font-medium">{prediction.action}</p>
-                            </div>
+            </div>
                           ))}
-                        </div>
+          </div>
                       </CardContent>
                     </Card>
 
@@ -627,14 +627,14 @@ export default function AlertsPage() {
                               </div>
                               <p className="text-sm text-gray-600 mb-1">{anomaly.description}</p>
                               <p className="text-xs text-gray-500">{anomaly.impact}</p>
-                            </div>
+                  </div>
                           ))}
-                        </div>
+                </div>
                       </CardContent>
                     </Card>
                   </div>
-                </div>
-              )}
+            </div>
+          )}
 
               {/* Alerts List */}
               {filteredAlerts.length === 0 ? (
@@ -663,7 +663,7 @@ export default function AlertsPage() {
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-3 flex-1">
                             {getSeverityIcon(alert.severity)}
-                            <div className="flex-1">
+                      <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
                                 <CardTitle className="text-lg font-medium text-[#2C2C2C]">{alert.title}</CardTitle>
                                 <Badge className={getSeverityBadgeColor(alert.severity)}>
@@ -672,9 +672,9 @@ export default function AlertsPage() {
                                 {!alert.isRead && (
                                   <Badge variant="outline" className="border-blue-300 text-blue-700">
                                     New
-                                  </Badge>
-                                )}
-                              </div>
+                          </Badge>
+                        )}
+                      </div>
                               <p className="text-sm text-gray-600 mb-3">{alert.message}</p>
                               
                               {/* Metrics */}
@@ -709,7 +709,7 @@ export default function AlertsPage() {
                             >
                               <X className="h-4 w-4" />
                             </Button>
-                          </div>
+                    </div>
                         </div>
                       </CardHeader>
 
@@ -728,11 +728,11 @@ export default function AlertsPage() {
                                     </Badge>
                                   </div>
                                   <p className="text-xs text-gray-600">{rec.impact}</p>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
                         {/* Timestamp */}
                         <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-200">

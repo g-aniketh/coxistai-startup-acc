@@ -118,7 +118,7 @@ export default function AICopilotPage() {
       };
       
       setInsights(mockInsights);
-      toast.success('AI insights generated successfully!');
+        toast.success('AI insights generated successfully!');
     } catch (error) {
       console.error('Failed to generate insights:', error);
       toast.error('Failed to generate insights');
@@ -129,7 +129,7 @@ export default function AICopilotPage() {
 
   const runScenario = async () => {
     if (!scenario.trim()) return;
-    
+
     setScenarioLoading(true);
     try {
       // Mock data for demonstration
@@ -264,9 +264,9 @@ export default function AICopilotPage() {
           {/* Main Content */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <div className="p-4 md:p-8 space-y-4 md:space-y-6">
-              {/* Header */}
+          {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
+          <div>
                   <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">AI CFO Copilot</h1>
                   <p className="text-sm text-[#2C2C2C]/70">
                     Intelligent financial insights and scenario planning
@@ -297,25 +297,25 @@ export default function AICopilotPage() {
                     Live Analysis
                   </div>
                 </div>
-              </div>
+          </div>
 
-              {/* Tabs */}
+          {/* Tabs */}
               <div className="flex gap-2 border-b border-gray-200">
                 <Button
-                  onClick={() => setActiveTab('insights')}
+              onClick={() => setActiveTab('insights')}
                   variant={activeTab === 'insights' ? 'default' : 'ghost'}
                   className={activeTab === 'insights' ? 'bg-[#607c47] hover:bg-[#4a6129] text-white' : 'text-[#2C2C2C] hover:bg-gray-100'}
                 >
                   <Lightbulb className="h-4 w-4 mr-2" />
-                  Financial Insights
+              Financial Insights
                 </Button>
                 <Button
-                  onClick={() => setActiveTab('scenarios')}
+              onClick={() => setActiveTab('scenarios')}
                   variant={activeTab === 'scenarios' ? 'default' : 'ghost'}
                   className={activeTab === 'scenarios' ? 'bg-[#607c47] hover:bg-[#4a6129] text-white' : 'text-[#2C2C2C] hover:bg-gray-100'}
                 >
                   <Target className="h-4 w-4 mr-2" />
-                  What-If Scenarios
+              What-If Scenarios
                 </Button>
                 <Button
                   onClick={() => setActiveTab('forecasting')}
@@ -325,44 +325,44 @@ export default function AICopilotPage() {
                   <TrendingUp className="h-4 w-4 mr-2" />
                   AI Forecasting
                 </Button>
-              </div>
+          </div>
 
-              {/* Insights Tab */}
-              {activeTab === 'insights' && (
-                <div className="space-y-6">
+          {/* Insights Tab */}
+          {activeTab === 'insights' && (
+            <div className="space-y-6">
                   {/* Generate Insights Button */}
                   <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-purple-50 to-indigo-50">
                     <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
+                <div className="flex items-center justify-between">
+                  <div>
                           <h3 className="text-lg font-semibold text-purple-900 mb-2">Generate AI Insights</h3>
                           <p className="text-sm text-purple-700">Get personalized financial recommendations based on your data</p>
-                        </div>
+                  </div>
                         <Button
                           onClick={generateInsights}
                           disabled={insightsLoading}
                           className="bg-[#607c47] hover:bg-[#4a6129] text-white"
                         >
-                          {insightsLoading ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                              Analyzing...
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles className="h-4 w-4 mr-2" />
-                              Generate Insights
-                            </>
-                          )}
-                        </Button>
-                      </div>
+                    {insightsLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Generate Insights
+                      </>
+                    )}
+                  </Button>
+                </div>
                     </CardContent>
-                  </Card>
+              </Card>
 
                   {/* Insights Results */}
-                  {insights && (
-                    <div className="space-y-6">
-                      {/* Key Metrics */}
+              {insights && (
+                <div className="space-y-6">
+                  {/* Key Metrics */}
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50">
                           <CardContent className="p-4">
@@ -381,7 +381,7 @@ export default function AICopilotPage() {
                               </div>
                             </div>
                           </CardContent>
-                        </Card>
+                    </Card>
 
                         <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-blue-50 to-cyan-50">
                           <CardContent className="p-4">
@@ -397,10 +397,10 @@ export default function AICopilotPage() {
                                 <div className="text-xs text-blue-600">
                                   {insights.runway.change > 0 ? '+' : ''}{insights.runway.change} mo
                                 </div>
-                              </div>
-                            </div>
+                  </div>
+                    </div>
                           </CardContent>
-                        </Card>
+                  </Card>
 
                         <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-red-50 to-pink-50">
                           <CardContent className="p-4">
@@ -417,9 +417,9 @@ export default function AICopilotPage() {
                                   {insights.burnRate.change > 0 ? '+' : ''}{insights.burnRate.change}%
                                 </div>
                               </div>
-                            </div>
+                    </div>
                           </CardContent>
-                        </Card>
+                  </Card>
 
                         <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-orange-50">
                           <CardContent className="p-4">
@@ -478,7 +478,7 @@ export default function AICopilotPage() {
                             ))}
                           </div>
                         </CardContent>
-                      </Card>
+                    </Card>
 
                       {/* Alerts */}
                       <Card className="rounded-xl border-0 shadow-lg bg-white">
@@ -505,19 +505,19 @@ export default function AICopilotPage() {
                                     <p className="text-xs text-gray-600 mt-1">{alert.action}</p>
                                   </div>
                                 </div>
-                              </div>
+                      </div>
                             ))}
                           </div>
                         </CardContent>
-                      </Card>
-                    </div>
-                  )}
+                    </Card>
                 </div>
               )}
+            </div>
+          )}
 
-              {/* Scenarios Tab */}
-              {activeTab === 'scenarios' && (
-                <div className="space-y-6">
+          {/* Scenarios Tab */}
+          {activeTab === 'scenarios' && (
+            <div className="space-y-6">
                   {/* Scenario Input */}
                   <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-indigo-50 to-purple-50">
                     <CardHeader className="pb-3">
@@ -527,15 +527,15 @@ export default function AICopilotPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <div className="space-y-4">
-                        <div>
+                <div className="space-y-4">
+                  <div>
                           <Label htmlFor="scenario" className="text-sm font-medium text-[#2C2C2C]">
                             Describe your scenario
                           </Label>
-                          <Input
-                            id="scenario"
-                            value={scenario}
-                            onChange={(e) => setScenario(e.target.value)}
+                    <Input
+                      id="scenario"
+                      value={scenario}
+                      onChange={(e) => setScenario(e.target.value)}
                             placeholder="e.g., What happens if we hire 2 engineers at $150k/year each?"
                             className="mt-2 bg-white"
                           />
@@ -559,7 +559,7 @@ export default function AICopilotPage() {
                             )}
                           </Button>
                         </div>
-                      </div>
+                  </div>
                     </CardContent>
                   </Card>
 
@@ -712,18 +712,18 @@ export default function AICopilotPage() {
                             className="bg-[#607c47] hover:bg-[#4a6129] text-white mt-6"
                           >
                             {forecastLoading ? (
-                              <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
                                 Generating...
-                              </>
-                            ) : (
-                              <>
+                      </>
+                    ) : (
+                      <>
                                 <Brain className="h-4 w-4 mr-2" />
                                 Generate Forecast
-                              </>
-                            )}
-                          </Button>
-                        </div>
+                      </>
+                    )}
+                  </Button>
+                </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -739,7 +739,7 @@ export default function AICopilotPage() {
                               <div className="p-2 bg-green-100 rounded-lg">
                                 <DollarSign className="h-5 w-5 text-green-600" />
                               </div>
-                              <div>
+                        <div>
                                 <div className="text-sm text-green-700">Projected Revenue</div>
                                 <div className="text-lg font-bold text-green-900">
                                   {formatCurrency(forecastData.revenue.projected[forecastData.months - 1]?.amount || 0)}
@@ -747,8 +747,8 @@ export default function AICopilotPage() {
                                 <div className="text-xs text-green-600">
                                   +{forecastData.revenue.projected[forecastData.months - 1]?.growth?.toFixed(1)}% growth
                                 </div>
-                              </div>
-                            </div>
+                        </div>
+                      </div>
                           </CardContent>
                         </Card>
 
@@ -758,7 +758,7 @@ export default function AICopilotPage() {
                               <div className="p-2 bg-red-100 rounded-lg">
                                 <TrendingDown className="h-5 w-5 text-red-600" />
                               </div>
-                              <div>
+                        <div>
                                 <div className="text-sm text-red-700">Projected Expenses</div>
                                 <div className="text-lg font-bold text-red-900">
                                   {formatCurrency(forecastData.expenses.projected[forecastData.months - 1]?.amount || 0)}
@@ -766,8 +766,8 @@ export default function AICopilotPage() {
                                 <div className="text-xs text-red-600">
                                   +{forecastData.expenses.projected[forecastData.months - 1]?.growth?.toFixed(1)}% growth
                                 </div>
-                              </div>
-                            </div>
+                        </div>
+                      </div>
                           </CardContent>
                         </Card>
 
@@ -777,18 +777,18 @@ export default function AICopilotPage() {
                               <div className="p-2 bg-blue-100 rounded-lg">
                                 <Calendar className="h-5 w-5 text-blue-600" />
                               </div>
-                              <div>
+                        <div>
                                 <div className="text-sm text-blue-700">Projected Runway</div>
                                 <div className="text-lg font-bold text-blue-900">
                                   {forecastData.runway.projected.toFixed(1)} mo
                                 </div>
                                 <div className="text-xs text-blue-600">
                                   +{(forecastData.runway.projected - forecastData.runway.current).toFixed(1)} mo change
-                                </div>
-                              </div>
-                            </div>
+                        </div>
+                      </div>
+                    </div>
                           </CardContent>
-                        </Card>
+                  </Card>
 
                         <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-purple-50 to-indigo-50">
                           <CardContent className="p-4">
@@ -827,7 +827,7 @@ export default function AICopilotPage() {
                               ))}
                             </div>
                           </CardContent>
-                        </Card>
+                    </Card>
 
                         <Card className="bg-white rounded-xl border-0 shadow-lg">
                           <CardHeader className="pb-3">
@@ -871,8 +871,8 @@ export default function AICopilotPage() {
                             ))}
                           </div>
                         </CardContent>
-                      </Card>
-                    </div>
+                    </Card>
+                  </div>
                   )}
                 </div>
               )}

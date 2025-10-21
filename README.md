@@ -22,11 +22,10 @@ Frontend will run on: http://localhost:3000
 
 ## 🔑 Login Credentials (Password: password123)
 
-- **Admin**: admin@techstartup.com
-- **Accountant**: accountant@techstartup.com
-- **CTO**: cto@techstartup.com
-- **Operations**: operations@techstartup.com
-- **Sales**: sales@techstartup.com
+- **Admin**: admin@coxistai.com
+- **CFO**: cfo@coxistai.com
+- **Accountant**: accountant@coxistai.com
+- **Demo User**: demo@coxistai.com
 
 ## 📂 Project Structure
 

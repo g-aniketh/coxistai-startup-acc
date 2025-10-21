@@ -149,10 +149,10 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, accoun
               {transactionCategories.map((category) => (
                 <Card 
                   key={category.value}
-                  className={`cursor-pointer transition-all ${
+                  className={`cursor-pointer transition-all bg-white border-gray-200 ${
                     formData.type === category.value 
-                      ? 'ring-2 ring-[#607c47] bg-[#607c47]/5' 
-                      : 'hover:shadow-md'
+                      ? 'ring-2 ring-[#607c47] border-[#607c47]' 
+                      : 'hover:shadow-md hover:border-gray-300'
                   }`}
                   onClick={() => setFormData({ ...formData, type: category.value as 'income' | 'expense', category: '' })}
                 >
@@ -160,7 +160,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, accoun
                     <div className="flex items-center gap-3">
                       <category.icon className={`h-5 w-5 ${category.color}`} />
                       <div>
-                        <div className="font-medium text-[#2C2C2C]">{category.label}</div>
+                        <div className="font-medium text-gray-900">{category.label}</div>
                         <div className="text-xs text-gray-600">
                           {category.value === 'income' ? 'Money coming in' : 'Money going out'}
                         </div>
