@@ -90,11 +90,11 @@ export default function TransactionsPage() {
     try {
       setLoading(true);
       // For demo purposes, use mock data that matches the expected interface
-      const mockTransactions = [
+      const mockTransactions: DemoTransaction[] = [
         {
           id: '1',
           amount: 5000,
-          type: 'income',
+          type: 'income' as const,
           description: 'Customer Payment - SaaS Subscription',
           category: 'Sales Revenue',
           date: '2024-01-15T10:30:00Z',
@@ -103,7 +103,7 @@ export default function TransactionsPage() {
         {
           id: '2',
           amount: 2500,
-          type: 'income',
+          type: 'income' as const,
           description: 'Investment from Angel Investor',
           category: 'Investment',
           date: '2024-01-14T14:20:00Z',
@@ -112,7 +112,7 @@ export default function TransactionsPage() {
         {
           id: '3',
           amount: 1200,
-          type: 'expense',
+          type: 'expense' as const,
           description: 'Office Rent Payment',
           category: 'Office Rent',
           date: '2024-01-13T09:15:00Z',
@@ -121,7 +121,7 @@ export default function TransactionsPage() {
         {
           id: '4',
           amount: 800,
-          type: 'expense',
+          type: 'expense' as const,
           description: 'Software Licenses',
           category: 'Software/SaaS',
           date: '2024-01-12T16:45:00Z',
@@ -130,7 +130,7 @@ export default function TransactionsPage() {
         {
           id: '5',
           amount: 3000,
-          type: 'expense',
+          type: 'expense' as const,
           description: 'Team Salaries',
           category: 'Salaries',
           date: '2024-01-11T11:30:00Z',
@@ -179,7 +179,7 @@ export default function TransactionsPage() {
     loadAccounts();
   }, [loadTransactions, loadAccounts]);
 
-  const handleSort = (key: keyof Transaction) => {
+  const handleSort = (key: keyof DemoTransaction) => {
     setSortConfig(prev => ({
       key,
       direction: prev.key === key && prev.direction === 'ascending' ? 'descending' : 'ascending'
@@ -199,9 +199,19 @@ export default function TransactionsPage() {
     }
   };
 
-  const handleTransactionAdded = async () => {
-    await loadTransactions();
-    await loadAccounts(); // Also reload accounts as balances might have changed
+  const handleTransactionAdded = async (transactionData: any) => {
+    try {
+      // Add the new transaction to the state
+      setTransactions(prev => [transactionData, ...prev]);
+      
+      // Update the accounts if needed (for balance changes)
+      // In a real app, this would be handled by the backend
+      
+      toast.success('Transaction added successfully');
+    } catch (error) {
+      console.error('Failed to add transaction:', error);
+      toast.error('Failed to add transaction');
+    }
   };
 
   const filteredTransactions = transactions.filter(transaction => {

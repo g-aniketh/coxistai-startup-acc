@@ -362,7 +362,7 @@ export default function RecordSaleModal({ isOpen, onClose, onSubmit, products, a
                         <div className="flex items-center gap-2">
                           <Building2 className="h-4 w-4 text-gray-500" />
                           <div>
-                            <div className="font-medium">{account.name}</div>
+                            <div className="font-medium">{account.accountName}</div>
                             <div className="text-xs text-gray-500">
                               Balance: {formatCurrency(account.balance)}
                             </div>

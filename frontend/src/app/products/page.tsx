@@ -196,6 +196,34 @@ export default function ProductsPage() {
       }
     ]);
 
+    // Initialize accounts for payment processing
+    setAccounts([
+      {
+        id: '1',
+        accountName: 'Business Checking',
+        balance: 287500,
+        startupId: 'startup-1',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-20'
+      },
+      {
+        id: '2',
+        accountName: 'Business Savings',
+        balance: 125000,
+        startupId: 'startup-1',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-20'
+      },
+      {
+        id: '3',
+        accountName: 'Credit Card',
+        balance: -8500,
+        startupId: 'startup-1',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-20'
+      }
+    ]);
+
     setLoading(false);
   }, []);
 

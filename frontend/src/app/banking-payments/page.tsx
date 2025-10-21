@@ -37,9 +37,14 @@ import {
   Eye,
   Edit,
   Trash2,
+  X,
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import toast from 'react-hot-toast';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { pdf } from '@react-pdf/renderer';
 
 // Multi-Bank Sync interfaces
 interface BankAccount {
@@ -102,6 +107,8 @@ export default function BankingPaymentsHubPage() {
   const [invoiceSearchTerm, setInvoiceSearchTerm] = useState('');
   const [invoiceStatusFilter, setInvoiceStatusFilter] = useState<string>('all');
   const [showCreateInvoice, setShowCreateInvoice] = useState(false);
+  const [showInvoiceView, setShowInvoiceView] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [newInvoice, setNewInvoice] = useState<Partial<Invoice>>({
     clientName: '',
     clientEmail: '',
@@ -358,6 +365,215 @@ export default function BankingPaymentsHubPage() {
     toast.success('Payment reminder sent!');
   };
 
+  const generateInvoicePDF = async (invoice: Invoice) => {
+    try {
+      toast.loading('Generating PDF...', { id: 'pdf-generation' });
+      
+      // Create PDF using jsPDF directly without html2canvas
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      let yPosition = 20;
+      
+      // Helper function to add text with automatic line breaks
+      const addText = (text: string, x: number, y: number, options: any = {}) => {
+        const maxWidth = pageWidth - x - 20;
+        const lines = pdf.splitTextToSize(text, maxWidth);
+        pdf.text(lines, x, y);
+        return y + (lines.length * (options.fontSize || 12) * 0.35);
+      };
+      
+      // Set font
+      pdf.setFont('helvetica');
+      
+      // Header
+      pdf.setFontSize(24);
+      pdf.setTextColor(31, 41, 55); // #1f2937
+      pdf.text('Coxist AI CFO', 20, yPosition);
+      yPosition += 10;
+      
+      pdf.setFontSize(12);
+      pdf.setTextColor(107, 114, 128); // #6b7280
+      pdf.text('AI-Powered Financial Management', 20, yPosition);
+      yPosition += 5;
+      pdf.text('123 Business Street, Suite 100', 20, yPosition);
+      yPosition += 5;
+      pdf.text('San Francisco, CA 94105', 20, yPosition);
+      yPosition += 15;
+      
+      // Invoice title and details (right side)
+      pdf.setFontSize(20);
+      pdf.setTextColor(31, 41, 55);
+      pdf.text('INVOICE', pageWidth - 20, 20, { align: 'right' });
+      
+      pdf.setFontSize(10);
+      pdf.setTextColor(107, 114, 128);
+      pdf.text(`Invoice #: ${invoice.number}`, pageWidth - 20, 30, { align: 'right' });
+      pdf.text(`Issue Date: ${new Date(invoice.issueDate).toLocaleDateString()}`, pageWidth - 20, 35, { align: 'right' });
+      pdf.text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString()}`, pageWidth - 20, 40, { align: 'right' });
+      
+      yPosition = 50;
+      
+      // Bill To section
+      pdf.setFontSize(14);
+      pdf.setTextColor(31, 41, 55);
+      pdf.text('Bill To:', 20, yPosition);
+      yPosition += 8;
+      
+      pdf.setFontSize(12);
+      pdf.setTextColor(31, 41, 55);
+      pdf.text(invoice.clientName, 20, yPosition);
+      yPosition += 5;
+      pdf.setTextColor(107, 114, 128);
+      pdf.text(invoice.clientEmail, 20, yPosition);
+      yPosition += 15;
+      
+      // Status badge (simplified)
+      pdf.setFontSize(10);
+      pdf.setTextColor(31, 41, 55);
+      pdf.text(`Status: ${invoice.status}`, pageWidth - 20, yPosition - 10, { align: 'right' });
+      
+      // Items table header
+      pdf.setFontSize(12);
+      pdf.setTextColor(31, 41, 55);
+      pdf.text('Items', 20, yPosition);
+      yPosition += 10;
+      
+      // Table headers
+      pdf.setFontSize(10);
+      pdf.setTextColor(31, 41, 55);
+      pdf.text('Description', 20, yPosition);
+      pdf.text('Qty', 120, yPosition);
+      pdf.text('Unit Price', 140, yPosition);
+      pdf.text('Total', 170, yPosition);
+      yPosition += 5;
+      
+      // Draw line under headers
+      pdf.setDrawColor(229, 231, 235); // #e5e7eb
+      pdf.line(20, yPosition, pageWidth - 20, yPosition);
+      yPosition += 5;
+      
+      // Table rows
+      invoice.items.forEach((item) => {
+        pdf.setFontSize(9);
+        pdf.setTextColor(31, 41, 55);
+        
+        // Description (with word wrap)
+        const descLines = pdf.splitTextToSize(item.description, 90);
+        pdf.text(descLines, 20, yPosition);
+        
+        // Quantity
+        pdf.text(item.quantity.toString(), 120, yPosition);
+        
+        // Unit Price
+        pdf.text(`$${item.unitPrice.toFixed(2)}`, 140, yPosition);
+        
+        // Total
+        pdf.text(`$${(item.quantity * item.unitPrice).toFixed(2)}`, 170, yPosition);
+        
+        yPosition += Math.max(descLines.length * 4, 8);
+        
+        // Draw line under row
+        pdf.setDrawColor(243, 244, 246); // #f3f4f6
+        pdf.line(20, yPosition - 2, pageWidth - 20, yPosition - 2);
+        yPosition += 3;
+      });
+      
+      yPosition += 10;
+      
+      // Totals section
+      pdf.setFontSize(10);
+      pdf.setTextColor(107, 114, 128);
+      pdf.text('Subtotal:', pageWidth - 80, yPosition);
+      pdf.setTextColor(31, 41, 55);
+      pdf.text(`$${invoice.total.toFixed(2)}`, pageWidth - 20, yPosition, { align: 'right' });
+      yPosition += 5;
+      
+      pdf.setTextColor(107, 114, 128);
+      pdf.text('Tax (0%):', pageWidth - 80, yPosition);
+      pdf.setTextColor(31, 41, 55);
+      pdf.text('$0.00', pageWidth - 20, yPosition, { align: 'right' });
+      yPosition += 5;
+      
+      // Draw line above total
+      pdf.setDrawColor(229, 231, 235);
+      pdf.line(pageWidth - 80, yPosition, pageWidth - 20, yPosition);
+      yPosition += 5;
+      
+      pdf.setFontSize(12);
+      pdf.setTextColor(31, 41, 55);
+      pdf.text('Total:', pageWidth - 80, yPosition);
+      pdf.text(`$${invoice.total.toFixed(2)}`, pageWidth - 20, yPosition, { align: 'right' });
+      yPosition += 5;
+      
+      pdf.setFontSize(10);
+      pdf.setTextColor(107, 114, 128);
+      pdf.text('Balance Due:', pageWidth - 80, yPosition);
+      pdf.setTextColor(invoice.balanceDue > 0 ? 220 : 5, invoice.balanceDue > 0 ? 38 : 150, invoice.balanceDue > 0 ? 38 : 105);
+      pdf.text(`$${invoice.balanceDue.toFixed(2)}`, pageWidth - 20, yPosition, { align: 'right' });
+      yPosition += 20;
+      
+      // Notes section
+      if (invoice.notes) {
+        pdf.setFontSize(12);
+        pdf.setTextColor(31, 41, 55);
+        pdf.text('Notes:', 20, yPosition);
+        yPosition += 8;
+        
+        pdf.setFontSize(10);
+        pdf.setTextColor(107, 114, 128);
+        const notesLines = pdf.splitTextToSize(invoice.notes, pageWidth - 40);
+        pdf.text(notesLines, 20, yPosition);
+        yPosition += notesLines.length * 5 + 10;
+      }
+      
+      // Payment Information
+      pdf.setFontSize(12);
+      pdf.setTextColor(30, 64, 175); // #1e40af
+      pdf.text('Payment Information', 20, yPosition);
+      yPosition += 8;
+      
+      pdf.setFontSize(10);
+      pdf.setTextColor(30, 64, 175);
+      pdf.text('Bank Transfer:', 20, yPosition);
+      yPosition += 5;
+      pdf.setTextColor(29, 78, 216); // #1d4ed8
+      pdf.text('Account: ****1234', 20, yPosition);
+      yPosition += 4;
+      pdf.text('Routing: 123456789', 20, yPosition);
+      yPosition += 10;
+      
+      pdf.setTextColor(30, 64, 175);
+      pdf.text('Online Payment:', 20, yPosition);
+      yPosition += 5;
+      pdf.setTextColor(29, 78, 216);
+      pdf.text('Pay securely via our portal', 20, yPosition);
+      yPosition += 4;
+      pdf.text(`Reference: ${invoice.number}`, 20, yPosition);
+      yPosition += 20;
+      
+      // Footer
+      pdf.setFontSize(8);
+      pdf.setTextColor(107, 114, 128);
+      pdf.text('Thank you for your business!', pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += 5;
+      pdf.text('Generated by Coxist AI CFO - AI-Powered Financial Management', pageWidth / 2, yPosition, { align: 'center' });
+      
+      // Download PDF
+      pdf.save(`invoice-${invoice.number}.pdf`);
+      
+      toast.success('PDF generated successfully!', { id: 'pdf-generation' });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Failed to generate PDF. Please try again.', { id: 'pdf-generation' });
+    }
+  };
+
+  const viewInvoice = (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    setShowInvoiceView(true);
+  };
+
   const addInvoiceItem = () => {
     setNewInvoice(prev => ({
       ...prev,
@@ -611,7 +827,10 @@ export default function BankingPaymentsHubPage() {
                                   <p className="text-sm text-gray-600">{bank.accountsCount} accounts</p>
                                 </div>
                               </div>
-                              <Badge className={getStatusColor(bank.status)}>
+                              <Badge 
+                                className={`${getStatusColor(bank.status)}`}
+                                style={{ color: '#1f2937' }}
+                              >
                                 {getStatusIcon(bank.status)}
                                 <span className="ml-1">{bank.status}</span>
                               </Badge>
@@ -726,7 +945,10 @@ export default function BankingPaymentsHubPage() {
                                   </div>
                                 </TableCell>
                                 <TableCell>
-                                  <Badge className={getStatusColor(account.status)}>
+                                  <Badge 
+                                    className={`${getStatusColor(account.status)}`}
+                                    style={{ color: '#1f2937' }}
+                                  >
                                     {getStatusIcon(account.status)}
                                     <span className="ml-1">{account.status}</span>
                                   </Badge>
@@ -1058,7 +1280,10 @@ export default function BankingPaymentsHubPage() {
                                   {formatCurrency(invoice.balanceDue)}
                                 </TableCell>
                                 <TableCell>
-                                  <Badge className={getStatusColor(invoice.status)}>
+                                  <Badge 
+                                    className={`${getStatusColor(invoice.status)}`}
+                                    style={{ color: '#1f2937' }}
+                                  >
                                     {invoice.status}
                                   </Badge>
                                 </TableCell>
@@ -1067,7 +1292,12 @@ export default function BankingPaymentsHubPage() {
                                 </TableCell>
                                 <TableCell>
                                   <div className="flex gap-1">
-                                    <Button variant="outline" size="sm" className="border-gray-300 text-[#2C2C2C]">
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      onClick={() => viewInvoice(invoice)}
+                                      className="border-gray-300 text-[#2C2C2C] hover:bg-gray-50"
+                                    >
                                       <Eye className="h-4 w-4" />
                                     </Button>
                                     <Button variant="outline" size="sm" className="border-gray-300 text-[#2C2C2C]">
@@ -1107,6 +1337,192 @@ export default function BankingPaymentsHubPage() {
             </div>
           </div>
         </div>
+
+        {/* Invoice View Dialog */}
+        <Dialog open={showInvoiceView} onOpenChange={setShowInvoiceView}>
+          <DialogContent className="!max-w-50vw] !w-[40vw] max-h-[80vh] overflow-y-auto bg-white border border-gray-200 shadow-xl" style={{ maxWidth: '95vw', width: '95vw' }}>
+            <DialogHeader>
+              <div className="flex items-center justify-between">
+                <DialogTitle className="text-xl font-bold text-[#2C2C2C]">
+                  Invoice Details
+                </DialogTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowInvoiceView(false)}
+                  className="border-gray-300 text-[#2C2C2C]"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </DialogHeader>
+            
+            {selectedInvoice && (
+              <div className="space-y-4 pb-4">
+                {/* Invoice Header */}
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    <div>
+                      <h3 className="text-xl font-semibold text-[#2C2C2C] mb-3">Coxist AI CFO</h3>
+                      <p className="text-sm text-gray-600 mb-1">AI-Powered Financial Management</p>
+                      <p className="text-sm text-gray-600 mb-1">123 Business Street, Suite 100</p>
+                      <p className="text-sm text-gray-600">San Francisco, CA 94105</p>
+                    </div>
+                    <div className="text-right">
+                      <h2 className="text-2xl font-bold text-[#2C2C2C] mb-3">INVOICE</h2>
+                      <p className="text-sm text-gray-600 mb-1">Invoice #: {selectedInvoice.number}</p>
+                      <p className="text-sm text-gray-600 mb-1">Issue Date: {new Date(selectedInvoice.issueDate).toLocaleDateString()}</p>
+                      <p className="text-sm text-gray-600">Due Date: {new Date(selectedInvoice.dueDate).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Client Information */}
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-[#2C2C2C] mb-4">Bill To:</h3>
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    <div>
+                      <p className="font-medium text-[#2C2C2C] text-lg">{selectedInvoice.clientName}</p>
+                      <p className="text-sm text-gray-600 mt-1">{selectedInvoice.clientEmail}</p>
+                    </div>
+                    <div className="text-right">
+                      <Badge 
+                        className={`${getStatusColor(selectedInvoice.status)} px-4 py-2 text-sm font-medium`}
+                        style={{ color: '#1f2937' }}
+                      >
+                        {selectedInvoice.status}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Invoice Items */}
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-[#2C2C2C] mb-4">Items</h3>
+                  <Table className="w-full">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-[#2C2C2C] min-w-[400px] font-semibold">Description</TableHead>
+                        <TableHead className="text-[#2C2C2C] w-32 font-semibold">Quantity</TableHead>
+                        <TableHead className="text-[#2C2C2C] w-40 font-semibold">Unit Price</TableHead>
+                        <TableHead className="text-[#2C2C2C] w-40 font-semibold">Total</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedInvoice.items.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="text-[#2C2C2C] py-4">{item.description}</TableCell>
+                          <TableCell className="text-[#2C2C2C] py-4">{item.quantity}</TableCell>
+                          <TableCell className="text-[#2C2C2C] py-4">{formatCurrency(item.unitPrice)}</TableCell>
+                          <TableCell className="text-[#2C2C2C] font-semibold py-4">
+                            {formatCurrency(item.quantity * item.unitPrice)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Invoice Totals */}
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <div className="flex justify-end">
+                    <div className="w-96 space-y-3">
+                      <div className="flex justify-between text-base">
+                        <span className="text-gray-600">Subtotal:</span>
+                        <span className="text-[#2C2C2C] font-medium">{formatCurrency(selectedInvoice.total)}</span>
+                      </div>
+                      <div className="flex justify-between text-base">
+                        <span className="text-gray-600">Tax (0%):</span>
+                        <span className="text-[#2C2C2C] font-medium">$0.00</span>
+                      </div>
+                      <div className="border-t border-gray-300 pt-3">
+                        <div className="flex justify-between font-bold text-lg">
+                          <span className="text-[#2C2C2C]">Total:</span>
+                          <span className="text-[#2C2C2C]">{formatCurrency(selectedInvoice.total)}</span>
+                        </div>
+                        <div className="flex justify-between text-base mt-2">
+                          <span className="text-gray-600">Balance Due:</span>
+                          <span className={`font-bold ${
+                            selectedInvoice.balanceDue > 0 ? 'text-red-600' : 'text-green-600'
+                          }`}>
+                            {formatCurrency(selectedInvoice.balanceDue)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notes */}
+                {selectedInvoice.notes && (
+                  <div className="bg-white border border-gray-200 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold text-[#2C2C2C] mb-3">Notes</h3>
+                    <p className="text-gray-600 text-base">{selectedInvoice.notes}</p>
+                  </div>
+                )}
+
+                {/* Payment Information */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-blue-900 mb-4">Payment Information</h3>
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 text-base">
+                    <div>
+                      <p className="text-blue-800 font-semibold mb-2">Bank Transfer:</p>
+                      <p className="text-blue-700 mb-1">Account: ****1234</p>
+                      <p className="text-blue-700">Routing: 123456789</p>
+                    </div>
+                    <div>
+                      <p className="text-blue-800 font-semibold mb-2">Online Payment:</p>
+                      <p className="text-blue-700 mb-1">Pay securely via our portal</p>
+                      <p className="text-blue-700">Reference: {selectedInvoice.number}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-3 justify-end pt-4 border-t border-gray-200">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowInvoiceView(false)}
+                    className="border-gray-300 text-[#2C2C2C] px-6 py-2"
+                  >
+                    Close
+                  </Button>
+                  <Button 
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
+                    onClick={() => generateInvoicePDF(selectedInvoice)}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Download PDF
+                  </Button>
+                  {selectedInvoice.status === 'Draft' && (
+                    <Button
+                      onClick={() => {
+                        sendInvoice(selectedInvoice.id);
+                        setShowInvoiceView(false);
+                      }}
+                      className="bg-[#607c47] hover:bg-[#4a6129] text-white px-6 py-2"
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Send Invoice
+                    </Button>
+                  )}
+                  {(selectedInvoice.status === 'Sent' || selectedInvoice.status === 'Overdue') && (
+                    <Button
+                      onClick={() => {
+                        sendReminder(selectedInvoice.id);
+                        setShowInvoiceView(false);
+                      }}
+                      className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2"
+                    >
+                      <Mail className="h-4 w-4 mr-2" />
+                      Send Reminder
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </MainLayout>
     </AuthGuard>
   );

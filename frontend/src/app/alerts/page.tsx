@@ -593,9 +593,12 @@ export default function AlertsPage() {
                             <div key={index} className="border-l-4 border-blue-200 pl-4">
                               <div className="flex items-center justify-between mb-1">
                                 <h4 className="font-semibold text-[#2C2C2C]">{prediction.metric}</h4>
-                                <Badge className="bg-blue-100 text-blue-800">
+                                <Badge 
+                                  className="bg-blue-100"
+                                  style={{ color: '#1f2937' }}
+                                >
                                   {prediction.confidence}% confidence
-                </Badge>
+                                </Badge>
               </div>
                               <p className="text-sm text-gray-600 mb-2">{prediction.prediction}</p>
                               <p className="text-xs text-[#607c47] font-medium">{prediction.action}</p>
@@ -618,10 +621,13 @@ export default function AlertsPage() {
                             <div key={index} className="bg-gray-50 rounded-lg p-3">
                               <div className="flex items-center justify-between mb-2">
                                 <h4 className="font-semibold text-[#2C2C2C]">{anomaly.type}</h4>
-                                <Badge className={
-                                  anomaly.severity === 'warning' ? 'bg-yellow-100 text-yellow-800' :
-                                  'bg-blue-100 text-blue-800'
-                                }>
+                                <Badge 
+                                  className={
+                                    anomaly.severity === 'warning' ? 'bg-yellow-100' :
+                                    'bg-blue-100'
+                                  }
+                                  style={{ color: '#1f2937' }}
+                                >
                                   {anomaly.severity}
                                 </Badge>
                               </div>
@@ -666,13 +672,20 @@ export default function AlertsPage() {
                       <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
                                 <CardTitle className="text-lg font-medium text-[#2C2C2C]">{alert.title}</CardTitle>
-                                <Badge className={getSeverityBadgeColor(alert.severity)}>
+                                <Badge 
+                                  className={getSeverityBadgeColor(alert.severity)}
+                                  style={{ color: '#1f2937' }}
+                                >
                                   {alert.severity}
                                 </Badge>
                                 {!alert.isRead && (
-                                  <Badge variant="outline" className="border-blue-300 text-blue-700">
+                                  <Badge 
+                                    variant="outline" 
+                                    className="border-blue-300"
+                                    style={{ color: '#1f2937' }}
+                                  >
                                     New
-                          </Badge>
+                                  </Badge>
                         )}
                       </div>
                               <p className="text-sm text-gray-600 mb-3">{alert.message}</p>
@@ -723,7 +736,11 @@ export default function AlertsPage() {
                                 <div key={index} className="bg-white/60 rounded-lg p-3">
                                   <div className="flex items-start justify-between mb-2">
                                     <p className="text-sm font-medium text-[#2C2C2C]">{rec.action}</p>
-                                    <Badge variant="outline" className="text-xs">
+                                    <Badge 
+                                      variant="outline" 
+                                      className="text-xs"
+                                      style={{ color: '#1f2937' }}
+                                    >
                                       {rec.effort} effort
                                     </Badge>
                                   </div>

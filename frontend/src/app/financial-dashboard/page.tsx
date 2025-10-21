@@ -59,6 +59,7 @@ interface DemoTransaction {
   category: string;
   date: string;
   accountId: string;
+  notes?: string;
 }
 
 // Demo Account interface
@@ -257,13 +258,30 @@ export default function FinancialDashboardPage() {
     loadAccounts();
   }, [loadTransactions, loadAccounts]);
 
-  const handleAddTransactionSuccess = async () => {
+  const handleAddTransactionSuccess = async (transactionData: any) => {
     try {
-      // Reload transactions to get the latest data
-      await loadTransactions();
+      // Add the new transaction to the state
+      console.log('Adding transaction:', transactionData);
+      setTransactions(prev => {
+        console.log('Previous transactions:', prev.length);
+        const newTransactions = [transactionData, ...prev];
+        console.log('New transactions count:', newTransactions.length);
+        return newTransactions;
+      });
+      
+      // Reset to first page to show the new transaction
+      setCurrentPage(1);
+      
+      // Reset account filter to show all transactions
+      setSelectedAccount('all');
+      
+      // Update the accounts if needed (for balance changes)
+      // In a real app, this would be handled by the backend
+      
       toast.success('Transaction added successfully');
     } catch (error) {
-      toast.error('Failed to reload transactions');
+      console.error('Failed to add transaction:', error);
+      toast.error('Failed to add transactions');
     }
   };
 
@@ -285,6 +303,7 @@ export default function FinancialDashboardPage() {
     const aValue = a[sortConfig.key];
     const bValue = b[sortConfig.key];
     
+    if (aValue == null || bValue == null) return 0;
     if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
     if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
     return 0;

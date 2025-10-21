@@ -38,7 +38,7 @@ interface DemoAccount {
 interface AddTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (transactionData: any) => void;
   accounts: DemoAccount[];
 }
 
@@ -91,11 +91,23 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, accoun
     try {
       setLoading(true);
       
+      // Create transaction data object
+      const transactionData = {
+        id: Date.now().toString(),
+        amount: parseFloat(formData.amount),
+        type: formData.type as 'income' | 'expense',
+        description: formData.description,
+        category: formData.category,
+        date: new Date(formData.date).toISOString(),
+        accountId: formData.accountId,
+        notes: formData.notes
+      };
+      
       // Mock API call - in real implementation, this would call the backend
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast.success('Transaction added successfully!');
-      onSuccess();
+      onSuccess(transactionData);
       handleClose();
     } catch (error) {
       console.error('Failed to add transaction:', error);
