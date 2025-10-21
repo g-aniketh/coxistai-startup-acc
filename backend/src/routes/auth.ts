@@ -28,10 +28,19 @@ router.post('/login', async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({
       where: { email },
       include: {
-        tenant: {
+        startup: {
           select: {
             id: true,
             name: true
+          }
+        },
+        roles: {
+          include: {
+            role: {
+              include: {
+                permissions: true
+              }
+            }
           }
         }
       }
@@ -45,7 +54,7 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 
     // Verify password
-    const isValidPassword = await comparePassword(password, user.passwordHash);
+    const isValidPassword = await comparePassword(password, user.password);
     if (!isValidPassword) {
       return res.status(401).json({
         success: false,
@@ -56,8 +65,9 @@ router.post('/login', async (req: Request, res: Response) => {
     // Generate tokens
     const tokens = generateTokenPair({
       userId: user.id,
-      tenantId: user.tenantId,
-      role: user.role,
+      startupId: user.startupId,
+      roles: user.roles.map(ur => ur.role.name),
+      permissions: user.roles.flatMap(ur => ur.role.permissions.map(p => `${p.action}:${p.subject}`)),
       email: user.email
     });
 
@@ -67,8 +77,11 @@ router.post('/login', async (req: Request, res: Response) => {
         user: {
           id: user.id,
           email: user.email,
-          role: user.role,
-          tenant: user.tenant
+          firstName: user.firstName,
+          lastName: user.lastName,
+          startup: user.startup,
+          roles: user.roles.map(ur => ur.role.name),
+          permissions: user.roles.flatMap(ur => ur.role.permissions.map(p => `${p.action}:${p.subject}`))
         },
         tokens
       }
@@ -85,7 +98,7 @@ router.post('/login', async (req: Request, res: Response) => {
 // Register endpoint
 router.post('/register', async (req: Request, res: Response) => {
   try {
-    const { email, password, role = 'member', tenantId } = req.body;
+    const { email, password, firstName, lastName, startupId } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({
@@ -94,22 +107,22 @@ router.post('/register', async (req: Request, res: Response) => {
       } as ApiResponse);
     }
 
-    if (!tenantId) {
+    if (!startupId) {
       return res.status(400).json({
         success: false,
-        error: 'Tenant ID is required for registration'
+        error: 'Startup ID is required for registration'
       } as ApiResponse);
     }
 
-    // Verify tenant exists
-    const tenant = await prisma.tenant.findUnique({
-      where: { id: tenantId }
+    // Verify startup exists
+    const startup = await prisma.startup.findUnique({
+      where: { id: startupId }
     });
 
-    if (!tenant) {
+    if (!startup) {
       return res.status(404).json({
         success: false,
-        error: 'Tenant not found'
+        error: 'Startup not found'
       } as ApiResponse);
     }
 
@@ -126,21 +139,31 @@ router.post('/register', async (req: Request, res: Response) => {
     }
 
     // Hash password
-    const passwordHash = await hashPassword(password);
+    const hashedPassword = await hashPassword(password);
 
     // Create user
     const user = await prisma.user.create({
       data: {
         email,
-        passwordHash,
-        role,
-        tenantId
+        password: hashedPassword,
+        firstName,
+        lastName,
+        startupId
       },
       include: {
-        tenant: {
+        startup: {
           select: {
             id: true,
             name: true
+          }
+        },
+        roles: {
+          include: {
+            role: {
+              include: {
+                permissions: true
+              }
+            }
           }
         }
       }
@@ -149,8 +172,9 @@ router.post('/register', async (req: Request, res: Response) => {
     // Generate tokens
     const tokens = generateTokenPair({
       userId: user.id,
-      tenantId: user.tenantId,
-      role: user.role,
+      startupId: user.startupId,
+      roles: user.roles.map(ur => ur.role.name),
+      permissions: user.roles.flatMap(ur => ur.role.permissions.map(p => `${p.action}:${p.subject}`)),
       email: user.email
     });
 
@@ -160,8 +184,11 @@ router.post('/register', async (req: Request, res: Response) => {
         user: {
           id: user.id,
           email: user.email,
-          role: user.role,
-          tenant: user.tenant
+          firstName: user.firstName,
+          lastName: user.lastName,
+          startup: user.startup,
+          roles: user.roles.map(ur => ur.role.name),
+          permissions: user.roles.flatMap(ur => ur.role.permissions.map(p => `${p.action}:${p.subject}`))
         },
         tokens
       }
@@ -194,16 +221,25 @@ router.post('/refresh', async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
       include: {
-        tenant: {
+        startup: {
           select: {
             id: true,
             name: true
+          }
+        },
+        roles: {
+          include: {
+            role: {
+              include: {
+                permissions: true
+              }
+            }
           }
         }
       }
     });
 
-    if (!user || !user.tenant) {
+    if (!user || !user.startup) {
       return res.status(401).json({
         success: false,
         error: 'Invalid refresh token'
@@ -213,8 +249,9 @@ router.post('/refresh', async (req: Request, res: Response) => {
     // Generate new tokens
     const tokens = generateTokenPair({
       userId: user.id,
-      tenantId: user.tenantId,
-      role: user.role,
+      startupId: user.startupId,
+      roles: user.roles.map(ur => ur.role.name),
+      permissions: user.roles.flatMap(ur => ur.role.permissions.map(p => `${p.action}:${p.subject}`)),
       email: user.email
     });
 
@@ -224,8 +261,11 @@ router.post('/refresh', async (req: Request, res: Response) => {
         user: {
           id: user.id,
           email: user.email,
-          role: user.role,
-          tenant: user.tenant
+          firstName: user.firstName,
+          lastName: user.lastName,
+          startup: user.startup,
+          roles: user.roles.map(ur => ur.role.name),
+          permissions: user.roles.flatMap(ur => ur.role.permissions.map(p => `${p.action}:${p.subject}`))
         },
         tokens
       }
@@ -245,10 +285,19 @@ router.get('/me', authenticateToken, async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({
       where: { id: req.user!.userId },
       include: {
-        tenant: {
+        startup: {
           select: {
             id: true,
             name: true
+          }
+        },
+        roles: {
+          include: {
+            role: {
+              include: {
+                permissions: true
+              }
+            }
           }
         }
       }
@@ -267,8 +316,11 @@ router.get('/me', authenticateToken, async (req: Request, res: Response) => {
         user: {
           id: user.id,
           email: user.email,
-          role: user.role,
-          tenant: user.tenant,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          startup: user.startup,
+          roles: user.roles.map(ur => ur.role.name),
+          permissions: user.roles.flatMap(ur => ur.role.permissions.map(p => `${p.action}:${p.subject}`)),
           createdAt: user.createdAt,
           updatedAt: user.updatedAt
         }

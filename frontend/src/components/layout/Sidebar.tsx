@@ -65,7 +65,15 @@ export default function Sidebar() {
         <h3 className="mt-4 font-semibold text-lg">
           Welcome Back,
         </h3>
-        <p className="text-gray-400">{user ? `${user.firstName} ${user.lastName}` : 'Guest'}</p>
+        <p className="text-gray-400">
+          {user ? (
+            user.firstName && user.lastName 
+              ? `${user.firstName} ${user.lastName}`
+              : user.firstName 
+                ? user.firstName
+                : user.email.split('@')[0]
+          ) : 'Guest'}
+        </p>
       </div>
 
 
