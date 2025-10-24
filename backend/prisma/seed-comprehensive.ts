@@ -218,11 +218,11 @@ async function main() {
   
   // Different financial profiles for each startup
   const startupProfiles = [
-    { name: 'TechNova Solutions', initialFunding: 500000, monthlyRevenue: 45000, monthlyExpenses: 35000 },
-    { name: 'CloudScale Inc', initialFunding: 200000, monthlyRevenue: 25000, monthlyExpenses: 20000 },
-    { name: 'DataFlow Analytics', initialFunding: 1000000, monthlyRevenue: 80000, monthlyExpenses: 60000 },
-    { name: 'AI Innovations Lab', initialFunding: 50000, monthlyRevenue: 12000, monthlyExpenses: 15000 },
-    { name: 'GreenTech Ventures', initialFunding: 300000, monthlyRevenue: 30000, monthlyExpenses: 25000 },
+    { name: 'Coxist AI', initialFunding: 41500000, monthlyRevenue: 3735000, monthlyExpenses: 2905000 }, // ₹4.15Cr, ₹37.4L, ₹29.1L
+    { name: 'Coxist AI Cloud', initialFunding: 16600000, monthlyRevenue: 2075000, monthlyExpenses: 1660000 }, // ₹1.66Cr, ₹20.8L, ₹16.6L
+    { name: 'Coxist AI Analytics', initialFunding: 83000000, monthlyRevenue: 6640000, monthlyExpenses: 4980000 }, // ₹8.3Cr, ₹66.4L, ₹49.8L
+    { name: 'Coxist AI Lab', initialFunding: 4150000, monthlyRevenue: 996000, monthlyExpenses: 1245000 }, // ₹41.5L, ₹9.96L, ₹12.5L
+    { name: 'Coxist AI Green', initialFunding: 24900000, monthlyRevenue: 2490000, monthlyExpenses: 2075000 }, // ₹2.49Cr, ₹24.9L, ₹20.8L
   ];
 
   for (let startupIndex = 0; startupIndex < startups.length; startupIndex++) {
@@ -369,8 +369,8 @@ async function main() {
     monthEnd.setMonth(monthEnd.getMonth() + 1);
     monthEnd.setDate(0);
 
-    const revenue = 45000 + (i * 5000) + Math.random() * 8000;
-    const expenses = 35000 + (i * 2000) + Math.random() * 3000;
+    const revenue = 3735000 + (i * 415000) + Math.random() * 664000; // Base ₹37.4L + growth
+    const expenses = 2905000 + (i * 166000) + Math.random() * 249000; // Base ₹29.1L + growth
     const customers = 150 + (i * 20);
 
     cashflowMetrics.push(
@@ -383,11 +383,11 @@ async function main() {
           totalExpenses: expenses,
           netCashflow: revenue - expenses,
           burnRate: expenses,
-          runway: (500000 / expenses), // Based on initial funding
+          runway: (41500000 / expenses), // Based on initial funding ₹4.15Cr
           mrr: revenue * 0.85, // 85% recurring
           arr: revenue * 0.85 * 12,
-          growthRate: i > 0 ? ((revenue / (45000 + ((i-1) * 5000))) - 1) * 100 : 0,
-          cashBalance: 500000 + ((revenue - expenses) * i),
+          growthRate: i > 0 ? ((revenue / (3735000 + ((i-1) * 415000))) - 1) * 100 : 0,
+          cashBalance: 41500000 + ((revenue - expenses) * i),
           accountsReceivable: revenue * 0.15,
           accountsPayable: expenses * 0.2,
           activeCustomers: customers,
@@ -408,13 +408,13 @@ async function main() {
       data: {
         startupId: mainStartup.id,
         name: 'Hire 3 Engineers',
-        description: 'Simulate financial impact of hiring 3 Senior Software Engineers at $150k/yr each.',
+        description: 'Simulate financial impact of hiring 3 Senior Software Engineers at ₹12.5L/yr each.',
         scenarioType: 'what_if',
-        inputParameters: { hireCount: 3, avgSalary: 150000, benefitsPercent: 0.25 },
-        projectedExpenses: 562500, // Annual
+        inputParameters: { hireCount: 3, avgSalary: 1250000, benefitsPercent: 0.25 }, // ₹12.5L/yr each
+        projectedExpenses: 4687500, // Annual in INR (₹46.9L)
         projectedRunway: 11.5,
         confidence: 0.95,
-        insights: ['Burn rate increases by ~$47k/month.', 'Runway decreases by ~4 months.'],
+        insights: ['Burn rate increases by ~₹3.9L/month.', 'Runway decreases by ~4 months.'],
         recommendations: ['Consider hiring more junior engineers to reduce cost.', 'Explore remote talent in lower-cost regions.'],
         risks: ['Hiring process may take longer than expected.', 'Increased management overhead.'],
       },
@@ -426,10 +426,10 @@ async function main() {
         description: '30% MoM growth with reduced churn',
         scenarioType: 'forecast',
         inputParameters: { growthRate: 0.30, churnReduction: 0.50, newCustomerTarget: 50, },
-        projectedRevenue: 95000, projectedExpenses: 42000, projectedCashflow: 53000,
+        projectedRevenue: 7885000, projectedExpenses: 3486000, projectedCashflow: 4399000, // INR values
         projectedRunway: 18.5, confidence: 0.75,
-        insights: [ 'With 30% growth, revenue could reach $95K/month in 3 months', 'Reduced churn would save ~$8K monthly', 'Customer acquisition cost trending down', ],
-        recommendations: [ 'Invest $5K more in proven marketing channels', 'Launch referral program to reduce CAC', 'Hire customer success manager to reduce churn', ],
+        insights: [ 'With 30% growth, revenue could reach ₹79L/month in 3 months', 'Reduced churn would save ~₹6.6L monthly', 'Customer acquisition cost trending down', ],
+        recommendations: [ 'Invest ₹4.2L more in proven marketing channels', 'Launch referral program to reduce CAC', 'Hire customer success manager to reduce churn', ],
         risks: [ 'Market saturation in current segment', 'Increased competition may pressure pricing', ],
       },
     }),
@@ -444,7 +444,7 @@ async function main() {
         type: 'runway',
         severity: 'warning',
         title: 'Runway is down to 8.2 months',
-        message: 'Based on your current burn rate of $35,000/mo and cash balance of $287,500, your runway is approximately 8.2 months. This is above the recommended 6-month threshold but trending down.',
+        message: 'Based on your current burn rate of ₹29L/mo and cash balance of ₹2.4Cr, your runway is approximately 8.2 months. This is above the recommended 6-month threshold but trending down.',
         currentValue: 8.2,
         thresholdValue: 6,
         recommendations: ['Consider optimizing SaaS spend to extend runway.', 'Monitor customer acquisition costs closely.', 'Prepare for Series A fundraising in Q2.'],
@@ -457,9 +457,9 @@ async function main() {
         type: 'burn_rate',
         severity: 'info',
         title: 'Burn Rate Trending Up',
-        message: 'Monthly burn rate increased 5% from last month to $35,000.',
-        currentValue: 35000,
-        thresholdValue: 33000,
+        message: 'Monthly burn rate increased 5% from last month to ₹29L.',
+        currentValue: 2905000,
+        thresholdValue: 2490000,
         recommendations: ['Audit cloud infrastructure costs', 'Review contractor and freelancer spending', 'Optimize marketing spend efficiency'],
         isRead: false,
       },
@@ -474,12 +474,12 @@ async function main() {
       title: 'Q4 2024 - Strong Growth & Product Launch',
       periodStart: new Date('2024-10-01'),
       periodEnd: new Date('2024-12-31'),
-      metrics: { revenue: 45000, mrr: 38250, arr: 459000, customers: 215, churnRate: 2.3, nps: 67, },
-      executiveSummary: `We had an exceptional Q4, achieving 25% revenue growth and successfully launching our Enterprise tier. Our ARR now stands at $459K, putting us on track for our $600K target by Q2 2025. Key highlights include landing 3 enterprise customers, reducing churn by 35%, and expanding our team with critical hires in engineering and customer success.`,
-      highlights: [ 'Revenue grew 25% QoQ to $45K MRR', 'Launched Enterprise tier with 3 early customers at $2K/mo each', 'Product NPS improved from 58 to 67', ],
+      metrics: { revenue: 3735000, mrr: 3174750, arr: 38097000, customers: 215, churnRate: 2.3, nps: 67, },
+      executiveSummary: `We had an exceptional Q4, achieving 25% revenue growth and successfully launching our Enterprise tier. Our ARR now stands at ₹3.8Cr, putting us on track for our ₹5Cr target by Q2 2025. Key highlights include landing 3 enterprise customers, reducing churn by 35%, and expanding our team with critical hires in engineering and customer success.`,
+      highlights: [ 'Revenue grew 25% QoQ to ₹3.7L MRR', 'Launched Enterprise tier with 3 early customers at ₹1.7L/mo each', 'Product NPS improved from 58 to 67', ],
       challenges: [ 'Customer acquisition cost increased 15% due to competitive landscape', 'Enterprise sales cycle longer than anticipated (avg 60 days)', ],
       nextSteps: [ 'Launch self-service onboarding to reduce CAC', 'Develop case studies from enterprise customers', 'Begin Series A fundraising conversations', ],
-      revenueGrowth: 25, burnRate: 35000, runway: 8.2, isDraft: false, publishedAt: new Date(),
+      revenueGrowth: 25, burnRate: 2905000, runway: 8.2, isDraft: false, publishedAt: new Date(),
     },
   });
   console.log('✓ Created 1 investor update for main startup');

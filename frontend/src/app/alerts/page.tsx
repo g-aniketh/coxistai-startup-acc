@@ -68,7 +68,7 @@ export default function AlertsPage() {
         {
           id: '1',
           title: 'High Burn Rate Alert',
-          message: 'Your monthly burn rate has increased by 15% above forecast. Current burn: $15,400/month vs projected $13,400/month.',
+          message: 'Your monthly burn rate has increased by 15% above forecast. Current burn: ₹12.8L/month vs projected ₹11.1L/month.',
           severity: 'critical',
           currentValue: 15400,
           thresholdValue: 13400,
@@ -76,12 +76,12 @@ export default function AlertsPage() {
           recommendations: [
             {
               action: 'Review contractor utilization and optimize costs',
-              impact: 'Potential savings: $2,100/month',
+              impact: 'Potential savings: ₹1.7L/month',
               effort: 'medium'
             },
             {
               action: 'Audit SaaS subscriptions and remove unused tools',
-              impact: 'Potential savings: $800/month',
+              impact: 'Potential savings: ₹66,400/month',
               effort: 'low'
             }
           ],
@@ -114,7 +114,7 @@ export default function AlertsPage() {
         {
           id: '3',
           title: 'Cash Flow Warning',
-          message: 'You have 3 overdue invoices totaling $12,500. This represents 8% of your monthly revenue.',
+          message: 'You have 3 overdue invoices totaling ₹10.4L. This represents 8% of your monthly revenue.',
           severity: 'warning',
           currentValue: 12500,
           thresholdValue: 5000,
@@ -266,7 +266,7 @@ export default function AlertsPage() {
         anomalies: [
           {
             type: 'Unusual Transaction',
-            description: 'Large payment of $25,000 received 5 days early',
+            description: 'Large payment of ₹20.8L received 5 days early',
             severity: 'info',
             impact: 'Positive cash flow impact'
           },
@@ -598,7 +598,7 @@ export default function AlertsPage() {
                                   style={{ color: '#1f2937' }}
                                 >
                                   {prediction.confidence}% confidence
-                                </Badge>
+                </Badge>
               </div>
                               <p className="text-sm text-gray-600 mb-2">{prediction.prediction}</p>
                               <p className="text-xs text-[#607c47] font-medium">{prediction.action}</p>
@@ -685,7 +685,7 @@ export default function AlertsPage() {
                                     style={{ color: '#1f2937' }}
                                   >
                                     New
-                                  </Badge>
+                          </Badge>
                         )}
                       </div>
                               <p className="text-sm text-gray-600 mb-3">{alert.message}</p>

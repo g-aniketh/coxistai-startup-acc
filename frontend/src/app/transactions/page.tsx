@@ -269,8 +269,8 @@ export default function TransactionsPage() {
     .filter(t => t.type === 'expense')
     .reduce((acc, t) => {
       acc[t.category] = (acc[t.category] || 0) + t.amount;
-      return acc;
-    }, {} as Record<string, number>);
+    return acc;
+  }, {} as Record<string, number>);
 
   const categoryData = Object.entries(expenseCategories).map(([category, amount], index) => ({
     name: category,
@@ -321,14 +321,14 @@ export default function TransactionsPage() {
           {/* Main Content */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <div className="p-4 md:p-8 space-y-4 md:space-y-6">
-              {/* Header */}
+          {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">Transactions</h1>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">Transactions</h1>
                   <p className="text-sm text-[#2C2C2C]/70">
                     Track and manage your financial transactions
-                  </p>
-                </div>
+              </p>
+            </div>
                 <div className="flex gap-3">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -366,7 +366,7 @@ export default function TransactionsPage() {
                     Live Sync
                   </div>
                 </div>
-              </div>
+          </div>
 
               {/* Summary Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -381,8 +381,8 @@ export default function TransactionsPage() {
                         <div className="text-lg font-bold text-green-900">{formatCurrency(totalIncome)}</div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+              </CardContent>
+            </Card>
 
                 <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-red-50 to-pink-50">
                   <CardContent className="p-4">
@@ -395,8 +395,8 @@ export default function TransactionsPage() {
                         <div className="text-lg font-bold text-red-900">{formatCurrency(totalExpenses)}</div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+              </CardContent>
+            </Card>
 
                 <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-blue-50 to-cyan-50">
                   <CardContent className="p-4">
@@ -407,8 +407,8 @@ export default function TransactionsPage() {
                       <div>
                         <div className="text-sm text-blue-700">Net Cashflow</div>
                         <div className={`text-lg font-bold ${netCashflow >= 0 ? 'text-green-900' : 'text-red-900'}`}>
-                          {formatCurrency(netCashflow)}
-                        </div>
+                  {formatCurrency(netCashflow)}
+                </div>
                       </div>
                     </div>
                   </CardContent>
@@ -448,8 +448,8 @@ export default function TransactionsPage() {
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
-                  </CardContent>
-                </Card>
+              </CardContent>
+            </Card>
 
                 {/* Expense Categories */}
                 <Card className="bg-white rounded-xl border-0 shadow-lg">
@@ -458,7 +458,7 @@ export default function TransactionsPage() {
                       <FileSearch className="h-5 w-5 text-[#607c47]" />
                       Expense Categories
                     </CardTitle>
-                  </CardHeader>
+              </CardHeader>
                   <CardContent className="pt-0">
                     <div className="h-80">
                       <ResponsiveContainer width="100%" height="100%">
@@ -486,9 +486,9 @@ export default function TransactionsPage() {
                         </PieChart>
                       </ResponsiveContainer>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
+              </CardContent>
+            </Card>
+          </div>
 
               {/* Filters and Controls */}
               <Card className="bg-white rounded-xl border-0 shadow-lg">
@@ -498,16 +498,16 @@ export default function TransactionsPage() {
                       <Select value={selectedAccount} onValueChange={setSelectedAccount}>
                         <SelectTrigger className="w-48">
                           <SelectValue placeholder="Filter by account" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Accounts</SelectItem>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Accounts</SelectItem>
                           {accounts.map(account => (
                             <SelectItem key={account.id} value={account.id}>
                               {account.name}
                             </SelectItem>
                           ))}
-                        </SelectContent>
-                      </Select>
+                    </SelectContent>
+                  </Select>
                       
                       <Button variant="outline" className="border-gray-300 text-[#2C2C2C]">
                         <Filter className="h-4 w-4 mr-2" />
@@ -528,9 +528,9 @@ export default function TransactionsPage() {
                       >
                         <RefreshCw className="h-4 w-4 mr-1" />
                         Refresh
-                      </Button>
-                    </div>
-                  </div>
+                  </Button>
+                </div>
+              </div>
                 </CardContent>
               </Card>
 
@@ -540,12 +540,12 @@ export default function TransactionsPage() {
                   <CardTitle className="text-lg font-medium text-[#2C2C2C]">
                     Recent Transactions ({sortedTransactions.length})
                   </CardTitle>
-                </CardHeader>
+            </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
                           <TableHead 
                             className="cursor-pointer hover:bg-gray-50"
                             onClick={() => handleSort('date')}
@@ -592,42 +592,42 @@ export default function TransactionsPage() {
                             <div className="flex items-center gap-2">
                               Amount
                               {sortConfig.key === 'amount' && (
-                                sortConfig.direction === 'ascending' ? 
+                              sortConfig.direction === 'ascending' ? 
                                   <ArrowUp className="h-4 w-4" /> : 
                                   <ArrowDown className="h-4 w-4" />
-                              )}
+                            )}
                             </div>
-                          </TableHead>
+                        </TableHead>
                           <TableHead>Type</TableHead>
                           <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                         {paginatedTransactions.map((transaction) => (
                           <TableRow key={transaction.id} className="hover:bg-gray-50">
                             <TableCell className="font-medium">
-                              {formatDate(transaction.date)}
-                            </TableCell>
+                            {formatDate(transaction.date)}
+                          </TableCell>
                             <TableCell>{transaction.description}</TableCell>
                             <TableCell>
                               <Badge variant="outline" className="border-gray-300 text-gray-700">
                                 {transaction.category}
                               </Badge>
-                            </TableCell>
+                          </TableCell>
                             <TableCell className={`font-semibold ${
                               transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
                             }`}>
                               {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                            </TableCell>
-                            <TableCell>
+                          </TableCell>
+                          <TableCell>
                               <Badge className={
                                 transaction.type === 'income' 
                                   ? 'bg-green-100 text-green-700' 
                                   : 'bg-red-100 text-red-700'
                               }>
-                                {transaction.type}
+                              {transaction.type}
                               </Badge>
-                            </TableCell>
+                          </TableCell>
                             <TableCell>
                               <Button
                                 variant="outline"
@@ -637,47 +637,47 @@ export default function TransactionsPage() {
                               >
                                 <X className="h-4 w-4" />
                               </Button>
-                            </TableCell>
-                          </TableRow>
+                          </TableCell>
+                        </TableRow>
                         ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                  </TableBody>
+                </Table>
+              </div>
 
                   {/* Pagination */}
-                  {totalPages > 1 && (
+              {totalPages > 1 && (
                     <div className="flex items-center justify-between mt-4">
                       <div className="text-sm text-gray-600">
                         Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, sortedTransactions.length)} of {sortedTransactions.length} transactions
                       </div>
                       <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
+                    <Button 
+                      variant="outline"
+                      size="sm"
                           onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                          disabled={currentPage === 1}
+                      disabled={currentPage === 1} 
                           className="border-gray-300 text-[#2C2C2C]"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
                         <span className="px-3 py-1 text-sm text-gray-600">
                           Page {currentPage} of {totalPages}
                         </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
+                    <Button 
+                      variant="outline"
+                      size="sm"
                           onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                          disabled={currentPage === totalPages}
+                      disabled={currentPage === totalPages} 
                           className="border-gray-300 text-[#2C2C2C]"
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
           </div>
         </div>
 

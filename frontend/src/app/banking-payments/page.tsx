@@ -45,6 +45,7 @@ import toast from 'react-hot-toast';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { pdf } from '@react-pdf/renderer';
+import { formatCurrency } from '@/lib/utils';
 
 // Multi-Bank Sync interfaces
 interface BankAccount {
@@ -310,7 +311,11 @@ export default function BankingPaymentsHubPage() {
       return;
     }
 
-    const total = newInvoice.items?.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0) || 0;
+    if (!newInvoice.total || newInvoice.total <= 0) {
+      toast.error('Please enter a valid total amount');
+      return;
+    }
+
     const invoiceNumber = `INV-2024-${String(invoices.length + 1).padStart(3, '0')}`;
     
     const invoice: Invoice = {
@@ -323,8 +328,8 @@ export default function BankingPaymentsHubPage() {
       status: 'Draft',
       items: newInvoice.items || [],
       notes: newInvoice.notes,
-      total,
-      balanceDue: total,
+      total: newInvoice.total,
+      balanceDue: newInvoice.total,
       reminders: 0
     };
 
@@ -612,13 +617,6 @@ export default function BankingPaymentsHubPage() {
     return matchesSearch && matchesStatus;
   });
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(amount);
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -1113,43 +1111,56 @@ export default function BankingPaymentsHubPage() {
                             <label className="text-sm font-medium text-[#2C2C2C]">Invoice Items</label>
                             <div className="space-y-2 mt-2">
                               {newInvoice.items?.map((item, index) => (
-                                <div key={item.id} className="flex gap-2 items-end">
-                                  <div className="flex-1">
-                                    <Input
-                                      value={item.description}
-                                      onChange={(e) => updateInvoiceItem(item.id, 'description', e.target.value)}
-                                      placeholder="Item description"
-                                    />
+                                <div key={item.id} className="space-y-2 p-3 border border-gray-200 rounded-lg">
+                                  <div className="flex gap-2 items-end">
+                                    <div className="flex-1">
+                                      <label className="text-xs font-medium text-gray-600 mb-1 block">Description</label>
+                                      <Input
+                                        value={item.description}
+                                        onChange={(e) => updateInvoiceItem(item.id, 'description', e.target.value)}
+                                        placeholder="Item description"
+                                      />
+                                    </div>
                                   </div>
-                                  <div className="w-24">
-                                    <Input
-                                      type="number"
-                                      value={item.quantity}
-                                      onChange={(e) => updateInvoiceItem(item.id, 'quantity', Number(e.target.value))}
-                                      placeholder="Qty"
-                                    />
+                                  <div className="flex gap-2 items-end">
+                                    <div className="w-24">
+                                      <label className="text-xs font-medium text-gray-600 mb-1 block">Quantity</label>
+                                      <Input
+                                        type="number"
+                                        min="1"
+                                        value={item.quantity}
+                                        onChange={(e) => updateInvoiceItem(item.id, 'quantity', Number(e.target.value))}
+                                        placeholder="Qty"
+                                      />
+                                    </div>
+                                    <div className="w-32">
+                                      <label className="text-xs font-medium text-gray-600 mb-1 block">Unit Price ($)</label>
+                                      <Input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={item.unitPrice}
+                                        onChange={(e) => updateInvoiceItem(item.id, 'unitPrice', Number(e.target.value))}
+                                        placeholder="0.00"
+                                      />
+                                    </div>
+                                    <div className="w-20">
+                                      <label className="text-xs font-medium text-gray-600 mb-1 block">Total</label>
+                                      <div className="p-2 bg-gray-50 rounded text-sm font-medium text-center">
+                                        {formatCurrency(item.quantity * item.unitPrice)}
+                                      </div>
+                                    </div>
+                                    <div className="flex items-end">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => removeInvoiceItem(item.id)}
+                                        className="border-red-300 text-red-600 hover:bg-red-50"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
                                   </div>
-                                  <div className="w-32">
-                                    <Input
-                                      type="number"
-                                      value={item.unitPrice}
-                                      onChange={(e) => updateInvoiceItem(item.id, 'unitPrice', Number(e.target.value))}
-                                      placeholder="Unit Price"
-                                    />
-                                  </div>
-                                  <div className="w-20">
-                                    <span className="text-sm font-medium">
-                                      {formatCurrency(item.quantity * item.unitPrice)}
-                                    </span>
-                                  </div>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => removeInvoiceItem(item.id)}
-                                    className="border-red-300 text-red-600 hover:bg-red-50"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
                                 </div>
                               ))}
                             </div>
@@ -1161,6 +1172,48 @@ export default function BankingPaymentsHubPage() {
                               <Plus className="h-4 w-4 mr-2" />
                               Add Item
                             </Button>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-sm font-medium text-[#2C2C2C]">Total Amount</label>
+                              <div className="flex gap-2 mt-1">
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  value={newInvoice.total || ''}
+                                  onChange={(e) => setNewInvoice(prev => ({ 
+                                    ...prev, 
+                                    total: Number(e.target.value) || 0,
+                                    balanceDue: Number(e.target.value) || 0
+                                  }))}
+                                  placeholder="Enter total amount"
+                                  className="flex-1"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    const calculatedTotal = newInvoice.items?.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0) || 0;
+                                    setNewInvoice(prev => ({ 
+                                      ...prev, 
+                                      total: calculatedTotal,
+                                      balanceDue: calculatedTotal
+                                    }));
+                                  }}
+                                  className="border-gray-300 text-[#2C2C2C] whitespace-nowrap"
+                                >
+                                  Auto Calc
+                                </Button>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-[#2C2C2C]">Calculated Total</label>
+                              <div className="mt-1 p-2 bg-gray-50 rounded-md text-sm text-gray-600">
+                                {formatCurrency(newInvoice.items?.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0) || 0)}
+                              </div>
+                            </div>
                           </div>
 
                           <div>

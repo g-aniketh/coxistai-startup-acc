@@ -199,19 +199,19 @@ export default function AICopilotPage() {
           }))
         },
         expenses: {
-          current: 35000,
+          current: 2905000, // ₹29.1L
           projected: Array.from({ length: months }, (_, i) => ({
             month: `Month ${i + 1}`,
-            amount: 35000 + (i * 1000) + Math.random() * 1000,
+            amount: 2905000 + (i * 83000) + Math.random() * 83000, // ₹29.1L base + growth
             growth: 2 + Math.random() * 5
           }))
         },
         cashFlow: {
-          current: 17000,
+          current: 1410000, // ₹14.1L
           projected: Array.from({ length: months }, (_, i) => ({
             month: `Month ${i + 1}`,
-            amount: 17000 + (i * 2000) + Math.random() * 1000,
-            cumulative: 287500 + (i * 2000) + Math.random() * 1000
+            amount: 1410000 + (i * 166000) + Math.random() * 83000, // ₹14.1L base + growth
+            cumulative: 23862500 + (i * 166000) + Math.random() * 83000 // ₹2.39Cr base
           }))
         },
         runway: {

@@ -146,10 +146,10 @@ export default function AIAssistantPage() {
       const mockResult = {
         scenario: scenario,
         impact: {
-          cashFlow: Math.random() * 100000 - 50000,
+          cashFlow: Math.random() * 8300000 - 4150000, // ₹41.5L range
           runway: Math.random() * 6 - 3,
-          burnRate: Math.random() * 10000 - 5000,
-          revenue: Math.random() * 20000 - 10000
+          burnRate: Math.random() * 830000 - 415000, // ₹4.15L range
+          revenue: Math.random() * 1660000 - 830000 // ₹8.3L range
         },
         recommendations: [
           "Monitor cash flow closely for the next 3 months",
@@ -190,27 +190,27 @@ export default function AIAssistantPage() {
         period: forecastPeriod,
         months: months,
         revenue: {
-          current: 52000,
+          current: 4316000, // ₹43.2L
           projected: Array.from({ length: months }, (_, i) => ({
             month: `Month ${i + 1}`,
-            amount: 52000 + (i * 3000) + Math.random() * 2000,
+            amount: 4316000 + (i * 249000) + Math.random() * 166000, // ₹43.2L base + growth
             growth: 5 + Math.random() * 10
           }))
         },
         expenses: {
-          current: 35000,
+          current: 2905000, // ₹29.1L
           projected: Array.from({ length: months }, (_, i) => ({
             month: `Month ${i + 1}`,
-            amount: 35000 + (i * 1000) + Math.random() * 1000,
+            amount: 2905000 + (i * 83000) + Math.random() * 83000, // ₹29.1L base + growth
             growth: 2 + Math.random() * 5
           }))
         },
         cashFlow: {
-          current: 17000,
+          current: 1410000, // ₹14.1L
           projected: Array.from({ length: months }, (_, i) => ({
             month: `Month ${i + 1}`,
-            amount: 17000 + (i * 2000) + Math.random() * 1000,
-            cumulative: 287500 + (i * 2000) + Math.random() * 1000
+            amount: 1410000 + (i * 166000) + Math.random() * 83000, // ₹14.1L base + growth
+            cumulative: 23862500 + (i * 166000) + Math.random() * 83000 // ₹2.39Cr base
           }))
         },
         runway: {

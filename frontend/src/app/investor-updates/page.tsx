@@ -196,8 +196,8 @@ export default function InvestorUpdatesPage() {
       };
       
       setUpdates(prev => [newUpdate, ...prev]);
-      setShowForm(false);
-      setFormData({ periodStart: '', periodEnd: '' });
+        setShowForm(false);
+        setFormData({ periodStart: '', periodEnd: '' });
       toast.success('Investor update generated successfully!');
     } catch (error) {
       console.error('Failed to generate update:', error);
@@ -254,23 +254,23 @@ export default function InvestorUpdatesPage() {
             <div className="p-4 md:p-8 space-y-4 md:space-y-6">
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
+          <div>
                   <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">Investor Updates</h1>
                   <p className="text-sm text-[#2C2C2C]/70">
-                    AI-generated updates for your investors
-                  </p>
-                </div>
+              AI-generated updates for your investors
+            </p>
+          </div>
                 <div className="flex gap-3">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input placeholder="Search updates..." className="pl-10 bg-white rounded-lg" />
                   </div>
                   <Button
-                    onClick={() => setShowForm(!showForm)}
+            onClick={() => setShowForm(!showForm)}
                     className="flex items-center gap-2 bg-[#607c47] hover:bg-[#4a6129] text-white"
-                  >
-                    <Plus className="h-4 w-4" />
-                    New Update
+          >
+            <Plus className="h-4 w-4" />
+            New Update
                   </Button>
                 </div>
               </div>
@@ -292,7 +292,7 @@ export default function InvestorUpdatesPage() {
                     Live Data
                   </div>
                 </div>
-              </div>
+        </div>
 
               {/* Generate Form */}
               {showForm && (
@@ -306,46 +306,46 @@ export default function InvestorUpdatesPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                      <div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div>
                         <label className="block text-sm font-medium text-[#2C2C2C] mb-2">
-                          Period Start *
-                        </label>
+                      Period Start *
+                    </label>
                         <Input
-                          type="date"
-                          value={formData.periodStart}
-                          onChange={(e) => setFormData({ ...formData, periodStart: e.target.value })}
+                      type="date"
+                      value={formData.periodStart}
+                      onChange={(e) => setFormData({ ...formData, periodStart: e.target.value })}
                           className="bg-white"
-                        />
-                      </div>
-                      <div>
+                    />
+                  </div>
+                  <div>
                         <label className="block text-sm font-medium text-[#2C2C2C] mb-2">
-                          Period End *
-                        </label>
+                      Period End *
+                    </label>
                         <Input
-                          type="date"
-                          value={formData.periodEnd}
-                          onChange={(e) => setFormData({ ...formData, periodEnd: e.target.value })}
+                      type="date"
+                      value={formData.periodEnd}
+                      onChange={(e) => setFormData({ ...formData, periodEnd: e.target.value })}
                           className="bg-white"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2">
                       <Button
-                        onClick={generateUpdate}
-                        disabled={!formData.periodStart || !formData.periodEnd || generating}
+                    onClick={generateUpdate}
+                    disabled={!formData.periodStart || !formData.periodEnd || generating}
                         className="bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      >
-                        {generating ? 'Generating...' : 'Generate Update'}
+                  >
+                    {generating ? 'Generating...' : 'Generate Update'}
                       </Button>
                       <Button
-                        onClick={() => setShowForm(false)}
+                    onClick={() => setShowForm(false)}
                         variant="outline"
                         className="border-gray-300 text-[#2C2C2C]"
-                      >
-                        Cancel
+                  >
+                    Cancel
                       </Button>
-                    </div>
+                </div>
                   </CardContent>
                 </Card>
               )}
@@ -374,137 +374,137 @@ export default function InvestorUpdatesPage() {
                     <Card key={update.id} className="bg-white rounded-xl border-0 shadow-lg hover:shadow-xl transition-shadow">
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
                               <FileText className="h-5 w-5 text-[#607c47]" />
                               <CardTitle className="text-lg font-medium text-[#2C2C2C]">{update.title}</CardTitle>
-                            </div>
+              </div>
                             <div className="flex items-center gap-4 text-sm text-gray-600">
-                              <span className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                {new Date(update.periodStart).toLocaleDateString()} - {new Date(update.periodEnd).toLocaleDateString()}
-                              </span>
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {new Date(update.periodStart).toLocaleDateString()} - {new Date(update.periodEnd).toLocaleDateString()}
+                </span>
                               <Badge variant={update.isDraft ? 'outline' : 'default'} className={update.isDraft ? 'border-orange-300 text-orange-700' : 'bg-green-100 text-green-700'}>
-                                {update.isDraft ? 'Draft' : 'Published'}
-                              </Badge>
-                            </div>
-                          </div>
+                  {update.isDraft ? 'Draft' : 'Published'}
+                </Badge>
+              </div>
+            </div>
                           <Button
-                            onClick={() => setSelectedUpdate(selectedUpdate?.id === update.id ? null : update)}
+                onClick={() => setSelectedUpdate(selectedUpdate?.id === update.id ? null : update)}
                             variant="outline"
                             size="sm"
                             className="border-gray-300 text-[#2C2C2C]"
-                          >
-                            <Eye className="h-4 w-4" />
+              >
+                <Eye className="h-4 w-4" />
                           </Button>
-                        </div>
+            </div>
                       </CardHeader>
 
                       <CardContent className="pt-0">
-                        {/* Key Metrics */}
-                        {update.metrics && (
-                          <div className="grid grid-cols-2 gap-3 mb-4">
+          {/* Key Metrics */}
+          {update.metrics && (
+            <div className="grid grid-cols-2 gap-3 mb-4">
                             <div className="p-3 rounded-lg bg-[#C9E0B0]">
-                              <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1">
                                 <DollarSign className="h-4 w-4 text-[#3a5129]" />
                                 <span className="text-xs text-[#3a5129]">Revenue</span>
-                              </div>
+                </div>
                               <div className="text-lg font-bold text-[#2C2C2C]">
-                                {formatCurrency(update.metrics.revenue || 0)}
-                              </div>
-                            </div>
+                  {formatCurrency(update.metrics.revenue || 0)}
+                </div>
+              </div>
                             <div className="p-3 rounded-lg bg-[#F6D97A]">
-                              <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1">
                                 <TrendingUp className="h-4 w-4 text-[#7a6015]" />
                                 <span className="text-xs text-[#7a6015]">MRR</span>
-                              </div>
+                </div>
                               <div className="text-lg font-bold text-[#2C2C2C]">
-                                {formatCurrency(update.metrics.mrr || 0)}
-                              </div>
-                            </div>
+                  {formatCurrency(update.metrics.mrr || 0)}
+                </div>
+              </div>
                             <div className="p-3 rounded-lg bg-[#B7B3E6]">
-                              <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1">
                                 <Users className="h-4 w-4 text-[#2C2C2C]" />
                                 <span className="text-xs text-[#2C2C2C]">Customers</span>
-                              </div>
+                </div>
                               <div className="text-lg font-bold text-[#2C2C2C]">
-                                {update.metrics.customers || 0}
-                              </div>
-                            </div>
+                  {update.metrics.customers || 0}
+                </div>
+              </div>
                             <div className="p-3 rounded-lg bg-[#FFB3BA]">
-                              <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1">
                                 <TrendingUp className="h-4 w-4 text-[#8B0000]" />
                                 <span className="text-xs text-[#8B0000]">Growth</span>
-                              </div>
+                </div>
                               <div className="text-lg font-bold text-[#2C2C2C]">
-                                {(update.metrics.revenueGrowth || 0).toFixed(1)}%
-                              </div>
-                            </div>
-                          </div>
-                        )}
+                  {(update.metrics.revenueGrowth || 0).toFixed(1)}%
+                </div>
+              </div>
+            </div>
+          )}
 
-                        {/* Executive Summary */}
-                        {selectedUpdate?.id === update.id && (
+          {/* Executive Summary */}
+          {selectedUpdate?.id === update.id && (
                           <div className="space-y-4 border-t border-gray-200 pt-4">
-                            <div>
+              <div>
                               <h4 className="text-sm font-semibold text-[#2C2C2C] mb-2">Executive Summary</h4>
                               <p className="text-sm text-gray-600">{update.executiveSummary}</p>
-                            </div>
+              </div>
 
-                            {update.highlights && update.highlights.length > 0 && (
-                              <div>
+              {update.highlights && update.highlights.length > 0 && (
+                <div>
                                 <h4 className="text-sm font-semibold text-[#2C2C2C] mb-2">Key Highlights</h4>
-                                <ul className="space-y-2">
-                                  {update.highlights.map((highlight: string, i: number) => (
+                  <ul className="space-y-2">
+                    {update.highlights.map((highlight: string, i: number) => (
                                     <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
                                       <span className="text-green-500 mt-1">✓</span>
-                                      <span>{highlight}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
+                        <span>{highlight}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-                            {update.challenges && update.challenges.length > 0 && (
-                              <div>
+              {update.challenges && update.challenges.length > 0 && (
+                <div>
                                 <h4 className="text-sm font-semibold text-[#2C2C2C] mb-2">Challenges</h4>
-                                <ul className="space-y-2">
-                                  {update.challenges.map((challenge: string, i: number) => (
+                  <ul className="space-y-2">
+                    {update.challenges.map((challenge: string, i: number) => (
                                     <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                                      <span className="text-yellow-500 mt-1">⚠</span>
-                                      <span>{challenge}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
+                        <span className="text-yellow-500 mt-1">⚠</span>
+                        <span>{challenge}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-                            {update.nextSteps && update.nextSteps.length > 0 && (
-                              <div>
+              {update.nextSteps && update.nextSteps.length > 0 && (
+                <div>
                                 <h4 className="text-sm font-semibold text-[#2C2C2C] mb-2">Next Steps</h4>
-                                <ul className="space-y-2">
-                                  {update.nextSteps.map((step: string, i: number) => (
+                  <ul className="space-y-2">
+                    {update.nextSteps.map((step: string, i: number) => (
                                     <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
                                       <span className="text-[#607c47] mt-1">→</span>
-                                      <span>{step}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
-                        )}
+                        <span>{step}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
 
-                        {/* Actions */}
+          {/* Actions */}
                         <div className="flex gap-2 pt-4 border-t border-gray-200 mt-4">
-                          {update.isDraft && (
+            {update.isDraft && (
                             <Button
-                              onClick={() => publishUpdate(update.id)}
+                onClick={() => publishUpdate(update.id)}
                               size="sm"
                               className="bg-[#607c47] hover:bg-[#4a6129] text-white"
-                            >
+              >
                               <Send className="h-3 w-3 mr-1" />
-                              Publish
+                Publish
                             </Button>
                           )}
                           <Button
@@ -513,10 +513,10 @@ export default function InvestorUpdatesPage() {
                             className="border-gray-300 text-[#2C2C2C]"
                           >
                             <Download className="h-3 w-3 mr-1" />
-                            Export PDF
+              Export PDF
                           </Button>
                           <div className="ml-auto text-xs text-gray-500">
-                            {new Date(update.createdAt).toLocaleString()}
+              {new Date(update.createdAt).toLocaleString()}
                           </div>
                         </div>
                       </CardContent>

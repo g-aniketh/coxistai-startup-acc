@@ -45,7 +45,7 @@ const productCategories = [
 
 export default function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalProps) {
   const [formData, setFormData] = useState({
-    name: '',
+      name: '',
     description: '',
     category: '',
     price: '',
@@ -141,14 +141,14 @@ export default function AddProductModal({ isOpen, onClose, onSubmit }: AddProduc
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
+          <div className="space-y-2">
                 <Label htmlFor="name" className="text-sm font-medium text-[#2C2C2C]">
                   Product Name *
                 </Label>
                 <div className="relative">
                   <Package className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="name"
+            <Input
+              id="name"
                     placeholder="e.g., Premium Software License"
                     className="pl-10"
                     value={formData.name}
@@ -173,7 +173,7 @@ export default function AddProductModal({ isOpen, onClose, onSubmit }: AddProduc
                   />
                 </div>
               </div>
-            </div>
+          </div>
 
             <div className="space-y-2">
               <Label htmlFor="description" className="text-sm font-medium text-[#2C2C2C]">
@@ -228,10 +228,10 @@ export default function AddProductModal({ isOpen, onClose, onSubmit }: AddProduc
                 </Label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="price"
-                    type="number"
-                    step="0.01"
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
                     placeholder="0.00"
                     className="pl-10"
                     value={formData.price}
@@ -394,10 +394,10 @@ export default function AddProductModal({ isOpen, onClose, onSubmit }: AddProduc
 
           {/* Actions */}
           <div className="flex gap-3 pt-4 border-t border-gray-200">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleClose} 
               className="flex-1 border-gray-300 text-[#2C2C2C]"
             >
               <X className="h-4 w-4 mr-2" />

@@ -81,7 +81,7 @@ const MOCK_RECEIPTS: ExpenseReceipt[] = [
     description: 'Client dinner meeting',
     status: 'approved',
     confidence: 0.94,
-    ocrText: 'Blue Moon Restaurant\n123 Main St\nDate: 01/20/2024\nTotal: $45.67',
+    ocrText: 'Blue Moon Restaurant\n123 Main St\nDate: 01/20/2024\nTotal: ₹3,800',
     tags: ['client-meeting', 'dinner'],
     submittedBy: 'John Doe',
     approvedBy: 'Jane Smith',
@@ -97,7 +97,7 @@ const MOCK_RECEIPTS: ExpenseReceipt[] = [
     description: 'Office supplies and stationery',
     status: 'reviewed',
     confidence: 0.87,
-    ocrText: 'Office Depot\n456 Business Ave\nReceipt #12345\nTotal: $127.50',
+    ocrText: 'Office Depot\n456 Business Ave\nReceipt #12345\nTotal: ₹10,600',
     tags: ['office-supplies', 'stationery'],
     submittedBy: 'Mike Johnson',
     notes: 'Monthly office supplies order'
@@ -112,7 +112,7 @@ const MOCK_RECEIPTS: ExpenseReceipt[] = [
     description: 'Flight to client meeting',
     status: 'processing',
     confidence: 0.92,
-    ocrText: 'Delta Airlines\nFlight DL1234\nFrom: NYC To: LAX\nAmount: $450.00',
+    ocrText: 'Delta Airlines\nFlight DL1234\nFrom: NYC To: LAX\nAmount: ₹37,500',
     tags: ['travel', 'flight'],
     submittedBy: 'Sarah Wilson'
   }
@@ -150,13 +150,13 @@ export default function ExpenseManagementPage() {
       id: Date.now().toString(),
       fileName: file.name,
       uploadDate: new Date().toISOString().split('T')[0],
-      amount: Math.random() * 200 + 10, // Random amount between $10-$210
+      amount: Math.random() * 17000 + 850, // Random amount between ₹850-₹18,500
       merchant: 'Detected Merchant',
       category: 'Other',
       description: 'Auto-detected from receipt',
       status: 'processing',
       confidence: 0.75 + Math.random() * 0.2,
-      ocrText: 'OCR processing completed\nMerchant: Detected Merchant\nAmount: $' + (Math.random() * 200 + 10).toFixed(2),
+      ocrText: 'OCR processing completed\nMerchant: Detected Merchant\nAmount: ₹' + (Math.random() * 17000 + 850).toFixed(0),
       tags: [],
       submittedBy: 'Current User'
     };

@@ -202,12 +202,12 @@ export default function MessagesPage() {
             <div className="p-4 md:p-8 space-y-4 md:space-y-6">
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">AI Alerts & Messages</h1>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">AI Alerts & Messages</h1>
                   <p className="text-sm text-[#2C2C2C]/70">
                     Proactive insights from your AI CFO
-                  </p>
-                </div>
+              </p>
+            </div>
                 <div className="flex gap-3">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -245,7 +245,7 @@ export default function MessagesPage() {
                     Live Monitoring
                   </div>
                 </div>
-              </div>
+          </div>
 
               {/* Message Counts */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -430,9 +430,9 @@ export default function MessagesPage() {
                               </Button>
                             </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+              </div>
+            </CardContent>
+          </Card>
                   ))}
                 </div>
               )}

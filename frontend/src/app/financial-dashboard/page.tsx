@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { apiClient, BankAccount } from '@/lib/api';
+import { formatCurrency } from '@/lib/utils';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
 import {
@@ -79,8 +80,8 @@ const COLORS = ['#607c47', '#FFB3BA', '#B7B3E6', '#F6D97A', '#C9E0B0'];
 // Statistics data
 const kpiData = [
   { title: "Runway", value: "8.2 months", icon: Calendar, color: "text-blue-500", bgColor: "bg-blue-50", change: "+0.3 mo" },
-  { title: "Burn Rate", value: "$35,000", icon: TrendingDown, color: "text-red-500", bgColor: "bg-red-50", change: "-8.6%" },
-  { title: "ARR", value: "$542,400", icon: TrendingUp, color: "text-green-500", bgColor: "bg-green-50", change: "+15.2%" },
+  { title: "Burn Rate", value: "₹2.9L", icon: TrendingDown, color: "text-red-500", bgColor: "bg-red-50", change: "-8.6%" },
+  { title: "ARR", value: "₹4.5Cr", icon: TrendingUp, color: "text-green-500", bgColor: "bg-green-50", change: "+15.2%" },
   { title: "Customers", value: "342", icon: Users, color: "text-purple-500", bgColor: "bg-purple-50", change: "+12.5%" },
 ];
 
@@ -313,13 +314,6 @@ export default function FinancialDashboardPage() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedTransactions = sortedTransactions.slice(startIndex, startIndex + itemsPerPage);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(amount);
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -660,7 +654,7 @@ export default function FinancialDashboardPage() {
                           <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={cashFlowData}>
                               <XAxis dataKey="name" stroke="#6b7280" tick={{ fill: '#6b7280', fontSize: 12 }} />
-                              <YAxis stroke="#6b7280" tick={{ fill: '#6b7280', fontSize: 12 }} tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
+                              <YAxis stroke="#6b7280" tick={{ fill: '#6b7280', fontSize: 12 }} tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`} />
                               <Tooltip 
                                 contentStyle={{
                                   backgroundColor: '#ffffff',
@@ -694,7 +688,7 @@ export default function FinancialDashboardPage() {
                           <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={revenueData}>
                               <XAxis dataKey="name" stroke="#6b7280" tick={{ fill: '#6b7280', fontSize: 12 }} />
-                              <YAxis stroke="#6b7280" tick={{ fill: '#6b7280', fontSize: 12 }} tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
+                              <YAxis stroke="#6b7280" tick={{ fill: '#6b7280', fontSize: 12 }} tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`} />
                               <Tooltip 
                                 contentStyle={{
                                   backgroundColor: '#ffffff',

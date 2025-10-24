@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/Badge';
+import { formatCurrency } from '@/lib/utils';
 import { 
   Shield,
   Calculator, 
@@ -108,7 +109,6 @@ interface ExpenseReceipt {
   approvedDate?: string;
 }
 
-const currency = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
 
 const MOCK_CATEGORIES = [
   'SaaS: Subscriptions',
@@ -151,6 +151,8 @@ export default function ComplianceHubPage() {
   const [expenseSearchTerm, setExpenseSearchTerm] = useState('');
   const [expenseStatusFilter, setExpenseStatusFilter] = useState<string>('all');
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState<ExpenseReceipt | null>(null);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
 
   // Initialize mock data
   useEffect(() => {
@@ -265,16 +267,16 @@ export default function ComplianceHubPage() {
     setExpenseReceipts([
       {
         id: '1',
-        fileName: 'receipt_office_supplies_20240120.pdf',
+        fileName: 'invoice_saas_image_generation_20240120.pdf',
         uploadDate: '2024-01-20',
-        amount: 125.50,
-        merchant: 'Office Depot',
-        category: 'Office: Supplies',
-        description: 'Office supplies and stationery',
+        amount: 180.00,
+        merchant: 'Midjourney',
+        category: 'Software: AI Tools',
+        description: 'SAAS for Cloud based Image Generation Platform',
         status: 'approved',
-        confidence: 92,
-        ocrText: 'Office Depot\nReceipt #12345\nTotal: $125.50',
-        tags: ['office', 'supplies'],
+        confidence: 95,
+        ocrText: 'Midjourney\nInvoice #INV-2024-004\nDate: 10/21/2025\nDescription: SAAS for Cloud based Image Generation Platform\nAmount: ₹15,000\nPayment Method: Credit Card',
+        tags: ['software', 'ai-tools', 'midjourney'],
         approver: 'John Smith',
         approvedDate: '2024-01-21'
       },
@@ -288,7 +290,7 @@ export default function ComplianceHubPage() {
         description: 'Business trip flight',
         status: 'reviewed',
         confidence: 88,
-        ocrText: 'Delta Airlines\nFlight DL1234\nTotal: $450.00',
+        ocrText: 'Delta Airlines\nFlight DL1234\nTotal: ₹37,500',
         tags: ['travel', 'flight']
       },
       {
@@ -374,23 +376,93 @@ export default function ComplianceHubPage() {
     if (!files || files.length === 0) return;
 
     setIsUploading(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Simulate OCR processing time
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
-    const newReceipts: ExpenseReceipt[] = Array.from(files).map((file, index) => ({
-      id: Date.now().toString() + index,
-      fileName: file.name,
-      uploadDate: new Date().toISOString().split('T')[0],
-      amount: Math.random() * 500 + 10,
-      merchant: 'Unknown Merchant',
-      category: 'Office: Supplies',
-      description: 'AI processing in progress...',
-      status: 'processing' as const,
-      confidence: 0,
-      tags: []
-    }));
+    const newReceipts: ExpenseReceipt[] = Array.from(files).map((file, index) => {
+      // Generate realistic mock data based on file name or random selection
+      const mockMerchants = [
+        'Microsoft Azure', 'Google Cloud Platform', 'AWS', 'Salesforce', 'Adobe Creative Cloud',
+        'Slack', 'Zoom', 'Dropbox', 'GitHub', 'DigitalOcean', 'Stripe', 'PayPal',
+        'OpenAI', 'Anthropic', 'Midjourney', 'Stability AI', 'Runway ML', 'Canva Pro',
+        'Figma', 'Notion', 'Airtable', 'HubSpot', 'Mailchimp', 'Intercom',
+        'Office Depot', 'Staples', 'Amazon Business', 'Uber', 'Lyft', 'Airbnb', 
+        'Hilton Hotels', 'Marriott', 'Delta Airlines', 'United Airlines',
+        'Starbucks', 'McDonald\'s', 'Subway', 'Chipotle', 'FedEx', 'UPS',
+        'Verizon', 'AT&T'
+      ];
+      
+      const mockCategories = [
+        'Software: Subscriptions', 'Software: AI Tools', 'Software: Cloud Services',
+        'Software: Development Tools', 'Software: Design Tools', 'Software: Analytics',
+        'Office: Supplies', 'Travel: Transportation', 'Travel: Accommodation', 
+        'Meals: Business', 'Meals: Entertainment', 'Marketing: Advertising', 
+        'Professional: Services', 'Utilities: Internet', 'Utilities: Phone', 
+        'Equipment: Hardware', 'Training: Courses', 'Legal: Services', 
+        'Accounting: Services', 'Insurance: Business'
+      ];
+
+      const mockDescriptions = [
+        'SAAS for Cloud based Image Generation Platform', 'AI-powered content creation tools',
+        'Cloud hosting and infrastructure services', 'Software subscription renewal',
+        'AI model access and API usage', 'Design and collaboration platform',
+        'Business intelligence and analytics tools', 'Customer relationship management',
+        'Marketing automation platform', 'Communication and productivity tools',
+        'Office supplies and stationery', 'Business travel expenses', 'Client entertainment',
+        'Marketing campaign costs', 'Professional development', 'Equipment maintenance', 
+        'Conference attendance', 'Team building activity', 'Business meal with client', 
+        'Cloud hosting services', 'Legal consultation', 'Accounting services', 
+        'Insurance premium', 'Training and certification'
+      ];
+
+      const merchant = mockMerchants[Math.floor(Math.random() * mockMerchants.length)];
+      const category = mockCategories[Math.floor(Math.random() * mockCategories.length)];
+      const description = mockDescriptions[Math.floor(Math.random() * mockDescriptions.length)];
+      
+      // Generate realistic amount based on category
+      let amount = 0;
+      if (category.includes('Software') || category.includes('AI Tools')) {
+        amount = Math.random() * 66000 + 4200; // ₹4,200-₹70,200 for software/AI services
+      } else if (category.includes('Travel')) {
+        amount = Math.random() * 83000 + 4200; // ₹4,200-₹87,200
+      } else if (category.includes('Meals')) {
+        amount = Math.random() * 17000 + 850; // ₹850-₹18,500
+      } else if (category.includes('Office')) {
+        amount = Math.random() * 25000 + 1250; // ₹1,250-₹26,250
+      } else {
+        amount = Math.random() * 33000 + 2100; // ₹2,100-₹35,100
+      }
+
+      // Generate realistic OCR text based on merchant type
+      let ocrText = '';
+      if (merchant.includes('AI') || merchant.includes('OpenAI') || merchant.includes('Midjourney')) {
+        ocrText = `${merchant}\nInvoice #${Math.floor(Math.random() * 99999) + 10000}\nDate: ${new Date().toLocaleDateString()}\nDescription: ${description}\nAmount: ₹${amount.toFixed(0)}\nPayment Method: Credit Card`;
+      } else if (merchant.includes('Cloud') || merchant.includes('AWS') || merchant.includes('Azure')) {
+        ocrText = `${merchant}\nService Invoice\nInvoice #${Math.floor(Math.random() * 99999) + 10000}\nBilling Period: ${new Date().toLocaleDateString()}\nService: ${description}\nTotal: ₹${amount.toFixed(0)}`;
+      } else {
+        ocrText = `${merchant}\nReceipt #${Math.floor(Math.random() * 99999) + 10000}\nDate: ${new Date().toLocaleDateString()}\nTotal: ₹${amount.toFixed(0)}\n${description}`;
+      }
+
+      return {
+        id: Date.now().toString() + index,
+        fileName: file.name,
+        uploadDate: new Date().toISOString().split('T')[0],
+        amount: Math.round(amount * 100) / 100, // Round to 2 decimal places
+        merchant,
+        category,
+        description,
+        status: 'reviewed' as const, // Start as reviewed for better UX
+        confidence: Math.floor(Math.random() * 20) + 80, // 80-99% confidence
+        ocrText,
+        tags: [category.split(':')[0].toLowerCase(), merchant.toLowerCase().replace(/\s+/g, '-')],
+        approver: undefined,
+        approvedDate: undefined
+      };
+    });
 
     setExpenseReceipts(prev => [...newReceipts, ...prev]);
-    toast.success(`${files.length} receipt(s) uploaded successfully!`);
+    toast.success(`${files.length} receipt(s) processed successfully! AI extracted data with high confidence.`);
     setIsUploading(false);
   };
 
@@ -408,6 +480,11 @@ export default function ComplianceHubPage() {
       receipt.id === id ? { ...receipt, status: 'rejected' as const } : receipt
     ));
     toast.success('Expense rejected');
+  };
+
+  const viewReceiptDetails = (receipt: ExpenseReceipt) => {
+    setSelectedReceipt(receipt);
+    setShowReceiptModal(true);
   };
 
   // Filtered data
@@ -794,7 +871,7 @@ export default function ComplianceHubPage() {
                           <div>
                             <div className="text-sm text-green-700">Inflow</div>
                             <div className="text-lg font-bold text-green-900">
-                              {currency(filteredTxns.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0))}
+                              {formatCurrency(filteredTxns.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0))}
                             </div>
                           </div>
                         </div>
@@ -810,7 +887,7 @@ export default function ComplianceHubPage() {
                           <div>
                             <div className="text-sm text-red-700">Outflow</div>
                             <div className="text-lg font-bold text-red-900">
-                              {currency(Math.abs(filteredTxns.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0)))}
+                              {formatCurrency(Math.abs(filteredTxns.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0)))}
                             </div>
                           </div>
                         </div>
@@ -937,7 +1014,7 @@ export default function ComplianceHubPage() {
                                 <TableCell className={`font-semibold ${
                                   txn.amount > 0 ? 'text-green-600' : 'text-red-600'
                                 }`}>
-                                  {txn.amount > 0 ? '+' : ''}{currency(txn.amount)}
+                                  {txn.amount > 0 ? '+' : ''}{formatCurrency(txn.amount)}
                                 </TableCell>
                                 <TableCell className="text-[#2C2C2C]">
                                   {txn.account}
@@ -1007,7 +1084,7 @@ export default function ComplianceHubPage() {
                           <div>
                             <div className="text-sm text-blue-700">Total Expenses</div>
                             <div className="text-lg font-bold text-blue-900">
-                              {currency(filteredReceipts.reduce((sum, r) => sum + r.amount, 0))}
+                              {formatCurrency(filteredReceipts.reduce((sum, r) => sum + r.amount, 0))}
                             </div>
                           </div>
                         </div>
@@ -1181,7 +1258,7 @@ export default function ComplianceHubPage() {
                                   </div>
                                 </TableCell>
                                 <TableCell className="font-semibold text-[#2C2C2C]">
-                                  {currency(receipt.amount)}
+                                  {formatCurrency(receipt.amount)}
                                 </TableCell>
                                 <TableCell className="text-[#2C2C2C]">
                                   {receipt.merchant}
@@ -1209,7 +1286,12 @@ export default function ComplianceHubPage() {
                                 </TableCell>
                                 <TableCell>
                                   <div className="flex gap-1">
-                                    <Button variant="outline" size="sm" className="border-gray-300 text-[#2C2C2C]">
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="border-gray-300 text-[#2C2C2C]"
+                                      onClick={() => viewReceiptDetails(receipt)}
+                                    >
                                       <Eye className="h-4 w-4" />
                                     </Button>
                                     {receipt.status === 'reviewed' && (
@@ -1246,6 +1328,152 @@ export default function ComplianceHubPage() {
             </div>
           </div>
         </div>
+
+        {/* Receipt Details Modal */}
+        {showReceiptModal && selectedReceipt && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl p-6 max-w-4xl w-[90vw] max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-[#2C2C2C]">Receipt Details</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowReceiptModal(false)}
+                  className="border-gray-300 text-[#2C2C2C]"
+                >
+                  <XCircle className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left Column - Receipt Info */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">File Name</label>
+                    <div className="p-2 bg-gray-50 rounded text-sm text-gray-900">{selectedReceipt.fileName}</div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Merchant</label>
+                    <div className="p-2 bg-gray-50 rounded text-sm text-gray-900">{selectedReceipt.merchant}</div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Amount</label>
+                    <div className="p-2 bg-gray-50 rounded text-sm font-semibold text-gray-900">{formatCurrency(selectedReceipt.amount)}</div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Category</label>
+                    <div className="p-2 bg-gray-50 rounded text-sm text-gray-900">{selectedReceipt.category}</div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Description</label>
+                    <div className="p-2 bg-gray-50 rounded text-sm text-gray-900">{selectedReceipt.description}</div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Upload Date</label>
+                    <div className="p-2 bg-gray-50 rounded text-sm text-gray-900">{selectedReceipt.uploadDate}</div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Status</label>
+                    <div className="p-2">
+                      <Badge className={getStatusColor(selectedReceipt.status)} style={{ color: '#1f2937' }}>
+                        {selectedReceipt.status}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">AI Confidence</label>
+                    <div className="p-2">
+                      <Badge className={
+                        selectedReceipt.confidence >= 90 ? 'bg-green-100 text-green-800' :
+                        selectedReceipt.confidence >= 70 ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      } style={{ color: '#1f2937' }}>
+                        {selectedReceipt.confidence}%
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column - OCR Text */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">OCR Extracted Text</label>
+                    <div className="p-3 bg-gray-50 rounded text-sm font-mono whitespace-pre-wrap max-h-60 overflow-y-auto text-gray-900">
+                      {selectedReceipt.ocrText}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Tags</label>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedReceipt.tags.map((tag, index) => (
+                        <Badge key={index} variant="outline" className="text-xs text-gray-900 border-gray-300">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {selectedReceipt.approver && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Approved By</label>
+                      <div className="p-2 bg-gray-50 rounded text-sm text-gray-900">{selectedReceipt.approver}</div>
+                    </div>
+                  )}
+                  
+                  {selectedReceipt.approvedDate && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Approved Date</label>
+                      <div className="p-2 bg-gray-50 rounded text-sm text-gray-900">{selectedReceipt.approvedDate}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-2 mt-6">
+                {selectedReceipt.status === 'reviewed' && (
+                  <>
+                    <Button
+                      onClick={() => {
+                        approveExpense(selectedReceipt.id);
+                        setShowReceiptModal(false);
+                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Approve
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        rejectExpense(selectedReceipt.id);
+                        setShowReceiptModal(false);
+                      }}
+                      className="border-red-300 text-red-600 hover:bg-red-50"
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Reject
+                    </Button>
+                  </>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={() => setShowReceiptModal(false)}
+                  className="border-gray-300 text-[#2C2C2C]"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </MainLayout>
     </AuthGuard>
   );

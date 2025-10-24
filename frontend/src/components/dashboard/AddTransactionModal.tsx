@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { formatCurrency } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -133,9 +134,9 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, accoun
   const formatCurrency = (value: string) => {
     const number = parseFloat(value);
     if (isNaN(number)) return '';
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       minimumFractionDigits: 2,
     }).format(number);
   };

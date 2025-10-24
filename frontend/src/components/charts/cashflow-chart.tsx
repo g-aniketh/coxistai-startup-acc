@@ -96,7 +96,7 @@ export default function CashflowChart({ data }: CashflowChartProps) {
           <YAxis 
             tick={{ fill: '#9ca3af', fontSize: 12 }}
             stroke="#4b5563"
-            tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+            tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
           />
           <Tooltip
             contentStyle={{

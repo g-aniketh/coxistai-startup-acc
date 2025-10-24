@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { formatCurrency } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -45,7 +46,7 @@ export default function RecordSaleModal({ isOpen, onClose, onSubmit, products, a
     unitPrice: '',
     customerName: '',
     customerEmail: '',
-    accountId: '',
+      accountId: '',
     date: new Date().toISOString().split('T')[0],
     notes: ''
   });
@@ -105,13 +106,6 @@ export default function RecordSaleModal({ isOpen, onClose, onSubmit, products, a
     onClose();
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(amount);
-  };
 
   const calculateTotal = () => {
     const quantity = parseInt(formData.quantity) || 0;
@@ -124,14 +118,12 @@ export default function RecordSaleModal({ isOpen, onClose, onSubmit, products, a
     
     const requestedQuantity = parseInt(formData.quantity) || 0;
     const availableStock = selectedProduct.quantity;
-    const minStockLevel = selectedProduct.minStockLevel || 0;
-    
     if (requestedQuantity > availableStock) {
       return { type: 'error', message: 'Insufficient stock' };
     }
     
-    if (availableStock - requestedQuantity <= minStockLevel) {
-      return { type: 'warning', message: 'Stock will be below minimum level' };
+    if (availableStock < 10) {
+      return { type: 'warning', message: 'Low stock' };
     }
     
     return { type: 'success', message: 'Stock available' };
@@ -201,7 +193,7 @@ export default function RecordSaleModal({ isOpen, onClose, onSubmit, products, a
                       <div className="text-blue-700"><strong>Name:</strong> {selectedProduct.name}</div>
                       <div className="text-blue-700"><strong>Category:</strong> {selectedProduct.category}</div>
                     </div>
-                    <div>
+          <div>
                       <div className="text-blue-700"><strong>Available Stock:</strong> {selectedProduct.quantity}</div>
                       <div className="text-blue-700"><strong>Price:</strong> {formatCurrency(selectedProduct.price)}</div>
                     </div>
@@ -243,9 +235,9 @@ export default function RecordSaleModal({ isOpen, onClose, onSubmit, products, a
                 </Label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
+            <Input
                     id="unitPrice"
-                    type="number"
+              type="number"
                     step="0.01"
                     placeholder={selectedProduct?.price.toString() || "0.00"}
                     className="pl-10"
@@ -254,7 +246,7 @@ export default function RecordSaleModal({ isOpen, onClose, onSubmit, products, a
                   />
                 </div>
                 <div className="text-xs text-gray-600">
-                  Default: {selectedProduct ? formatCurrency(selectedProduct.price) : '$0.00'}
+                  Default: {selectedProduct ? formatCurrency(selectedProduct.price) : '₹0.00'}
                 </div>
               </div>
             </div>
@@ -353,12 +345,12 @@ export default function RecordSaleModal({ isOpen, onClose, onSubmit, products, a
                   Payment Account *
                 </Label>
                 <Select value={formData.accountId} onValueChange={(value) => setFormData({ ...formData, accountId: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select account" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {accounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select account" />
+              </SelectTrigger>
+              <SelectContent>
+                {accounts.map((account) => (
+                  <SelectItem key={account.id} value={account.id}>
                         <div className="flex items-center gap-2">
                           <Building2 className="h-4 w-4 text-gray-500" />
                           <div>
@@ -368,10 +360,10 @@ export default function RecordSaleModal({ isOpen, onClose, onSubmit, products, a
                             </div>
                           </div>
                         </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
               </div>
 
               <div className="space-y-2">

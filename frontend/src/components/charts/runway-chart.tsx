@@ -104,7 +104,7 @@ export default function RunwayChart({ currentBalance, monthlyBurn, runwayMonths 
             <YAxis 
               tick={{ fill: '#6b7280', fontSize: 12 }}
               stroke="#d1d5db"
-              tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+              tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
             />
             <Tooltip
               contentStyle={{
