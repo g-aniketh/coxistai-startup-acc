@@ -42,17 +42,18 @@ router.post('/calculate', async (req: Request, res: Response) => {
  * @desc    Get latest metrics
  * @access  Private
  */
-router.get('/latest', async (req: Request, res: Response) => {
+router.get('/latest', async (req: Request, res: Response): Promise<void> => {
   try {
     const tenantId = (req as any).user.tenantId;
 
     const metrics = await AnalyticsService.getLatestMetrics(tenantId);
 
     if (!metrics) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: 'No metrics available. Please calculate metrics first.',
       });
+      return;
     }
 
     res.json({

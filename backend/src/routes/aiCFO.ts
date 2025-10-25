@@ -39,16 +39,17 @@ router.post('/forecast', async (req: Request, res: Response) => {
  * @desc    Run "What If" scenario analysis
  * @access  Private
  */
-router.post('/scenario', async (req: Request, res: Response) => {
+router.post('/scenario', async (req: Request, res: Response): Promise<void> => {
   try {
     const tenantId = (req as any).user.tenantId;
     const { name, inputs } = req.body;
 
     if (!name || !inputs) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Scenario name and inputs are required',
       });
+      return;
     }
 
     const result = await AICFOService.runScenario(tenantId, name, inputs);
@@ -120,16 +121,17 @@ router.get('/insights', async (req: Request, res: Response) => {
  * @desc    Generate investor update
  * @access  Private
  */
-router.post('/investor-update', async (req: Request, res: Response) => {
+router.post('/investor-update', async (req: Request, res: Response): Promise<void> => {
   try {
     const tenantId = (req as any).user.tenantId;
     const { periodStart, periodEnd } = req.body;
 
     if (!periodStart || !periodEnd) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Period start and end dates are required',
       });
+      return;
     }
 
     const update = await AICFOService.generateInvestorUpdate(

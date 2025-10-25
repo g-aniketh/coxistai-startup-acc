@@ -10,7 +10,7 @@ router.post('/signup', signupController);
 router.post('/login', loginController);
 
 // Protected routes - require authentication
-router.get('/me', authenticateToken, async (req: Request, res: Response) => {
+router.get('/me', authenticateToken, async (req: Request, res: Response): Promise<void> => {
   try {
     // Fetch complete user data from database
     const user = await prisma.user.findUnique({
@@ -35,10 +35,11 @@ router.get('/me', authenticateToken, async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         error: 'User not found'
       });
+      return;
     }
 
     // Return complete user data

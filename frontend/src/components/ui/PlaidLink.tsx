@@ -20,7 +20,7 @@ export default function PlaidLink({ onSuccess, onError, variant = 'button' }: Pl
     try {
       const response = await apiClient.accounts.plaid.createLinkToken();
       if (response.success && response.data) {
-        localStorage.setItem('plaid_link_token', response.data.linkToken);
+        localStorage.setItem('plaid_link_token', response.data.link_token);
         open();
       } else {
         onError(response.error || 'Could not create Plaid Link token.');

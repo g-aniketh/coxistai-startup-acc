@@ -39,16 +39,17 @@ router.post('/connect', async (req: Request, res: Response) => {
  * @desc    Sync all Stripe data
  * @access  Private
  */
-router.post('/sync', async (req: Request, res: Response) => {
+router.post('/sync', async (req: Request, res: Response): Promise<void> => {
   try {
     const tenantId = (req as any).user.tenantId;
 
     const account = await StripeService.getAccountForTenant(tenantId);
     if (!account) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: 'No Stripe account connected',
       });
+      return;
     }
 
     // Start sync in background
@@ -74,17 +75,18 @@ router.post('/sync', async (req: Request, res: Response) => {
  * @desc    Get connected Stripe account
  * @access  Private
  */
-router.get('/account', async (req: Request, res: Response) => {
+router.get('/account', async (req: Request, res: Response): Promise<void> => {
   try {
     const tenantId = (req as any).user.tenantId;
 
     const account = await StripeService.getAccountForTenant(tenantId);
 
     if (!account) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: 'No Stripe account connected',
       });
+      return;
     }
 
     // Remove sensitive data
@@ -118,16 +120,17 @@ router.get('/account', async (req: Request, res: Response) => {
  * @desc    Disconnect Stripe account
  * @access  Private
  */
-router.delete('/disconnect', async (req: Request, res: Response) => {
+router.delete('/disconnect', async (req: Request, res: Response): Promise<void> => {
   try {
     const tenantId = (req as any).user.tenantId;
 
     const account = await StripeService.getAccountForTenant(tenantId);
     if (!account) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: 'No Stripe account connected',
       });
+      return;
     }
 
     await StripeService.disconnectAccount(account.id);

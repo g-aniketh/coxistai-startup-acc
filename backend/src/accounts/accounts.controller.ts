@@ -2,23 +2,25 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import * as accountsService from './accounts.service';
 
-export const createAccountController = async (req: AuthRequest, res: Response) => {
+export const createAccountController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
     const { accountName, balance } = req.body;
 
     if (!accountName) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Account name is required'
       });
+      return;
     }
 
     if (balance !== undefined && (typeof balance !== 'number' || balance < 0)) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Balance must be a non-negative number'
       });
+      return;
     }
 
     const account = await accountsService.createAccount(startupId, {
@@ -42,9 +44,9 @@ export const createAccountController = async (req: AuthRequest, res: Response) =
   }
 };
 
-export const getAccountsController = async (req: AuthRequest, res: Response) => {
+export const getAccountsController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
 
     const accounts = await accountsService.getAccounts(startupId);
 
@@ -63,9 +65,9 @@ export const getAccountsController = async (req: AuthRequest, res: Response) => 
   }
 };
 
-export const getAccountByIdController = async (req: AuthRequest, res: Response) => {
+export const getAccountByIdController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
     const { accountId } = req.params;
 
     const account = await accountsService.getAccountById(startupId, accountId);
@@ -85,9 +87,9 @@ export const getAccountByIdController = async (req: AuthRequest, res: Response) 
   }
 };
 
-export const updateAccountController = async (req: AuthRequest, res: Response) => {
+export const updateAccountController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
     const { accountId } = req.params;
     const { accountName, balance } = req.body;
 
@@ -95,10 +97,11 @@ export const updateAccountController = async (req: AuthRequest, res: Response) =
     if (accountName !== undefined) updateData.accountName = accountName;
     if (balance !== undefined) {
       if (typeof balance !== 'number' || balance < 0) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: 'Balance must be a non-negative number'
         });
+        return;
       }
       updateData.balance = balance;
     }
@@ -121,9 +124,9 @@ export const updateAccountController = async (req: AuthRequest, res: Response) =
   }
 };
 
-export const deleteAccountController = async (req: AuthRequest, res: Response) => {
+export const deleteAccountController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
     const { accountId } = req.params;
 
     await accountsService.deleteAccount(startupId, accountId);

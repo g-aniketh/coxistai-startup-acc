@@ -65,7 +65,7 @@ export default function CFODashboardPage() {
     try {
       setLoading(true);
       setError(null);
-      const response = await apiClient.dashboard.dashboard(period);
+      const response = await apiClient.dashboard.dashboard(period.toString());
       if (response.success && response.data) {
         setDashboardData(response.data);
       } else if (response.error?.includes('No Plaid items found')) {

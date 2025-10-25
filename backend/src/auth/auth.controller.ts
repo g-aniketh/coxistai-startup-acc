@@ -1,33 +1,36 @@
 import { Request, Response } from 'express';
 import * as authService from './auth.service';
 
-export const signupController = async (req: Request, res: Response) => {
+export const signupController = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password, startupName, firstName, lastName } = req.body;
 
     // Validate required fields
     if (!email || !password || !startupName) {
-      return res.status(400).json({ 
+      res.status(400).json({ 
         success: false,
         message: 'Email, password, and startup name are required' 
       });
+      return;
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ 
+      res.status(400).json({ 
         success: false,
         message: 'Invalid email format' 
       });
+      return;
     }
 
     // Validate password strength
     if (password.length < 8) {
-      return res.status(400).json({ 
+      res.status(400).json({ 
         success: false,
         message: 'Password must be at least 8 characters long' 
       });
+      return;
     }
 
     const { token, user } = await authService.signup({
@@ -52,10 +55,11 @@ export const signupController = async (req: Request, res: Response) => {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     
     if (errorMessage.includes('already exists')) {
-      return res.status(409).json({ 
+      res.status(409).json({ 
         success: false,
         message: errorMessage 
       });
+      return;
     }
 
     res.status(400).json({ 
@@ -65,16 +69,17 @@ export const signupController = async (req: Request, res: Response) => {
   }
 };
 
-export const loginController = async (req: Request, res: Response) => {
+export const loginController = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
 
     // Validate required fields
     if (!email || !password) {
-      return res.status(400).json({ 
+      res.status(400).json({ 
         success: false,
         message: 'Email and password are required' 
       });
+      return;
     }
 
     const { token, user } = await authService.login({ email, password });
@@ -99,7 +104,7 @@ export const loginController = async (req: Request, res: Response) => {
   }
 };
 
-export const createTeamMemberController = async (req: Request, res: Response) => {
+export const createTeamMemberController = async (req: Request, res: Response): Promise<void> => {
   try {
     // @ts-ignore - user is added by authenticateToken middleware
     const adminUserId = req.user?.userId;
@@ -107,29 +112,32 @@ export const createTeamMemberController = async (req: Request, res: Response) =>
     const startupId = req.user?.startupId;
 
     if (!adminUserId || !startupId) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         message: 'Unauthorized'
       });
+      return;
     }
 
     const { email, password, firstName, lastName, roleName } = req.body;
 
     // Validate required fields
     if (!email || !password || !roleName) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Email, password, and role are required'
       });
+      return;
     }
 
     // Validate role
     const validRoles = ['Accountant', 'CTO', 'Sales Lead', 'Operations Manager'];
     if (!validRoles.includes(roleName)) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: `Invalid role. Must be one of: ${validRoles.join(', ')}`
       });
+      return;
     }
 
     const newUser = await authService.createTeamMember(
@@ -149,17 +157,19 @@ export const createTeamMemberController = async (req: Request, res: Response) =>
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     
     if (errorMessage.includes('Unauthorized') || errorMessage.includes('permission')) {
-      return res.status(403).json({
+      res.status(403).json({
         success: false,
         message: errorMessage
       });
+      return;
     }
 
     if (errorMessage.includes('already exists')) {
-      return res.status(409).json({
+      res.status(409).json({
         success: false,
         message: errorMessage
       });
+      return;
     }
 
     res.status(400).json({

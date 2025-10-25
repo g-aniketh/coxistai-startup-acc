@@ -12,7 +12,7 @@ import {
   Bell, 
   Search,
   Filter,
-  MarkAsRead,
+  CheckCircle2,
   Archive,
   Trash2,
   RefreshCw,
@@ -125,7 +125,7 @@ export default function MessagesPage() {
   const warningCount = messages.filter(m => m.type === 'warning').length;
   const infoCount = messages.filter(m => m.type === 'info').length;
 
-  const handleMarkAsRead = (id: string) => {
+  const handleCheckCircle2 = (id: string) => {
     setMessages(prev => prev.map(msg => 
       msg.id === id ? { ...msg, isRead: true } : msg
     ));
@@ -404,7 +404,7 @@ export default function MessagesPage() {
                             <div className="flex gap-1">
                               {!message.isRead && (
                                 <Button
-                                  onClick={() => handleMarkAsRead(message.id)}
+                                  onClick={() => handleCheckCircle2(message.id)}
                                   variant="outline"
                                   size="sm"
                                   className="border-gray-300 text-[#2C2C2C]"

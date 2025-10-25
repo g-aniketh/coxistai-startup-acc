@@ -407,7 +407,7 @@ cfoRoutes.get('/categories', async (req: AuthenticatedRequest, res: Response<Api
     }
 
     // TODO: Implement transaction categories
-    const categories = []; // await prisma.transactionCategory.findMany(...);
+    const categories: any[] = []; // await prisma.transactionCategory.findMany(...);
 
     return res.json({
       success: true,

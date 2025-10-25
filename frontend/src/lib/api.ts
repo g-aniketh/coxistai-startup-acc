@@ -84,6 +84,7 @@ export interface Product {
   cost?: number;
   sku?: string;
   reorderLevel?: number;
+  minStockLevel?: number;
   maxStock?: number;
   supplier?: string;
   lastRestocked?: string;
@@ -146,7 +147,35 @@ export interface DashboardSummary {
     unitsSold30Days: number;
     salesCount: number;
   };
-  accounts: number;
+  accounts: {
+    count: number;
+    breakdown: Array<{
+      id: string;
+      name: string;
+      balance: number;
+      institution?: string;
+      mask?: string;
+    }>;
+  };
+  balance: {
+    total: number;
+  };
+  cashFlow: {
+    netCashFlow: number;
+    burnRate: number;
+    runway: number;
+    dailyBreakdown: Array<{
+      date: string;
+      value: number;
+    }>;
+  };
+  categories: {
+    breakdown: Array<{
+      name: string;
+      amount: number;
+      percentage: number;
+    }>;
+  };
 }
 
 export interface CashflowChartData {
@@ -312,6 +341,54 @@ export const apiClient = {
       });
       return response.data;
     },
+
+    // Additional dashboard methods
+    dashboard: async (period: string): Promise<ApiResponse<any>> => {
+      const response = await api.get('/dashboard', { params: { period } });
+      return response.data;
+    },
+
+    getScenarios: async (): Promise<ApiResponse<any[]>> => {
+      const response = await api.get('/ai-cfo/scenarios');
+      return response.data;
+    },
+
+    forecast: async (months: number): Promise<ApiResponse<any>> => {
+      const response = await api.post('/ai-cfo/forecast', { months });
+      return response.data;
+    },
+
+    runScenario: async (name: string, inputs: any): Promise<ApiResponse<any>> => {
+      const response = await api.post('/ai-cfo/scenario', { name, inputs });
+      return response.data;
+    },
+
+    latest: async (): Promise<ApiResponse<any>> => {
+      const response = await api.get('/analytics/latest');
+      return response.data;
+    },
+
+    history: async (months: number): Promise<ApiResponse<any>> => {
+      const response = await api.get('/analytics/history', { params: { months } });
+      return response.data;
+    },
+
+    calculate: async (): Promise<ApiResponse<any>> => {
+      const response = await api.post('/analytics/calculate');
+      return response.data;
+    },
+
+    plaid: {
+      exchangePublicToken: async (publicToken: string): Promise<ApiResponse<any>> => {
+        const response = await api.post('/plaid/exchange-token', { public_token: publicToken });
+        return response.data;
+      },
+
+      syncTransactions: async (itemId: string): Promise<ApiResponse<any>> => {
+        const response = await api.post('/plaid/sync', { item_id: itemId });
+        return response.data;
+      },
+    },
   },
 
   // ============================================================================
@@ -414,6 +491,23 @@ export const apiClient = {
       const response = await api.delete(`/accounts/${id}`);
       return response.data;
     },
+
+    plaid: {
+      createLinkToken: async (): Promise<ApiResponse<{ link_token: string }>> => {
+        const response = await api.post('/plaid/link-token');
+        return response.data;
+      },
+
+      exchangePublicToken: async (publicToken: string): Promise<ApiResponse<any>> => {
+        const response = await api.post('/plaid/exchange-token', { public_token: publicToken });
+        return response.data;
+      },
+
+      syncTransactions: async (itemId: string): Promise<ApiResponse<any>> => {
+        const response = await api.post('/plaid/sync', { item_id: itemId });
+        return response.data;
+      },
+    },
   },
 
   // ============================================================================
@@ -498,6 +592,32 @@ export const apiClient = {
       };
     }>> => {
       const response = await api.post('/ai/investor-update', { periodStart, periodEnd });
+      return response.data;
+    },
+  },
+
+  // ============================================================================
+  // STRIPE
+  // ============================================================================
+  
+  stripe: {
+    sync: async (): Promise<ApiResponse<any>> => {
+      const response = await api.post('/stripe/sync');
+      return response.data;
+    },
+
+    connect: async (apiKey: string): Promise<ApiResponse<any>> => {
+      const response = await api.post('/stripe/connect', { apiKey });
+      return response.data;
+    },
+
+    getAccount: async (): Promise<ApiResponse<any>> => {
+      const response = await api.get('/stripe/account');
+      return response.data;
+    },
+
+    disconnect: async (): Promise<ApiResponse<any>> => {
+      const response = await api.delete('/stripe/disconnect');
       return response.data;
     },
   },

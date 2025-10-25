@@ -161,7 +161,7 @@ plaidRoutes.post('/webhook', async (req: Request, res: Response) => {
         const plaidItem = null;
 
         if (plaidItem) {
-          await PlaidService.syncTransactions(plaidItem.id);
+          await PlaidService.syncTransactions((plaidItem as any).id);
           console.log(`Synced transactions for item: ${item_id}`);
         }
         break;

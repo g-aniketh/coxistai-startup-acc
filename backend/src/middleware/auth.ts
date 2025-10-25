@@ -29,14 +29,14 @@ declare global {
 
 // Type alias for authenticated requests
 export interface AuthRequest extends Request {
-  user: {
+  user?: {
     userId: string;
     startupId: string;
     roles: string[];
     permissions: string[];
     email: string;
   };
-  startup: {
+  startup?: {
     id: string;
     name: string;
   };

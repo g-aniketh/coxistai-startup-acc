@@ -3,31 +3,34 @@ import { AuthRequest } from '../middleware/auth';
 import * as transactionService from './transactions.service';
 import { TransactionType } from '@prisma/client';
 
-export const createTransactionController = async (req: AuthRequest, res: Response) => {
+export const createTransactionController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
     const { amount, type, description, accountId } = req.body;
 
     // Validation
     if (!amount || !type || !description || !accountId) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Amount, type, description, and accountId are required'
       });
+      return;
     }
 
     if (typeof amount !== 'number' || amount <= 0) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Amount must be a positive number'
       });
+      return;
     }
 
     if (!['CREDIT', 'DEBIT'].includes(type)) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Type must be either CREDIT or DEBIT'
       });
+      return;
     }
 
     const transaction = await transactionService.createTransaction(startupId, {
@@ -53,9 +56,9 @@ export const createTransactionController = async (req: AuthRequest, res: Respons
   }
 };
 
-export const getTransactionsController = async (req: AuthRequest, res: Response) => {
+export const getTransactionsController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
     const { 
       accountId, 
       type, 
@@ -113,9 +116,9 @@ export const getTransactionsController = async (req: AuthRequest, res: Response)
   }
 };
 
-export const getTransactionByIdController = async (req: AuthRequest, res: Response) => {
+export const getTransactionByIdController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
     const { transactionId } = req.params;
 
     const transaction = await transactionService.getTransactionById(startupId, transactionId);
@@ -135,9 +138,9 @@ export const getTransactionByIdController = async (req: AuthRequest, res: Respon
   }
 };
 
-export const deleteTransactionController = async (req: AuthRequest, res: Response) => {
+export const deleteTransactionController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
     const { transactionId } = req.params;
 
     await transactionService.deleteTransaction(startupId, transactionId);

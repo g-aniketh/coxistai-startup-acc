@@ -2,31 +2,34 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import * as inventoryService from './inventory.service';
 
-export const createProductController = async (req: AuthRequest, res: Response) => {
+export const createProductController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
     const { name, quantity, price } = req.body;
 
     // Validation
     if (!name || quantity === undefined || price === undefined) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Name, quantity, and price are required'
       });
+      return;
     }
 
     if (typeof quantity !== 'number' || quantity < 0) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Quantity must be a non-negative number'
       });
+      return;
     }
 
     if (typeof price !== 'number' || price <= 0) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Price must be a positive number'
       });
+      return;
     }
 
     const product = await inventoryService.createProduct(startupId, {
@@ -51,9 +54,9 @@ export const createProductController = async (req: AuthRequest, res: Response) =
   }
 };
 
-export const getProductsController = async (req: AuthRequest, res: Response) => {
+export const getProductsController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
 
     const products = await inventoryService.getProducts(startupId);
 
@@ -72,9 +75,9 @@ export const getProductsController = async (req: AuthRequest, res: Response) => 
   }
 };
 
-export const getProductByIdController = async (req: AuthRequest, res: Response) => {
+export const getProductByIdController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
     const { productId } = req.params;
 
     const product = await inventoryService.getProductById(startupId, productId);
@@ -94,9 +97,9 @@ export const getProductByIdController = async (req: AuthRequest, res: Response) 
   }
 };
 
-export const updateProductController = async (req: AuthRequest, res: Response) => {
+export const updateProductController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
     const { productId } = req.params;
     const { name, quantity, price } = req.body;
 
@@ -104,19 +107,21 @@ export const updateProductController = async (req: AuthRequest, res: Response) =
     if (name !== undefined) updateData.name = name;
     if (quantity !== undefined) {
       if (typeof quantity !== 'number' || quantity < 0) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: 'Quantity must be a non-negative number'
         });
+        return;
       }
       updateData.quantity = quantity;
     }
     if (price !== undefined) {
       if (typeof price !== 'number' || price <= 0) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: 'Price must be a positive number'
         });
+        return;
       }
       updateData.price = price;
     }
@@ -139,9 +144,9 @@ export const updateProductController = async (req: AuthRequest, res: Response) =
   }
 };
 
-export const deleteProductController = async (req: AuthRequest, res: Response) => {
+export const deleteProductController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
     const { productId } = req.params;
 
     await inventoryService.deleteProduct(startupId, productId);
@@ -161,24 +166,26 @@ export const deleteProductController = async (req: AuthRequest, res: Response) =
   }
 };
 
-export const simulateSaleController = async (req: AuthRequest, res: Response) => {
+export const simulateSaleController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
     const { productId, quantitySold, accountId } = req.body;
 
     // Validation
     if (!productId || !quantitySold || !accountId) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'ProductId, quantitySold, and accountId are required'
       });
+      return;
     }
 
     if (typeof quantitySold !== 'number' || quantitySold <= 0) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'QuantitySold must be a positive number'
       });
+      return;
     }
 
     const result = await inventoryService.simulateSale(startupId, {
@@ -203,9 +210,9 @@ export const simulateSaleController = async (req: AuthRequest, res: Response) =>
   }
 };
 
-export const getSalesController = async (req: AuthRequest, res: Response) => {
+export const getSalesController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
     const { limit } = req.query;
 
     const limitParam = limit ? parseInt(limit as string, 10) : undefined;

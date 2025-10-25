@@ -2,9 +2,9 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import * as dashboardService from './dashboard.service';
 
-export const getDashboardSummaryController = async (req: AuthRequest, res: Response) => {
+export const getDashboardSummaryController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
 
     const summary = await dashboardService.getDashboardSummary(startupId);
 
@@ -23,9 +23,9 @@ export const getDashboardSummaryController = async (req: AuthRequest, res: Respo
   }
 };
 
-export const getCashflowChartController = async (req: AuthRequest, res: Response) => {
+export const getCashflowChartController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
     const { months } = req.query;
 
     const monthsParam = months ? parseInt(months as string, 10) : 6;
@@ -47,9 +47,9 @@ export const getCashflowChartController = async (req: AuthRequest, res: Response
   }
 };
 
-export const getRecentActivityController = async (req: AuthRequest, res: Response) => {
+export const getRecentActivityController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
     const { limit } = req.query;
 
     const limitParam = limit ? parseInt(limit as string, 10) : 10;

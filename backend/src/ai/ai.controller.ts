@@ -2,9 +2,9 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import * as aiService from './ai.service';
 
-export const getFinancialInsightsController = async (req: AuthRequest, res: Response) => {
+export const getFinancialInsightsController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
 
     const insights = await aiService.getFinancialInsights(startupId);
 
@@ -24,23 +24,25 @@ export const getFinancialInsightsController = async (req: AuthRequest, res: Resp
   }
 };
 
-export const runWhatIfScenarioController = async (req: AuthRequest, res: Response) => {
+export const runWhatIfScenarioController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
     const { scenario } = req.body;
 
     if (!scenario || typeof scenario !== 'string') {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Scenario description is required'
       });
+      return;
     }
 
     if (scenario.length < 10) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Scenario description must be at least 10 characters'
       });
+      return;
     }
 
     const result = await aiService.runWhatIfScenario(startupId, scenario);
@@ -61,33 +63,36 @@ export const runWhatIfScenarioController = async (req: AuthRequest, res: Respons
   }
 };
 
-export const generateInvestorUpdateController = async (req: AuthRequest, res: Response) => {
+export const generateInvestorUpdateController = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { startupId } = req.user;
+    const { startupId } = req.user!;
     const { periodStart, periodEnd } = req.body;
 
     if (!periodStart || !periodEnd) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'periodStart and periodEnd are required'
       });
+      return;
     }
 
     const startDate = new Date(periodStart);
     const endDate = new Date(periodEnd);
 
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Invalid date format'
       });
+      return;
     }
 
     if (startDate >= endDate) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'periodStart must be before periodEnd'
       });
+      return;
     }
 
     const update = await aiService.generateInvestorUpdate(startupId, startDate, endDate);

@@ -69,7 +69,7 @@ export default function EditProductModal({ isOpen, onClose, onSubmit, product }:
       setFormData({
         name: product.name,
         description: product.description || '',
-        category: product.category,
+        category: product.category || '',
         price: product.price.toString(),
         quantity: product.quantity.toString(),
         minStockLevel: (product.minStockLevel || 0).toString(),
