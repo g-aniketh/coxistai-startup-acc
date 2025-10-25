@@ -1,5 +1,5 @@
-# Use Node.js 18 Alpine for smaller image size
-FROM node:18-alpine
+# Use Node.js 20 Alpine for better compatibility
+FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
@@ -12,7 +12,7 @@ COPY package*.json ./
 COPY prisma ./prisma/
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm install --omit=dev
 
 # Copy source code
 COPY . .
