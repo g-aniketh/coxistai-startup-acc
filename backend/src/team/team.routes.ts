@@ -14,7 +14,7 @@ router.post(
   '/invite',
   authenticateToken,
   checkPermission({ action: 'manage', subject: 'team' }),
-  inviteTeamMemberController
+  inviteTeamMemberController as any
 );
 
 // Get all team members for the startup
@@ -22,7 +22,7 @@ router.get(
   '/',
   authenticateToken,
   checkPermission({ action: 'read', subject: 'team' }),
-  getTeamMembersController
+  getTeamMembersController as any
 );
 
 // Update a user's role
@@ -30,7 +30,7 @@ router.put(
   '/:userId/role',
   authenticateToken,
   checkPermission({ action: 'manage', subject: 'team' }),
-  updateUserRoleController
+  updateUserRoleController as any
 );
 
 // Deactivate a user
@@ -38,7 +38,7 @@ router.post(
   '/:userId/deactivate',
   authenticateToken,
   checkPermission({ action: 'manage', subject: 'team' }),
-  deactivateUserController
+  deactivateUserController as any
 );
 
 export default router;

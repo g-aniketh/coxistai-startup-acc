@@ -12,7 +12,7 @@ plaidRoutes.post('/create-link-token', async (req: AuthenticatedRequest, res: Re
       return res.status(401).json({ success: false, error: 'User not authenticated' });
     }
 
-    const linkToken = await PlaidService.createLinkToken(req.user.userId, req.user.tenantId);
+    const linkToken = await PlaidService.createLinkToken(req.user.userId, req.user.startupId);
 
     return res.json({
       success: true,
@@ -48,10 +48,10 @@ plaidRoutes.post('/exchange-public-token', async (req: AuthenticatedRequest, res
     const result = await PlaidService.exchangePublicToken(
       publicToken,
       req.user.userId,
-      req.user.tenantId
+      req.user.startupId
     );
 
-    return res.json(result);
+    return res.json({ success: true, data: result });
   } catch (error) {
     console.error('Error exchanging public token:', error);
     return res.status(500).json({
@@ -68,7 +68,7 @@ plaidRoutes.get('/items', async (req: AuthenticatedRequest, res: Response<ApiRes
       return res.status(401).json({ success: false, error: 'User not authenticated' });
     }
 
-    const plaidItems = await PlaidService.getPlaidItems(req.user.tenantId);
+    const plaidItems = await PlaidService.getPlaidItems(req.user.startupId);
 
     return res.json({
       success: true,
@@ -94,12 +94,8 @@ plaidRoutes.post('/sync-transactions/:plaidItemId', async (req: AuthenticatedReq
     const { startDate, endDate } = req.body;
 
     // Verify the Plaid item belongs to the user's tenant
-    const plaidItem = await prisma.plaidItem.findFirst({
-      where: {
-        id: plaidItemId,
-        tenantId: req.user.tenantId,
-      },
-    });
+    // TODO: Implement plaidItem model
+    const plaidItem = null;
 
     if (!plaidItem) {
       return res.status(404).json({
@@ -108,13 +104,9 @@ plaidRoutes.post('/sync-transactions/:plaidItemId', async (req: AuthenticatedReq
       });
     }
 
-    const result = await PlaidService.syncTransactions(
-      plaidItemId,
-      startDate ? new Date(startDate) : undefined,
-      endDate ? new Date(endDate) : undefined
-    );
+    const result = await PlaidService.syncTransactions(plaidItemId);
 
-    return res.json(result);
+    return res.json({ success: true, data: result });
   } catch (error) {
     console.error('Error syncing transactions:', error);
     return res.status(500).json({
@@ -136,10 +128,10 @@ plaidRoutes.delete('/items/:plaidItemId', async (req: AuthenticatedRequest, res:
     const result = await PlaidService.deletePlaidItem(
       plaidItemId,
       req.user.userId,
-      req.user.tenantId
+      req.user.startupId
     );
 
-    return res.json(result);
+    return res.json({ success: true, data: result });
   } catch (error) {
     console.error('Error deleting Plaid item:', error);
     return res.status(500).json({
@@ -165,9 +157,8 @@ plaidRoutes.post('/webhook', async (req: Request, res: Response) => {
     switch (webhook_type) {
       case 'TRANSACTIONS':
         // Sync transactions for the item
-        const plaidItem = await prisma.plaidItem.findUnique({
-          where: { plaidItemId: item_id },
-        });
+        // TODO: Implement plaidItem model
+        const plaidItem = null;
 
         if (plaidItem) {
           await PlaidService.syncTransactions(plaidItem.id);

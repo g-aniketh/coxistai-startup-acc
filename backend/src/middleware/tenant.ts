@@ -36,7 +36,7 @@ export const tenantMiddleware = async (req: Request, res: Response, next: NextFu
     }
 
     // Validate tenant exists
-    const tenant = await prisma.tenant.findUnique({
+    const tenant = await prisma.startup.findUnique({
       where: { id: tenantId },
       select: { id: true, name: true }
     });
@@ -70,7 +70,7 @@ export const optionalTenantMiddleware = async (req: Request, res: Response, next
     const tenantId = req.headers['x-tenant-id'] as string;
 
     if (tenantId) {
-      const tenant = await prisma.tenant.findUnique({
+      const tenant = await prisma.startup.findUnique({
         where: { id: tenantId },
         select: { id: true, name: true }
       });

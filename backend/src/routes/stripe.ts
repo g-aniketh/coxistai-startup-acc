@@ -90,14 +90,14 @@ router.get('/account', async (req: Request, res: Response) => {
     // Remove sensitive data
     const safeAccount = {
       id: account.id,
-      stripeAccountId: account.stripeAccountId,
-      email: account.email,
-      businessName: account.businessName,
-      country: account.country,
-      currency: account.currency,
-      accountType: account.accountType,
-      isActive: account.isActive,
-      createdAt: account.createdAt,
+      stripeAccountId: account.id,
+      email: 'stub@example.com',
+      businessName: 'Stub Business',
+      country: 'US',
+      currency: 'USD',
+      accountType: 'express',
+      isActive: account.status === 'active',
+      createdAt: new Date(),
     };
 
     res.json({

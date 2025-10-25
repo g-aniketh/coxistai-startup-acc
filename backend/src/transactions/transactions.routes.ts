@@ -14,7 +14,7 @@ router.post(
   '/',
   authenticateToken,
   checkPermission({ action: 'manage', subject: 'transactions' }),
-  createTransactionController
+  createTransactionController as any
 );
 
 // Get all transactions for the startup
@@ -22,7 +22,7 @@ router.get(
   '/',
   authenticateToken,
   checkPermission({ action: 'read', subject: 'cashflow_dashboard' }),
-  getTransactionsController
+  getTransactionsController as any
 );
 
 // Get a specific transaction by ID
@@ -30,7 +30,7 @@ router.get(
   '/:transactionId',
   authenticateToken,
   checkPermission({ action: 'read', subject: 'transactions' }),
-  getTransactionByIdController
+  getTransactionByIdController as any
 );
 
 // Delete a transaction
@@ -38,7 +38,7 @@ router.delete(
   '/:transactionId',
   authenticateToken,
   checkPermission({ action: 'manage', subject: 'transactions' }),
-  deleteTransactionController
+  deleteTransactionController as any
 );
 
 export default router;

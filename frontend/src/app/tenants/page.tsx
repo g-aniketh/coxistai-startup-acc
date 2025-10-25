@@ -5,7 +5,7 @@ import { apiClient, TeamMember } from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { 
-  BuildingOffice2,
+  Building2,
   User,
   Plus,
   Search
@@ -81,7 +81,7 @@ export default function TenantsPage() {
                     <div className="flex items-center gap-4">
                       <div className="flex-shrink-0">
                         <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center">
-                          <BuildingOffice2 className="h-6 w-6 text-gray-600" />
+                          <Building2 className="h-6 w-6 text-gray-600" />
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
@@ -104,7 +104,7 @@ export default function TenantsPage() {
               ))
             ) : (
               <div className="col-span-full p-6 text-center">
-                <BuildingOffice2 className="mx-auto h-12 w-12 text-gray-400" />
+                <Building2 className="mx-auto h-12 w-12 text-gray-400" />
                 <h3 className="mt-2 text-sm font-medium text-gray-900">No organizations</h3>
                 <p className="mt-1 text-sm text-gray-500">
                   No organizations found in the system.

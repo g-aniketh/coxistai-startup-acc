@@ -11,25 +11,15 @@ cfoRoutes.get('/accounts', async (req: AuthenticatedRequest, res: Response<ApiRe
       return res.status(401).json({ success: false, error: 'User not authenticated' });
     }
 
-    const accounts = await prisma.account.findMany({
+    const accounts = await prisma.mockBankAccount.findMany({
       where: {
-        plaidItem: {
-          tenantId: req.user.tenantId,
-        },
+        startupId: req.user.startupId,
       },
       include: {
-        plaidItem: {
-          select: {
-            id: true,
-            institutionName: true,
-            createdAt: true,
-          },
-        },
         transactions: {
           take: 5,
           orderBy: { date: 'desc' },
           include: {
-            category: true,
           },
         },
         _count: {
@@ -39,13 +29,13 @@ cfoRoutes.get('/accounts', async (req: AuthenticatedRequest, res: Response<ApiRe
         },
       },
       orderBy: {
-        currentBalance: 'desc',
+        balance: 'desc',
       },
     });
 
     // Calculate total balance
     const totalBalance = accounts.reduce((sum, account) => {
-      return sum + Number(account.currentBalance);
+      return sum + Number(account.balance);
     }, 0);
 
     return res.json({
@@ -94,9 +84,7 @@ cfoRoutes.get('/transactions', async (req: AuthenticatedRequest, res: Response<A
     // Build where clause
     const where: any = {
       account: {
-        plaidItem: {
-          tenantId: req.user.tenantId,
-        },
+        startupId: req.user.startupId,
       },
     };
 
@@ -141,18 +129,9 @@ cfoRoutes.get('/transactions', async (req: AuthenticatedRequest, res: Response<A
           account: {
             select: {
               id: true,
-              name: true,
-              mask: true,
-              type: true,
-              subtype: true,
-              plaidItem: {
-                select: {
-                  institutionName: true,
-                },
-              },
+              accountName: true,
             },
           },
-          category: true,
         },
         orderBy,
         skip,
@@ -223,33 +202,24 @@ cfoRoutes.get('/dashboard/summary', async (req: AuthenticatedRequest, res: Respo
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
     // Get all accounts for the tenant
-    const accounts = await prisma.account.findMany({
+    const accounts = await prisma.mockBankAccount.findMany({
       where: {
-        plaidItem: {
-          tenantId: req.user.tenantId,
-        },
+        startupId: req.user.startupId,
       },
       include: {
-        plaidItem: {
-          select: {
-            institutionName: true,
-          },
-        },
       },
     });
 
     // Calculate total balance
     const totalBalance = accounts.reduce((sum, account) => {
-      return sum + Number(account.currentBalance);
+      return sum + Number(account.balance);
     }, 0);
 
     // Get transactions for the period
     const transactions = await prisma.transaction.findMany({
       where: {
         account: {
-          plaidItem: {
-            tenantId: req.user.tenantId,
-          },
+          startupId: req.user.startupId,
         },
         date: {
           gte: startDate,
@@ -257,13 +227,7 @@ cfoRoutes.get('/dashboard/summary', async (req: AuthenticatedRequest, res: Respo
         },
       },
       include: {
-        category: true,
-        account: {
-          select: {
-            type: true,
-            subtype: true,
-          },
-        },
+        account: true,
       },
       orderBy: { date: 'desc' },
     });
@@ -288,7 +252,7 @@ cfoRoutes.get('/dashboard/summary', async (req: AuthenticatedRequest, res: Respo
 
     // Calculate category breakdown
     const categoryBreakdown = transactions.reduce((acc, transaction) => {
-      const categoryName = transaction.category?.name || 'Uncategorized';
+      const categoryName = 'Uncategorized'; // TODO: Implement categories
       const amount = Number(transaction.amount);
       
       if (!acc[categoryName]) {
@@ -308,12 +272,12 @@ cfoRoutes.get('/dashboard/summary', async (req: AuthenticatedRequest, res: Respo
     // Get account breakdown
     const accountBreakdown = accounts.map(account => ({
       id: account.id,
-      name: account.name,
-      mask: account.mask,
-      type: account.type,
-      subtype: account.subtype,
-      balance: Number(account.currentBalance),
-      institution: account.plaidItem.institutionName,
+      name: account.accountName,
+      mask: '****', // TODO: Implement account masking
+      type: 'checking', // TODO: Implement account types
+      subtype: 'checking', // TODO: Implement account subtypes
+      balance: Number(account.balance),
+      institution: 'Mock Bank', // TODO: Implement institution data
     }));
 
     // Calculate daily breakdown for the chart
@@ -442,19 +406,8 @@ cfoRoutes.get('/categories', async (req: AuthenticatedRequest, res: Response<Api
       return res.status(401).json({ success: false, error: 'User not authenticated' });
     }
 
-    const categories = await prisma.transactionCategory.findMany({
-      include: {
-        subcategories: true,
-        _count: {
-          select: {
-            transactions: true,
-          },
-        },
-      },
-      orderBy: {
-        name: 'asc',
-      },
-    });
+    // TODO: Implement transaction categories
+    const categories = []; // await prisma.transactionCategory.findMany(...);
 
     return res.json({
       success: true,
@@ -483,20 +436,14 @@ cfoRoutes.get('/health-score', async (req: AuthenticatedRequest, res: Response<A
 
     // Get accounts and transactions
     const [accounts, transactions] = await Promise.all([
-      prisma.account.findMany({
+      prisma.mockBankAccount.findMany({
         where: {
-          plaidItem: {
-            tenantId: req.user.tenantId,
-          },
+          startupId: req.user.startupId,
         },
       }),
       prisma.transaction.findMany({
         where: {
-          account: {
-            plaidItem: {
-              tenantId: req.user.tenantId,
-            },
-          },
+          startupId: req.user.startupId,
           date: {
             gte: startDate,
             lte: endDate,
@@ -506,7 +453,7 @@ cfoRoutes.get('/health-score', async (req: AuthenticatedRequest, res: Response<A
     ]);
 
     // Calculate health score components
-    const totalBalance = accounts.reduce((sum, account) => sum + Number(account.currentBalance), 0);
+    const totalBalance = accounts.reduce((sum, account) => sum + Number(account.balance), 0);
     const income = transactions.filter(t => Number(t.amount) > 0).reduce((sum, t) => sum + Number(t.amount), 0);
     const expenses = Math.abs(transactions.filter(t => Number(t.amount) < 0).reduce((sum, t) => sum + Number(t.amount), 0));
     const netCashFlow = income - expenses;

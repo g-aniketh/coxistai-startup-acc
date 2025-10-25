@@ -20,11 +20,11 @@ export class AICFOService {
   /**
    * Generate AI-powered forecast
    */
-  static async generateForecast(tenantId: string, months: number = 12) {
+  static async generateForecast(startupId: string, months: number = 12) {
     try {
       // Get historical data
       const history = await prisma.cashflowMetric.findMany({
-        where: { tenantId },
+        where: { startupId },
         orderBy: { periodStart: 'asc' },
         take: 12,
       });
@@ -114,7 +114,7 @@ Respond in JSON format:
       // Store scenario
       const scenario = await prisma.aIScenario.create({
         data: {
-          tenantId,
+          startupId,
           name: `${months}-Month Forecast`,
           description: `AI-generated ${months}-month financial forecast`,
           scenarioType: 'forecast',
@@ -150,11 +150,11 @@ Respond in JSON format:
   /**
    * Run "What If" scenario analysis
    */
-  static async runScenario(tenantId: string, scenarioName: string, inputs: ScenarioInput) {
+  static async runScenario(startupId: string, scenarioName: string, inputs: ScenarioInput) {
     try {
       // Get current metrics
       const latestMetrics = await prisma.cashflowMetric.findFirst({
-        where: { tenantId },
+        where: { startupId },
         orderBy: { periodEnd: 'desc' },
       });
 
@@ -253,7 +253,7 @@ Respond in JSON format:
       // Store scenario
       const scenario = await prisma.aIScenario.create({
         data: {
-          tenantId,
+          startupId,
           name: scenarioName,
           description: `What-if analysis: ${scenarioName}`,
           scenarioType: 'what_if',
@@ -294,12 +294,12 @@ Respond in JSON format:
   /**
    * Generate investor update using AI
    */
-  static async generateInvestorUpdate(tenantId: string, periodStart: Date, periodEnd: Date) {
+  static async generateInvestorUpdate(startupId: string, periodStart: Date, periodEnd: Date) {
     try {
       // Get metrics for the period
       const metrics = await prisma.cashflowMetric.findMany({
         where: {
-          tenantId,
+          startupId,
           periodStart: { gte: periodStart },
           periodEnd: { lte: periodEnd },
         },
@@ -332,7 +332,7 @@ Respond in JSON format:
 
       // Get recent scenarios/insights
       const scenarios = await prisma.aIScenario.findMany({
-        where: { tenantId },
+        where: { startupId },
         orderBy: { createdAt: 'desc' },
         take: 3,
       });
@@ -396,7 +396,7 @@ Respond in JSON format:
       // Store investor update
       const update = await prisma.investorUpdate.create({
         data: {
-          tenantId,
+          startupId,
           title: `Investor Update: ${periodStart.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`,
           periodStart,
           periodEnd,
@@ -429,10 +429,10 @@ Respond in JSON format:
   /**
    * Get AI-powered insights for current financial state
    */
-  static async getInsights(tenantId: string) {
+  static async getInsights(startupId: string) {
     try {
       const latestMetrics = await prisma.cashflowMetric.findFirst({
-        where: { tenantId },
+        where: { startupId },
         orderBy: { periodEnd: 'desc' },
       });
 
@@ -441,7 +441,7 @@ Respond in JSON format:
       }
 
       const history = await prisma.cashflowMetric.findMany({
-        where: { tenantId },
+        where: { startupId },
         orderBy: { periodStart: 'asc' },
         take: 6,
       });
@@ -505,9 +505,9 @@ Respond in JSON format:
   /**
    * Get all scenarios for a tenant
    */
-  static async getScenarios(tenantId: string) {
+  static async getScenarios(startupId: string) {
     return await prisma.aIScenario.findMany({
-      where: { tenantId },
+      where: { startupId },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -515,9 +515,9 @@ Respond in JSON format:
   /**
    * Get investor updates for a tenant
    */
-  static async getInvestorUpdates(tenantId: string) {
+  static async getInvestorUpdates(startupId: string) {
     return await prisma.investorUpdate.findMany({
-      where: { tenantId },
+      where: { startupId },
       orderBy: { periodEnd: 'desc' },
     });
   }

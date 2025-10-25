@@ -70,7 +70,7 @@ router.post('/tally', authenticateToken, async (req: Request, res: Response) => 
 
     // Get user's startup
     const user = await prisma.user.findUnique({
-      where: { userId },
+      where: { id: userId },
       include: { startup: true },
     });
 
@@ -94,7 +94,7 @@ router.post('/tally', authenticateToken, async (req: Request, res: Response) => 
         // Check if ledger already exists
         const existingLedger = await prisma.mockBankAccount.findFirst({
           where: {
-            name: ledger.ledgerName,
+            accountName: ledger.ledgerName,
             startupId: startupId,
           },
         });
@@ -103,11 +103,8 @@ router.post('/tally', authenticateToken, async (req: Request, res: Response) => 
           // Create new ledger/account
           await prisma.mockBankAccount.create({
             data: {
-              name: ledger.ledgerName,
-              type: mapLedgerTypeToAccountType(ledger.accountGroup),
+              accountName: ledger.ledgerName,
               balance: ledger.openingBalance,
-              currency: 'INR',
-              status: 'active' as const,
               startupId: startupId,
             },
           });
