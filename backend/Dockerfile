@@ -5,7 +5,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Install dependencies for Prisma and native modules
-RUN apk add --no-cache openssl
+RUN apk add --no-cache openssl curl
 
 # Copy package files
 COPY package*.json ./
