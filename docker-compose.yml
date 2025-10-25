@@ -47,7 +47,7 @@ services:
     container_name: coxistai-frontend
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
+      - NEXT_PUBLIC_API_URL=http://3.108.255.222:3001/api/v1
     ports:
       - "3000:3000"
     depends_on:

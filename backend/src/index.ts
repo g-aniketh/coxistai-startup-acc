@@ -42,8 +42,15 @@ app.use(helmet({
 }));
 
 // CORS configuration
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  process.env.FRONTEND_URL,
+  process.env.CORS_ORIGIN
+].filter((origin): origin is string => Boolean(origin));
+
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
   allowedHeaders: [
@@ -428,9 +435,9 @@ const server = app.listen(PORT, () => {
   console.log(`🚀 CoXist AI Startup Accelerator API Server`);
   console.log(`📍 Port: ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`📍 Health check: http://localhost:${PORT}/api/v1/health`);
-  console.log(`📍 API Documentation: http://localhost:${PORT}/api/v1/docs`);
-  console.log(`🌐 API Base URL: http://localhost:${PORT}/api/v1`);
+  console.log(`📍 Health check: http://3.108.255.222:${PORT}/api/v1/health`);
+  console.log(`📍 API Documentation: http://3.108.255.222:${PORT}/api/v1/docs`);
+  console.log(`🌐 API Base URL: http://3.108.255.222:${PORT}/api/v1`);
   console.log(`🗄️  Database: Connected to PostgreSQL via Prisma`);
   
   // Start transaction sync service
