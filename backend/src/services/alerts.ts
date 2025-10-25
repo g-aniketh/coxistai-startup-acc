@@ -2,9 +2,20 @@ import { prisma } from '../lib/prisma';
 import { Prisma } from '@prisma/client';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Initialize OpenAI only if API key is provided
+let openai: OpenAI | null = null;
+if (process.env.OPENAI_API_KEY) {
+  try {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  } catch (error) {
+    console.warn('Failed to initialize OpenAI service:', error);
+    openai = null;
+  }
+} else {
+  console.warn('OPENAI_API_KEY not provided. AI functionality will be disabled.');
+}
 
 export class AlertsService {
   /**
@@ -261,6 +272,15 @@ export class AlertsService {
    * Get AI recommendations for runway issues
    */
   private static async getRunwayRecommendations(metrics: any): Promise<any[]> {
+    if (!openai) {
+      console.warn('OpenAI service not available. Returning default recommendations.');
+      return [
+        { action: 'Reduce monthly burn rate', impact: 'Extend runway', effort: 'medium' },
+        { action: 'Focus on revenue growth', impact: 'Increase cash flow', effort: 'high' },
+        { action: 'Review and cut unnecessary expenses', impact: 'Reduce burn', effort: 'low' }
+      ];
+    }
+
     try {
       const prompt = `A startup has ${metrics.runway.toNumber().toFixed(1)} months of runway remaining.
 Current metrics:
@@ -322,6 +342,15 @@ Respond in JSON format:
     metrics: any,
     burnChange: number
   ): Promise<any[]> {
+    if (!openai) {
+      console.warn('OpenAI service not available. Returning default recommendations.');
+      return [
+        { action: 'Review expense categories', impact: 'Identify cost drivers', effort: 'low' },
+        { action: 'Implement expense controls', impact: 'Reduce unnecessary spending', effort: 'medium' },
+        { action: 'Optimize operations', impact: 'Improve efficiency', effort: 'high' }
+      ];
+    }
+
     try {
       const prompt = `A startup's burn rate increased by ${burnChange.toFixed(1)}%.
 Current metrics:

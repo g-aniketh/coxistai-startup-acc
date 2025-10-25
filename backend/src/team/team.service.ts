@@ -3,7 +3,19 @@ import bcrypt from 'bcryptjs';
 import { Resend } from 'resend';
 
 const prisma = new PrismaClient();
-const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Initialize Resend only if API key is provided
+let resend: Resend | null = null;
+if (process.env.RESEND_API_KEY) {
+  try {
+    resend = new Resend(process.env.RESEND_API_KEY);
+  } catch (error) {
+    console.warn('Failed to initialize Resend email service:', error);
+    resend = null;
+  }
+} else {
+  console.warn('RESEND_API_KEY not provided. Email functionality will be disabled.');
+}
 
 interface InviteTeamMemberData {
   email: string;
@@ -95,23 +107,28 @@ export const inviteTeamMember = async (
     }
   });
 
-  // Send invitation email via Resend
+  // Send invitation email via Resend (if available)
   try {
-    await resend.emails.send({
-      from: 'CoXist AI <noreply@coxistai.com>',
-      to: [email],
-      subject: `You've been invited to join ${adminUser.startup.name} on CoXist AI`,
-      html: `
-        <h1>Welcome to CoXist AI!</h1>
-        <p>You've been invited by ${adminUser.firstName || adminUser.email} to join <strong>${adminUser.startup.name}</strong> as a ${roleName}.</p>
-        <p><strong>Your temporary login credentials:</strong></p>
-        <p>Email: ${email}</p>
-        <p>Temporary Password: <code>${tempPassword}</code></p>
-        <p><strong>Please change your password after your first login.</strong></p>
-        <p>Login at: <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/login">${process.env.FRONTEND_URL || 'http://localhost:3000'}/login</a></p>
-        <p>Best regards,<br/>The CoXist AI Team</p>
-      `
-    });
+    if (resend) {
+      await resend.emails.send({
+        from: 'CoXist AI <noreply@coxistai.com>',
+        to: [email],
+        subject: `You've been invited to join ${adminUser.startup.name} on CoXist AI`,
+        html: `
+          <h1>Welcome to CoXist AI!</h1>
+          <p>You've been invited by ${adminUser.firstName || adminUser.email} to join <strong>${adminUser.startup.name}</strong> as a ${roleName}.</p>
+          <p><strong>Your temporary login credentials:</strong></p>
+          <p>Email: ${email}</p>
+          <p>Temporary Password: <code>${tempPassword}</code></p>
+          <p><strong>Please change your password after your first login.</strong></p>
+          <p>Login at: <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/login">${process.env.FRONTEND_URL || 'http://localhost:3000'}/login</a></p>
+          <p>Best regards,<br/>The CoXist AI Team</p>
+        `
+      });
+      console.log(`Invitation email sent to ${email}`);
+    } else {
+      console.log(`Email service not available. User ${email} created with temp password: ${tempPassword}`);
+    }
   } catch (emailError) {
     console.error('Failed to send invitation email:', emailError);
     // Don't fail the user creation if email fails

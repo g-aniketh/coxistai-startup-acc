@@ -2,9 +2,21 @@ import { PrismaClient } from '@prisma/client';
 import OpenAI from 'openai';
 
 const prisma = new PrismaClient();
-const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY 
-});
+
+// Initialize OpenAI only if API key is provided
+let openai: OpenAI | null = null;
+if (process.env.OPENAI_API_KEY) {
+  try {
+    openai = new OpenAI({ 
+      apiKey: process.env.OPENAI_API_KEY 
+    });
+  } catch (error) {
+    console.warn('Failed to initialize OpenAI service:', error);
+    openai = null;
+  }
+} else {
+  console.warn('OPENAI_API_KEY not provided. AI functionality will be disabled.');
+}
 
 interface FinancialInsights {
   burnAnalysis: string;
@@ -33,6 +45,10 @@ interface WhatIfScenario {
 }
 
 export const getFinancialInsights = async (startupId: string): Promise<FinancialInsights> => {
+  if (!openai) {
+    throw new Error('OpenAI service is not available. Please check your API key configuration.');
+  }
+
   // 1. Fetch relevant financial data
   const [transactions, accounts, products, sales] = await Promise.all([
     prisma.transaction.findMany({
@@ -159,6 +175,10 @@ export const runWhatIfScenario = async (
   startupId: string, 
   scenarioDescription: string
 ): Promise<WhatIfScenario> => {
+  if (!openai) {
+    throw new Error('OpenAI service is not available. Please check your API key configuration.');
+  }
+
   // 1. Fetch current financial state
   const [accounts, transactions] = await Promise.all([
     prisma.mockBankAccount.findMany({
@@ -253,6 +273,10 @@ export const generateInvestorUpdate = async (
   periodStart: Date,
   periodEnd: Date
 ): Promise<any> => {
+  if (!openai) {
+    throw new Error('OpenAI service is not available. Please check your API key configuration.');
+  }
+
   // 1. Fetch data for the period
   const [transactions, sales, products] = await Promise.all([
     prisma.transaction.findMany({

@@ -2,9 +2,20 @@ import OpenAI from 'openai';
 import { prisma } from '../lib/prisma';
 import { Prisma } from '@prisma/client';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Initialize OpenAI only if API key is provided
+let openai: OpenAI | null = null;
+if (process.env.OPENAI_API_KEY) {
+  try {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  } catch (error) {
+    console.warn('Failed to initialize OpenAI service:', error);
+    openai = null;
+  }
+} else {
+  console.warn('OPENAI_API_KEY not provided. AI functionality will be disabled.');
+}
 
 export interface ScenarioInput {
   revenueChange?: number; // Percentage change
@@ -21,6 +32,10 @@ export class AICFOService {
    * Generate AI-powered forecast
    */
   static async generateForecast(startupId: string, months: number = 12) {
+    if (!openai) {
+      throw new Error('OpenAI service is not available. Please check your API key configuration.');
+    }
+
     try {
       // Get historical data
       const history = await prisma.cashflowMetric.findMany({
@@ -151,6 +166,10 @@ Respond in JSON format:
    * Run "What If" scenario analysis
    */
   static async runScenario(startupId: string, scenarioName: string, inputs: ScenarioInput) {
+    if (!openai) {
+      throw new Error('OpenAI service is not available. Please check your API key configuration.');
+    }
+
     try {
       // Get current metrics
       const latestMetrics = await prisma.cashflowMetric.findFirst({
@@ -295,6 +314,10 @@ Respond in JSON format:
    * Generate investor update using AI
    */
   static async generateInvestorUpdate(startupId: string, periodStart: Date, periodEnd: Date) {
+    if (!openai) {
+      throw new Error('OpenAI service is not available. Please check your API key configuration.');
+    }
+
     try {
       // Get metrics for the period
       const metrics = await prisma.cashflowMetric.findMany({
@@ -430,6 +453,10 @@ Respond in JSON format:
    * Get AI-powered insights for current financial state
    */
   static async getInsights(startupId: string) {
+    if (!openai) {
+      throw new Error('OpenAI service is not available. Please check your API key configuration.');
+    }
+
     try {
       const latestMetrics = await prisma.cashflowMetric.findFirst({
         where: { startupId },
