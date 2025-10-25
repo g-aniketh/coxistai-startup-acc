@@ -29,6 +29,9 @@ model Startup {
   scenarios        AIScenario[]
   alerts           Alert[]
   investorUpdates  InvestorUpdate[]
+  partyMasters     PartyMaster[]
+  importedTransactions ImportedTransaction[]
+  importHistories  ImportHistory[]
 }
 
 model User {
@@ -314,4 +317,66 @@ model InvestorUpdate {
   startup   Startup  @relation(fields: [startupId], references: [id], onDelete: Cascade)
   
   @@index([startupId, periodStart])
+}
+
+// ============================================================================
+// TALLY IMPORT DATA MODELS
+// ============================================================================
+
+model PartyMaster {
+  id               String   @id @default(cuid())
+  name             String
+  type             String   // Customer, Supplier, Employee, Other
+  email            String?
+  phone            String?
+  openingBalance   Float    @default(0.0)
+  balanceType      String   // Debit or Credit
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  startupId String
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@unique([startupId, name])
+  @@index([startupId])
+  @@index([type])
+}
+
+model ImportedTransaction {
+  id          String   @id @default(cuid())
+  voucherNo   String
+  voucherType String   // Sales, Purchase, Journal, Receipt, Payment, Contra
+  date        DateTime
+  narration   String
+  particulars String
+  amount      Float    @default(0.0)
+  debit       Float    @default(0.0)
+  credit      Float    @default(0.0)
+  reference   String?
+  ledgerName  String
+  createdAt   DateTime @default(now())
+
+  startupId String
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@index([startupId])
+  @@index([ledgerName])
+  @@index([date])
+}
+
+model ImportHistory {
+  id           String   @id @default(cuid())
+  fileName     String
+  importType   String   // TALLY, QUICKBOOKS, etc.
+  totalRecords Int
+  successCount Int
+  failureCount Int
+  summary      String   @db.Text // JSON summary of what was imported
+  createdAt    DateTime @default(now())
+
+  startupId String
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@index([startupId])
+  @@index([createdAt])
 }

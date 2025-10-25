@@ -18,6 +18,7 @@ import stripeRoutes from './routes/stripe';
 import analyticsRoutes from './routes/analytics';
 import aiCFORoutes from './routes/aiCFO';
 import alertsRoutes from './routes/alerts';
+import importRoutes from './routes/import';
 import { TransactionSyncService } from './services/transactionSync';
 import { startJobs } from './jobs';
 
@@ -375,6 +376,21 @@ v1Router.use((req, res, next) => {
   }
   return optionalTenantMiddleware(req, res, next);
 });
+
+// Mount protected routes
+v1Router.use('/transactions', authenticateToken, transactionsRoutes);
+v1Router.use('/dashboard', authenticateToken, dashboardRoutes);
+v1Router.use('/inventory', authenticateToken, inventoryRoutes);
+v1Router.use('/accounts', authenticateToken, accountsRoutes);
+v1Router.use('/team', authenticateToken, teamRoutes);
+v1Router.use('/ai', authenticateToken, aiRoutes);
+v1Router.use('/plaid', authenticateToken, plaidRoutes);
+v1Router.use('/cfo', authenticateToken, cfoRoutes);
+v1Router.use('/stripe', authenticateToken, stripeRoutes);
+v1Router.use('/analytics', authenticateToken, analyticsRoutes);
+v1Router.use('/ai-cfo', authenticateToken, aiCFORoutes);
+v1Router.use('/alerts', authenticateToken, alertsRoutes);
+v1Router.use('/import', authenticateToken, importRoutes);
 
 // Mount v1 routes
 app.use('/api/v1', v1Router);

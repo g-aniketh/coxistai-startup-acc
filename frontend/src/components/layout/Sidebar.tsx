@@ -19,6 +19,7 @@ import {
   Bot,
   User,
   Calculator,
+  Upload,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
 import Image from 'next/image';
@@ -41,6 +42,7 @@ export default function Sidebar() {
     { name: 'Smart Alerts', href: '/alerts', icon: AlertTriangle },
     { name: 'Financial Dashboard', href: '/financial-dashboard', icon: BarChart2 },
     { name: 'Products', href: '/products', icon: Package },
+    { name: 'Import from Tally', href: '/tally-import', icon: Upload },
   ];
 
   return (
