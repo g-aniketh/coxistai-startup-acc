@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import AuthGuard from '@/components/auth/AuthGuard';
 import MainLayout from '@/components/layout/MainLayout';
+import { apiClient } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/Badge';
@@ -133,17 +134,7 @@ export default function TallyImportPage() {
       }
 
       // Call API endpoint to save the data
-      const response = await fetch('/api/v1/import/tally', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(importData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to import data');
-      }
+      const response = await apiClient.import.tally(importData);
 
       setStep('complete');
       toast.success('Data imported successfully! Your dashboard will now reflect the new records.');

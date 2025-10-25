@@ -90,7 +90,7 @@ plaidRoutes.post('/sync-transactions/:plaidItemId', async (req: AuthenticatedReq
       return res.status(401).json({ success: false, error: 'User not authenticated' });
     }
 
-    const { plaidItemId } = req.params;
+    const { plaidItemId } = req.params
     const { startDate, endDate } = req.body;
 
     // Verify the Plaid item belongs to the user's tenant

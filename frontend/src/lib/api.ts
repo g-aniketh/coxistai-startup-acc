@@ -501,6 +501,17 @@ export const apiClient = {
       return response.data;
     },
   },
+
+  // ============================================================================
+  // IMPORT
+  // ============================================================================
+  
+  import: {
+    tally: async (importData: any): Promise<ApiResponse<any>> => {
+      const response = await api.post('/import/tally', importData);
+      return response.data;
+    },
+  },
 };
 
 export default api;
