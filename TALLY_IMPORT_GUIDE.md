@@ -18,11 +18,11 @@ The Tally Import feature allows you to seamlessly migrate your financial records
 - Opening balances
 - Balance types (Debit/Credit)
 
-### 3. **Transactions**
+### 3. **Transactionsss**
 - All journal entries
 - Sales invoices and purchases
 - Payment and receipt vouchers
-- Contra entries
+- Contra entriesssssssssss
 - Transaction dates, amounts, and narrations
 - Complete debit-credit information
 
