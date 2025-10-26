@@ -1,19 +1,4 @@
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: coxistai-postgres
-    environment:
-      POSTGRES_DB: coxistai
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - coxistai-network
-
   # Backend API
   backend:
     build:
@@ -22,12 +7,10 @@ services:
     container_name: coxistai-backend
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/coxistai
       - PORT=3001
+      - DATABASE_URL=${DATABASE_URL}
     ports:
       - "3001:3001"
-    depends_on:
-      - postgres
     volumes:
       - ./backend/.env:/app/.env
     networks:
@@ -47,7 +30,7 @@ services:
     container_name: coxistai-frontend
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://3.108.255.222:3001/api/v1
+      - NEXT_PUBLIC_API_URL=http://65.1.166.80:3001/api/v1
     ports:
       - "3000:3000"
     depends_on:
@@ -58,9 +41,6 @@ services:
     networks:
       - coxistai-network
     restart: unless-stopped
-
-volumes:
-  postgres_data:
 
 networks:
   coxistai-network:
