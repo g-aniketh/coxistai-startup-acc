@@ -157,23 +157,23 @@ export default function TallyImportPage() {
     return (
       <AuthGuard requireAuth={true}>
         <MainLayout>
-          <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
+          <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto bg-white min-h-screen">
             {/* Header */}
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
                 <Upload className="h-8 w-8 text-blue-600" />
                 Import from Tally
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-700">
                 Migrate your Tally financial records to Coxist AI. Your data will be seamlessly integrated into your dashboard.
               </p>
             </div>
 
             {/* Upload Area */}
-            <Card className="border-2 border-dashed border-gray-300 rounded-lg overflow-hidden">
+            <Card className="border-2 border-dashed border-blue-300 bg-blue-50 rounded-lg overflow-hidden">
               <div
                 className={`p-12 text-center cursor-pointer transition-all ${
-                  dragActive ? 'bg-blue-50 border-blue-500 border-2' : 'hover:bg-gray-50'
+                  dragActive ? 'bg-blue-100 border-4 border-blue-500' : ''
                 }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
@@ -182,13 +182,13 @@ export default function TallyImportPage() {
               >
                 <div className="space-y-4">
                   <div className="flex justify-center">
-                    <div className="p-4 bg-blue-100 rounded-lg">
+                    <div className="p-4 bg-white rounded-lg shadow-sm">
                       <FileText className="h-12 w-12 text-blue-600" />
                     </div>
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-gray-900">Drop your Tally Excel file here</h3>
-                    <p className="text-gray-600 mt-1">or click to browse your computer</p>
+                    <p className="text-gray-700 mt-1">or click to browse your computer</p>
                   </div>
                   <div className="flex gap-3 justify-center">
                     <label>
@@ -220,7 +220,7 @@ export default function TallyImportPage() {
                       </Button>
                     </label>
                   </div>
-                  <p className="text-sm text-gray-500">Supported formats: .xlsx, .xls, .csv</p>
+                  <p className="text-sm text-gray-700">Supported formats: .xlsx, .xls, .csv</p>
                 </div>
               </div>
             </Card>
@@ -267,10 +267,10 @@ export default function TallyImportPage() {
             {/* Sample Template */}
             <Card className="border-gray-200 bg-gradient-to-r from-gray-50 to-white">
               <CardHeader>
-                <CardTitle className="text-lg">Need a sample template?</CardTitle>
+                <CardTitle className="text-lg text-gray-900">Need a sample template?</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <p className="text-gray-700">Download our sample Tally import template to see the required format and example data.</p>
+                <p className="text-gray-800">Download our sample Tally import template to see the required format and example data.</p>
                 <Button 
                   onClick={downloadSampleTemplate}
                   className="bg-gray-800 hover:bg-gray-900"
@@ -284,12 +284,12 @@ export default function TallyImportPage() {
             {/* Help Section */}
             <Card className="border-amber-200 bg-amber-50">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
+                <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5 text-amber-600" />
                   How to export from Tally
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 text-sm text-gray-700">
+              <CardContent className="space-y-3 text-sm text-gray-900">
                 <ol className="list-decimal list-inside space-y-2">
                   <li>Open your Tally account</li>
                   <li>Go to Reports → Ledgers (or Party Ledgers)</li>
@@ -309,7 +309,7 @@ export default function TallyImportPage() {
     return (
       <AuthGuard requireAuth={true}>
         <MainLayout>
-          <div className="p-4 md:p-8 space-y-6 max-w-6xl mx-auto">
+          <div className="p-4 md:p-8 space-y-6 max-w-6xl mx-auto bg-white min-h-screen">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
@@ -519,7 +519,7 @@ export default function TallyImportPage() {
     return (
       <AuthGuard requireAuth={true}>
         <MainLayout>
-          <div className="p-4 md:p-8 space-y-6 max-w-2xl mx-auto">
+          <div className="p-4 md:p-8 space-y-6 max-w-2xl mx-auto bg-white min-h-screen">
             {/* Header */}
             <div className="text-center space-y-2">
               <h1 className="text-3xl font-bold">Ready to Import?</h1>
@@ -589,7 +589,7 @@ export default function TallyImportPage() {
     return (
       <AuthGuard requireAuth={true}>
         <MainLayout>
-          <div className="p-4 md:p-8 space-y-6 max-w-2xl mx-auto flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="p-4 md:p-8 space-y-6 max-w-2xl mx-auto flex flex-col items-center justify-center min-h-[60vh] bg-white">
             <div className="text-center space-y-4">
               <div className="flex justify-center">
                 <div className="relative w-20 h-20">
@@ -632,7 +632,7 @@ export default function TallyImportPage() {
     return (
       <AuthGuard requireAuth={true}>
         <MainLayout>
-          <div className="p-4 md:p-8 space-y-6 max-w-2xl mx-auto flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="p-4 md:p-8 space-y-6 max-w-2xl mx-auto flex flex-col items-center justify-center min-h-[60vh] bg-white">
             <div className="text-center space-y-4">
               <div className="flex justify-center">
                 <div className="p-4 bg-green-100 rounded-full">
