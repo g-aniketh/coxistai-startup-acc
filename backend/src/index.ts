@@ -435,9 +435,9 @@ const server = app.listen(PORT, () => {
   console.log(`🚀 CoXist AI Startup Accelerator API Server`);
   console.log(`📍 Port: ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`📍 Health check: http://65.1.166.80:${PORT}/api/v1/health`);
-  console.log(`📍 API Documentation: http://65.1.166.80:${PORT}/api/v1/docs`);
-  console.log(`🌐 API Base URL: http://65.1.166.80:${PORT}/api/v1`);
+  console.log(`📍 Health check: http://65.2.138.31:${PORT}/api/v1/health`);
+  console.log(`📍 API Documentation: http://65.2.138.31:${PORT}/api/v1/docs`);
+  console.log(`🌐 API Base URL: http://65.2.138.31:${PORT}/api/v1`);
   console.log(`🗄️  Database: Connected to PostgreSQL via Prisma`);
   
   // Start transaction sync service
