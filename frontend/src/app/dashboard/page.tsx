@@ -15,7 +15,7 @@ import { apiClient, DashboardSummary, CashflowChartData, RecentActivity } from '
 import toast from 'react-hot-toast';
 import { AlertTriangle, Brain, Calendar, DollarSign, Search, Target, TrendingDown, TrendingUp, Wallet, Zap } from 'lucide-react';
 
-const currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
 
 export default function DashboardPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
@@ -47,9 +47,58 @@ export default function DashboardPage() {
     loadDashboardData();
   }, []);
 
-  // Prepare chart data for StatCards
-  const balanceChartData = cashflowData.map(item => ({ value: item.income }));
-  const revenueChartData = cashflowData.map(item => ({ value: item.income }));
+  // Apply ECG heartbeat effect to real data
+  const applyECGEffect = (data: CashflowChartData[], getValueFn: (item: CashflowChartData) => number) => {
+    if (!data || data.length === 0) {
+      return Array.from({ length: 20 }, () => ({ value: 0 }));
+    }
+    
+    return data.map((item, i) => {
+      const baseValue = getValueFn(item);
+      
+      // Add ECG heartbeat waveform variation to real data
+      const pos = (i % 20) / 20;
+      
+      let ecgVariation = 0;
+      if (pos < 0.2) {
+        // P wave
+        const pPos = (pos - 0.1) / 0.1;
+        if (pos >= 0.1) ecgVariation = Math.sin(pPos * Math.PI) * 0.03;
+      } else if (pos >= 0.25 && pos < 0.35) {
+        // Q wave
+        const qPos = (pos - 0.25) / 0.1;
+        ecgVariation = -Math.sin(qPos * Math.PI * 0.5) * 0.08;
+      } else if (pos >= 0.35 && pos < 0.45) {
+        // R wave (strongest)
+        const rPos = (pos - 0.35) / 0.1;
+        ecgVariation = Math.sin(rPos * Math.PI) * 0.1;
+      } else if (pos >= 0.45 && pos < 0.55) {
+        // S wave
+        const sPos = (pos - 0.45) / 0.1;
+        ecgVariation = -Math.sin(sPos * Math.PI * 0.5) * 0.08;
+      } else if (pos >= 0.6 && pos < 0.75) {
+        // T wave
+        const tPos = (pos - 0.6) / 0.15;
+        ecgVariation = Math.sin(tPos * Math.PI) * 0.05;
+      }
+      
+      return { value: baseValue * (1 + ecgVariation) };
+    });
+  };
+
+  // Generate chart data from real cashflow data with ECG effect
+  const balanceChartData = applyECGEffect(cashflowData, (item) => 
+    summary?.financial.totalBalance || item.income || 100000
+  );
+  const revenueChartData = applyECGEffect(cashflowData, (item) => 
+    item.income || summary?.financial.monthlyRevenue || 50000
+  );
+  const burnRateChartData = applyECGEffect(cashflowData, (item) => 
+    item.expenses || summary?.financial.monthlyBurn || 30000
+  );
+  const runwayChartData = applyECGEffect(cashflowData, (item) => 
+    summary?.financial.runwayMonths || 15
+  );
   
   // Calculate growth percentages
   const balanceGrowth = summary ? ((summary.financial.netCashflow / summary.financial.totalBalance) * 100) : 0;
@@ -113,7 +162,7 @@ export default function DashboardPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard 
                   title="Cash Balance"
-                  value={summary ? currencyFormatter.format(summary.financial.totalBalance) : '$0'}
+                  value={summary ? currencyFormatter.format(summary.financial.totalBalance) : '₹0'}
                   percentageChange={17}
                   chartData={balanceChartData}
                   chartColor="#607c47"
@@ -122,7 +171,7 @@ export default function DashboardPage() {
                 />
                 <StatCard 
                   title="Monthly Revenue"
-                  value={summary ? currencyFormatter.format(summary.financial.monthlyRevenue) : '$0'}
+                  value={summary ? currencyFormatter.format(summary.financial.monthlyRevenue) : '₹0'}
                   percentageChange={23}
                   chartData={revenueChartData}
                   chartColor="#ccab59"
@@ -132,13 +181,17 @@ export default function DashboardPage() {
                 <StatCard 
                   title="Runway"
                   value={summary?.financial.runwayMonths ? `${summary.financial.runwayMonths.toFixed(1)} mo` : 'N/A'}
+                  chartData={runwayChartData}
+                  chartColor="#8B7EC8"
                   icon={<Calendar className="h-5 w-5" />}
                   cardClassName="bg-[#B7B3E6] text-[#2C2C2C]"
                 />
                 <StatCard 
                   title="Burn Rate"
-                  value={summary ? currencyFormatter.format(summary.financial.monthlyBurn) : '$0'}
+                  value={summary ? currencyFormatter.format(summary.financial.monthlyBurn) : '₹0'}
                   percentageChange={-8}
+                  chartData={burnRateChartData}
+                  chartColor="#FF6B82"
                   icon={<TrendingDown className="h-5 w-5" />}
                   cardClassName="bg-[#FFB3BA] text-[#8B0000]"
                 />

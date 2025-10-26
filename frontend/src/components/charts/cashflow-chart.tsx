@@ -16,7 +16,7 @@ interface CashflowChartProps {
 export default function CashflowChart({ data }: CashflowChartProps) {
   // Format data for the chart
   const chartData = data.map(item => ({
-    month: new Date(item.date + '-01').toLocaleDateString('en-US', { month: 'short' }),
+    month: new Date(item.date + '-01').toLocaleDateString('en-IN', { month: 'short' }),
     income: item.income,
     expenses: item.expenses,
     net: item.netCashflow

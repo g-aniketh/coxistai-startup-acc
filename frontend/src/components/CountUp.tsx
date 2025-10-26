@@ -101,7 +101,7 @@ export default function CountUp({
           maximumFractionDigits: hasDecimals ? maxDecimals : 0
         };
 
-        const formattedNumber = Intl.NumberFormat('en-US', options).format(latest);
+        const formattedNumber = Intl.NumberFormat('en-IN', options).format(latest);
         const finalNumber = separator ? formattedNumber.replace(/,/g, separator) : formattedNumber;
 
         ref.current.textContent = `${prefix}${finalNumber}${suffix}`;

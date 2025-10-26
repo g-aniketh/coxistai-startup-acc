@@ -106,9 +106,9 @@ export default function AddProductModal({ isOpen, onClose, onSubmit }: AddProduc
   const formatCurrency = (value: string) => {
     const number = parseFloat(value);
     if (isNaN(number)) return '';
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       minimumFractionDigits: 2,
     }).format(number);
   };

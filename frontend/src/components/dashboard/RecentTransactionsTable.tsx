@@ -70,7 +70,7 @@ export default function RecentTransactionsTable({ activities }: RecentTransactio
                   {isCredit ? '+' : '-'}${activity.amount.toLocaleString()}
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {new Date(activity.date).toLocaleDateString('en-US', {
+                  {new Date(activity.date).toLocaleDateString('en-IN', {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric',

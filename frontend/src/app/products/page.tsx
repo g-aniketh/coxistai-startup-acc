@@ -370,9 +370,9 @@ export default function ProductsPage() {
   );
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       minimumFractionDigits: 2,
     }).format(amount);
   };
@@ -442,7 +442,7 @@ export default function ProductsPage() {
     ).reduce((sum, m) => sum + m.quantity, 0);
     
     return {
-      date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      date: date.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
       stockIn: inMovements,
       stockOut: outMovements,
       netChange: inMovements - outMovements

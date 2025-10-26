@@ -148,7 +148,7 @@ export default function StatisticsPage() {
                               borderRadius: '0.75rem',
                             }}
                             formatter={(value, name) => [
-                              new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value as number),
+                              new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value as number),
                               name === 'income' ? 'Income' : name === 'expenses' ? 'Expenses' : 'Net'
                             ]}
                           />
@@ -182,7 +182,7 @@ export default function StatisticsPage() {
                             }}
                             formatter={(value, name) => [
                               name === 'revenue' ? 
-                                new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value as number) :
+                                new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value as number) :
                                 value,
                               name === 'revenue' ? 'Revenue' : 'Customers'
                             ]}
@@ -253,7 +253,7 @@ export default function StatisticsPage() {
                               borderRadius: '0.75rem',
                             }}
                             formatter={(value) => [
-                              new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value as number),
+                              new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value as number),
                               'Amount'
                             ]}
                           />
@@ -274,7 +274,7 @@ export default function StatisticsPage() {
                           </div>
                           <div className="text-right">
                             <div className="font-semibold text-[#2C2C2C]">
-                              {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(expense.value)}
+                              {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(expense.value)}
                             </div>
                             <div className="text-xs text-gray-500">
                               {((expense.value / expenseBreakdown.reduce((sum, e) => sum + e.value, 0)) * 100).toFixed(1)}%

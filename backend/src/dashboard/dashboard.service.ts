@@ -18,6 +18,12 @@ export const getDashboardSummary = async (startupId: string) => {
     where: {
       startupId,
       date: { gte: threeMonthsAgo }
+    },
+    include: {
+      account: true
+    },
+    orderBy: {
+      date: 'desc'
     }
   });
 
@@ -92,6 +98,9 @@ export const getCashflowChart = async (startupId: string, months: number = 6) =>
     where: {
       startupId,
       date: { gte: startDate }
+    },
+    include: {
+      account: true
     },
     orderBy: { date: 'asc' }
   });

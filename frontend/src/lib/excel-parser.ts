@@ -306,50 +306,171 @@ function validateTallyData(result: TallyImportData): void {
   }
 }
 
-// Generate a sample Tally Excel template
+// Generate a comprehensive Tally Excel template with all fields
 export function generateTallySampleTemplate(): XLSX.WorkBook {
+  // Comprehensive Ledger Data - All major account groups
   const ledgerData = [
-    {
-      'Ledger Name': 'Cash',
-      'Group Name': 'Cash & Bank',
-      'Opening Balance': 500000,
-      'Balance Type': 'Debit'
-    },
-    {
-      'Ledger Name': 'Bank Account',
-      'Group Name': 'Cash & Bank',
-      'Opening Balance': 1000000,
-      'Balance Type': 'Debit'
-    },
+    // Cash & Bank Accounts
+    { 'Ledger Name': 'Cash Account', 'Group Name': 'Cash & Bank', 'Opening Balance': 50000, 'Balance Type': 'Debit' },
+    { 'Ledger Name': 'HDFC Current Account', 'Group Name': 'Cash & Bank', 'Opening Balance': 200000, 'Balance Type': 'Debit' },
+    { 'Ledger Name': 'ICICI Savings Account', 'Group Name': 'Cash & Bank', 'Opening Balance': 150000, 'Balance Type': 'Debit' },
+    
+    // Revenue Accounts
+    { 'Ledger Name': 'Product Sales', 'Group Name': 'Revenue', 'Opening Balance': 0, 'Balance Type': 'Credit' },
+    { 'Ledger Name': 'Service Revenue', 'Group Name': 'Revenue', 'Opening Balance': 0, 'Balance Type': 'Credit' },
+    { 'Ledger Name': 'Interest Income', 'Group Name': 'Revenue', 'Opening Balance': 0, 'Balance Type': 'Credit' },
+    
+    // Expense Accounts
+    { 'Ledger Name': 'Salaries & Wages', 'Group Name': 'Expenses', 'Opening Balance': 0, 'Balance Type': 'Debit' },
+    { 'Ledger Name': 'Office Rent', 'Group Name': 'Expenses', 'Opening Balance': 0, 'Balance Type': 'Debit' },
+    { 'Ledger Name': 'Internet & Phone', 'Group Name': 'Expenses', 'Opening Balance': 0, 'Balance Type': 'Debit' },
+    { 'Ledger Name': 'Travel Expenses', 'Group Name': 'Expenses', 'Opening Balance': 0, 'Balance Type': 'Debit' },
+    { 'Ledger Name': 'Office Supplies', 'Group Name': 'Expenses', 'Opening Balance': 0, 'Balance Type': 'Debit' },
+    { 'Ledger Name': 'Marketing & Advertising', 'Group Name': 'Expenses', 'Opening Balance': 0, 'Balance Type': 'Debit' },
+    
+    // Receivables - Customers
+    { 'Ledger Name': 'ABC Technologies Pvt Ltd', 'Group Name': 'Receivables', 'Opening Balance': 25000, 'Balance Type': 'Debit' },
+    { 'Ledger Name': 'XYZ Solutions Inc', 'Group Name': 'Receivables', 'Opening Balance': 18000, 'Balance Type': 'Debit' },
+    { 'Ledger Name': 'Global Enterprises', 'Group Name': 'Receivables', 'Opening Balance': 20000, 'Balance Type': 'Debit' },
+    
+    // Payables - Suppliers
+    { 'Ledger Name': 'Premium Suppliers', 'Group Name': 'Payables', 'Opening Balance': 15000, 'Balance Type': 'Credit' },
+    { 'Ledger Name': 'Quality Vendors Ltd', 'Group Name': 'Payables', 'Opening Balance': 12000, 'Balance Type': 'Credit' },
+    { 'Ledger Name': 'Trusted Partners', 'Group Name': 'Payables', 'Opening Balance': 10000, 'Balance Type': 'Credit' },
+    
+    // Fixed Assets
+    { 'Ledger Name': 'Office Equipment', 'Group Name': 'Fixed Assets', 'Opening Balance': 100000, 'Balance Type': 'Debit' },
+    { 'Ledger Name': 'Computer & Software', 'Group Name': 'Fixed Assets', 'Opening Balance': 80000, 'Balance Type': 'Debit' },
+    { 'Ledger Name': 'Furniture & Fixtures', 'Group Name': 'Fixed Assets', 'Opening Balance': 40000, 'Balance Type': 'Debit' },
+    
+    // Investment
+    { 'Ledger Name': 'Equity Investments', 'Group Name': 'Investment', 'Opening Balance': 200000, 'Balance Type': 'Debit' },
+    
+    // Capital & Equity
+    { 'Ledger Name': 'Share Capital', 'Group Name': 'Capital', 'Opening Balance': 500000, 'Balance Type': 'Credit' },
+    { 'Ledger Name': 'Retained Earnings', 'Group Name': 'Capital', 'Opening Balance': 50000, 'Balance Type': 'Credit' },
+    
+    // Loans & Liabilities
+    { 'Ledger Name': 'Bank Loan - HDFC', 'Group Name': 'Liabilities', 'Opening Balance': 300000, 'Balance Type': 'Credit' },
+    { 'Ledger Name': 'Outstanding Taxes', 'Group Name': 'Liabilities', 'Opening Balance': 15000, 'Balance Type': 'Credit' },
+    { 'Ledger Name': 'GST Payable', 'Group Name': 'Liabilities', 'Opening Balance': 12000, 'Balance Type': 'Credit' },
   ];
 
+  // Comprehensive Party Data
   const partyData = [
     {
-      'Party Name': 'ABC Corporation',
+      'Party Name': 'ABC Technologies Pvt Ltd',
       'Type': 'Customer',
-      'Opening Balance': 50000,
+      'Opening Balance': 25000,
       'Balance Type': 'Debit',
-      'Email': 'contact@abc.com'
+      'Email': 'accounts@abc-tech.com',
+      'Mobile': '9876543210',
+      'Address': '123 Tech Park, Bangalore',
+      'GSTIN': '29ABCDE1234F1Z5'
     },
     {
-      'Party Name': 'XYZ Suppliers',
+      'Party Name': 'XYZ Solutions Inc',
+      'Type': 'Customer',
+      'Opening Balance': 18000,
+      'Balance Type': 'Debit',
+      'Email': 'info@xyz-solutions.com',
+      'Mobile': '9876543211',
+      'Address': '456 Business Center, Mumbai',
+      'GSTIN': '27FGHIJ5678K2Z9'
+    },
+    {
+      'Party Name': 'Global Enterprises',
+      'Type': 'Customer',
+      'Opening Balance': 20000,
+      'Balance Type': 'Debit',
+      'Email': 'contact@global-ent.com',
+      'Mobile': '9876543212',
+      'Address': '789 Corporate Hub, Delhi',
+      'GSTIN': '07MNOPQ9012R3Z5'
+    },
+    {
+      'Party Name': 'Premium Suppliers',
       'Type': 'Supplier',
-      'Opening Balance': 75000,
+      'Opening Balance': 15000,
       'Balance Type': 'Credit',
-      'Email': 'sales@xyz.com'
+      'Email': 'sales@premium-suppliers.com',
+      'Mobile': '9876543213',
+      'Address': '321 Supplier Street, Chennai',
+      'GSTIN': '33STUVW3456X7Z8'
+    },
+    {
+      'Party Name': 'Quality Vendors Ltd',
+      'Type': 'Supplier',
+      'Opening Balance': 12000,
+      'Balance Type': 'Credit',
+      'Email': 'purchase@quality-vendors.com',
+      'Mobile': '9876543214',
+      'Address': '654 Vendor Road, Pune',
+      'GSTIN': '27YZXAB8901C2Z3'
+    },
+    {
+      'Party Name': 'Trusted Partners',
+      'Type': 'Supplier',
+      'Opening Balance': 10000,
+      'Balance Type': 'Credit',
+      'Email': 'ops@trusted-partners.com',
+      'Mobile': '9876543215',
+      'Address': '987 Partner Avenue, Hyderabad',
+      'GSTIN': '36DEFGH4567I8Z9'
     },
   ];
 
+  // Comprehensive Transactions - Real-world scenarios (ALL BALANCED)
   const transactionData = [
-    {
-      'Date': '2024-01-01',
-      'Voucher No': 'JNL001',
-      'Voucher Type': 'Journal',
-      'Ledger Name': 'Cash',
-      'Debit': 50000,
-      'Credit': 0,
-      'Narration': 'Opening cash balance'
-    },
+    // Opening Balance Entries - Balance: Debit = 400000, Credit = 400000
+    { 'Date': '2024-01-01', 'Voucher No': 'OB001', 'Voucher Type': 'Journal', 'Ledger Name': 'Cash Account', 'Debit': 50000, 'Credit': 0, 'Narration': 'Opening balance', 'Particulars': 'Opening stock', 'Reference': 'OB-2024' },
+    { 'Date': '2024-01-01', 'Voucher No': 'OB001', 'Voucher Type': 'Journal', 'Ledger Name': 'Share Capital', 'Debit': 0, 'Credit': 50000, 'Narration': 'Opening balance', 'Particulars': 'Capital contribution', 'Reference': 'OB-2024' },
+    
+    { 'Date': '2024-01-01', 'Voucher No': 'OB002', 'Voucher Type': 'Journal', 'Ledger Name': 'HDFC Current Account', 'Debit': 200000, 'Credit': 0, 'Narration': 'Opening balance', 'Particulars': 'Opening stock', 'Reference': 'OB-2024' },
+    { 'Date': '2024-01-01', 'Voucher No': 'OB002', 'Voucher Type': 'Journal', 'Ledger Name': 'Share Capital', 'Debit': 0, 'Credit': 200000, 'Narration': 'Opening balance', 'Particulars': 'Capital contribution', 'Reference': 'OB-2024' },
+    
+    // Sales Entries (February) - Balance: Debit = 70000, Credit = 70000
+    { 'Date': '2024-02-05', 'Voucher No': 'SL-2024-001', 'Voucher Type': 'Sales', 'Ledger Name': 'ABC Technologies Pvt Ltd', 'Debit': 35000, 'Credit': 0, 'Narration': 'Sale of products', 'Particulars': 'Invoice #INV-001', 'Reference': 'INV-001' },
+    { 'Date': '2024-02-05', 'Voucher No': 'SL-2024-001', 'Voucher Type': 'Sales', 'Ledger Name': 'Product Sales', 'Debit': 0, 'Credit': 35000, 'Narration': 'Sale of products', 'Particulars': 'Revenue recognition', 'Reference': 'INV-001' },
+    
+    { 'Date': '2024-02-10', 'Voucher No': 'SL-2024-002', 'Voucher Type': 'Sales', 'Ledger Name': 'XYZ Solutions Inc', 'Debit': 35000, 'Credit': 0, 'Narration': 'Sale of services', 'Particulars': 'Invoice #INV-002', 'Reference': 'INV-002' },
+    { 'Date': '2024-02-10', 'Voucher No': 'SL-2024-002', 'Voucher Type': 'Sales', 'Ledger Name': 'Service Revenue', 'Debit': 0, 'Credit': 35000, 'Narration': 'Sale of services', 'Particulars': 'Revenue recognition', 'Reference': 'INV-002' },
+    
+    // Purchase Entries (February) - Balance: Debit = 35000, Credit = 35000
+    { 'Date': '2024-02-12', 'Voucher No': 'PR-2024-001', 'Voucher Type': 'Purchase', 'Ledger Name': 'Premium Suppliers', 'Debit': 0, 'Credit': 25000, 'Narration': 'Purchase of goods', 'Particulars': 'Bill #BILL-001', 'Reference': 'BILL-001' },
+    { 'Date': '2024-02-12', 'Voucher No': 'PR-2024-001', 'Voucher Type': 'Purchase', 'Ledger Name': 'Office Supplies', 'Debit': 25000, 'Credit': 0, 'Narration': 'Purchase of goods', 'Particulars': 'Inventory', 'Reference': 'BILL-001' },
+    
+    { 'Date': '2024-02-15', 'Voucher No': 'PR-2024-002', 'Voucher Type': 'Purchase', 'Ledger Name': 'Quality Vendors Ltd', 'Debit': 0, 'Credit': 10000, 'Narration': 'Purchase of raw materials', 'Particulars': 'Bill #BILL-002', 'Reference': 'BILL-002' },
+    { 'Date': '2024-02-15', 'Voucher No': 'PR-2024-002', 'Voucher Type': 'Purchase', 'Ledger Name': 'Office Supplies', 'Debit': 10000, 'Credit': 0, 'Narration': 'Purchase of raw materials', 'Particulars': 'Inventory', 'Reference': 'BILL-002' },
+    
+    // Payment Entries (March) - Balance: Debit = 75000, Credit = 75000
+    { 'Date': '2024-03-01', 'Voucher No': 'PY-2024-001', 'Voucher Type': 'Payment', 'Ledger Name': 'Salaries & Wages', 'Debit': 50000, 'Credit': 0, 'Narration': 'Salary payment', 'Particulars': 'March 2024 salary', 'Reference': 'SAL-MAR-2024' },
+    { 'Date': '2024-03-01', 'Voucher No': 'PY-2024-001', 'Voucher Type': 'Payment', 'Ledger Name': 'HDFC Current Account', 'Debit': 0, 'Credit': 50000, 'Narration': 'Salary payment', 'Particulars': 'Bank transfer', 'Reference': 'SAL-MAR-2024' },
+    
+    { 'Date': '2024-03-05', 'Voucher No': 'PY-2024-002', 'Voucher Type': 'Payment', 'Ledger Name': 'Office Rent', 'Debit': 25000, 'Credit': 0, 'Narration': 'Office rent', 'Particulars': 'March 2024 rent', 'Reference': 'RENT-MAR-2024' },
+    { 'Date': '2024-03-05', 'Voucher No': 'PY-2024-002', 'Voucher Type': 'Payment', 'Ledger Name': 'Cash Account', 'Debit': 0, 'Credit': 25000, 'Narration': 'Office rent', 'Particulars': 'Cash payment', 'Reference': 'RENT-MAR-2024' },
+    
+    // Receipt Entries (March) - Balance: Debit = 53000, Credit = 53000
+    { 'Date': '2024-03-10', 'Voucher No': 'RC-2024-001', 'Voucher Type': 'Receipt', 'Ledger Name': 'Cash Account', 'Debit': 35000, 'Credit': 0, 'Narration': 'Customer payment received', 'Particulars': 'Payment from ABC Technologies', 'Reference': 'PYM-001' },
+    { 'Date': '2024-03-10', 'Voucher No': 'RC-2024-001', 'Voucher Type': 'Receipt', 'Ledger Name': 'ABC Technologies Pvt Ltd', 'Debit': 0, 'Credit': 35000, 'Narration': 'Customer payment received', 'Particulars': 'Outstanding cleared', 'Reference': 'PYM-001' },
+    
+    { 'Date': '2024-03-15', 'Voucher No': 'RC-2024-002', 'Voucher Type': 'Receipt', 'Ledger Name': 'HDFC Current Account', 'Debit': 18000, 'Credit': 0, 'Narration': 'Customer payment via bank', 'Particulars': 'Payment from XYZ Solutions', 'Reference': 'PYM-002' },
+    { 'Date': '2024-03-15', 'Voucher No': 'RC-2024-002', 'Voucher Type': 'Receipt', 'Ledger Name': 'XYZ Solutions Inc', 'Debit': 0, 'Credit': 18000, 'Narration': 'Customer payment via bank', 'Particulars': 'Outstanding cleared', 'Reference': 'PYM-002' },
+    
+    // Journal Entries (April) - Balance: Debit = 15000, Credit = 15000
+    { 'Date': '2024-04-01', 'Voucher No': 'JNL-2024-001', 'Voucher Type': 'Journal', 'Ledger Name': 'Internet & Phone', 'Debit': 5000, 'Credit': 0, 'Narration': 'Monthly internet charges', 'Particulars': 'April 2024', 'Reference': 'INT-APR-2024' },
+    { 'Date': '2024-04-01', 'Voucher No': 'JNL-2024-001', 'Voucher Type': 'Journal', 'Ledger Name': 'HDFC Current Account', 'Debit': 0, 'Credit': 5000, 'Narration': 'Monthly internet charges', 'Particulars': 'Bank transfer', 'Reference': 'INT-APR-2024'},
+    
+    { 'Date': '2024-04-05', 'Voucher No': 'JNL-2024-002', 'Voucher Type': 'Journal', 'Ledger Name': 'Travel Expenses', 'Debit': 10000, 'Credit': 0, 'Narration': 'Business travel expense', 'Particulars': 'Client meeting travel', 'Reference': 'TRAV-001' },
+    { 'Date': '2024-04-05', 'Voucher No': 'JNL-2024-002', 'Voucher Type': 'Journal', 'Ledger Name': 'Cash Account', 'Debit': 0, 'Credit': 10000, 'Narration': 'Business travel expense', 'Particulars': 'Cash reimbursement', 'Reference': 'TRAV-001' },
+    
+    // Sales Entries (May) - Balance: Debit = 20000, Credit = 20000
+    { 'Date': '2024-05-10', 'Voucher No': 'SL-2024-003', 'Voucher Type': 'Sales', 'Ledger Name': 'Global Enterprises', 'Debit': 20000, 'Credit': 0, 'Narration': 'Sale of products', 'Particulars': 'Invoice #INV-003', 'Reference': 'INV-003' },
+    { 'Date': '2024-05-10', 'Voucher No': 'SL-2024-003', 'Voucher Type': 'Sales', 'Ledger Name': 'Product Sales', 'Debit': 0, 'Credit': 20000, 'Narration': 'Sale of products', 'Particulars': 'Revenue recognition', 'Reference': 'INV-003' },
+    
+    // Payment Entries (June) - Balance: Debit = 20000, Credit = 20000
+    { 'Date': '2024-06-01', 'Voucher No': 'PY-2024-003', 'Voucher Type': 'Payment', 'Ledger Name': 'Marketing & Advertising', 'Debit': 20000, 'Credit': 0, 'Narration': 'Marketing campaign expenses', 'Particulars': 'Digital marketing', 'Reference': 'MRK-001' },
+    { 'Date': '2024-06-01', 'Voucher No': 'PY-2024-003', 'Voucher Type': 'Payment', 'Ledger Name': 'HDFC Current Account', 'Debit': 0, 'Credit': 20000, 'Narration': 'Marketing campaign expenses', 'Particulars': 'Online payment', 'Reference': 'MRK-001' },
   ];
 
   const wb = XLSX.utils.book_new();

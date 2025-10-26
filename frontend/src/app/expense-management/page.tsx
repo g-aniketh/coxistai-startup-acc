@@ -55,7 +55,7 @@ interface ExpenseReceipt {
   notes?: string;
 }
 
-const currency = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+const currency = (n: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(n);
 
 const EXPENSE_CATEGORIES = [
   'Meals & Entertainment',

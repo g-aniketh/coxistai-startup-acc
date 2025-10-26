@@ -49,7 +49,7 @@ interface Invoice {
 }
 
 const currency = (n: number) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
+  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(n);
 
 export default function InvoicingPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);

@@ -64,7 +64,7 @@ interface SyncLog {
   transactionsProcessed?: number;
 }
 
-const currency = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+const currency = (n: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(n);
 
 const MOCK_BANKS: BankConnection[] = [
   { id: '1', bankName: 'Bank of America', logo: '🏦', status: 'connected', lastSync: '2024-01-20T10:30:00Z', accountsCount: 2 },

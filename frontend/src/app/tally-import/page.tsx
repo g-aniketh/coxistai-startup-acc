@@ -270,13 +270,13 @@ export default function TallyImportPage() {
                 <CardTitle className="text-lg text-gray-900">Need a sample template?</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <p className="text-gray-800">Download our sample Tally import template to see the required format and example data.</p>
+                <p className="text-gray-800">Download our comprehensive Tally import template with 25+ ledgers, 6 parties, and 30+ transactions across all voucher types (Sales, Purchase, Payment, Receipt, Journal, Contra). This template demonstrates real-world Tally export formats including Revenue, Expenses, Assets, Liabilities, and more.</p>
                 <Button 
                   onClick={downloadSampleTemplate}
-                  className="bg-gray-800 hover:bg-gray-900"
+                  className="bg-blue-600 hover:bg-blue-700"
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Download Sample Template
+                  Download Comprehensive Tally Template
                 </Button>
               </CardContent>
             </Card>
@@ -313,11 +313,11 @@ export default function TallyImportPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold flex items-center gap-3">
+                <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
                   <Eye className="h-8 w-8 text-blue-600" />
                   Review Import Data
                 </h1>
-                <p className="text-gray-600 mt-1">File: {fileName}</p>
+                <p className="text-gray-700 mt-1">File: {fileName}</p>
               </div>
               <Button 
                 variant="outline" 
@@ -330,41 +330,41 @@ export default function TallyImportPage() {
 
             {/* Summary Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card>
+              <Card className="bg-blue-50 border-blue-200">
                 <CardContent className="pt-6">
                   <div className="text-center">
                     <BookOpen className="h-6 w-6 text-blue-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Ledgers</p>
+                    <p className="text-sm text-gray-700 font-semibold">Ledgers</p>
                     <p className="text-2xl font-bold text-gray-900">{importData.summary.totalLedgers}</p>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-green-50 border-green-200">
                 <CardContent className="pt-6">
                   <div className="text-center">
                     <Users className="h-6 w-6 text-green-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Parties</p>
+                    <p className="text-sm text-gray-700 font-semibold">Parties</p>
                     <p className="text-2xl font-bold text-gray-900">{importData.summary.totalParties}</p>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-purple-50 border-purple-200">
                 <CardContent className="pt-6">
                   <div className="text-center">
                     <BarChart3 className="h-6 w-6 text-purple-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Transactions</p>
+                    <p className="text-sm text-gray-700 font-semibold">Transactions</p>
                     <p className="text-2xl font-bold text-gray-900">{importData.summary.totalTransactions}</p>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-amber-50 border-amber-200">
                 <CardContent className="pt-6">
                   <div className="text-center">
                     <DollarSign className="h-6 w-6 text-amber-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Total Amount</p>
+                    <p className="text-sm text-gray-700 font-semibold">Total Amount</p>
                     <p className="text-2xl font-bold text-gray-900">{formatCurrency(importData.summary.totalDebit)}</p>
                   </div>
                 </CardContent>
@@ -416,31 +416,44 @@ export default function TallyImportPage() {
 
             {/* Ledgers Preview */}
             {importData.ledgers.length > 0 && (
-              <Card>
+              <Card className="bg-white">
                 <CardHeader>
                   <div className="flex items-center justify-between cursor-pointer" onClick={() => setExpandedSections(prev => ({ ...prev, ledgers: !prev.ledgers }))}>
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="text-gray-900 flex items-center gap-2">
                       <BookOpen className="h-5 w-5" />
                       Ledgers ({importData.ledgers.length})
                     </CardTitle>
-                    <Badge variant="outline">{expandedSections.ledgers ? 'Hide' : 'Show'}</Badge>
+                    <Badge variant="outline" className="text-gray-700">{expandedSections.ledgers ? 'Hide' : 'Show'}</Badge>
                   </div>
                 </CardHeader>
                 {expandedSections.ledgers && (
                   <CardContent>
                     <div className="space-y-2">
-                      {importData.ledgers.map((ledger, idx) => (
-                        <div key={idx} className="p-3 bg-gray-50 rounded-lg flex items-center justify-between hover:bg-gray-100 transition">
-                          <div>
-                            <p className="font-semibold text-gray-900">{ledger.ledgerName}</p>
-                            <p className="text-sm text-gray-600">{ledger.accountGroup || 'No group'}</p>
+                      {importData.ledgers.map((ledger, idx) => {
+                        // Determine badge color based on account group
+                        const getGroupColor = (group: string) => {
+                          if (group.includes('Cash') || group.includes('Bank')) return 'bg-blue-50 hover:bg-blue-100 border-l-4 border-blue-500';
+                          if (group.includes('Revenue')) return 'bg-green-50 hover:bg-green-100 border-l-4 border-green-500';
+                          if (group.includes('Expense')) return 'bg-red-50 hover:bg-red-100 border-l-4 border-red-500';
+                          if (group.includes('Asset')) return 'bg-purple-50 hover:bg-purple-100 border-l-4 border-purple-500';
+                          if (group.includes('Liability') || group.includes('Capital')) return 'bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-500';
+                          return 'bg-gray-50 hover:bg-gray-100 border-l-4 border-gray-400';
+                        };
+                        return (
+                          <div key={idx} className={`p-4 rounded-lg flex items-center justify-between transition-all duration-200 shadow-sm ${getGroupColor(ledger.accountGroup || '')}`}>
+                            <div>
+                              <p className="font-semibold text-gray-900">{ledger.ledgerName}</p>
+                              <p className="text-sm text-gray-700 font-medium">{ledger.accountGroup || 'No group'}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-bold text-gray-900 text-lg">{formatCurrency(ledger.openingBalance)}</p>
+                              <p className={`text-xs font-semibold ${ledger.openingType === 'Debit' ? 'text-blue-700' : 'text-green-700'}`}>
+                                {ledger.openingType}
+                              </p>
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-gray-900">{formatCurrency(ledger.openingBalance)}</p>
-                            <p className="text-xs text-gray-600">{ledger.openingType}</p>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </CardContent>
                 )}
@@ -449,14 +462,14 @@ export default function TallyImportPage() {
 
             {/* Parties Preview */}
             {importData.parties.length > 0 && (
-              <Card>
+              <Card className="bg-white">
                 <CardHeader>
                   <div className="flex items-center justify-between cursor-pointer" onClick={() => setExpandedSections(prev => ({ ...prev, parties: !prev.parties }))}>
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="text-gray-900 flex items-center gap-2">
                       <Users className="h-5 w-5" />
                       Parties ({importData.parties.length})
                     </CardTitle>
-                    <Badge variant="outline">{expandedSections.parties ? 'Hide' : 'Show'}</Badge>
+                    <Badge variant="outline" className="text-gray-700">{expandedSections.parties ? 'Hide' : 'Show'}</Badge>
                   </div>
                 </CardHeader>
                 {expandedSections.parties && (
@@ -464,28 +477,30 @@ export default function TallyImportPage() {
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
-                          <TableRow>
-                            <TableHead>Party Name</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Opening Balance</TableHead>
-                            <TableHead>Balance Type</TableHead>
-                            <TableHead>Email</TableHead>
+                          <TableRow className="bg-gradient-to-r from-blue-50 to-purple-50">
+                            <TableHead className="font-semibold text-gray-900">Party Name</TableHead>
+                            <TableHead className="font-semibold text-gray-900">Type</TableHead>
+                            <TableHead className="font-semibold text-gray-900">Opening Balance</TableHead>
+                            <TableHead className="font-semibold text-gray-900">Balance Type</TableHead>
+                            <TableHead className="font-semibold text-gray-900">Email</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {importData.parties.map((party, idx) => (
-                            <TableRow key={idx}>
-                              <TableCell className="font-semibold">{party.name}</TableCell>
+                            <TableRow key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                              <TableCell className="font-semibold text-gray-900">{party.name}</TableCell>
                               <TableCell>
-                                <Badge variant="outline">{party.type}</Badge>
+                                <Badge variant="outline" className={`${party.type === 'Customer' ? 'border-green-500 text-green-700 bg-green-50' : 'border-orange-500 text-orange-700 bg-orange-50'}`}>
+                                  {party.type}
+                                </Badge>
                               </TableCell>
-                              <TableCell>{formatCurrency(party.openingBalance)}</TableCell>
+                              <TableCell className="text-gray-900 font-medium">{formatCurrency(party.openingBalance)}</TableCell>
                               <TableCell>
-                                <Badge className={party.balanceType === 'Debit' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}>
+                                <Badge className={party.balanceType === 'Debit' ? 'bg-blue-100 text-blue-800 font-semibold' : 'bg-green-100 text-green-800 font-semibold'}>
                                   {party.balanceType}
                                 </Badge>
                               </TableCell>
-                              <TableCell className="text-sm">{party.email || '—'}</TableCell>
+                              <TableCell className="text-sm text-gray-900">{party.email || '—'}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -522,32 +537,32 @@ export default function TallyImportPage() {
           <div className="p-4 md:p-8 space-y-6 max-w-2xl mx-auto bg-white min-h-screen">
             {/* Header */}
             <div className="text-center space-y-2">
-              <h1 className="text-3xl font-bold">Ready to Import?</h1>
-              <p className="text-gray-600">Review the summary below and confirm to proceed</p>
+              <h1 className="text-3xl font-bold text-gray-900">Ready to Import?</h1>
+              <p className="text-gray-700">Review the summary below and confirm to proceed</p>
             </div>
 
             {/* Summary */}
-            <Card>
+            <Card className="bg-white">
               <CardHeader>
-                <CardTitle>Import Summary</CardTitle>
+                <CardTitle className="text-gray-900">Import Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-gray-50 rounded">
-                    <p className="text-sm text-gray-600">Ledgers to Import</p>
-                    <p className="text-2xl font-bold text-gray-900">{importData.summary.totalLedgers}</p>
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-700 font-semibold">Ledgers to Import</p>
+                    <p className="text-2xl font-bold text-blue-900">{importData.summary.totalLedgers}</p>
                   </div>
-                  <div className="p-3 bg-gray-50 rounded">
-                    <p className="text-sm text-gray-600">Parties to Import</p>
-                    <p className="text-2xl font-bold text-gray-900">{importData.summary.totalParties}</p>
+                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                    <p className="text-sm text-green-700 font-semibold">Parties to Import</p>
+                    <p className="text-2xl font-bold text-green-900">{importData.summary.totalParties}</p>
                   </div>
-                  <div className="p-3 bg-gray-50 rounded">
-                    <p className="text-sm text-gray-600">Transactions</p>
-                    <p className="text-2xl font-bold text-gray-900">{importData.summary.totalTransactions}</p>
+                  <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <p className="text-sm text-purple-700 font-semibold">Transactions</p>
+                    <p className="text-2xl font-bold text-purple-900">{importData.summary.totalTransactions}</p>
                   </div>
-                  <div className="p-3 bg-gray-50 rounded">
-                    <p className="text-sm text-gray-600">Total Amount</p>
-                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(importData.summary.totalDebit)}</p>
+                  <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                    <p className="text-sm text-amber-700 font-semibold">Total Amount</p>
+                    <p className="text-2xl font-bold text-amber-900">{formatCurrency(importData.summary.totalDebit)}</p>
                   </div>
                 </div>
               </CardContent>
@@ -602,8 +617,8 @@ export default function TallyImportPage() {
                   />
                 </div>
               </div>
-              <h1 className="text-3xl font-bold">Importing Your Data</h1>
-              <p className="text-gray-600">Please wait while we process your Tally records...</p>
+              <h1 className="text-3xl font-bold text-gray-900">Importing Your Data</h1>
+              <p className="text-gray-700">Please wait while we process your Tally records...</p>
               
               {/* Progress bar */}
               <div className="w-full max-w-md mt-6">
@@ -613,13 +628,13 @@ export default function TallyImportPage() {
                     style={{ width: `${importProgress}%` }}
                   />
                 </div>
-                <p className="text-sm text-gray-600 mt-2">{importProgress}% Complete</p>
+                <p className="text-sm text-gray-800 font-semibold mt-2">{importProgress}% Complete</p>
               </div>
 
-              <div className="mt-6 space-y-2 text-sm text-gray-700">
-                <p>✓ Validating ledgers</p>
-                <p>✓ Processing parties</p>
-                <p>✓ Importing transactions</p>
+              <div className="mt-6 space-y-2 text-sm text-gray-800">
+                <p className="font-medium">✓ Validating ledgers</p>
+                <p className="font-medium">✓ Processing parties</p>
+                <p className="font-medium">✓ Importing transactions</p>
               </div>
             </div>
           </div>
@@ -639,35 +654,35 @@ export default function TallyImportPage() {
                   <CheckCircle className="h-16 w-16 text-green-600" />
                 </div>
               </div>
-              <h1 className="text-3xl font-bold">Import Successful!</h1>
-              <p className="text-gray-600">Your Tally data has been successfully imported</p>
+              <h1 className="text-3xl font-bold text-gray-900">Import Successful!</h1>
+              <p className="text-gray-700">Your Tally data has been successfully imported</p>
               
               {importData && (
-                <Card className="mt-6 text-left">
+                <Card className="mt-6 text-left bg-gradient-to-br from-green-50 to-blue-50 border-2 border-green-200">
                   <CardContent className="pt-6">
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-gray-700">Ledgers Imported:</span>
-                        <span className="font-bold text-gray-900">{importData.summary.totalLedgers}</span>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                        <span className="text-gray-800 font-semibold">Ledgers Imported:</span>
+                        <span className="font-bold text-blue-700 text-xl">{importData.summary.totalLedgers}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-700">Parties Added:</span>
-                        <span className="font-bold text-gray-900">{importData.summary.totalParties}</span>
+                      <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                        <span className="text-gray-800 font-semibold">Parties Added:</span>
+                        <span className="font-bold text-green-700 text-xl">{importData.summary.totalParties}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-700">Transactions Recorded:</span>
-                        <span className="font-bold text-gray-900">{importData.summary.totalTransactions}</span>
+                      <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                        <span className="text-gray-800 font-semibold">Transactions Recorded:</span>
+                        <span className="font-bold text-purple-700 text-xl">{importData.summary.totalTransactions}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-700">Total Amount:</span>
-                        <span className="font-bold text-gray-900">{formatCurrency(importData.summary.totalDebit)}</span>
+                      <div className="flex justify-between items-center p-3 bg-amber-50 rounded-lg">
+                        <span className="text-gray-800 font-semibold">Total Amount:</span>
+                        <span className="font-bold text-amber-700 text-xl">{formatCurrency(importData.summary.totalDebit)}</span>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               )}
 
-              <p className="text-sm text-gray-600 mt-4">Your financial dashboard has been updated with all imported records.</p>
+              <p className="text-sm text-gray-700 mt-4">Your financial dashboard has been updated with all imported records.</p>
 
               <div className="flex gap-3 pt-4 w-full">
                 <Button 

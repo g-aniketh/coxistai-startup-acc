@@ -268,7 +268,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, accoun
                         <div>
                           <div className="font-medium">{account.name}</div>
                           <div className="text-xs text-gray-500">
-                            Balance: {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(account.balance)}
+                            Balance: {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(account.balance)}
                           </div>
                         </div>
                       </div>

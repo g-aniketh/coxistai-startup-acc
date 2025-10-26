@@ -35,7 +35,7 @@ interface BankTxn {
   confidence?: number; // AI classification confidence
 }
 
-const currency = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+const currency = (n: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(n);
 
 const MOCK_CATEGORIES = [
   'SaaS: Subscriptions',

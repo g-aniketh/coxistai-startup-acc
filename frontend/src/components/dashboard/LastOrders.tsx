@@ -11,7 +11,7 @@ interface LastOrdersProps {
   activities?: RecentActivity[];
 }
 
-const currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
 
 export default function LastOrders({ activities = [] }: LastOrdersProps) {
   return (
@@ -70,7 +70,7 @@ export default function LastOrders({ activities = [] }: LastOrdersProps) {
                     </div>
                   </TableCell>
                   <TableCell className="text-right text-gray-500">
-                    {new Date(activity.date).toLocaleDateString('en-US', { 
+                    {new Date(activity.date).toLocaleDateString('en-IN', { 
                       month: 'short', 
                       day: 'numeric',
                       year: 'numeric'

@@ -8,7 +8,7 @@ interface RecentSalesProps {
   activities?: RecentActivity[];
 }
 
-const currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
 
 export default function RecentSales({ activities = [] }: RecentSalesProps) {
   return (
@@ -36,7 +36,7 @@ export default function RecentSales({ activities = [] }: RecentSalesProps) {
                 <div className="ml-4 flex-1">
                   <p className="font-semibold text-sm text-gray-800">{activity.description}</p>
                   <p className="text-xs text-gray-500">
-                    {new Date(activity.date).toLocaleDateString('en-US', { 
+                    {new Date(activity.date).toLocaleDateString('en-IN', { 
                       month: 'short', 
                       day: 'numeric',
                       hour: '2-digit',

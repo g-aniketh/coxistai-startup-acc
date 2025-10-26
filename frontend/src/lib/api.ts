@@ -214,7 +214,7 @@ export interface TeamMember {
 
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 120000, // 2 minutes for long-running imports
   headers: {
     'Content-Type': 'application/json',
   },

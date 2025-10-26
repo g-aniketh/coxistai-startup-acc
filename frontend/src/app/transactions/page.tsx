@@ -238,15 +238,15 @@ export default function TransactionsPage() {
   const totalPages = Math.ceil(sortedTransactions.length / itemsPerPage);
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       minimumFractionDigits: 2,
     }).format(amount);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('en-IN', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -280,7 +280,7 @@ export default function TransactionsPage() {
 
   // Monthly trend data
   const monthlyData = transactions.reduce((acc, t) => {
-    const month = new Date(t.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    const month = new Date(t.date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
     if (!acc[month]) {
       acc[month] = { income: 0, expenses: 0 };
     }

@@ -23,7 +23,7 @@ export default function RunwayChart({ currentBalance, monthlyBurn, runwayMonths 
       date.setMonth(date.getMonth() + i);
       
       months.push({
-        month: date.toLocaleDateString('en-US', { month: 'short' }),
+        month: date.toLocaleDateString('en-IN', { month: 'short' }),
         balance: Math.max(0, balance),
         projected: i > 0,
         monthNumber: i

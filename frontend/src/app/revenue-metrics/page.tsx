@@ -74,9 +74,9 @@ export default function RevenueMetricsPage() {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -108,7 +108,7 @@ export default function RevenueMetricsPage() {
   }
 
   const chartData = history.map((m: any) => ({
-    month: new Date(m.periodStart).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+    month: new Date(m.periodStart).toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }),
     mrr: Number(m.mrr),
     arr: Number(m.arr),
     revenue: Number(m.totalRevenue),

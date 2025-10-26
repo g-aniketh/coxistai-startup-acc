@@ -21,7 +21,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
               Income
             </span>
             <span className="font-bold text-green-500">
-              {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(payload[0].value)}
+              {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(payload[0].value)}
             </span>
           </div>
           <div className="flex flex-col space-y-1">
@@ -29,7 +29,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
               Expenses
             </span>
             <span className="font-bold text-red-500">
-              {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(payload[1].value)}
+              {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(payload[1].value)}
             </span>
           </div>
         </div>
@@ -87,7 +87,7 @@ export function CashFlowChart({ data, period }: CashFlowChartProps) {
           fontSize={12}
           tickLine={false}
           axisLine={false}
-          tickFormatter={(value) => `$${new Intl.NumberFormat('en-US', { notation: 'compact' }).format(value as number)}`}
+          tickFormatter={(value) => `$${new Intl.NumberFormat('en-IN', { notation: 'compact' }).format(value as number)}`}
         />
         <Tooltip content={<CustomTooltip />} />
         <Area

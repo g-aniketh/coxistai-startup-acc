@@ -64,9 +64,9 @@ export default function FinancialHealthPage() {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -115,7 +115,7 @@ export default function FinancialHealthPage() {
   const cashBalance = Number(metrics.cashBalance);
 
   const chartData = history.map((m: any) => ({
-    month: new Date(m.periodStart).toLocaleDateString('en-US', { month: 'short' }),
+    month: new Date(m.periodStart).toLocaleDateString('en-IN', { month: 'short' }),
     runway: Number(m.runway),
     burnRate: Number(m.burnRate),
     cashBalance: Number(m.cashBalance),
