@@ -11,10 +11,12 @@ import { Input } from '@/components/ui/input';
 import { apiClient, DashboardSummary, CashflowChartData, RecentActivity } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { AlertTriangle, Brain, Calendar, DollarSign, Search, Target, TrendingDown, TrendingUp, Wallet, Zap } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [cashflowData, setCashflowData] = useState<CashflowChartData[]>([]);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
@@ -106,6 +108,7 @@ export default function DashboardPage() {
                   percentageChange={17}
                   icon={<DollarSign className="h-5 w-5" />}
                   cardClassName="bg-[#C9E0B0] text-[#3a5129]"
+                  onClick={() => router.push('/financial-dashboard?tab=transactions')}
                 />
                 <StatCard 
                   title="Monthly Revenue"
@@ -113,12 +116,14 @@ export default function DashboardPage() {
                   percentageChange={23}
                   icon={<TrendingUp className="h-5 w-5" />}
                   cardClassName="bg-[#F6D97A] text-[#7a6015]"
+                  onClick={() => router.push('/financial-dashboard?tab=statistics')}
                 />
                 <StatCard 
                   title="Runway"
                   value={summary?.financial.runwayMonths ? `${summary.financial.runwayMonths.toFixed(1)} months` : 'N/A'}
                   icon={<Calendar className="h-5 w-5" />}
                   cardClassName="bg-[#B7B3E6] text-[#2C2C2C]"
+                  onClick={() => router.push('/financial-dashboard?tab=statistics')}
                 />
                 <StatCard 
                   title="Burn Rate"
@@ -126,6 +131,7 @@ export default function DashboardPage() {
                   percentageChange={-8}
                   icon={<TrendingDown className="h-5 w-5" />}
                   cardClassName="bg-[#FFB3BA] text-[#8B0000]"
+                  onClick={() => router.push('/financial-dashboard?tab=statistics')}
                 />
               </div>
 

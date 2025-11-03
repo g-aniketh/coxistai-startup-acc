@@ -871,7 +871,7 @@ export default function ComplianceHubPage() {
                                 </div>
                                 <div>
                                   <p className="text-xs text-gray-500">Amount</p>
-                                  <p className="text-sm font-medium">{formatCurrency(return_.amount)}</p>
+                                  <p className="text-sm font-semibold text-[#2C2C2C]">{formatCurrency(return_.amount)}</p>
                                 </div>
                                 <div>
                                   <p className="text-xs text-gray-500">Penalty</p>

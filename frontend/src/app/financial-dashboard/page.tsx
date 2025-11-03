@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { apiClient, BankAccount } from '@/lib/api';
 import { formatCurrency } from '@/lib/utils';
 import MainLayout from '@/components/layout/MainLayout';
@@ -24,6 +25,7 @@ import {
   RefreshCw,
   BarChart2,
   Users,
+  Upload
 } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { cn } from '@/lib/utils';
@@ -50,6 +52,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/Badge';
 import AddTransactionModal from '@/components/dashboard/AddTransactionModal';
 import toast from 'react-hot-toast';
+// no navigation needed for static Import button
 
 // Demo Transaction interface
 interface DemoTransaction {
@@ -112,6 +115,7 @@ const expenseBreakdown = [
 
 export default function FinancialDashboardPage() {
   const [activeTab, setActiveTab] = useState<'transactions' | 'statistics'>('transactions');
+  const searchParams = useSearchParams();
   
   // Transactions state
   const [transactions, setTransactions] = useState<DemoTransaction[]>([]);
@@ -259,6 +263,13 @@ export default function FinancialDashboardPage() {
     loadAccounts();
   }, [loadTransactions, loadAccounts]);
 
+  // Initialize tab from query param if provided
+  useEffect(() => {
+    const tab = searchParams?.get('tab');
+    if (tab === 'statistics') setActiveTab('statistics');
+    if (tab === 'transactions') setActiveTab('transactions');
+  }, [searchParams]);
+
   const handleAddTransactionSuccess = async (transactionData: any) => {
     try {
       // Add the new transaction to the state
@@ -367,6 +378,12 @@ export default function FinancialDashboardPage() {
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
+                  <Button 
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <Upload className="h-4 w-4" />
+                    Import Transactions
+                  </Button>
                   <Button className="flex items-center gap-2 bg-[#607c47] hover:bg-[#4a6129] text-white">
                     <Download className="h-4 w-4" />
                     Export

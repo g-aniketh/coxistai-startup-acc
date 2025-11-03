@@ -10,11 +10,21 @@ interface StatCardProps {
   percentageChange?: number;
   icon: React.ReactNode;
   cardClassName?: string;
+  onClick?: () => void;
 }
 
-const StatCard = ({ title, value, percentageChange, icon, cardClassName }: StatCardProps) => {
+const StatCard = ({ title, value, percentageChange, icon, cardClassName, onClick }: StatCardProps) => {
   return (
-    <Card className={cn("rounded-2xl shadow-lg border-0 p-6 flex flex-col justify-between overflow-hidden min-w-0", cardClassName)}>
+    <Card
+      className={cn(
+        "rounded-2xl shadow-lg border-0 p-6 flex flex-col justify-between overflow-hidden min-w-0",
+        onClick ? "cursor-pointer hover:shadow-xl transition-shadow" : undefined,
+        cardClassName
+      )}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : -1}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-black/5 rounded-lg">

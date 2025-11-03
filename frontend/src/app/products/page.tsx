@@ -48,6 +48,7 @@ import RecordSaleModal from '@/components/products/RecordSaleModal';
 import EditProductModal from '@/components/products/EditProductModal';
 import { Badge } from '@/components/ui/Badge';
 import toast from 'react-hot-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 interface StockMovement {
   id: string;
@@ -80,6 +81,8 @@ export default function ProductsPage() {
   const [isRecordSaleOpen, setIsRecordSaleOpen] = useState(false);
   const [isEditProductOpen, setIsEditProductOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'overview' | 'movements' | 'alerts' | 'analytics'>('overview');
 
@@ -798,16 +801,19 @@ export default function ProductsPage() {
                                         >
                                           <Plus className="h-4 w-4" />
                                         </Button>
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => handleDeleteProduct(product.id)}
-                                          className="border-red-300 text-red-600 hover:bg-red-50"
-                                        >
-                                          <Trash2 className="h-4 w-4" />
-                        </Button>
                                       </>
                                     )}
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => {
+                                        setProductToDelete(product);
+                                        setDeleteConfirmOpen(true);
+                                      }}
+                                      className="border-red-300 text-red-600 hover:bg-red-50"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
                                   </div>
                       </TableCell>
                     </TableRow>
@@ -1079,6 +1085,43 @@ export default function ProductsPage() {
           onSubmit={handleUpdateProduct}
             product={selectedProduct}
           />
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-[#2C2C2C]">Delete product?</DialogTitle>
+              <DialogDescription>
+                This action cannot be undone. This will permanently delete
+                {` "${productToDelete?.name || 'this product'}"`} and remove its stock movements and alerts.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setDeleteConfirmOpen(false);
+                  setProductToDelete(null);
+                }}
+                className="border-gray-300 text-[#2C2C2C]"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (productToDelete) {
+                    handleDeleteProduct(productToDelete.id);
+                  }
+                  setDeleteConfirmOpen(false);
+                  setProductToDelete(null);
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </MainLayout>
     </AuthGuard>
   );
