@@ -19,7 +19,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { apiClient } from '@/lib/api';
+import { apiClient, DashboardSummary } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 interface Message {
@@ -97,9 +97,93 @@ export default function AIChatbot({ className }: AIChatbotProps) {
   };
 
   const generateAIResponse = async (question: string): Promise<{ content: string; data?: any }> => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Fetch dashboard summary for context
+    let summaryData: any = null;
+    try {
+      const summaryResponse = await apiClient.dashboard.summary();
+      if (summaryResponse.success && summaryResponse.data) {
+        summaryData = summaryResponse.data;
+      }
+    } catch (error) {
+      console.error('Failed to fetch summary:', error);
+    }
 
+    // Use OpenAI API for conversational responses
+    try {
+      const response = await apiClient.ai.chat(question);
+      
+      if (response.success && response.data) {
+        const aiText = response.data.response;
+        const lowerQuestion = question.toLowerCase();
+
+        // Optionally add structured data visualization for specific queries
+        let structuredData: any = null;
+
+        if (summaryData) {
+          // Cash balance queries
+          const isCashBalanceQuery = (
+            lowerQuestion.includes('cash balance') ||
+            (lowerQuestion.includes('what is my') && lowerQuestion.includes('cash') && !lowerQuestion.includes('use') && !lowerQuestion.includes('spend'))
+          );
+          
+          if (isCashBalanceQuery) {
+            structuredData = {
+              type: 'cash_balance',
+              value: summaryData.financial.totalBalance || 0,
+              accounts: summaryData.accounts?.breakdown?.map((acc: any) => ({
+                name: acc.name || acc.accountName || 'Account',
+                balance: acc.balance || 0
+              })) || []
+            };
+          }
+          // Revenue queries
+          else if (
+            lowerQuestion.includes('monthly revenue') ||
+            lowerQuestion.includes('what is my revenue') ||
+            (lowerQuestion.includes('revenue') && (lowerQuestion.includes('what') || lowerQuestion.includes('how much')))
+          ) {
+            structuredData = {
+              type: 'revenue',
+              value: summaryData.financial.monthlyRevenue || 0,
+              period: 'Current Month'
+            };
+          }
+          // Burn rate queries
+          else if (
+            lowerQuestion.includes('burn rate') ||
+            (lowerQuestion.includes('burn') && !lowerQuestion.includes('use'))
+          ) {
+            structuredData = {
+              type: 'burn_rate',
+              value: summaryData.financial.monthlyBurn || 0
+            };
+          }
+          // Runway queries
+          else if (lowerQuestion.includes('runway')) {
+            structuredData = {
+              type: 'runway',
+              months: summaryData.financial.runwayMonths || 0,
+              status: (summaryData.financial.runwayMonths || 0) >= 6 ? 'healthy' : 'low',
+              recommendation: (summaryData.financial.runwayMonths || 0) >= 6 
+                ? 'You have a healthy runway. Consider fundraising before it drops below 6 months.'
+                : 'Your runway is getting low. Consider fundraising soon.'
+            };
+          }
+        }
+
+        return {
+          content: aiText,
+          data: structuredData
+        };
+      } else {
+        throw new Error(response.message || 'Failed to get AI response');
+      }
+    } catch (error: any) {
+      console.error('AI chat error:', error);
+      throw error;
+    }
+
+    // Fallback mock responses (shouldn't reach here if API works)
     const lowerQuestion = question.toLowerCase();
 
     // Revenue queries
@@ -429,8 +513,15 @@ export default function AIChatbot({ className }: AIChatbotProps) {
                       : 'bg-gray-100 text-gray-800'
                   )}
                 >
-                  <div className="text-sm whitespace-pre-wrap">{message.content}</div>
-                  {message.data && renderDataVisualization(message.data)}
+                  {/* Always show the AI's text response, and add card as supplementary */}
+                  {message.content && (
+                    <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                  )}
+                  {message.data && (
+                    <div className="mt-2">
+                      {renderDataVisualization(message.data)}
+                    </div>
+                  )}
                   <div className="text-xs opacity-70 mt-1 text-right">
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>

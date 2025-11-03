@@ -171,7 +171,7 @@ router.post('/tally', authenticateToken, async (req: Request, res: Response) => 
         account = await prisma.mockBankAccount.create({
           data: {
             accountName: ledger.ledgerName,
-            balance: ledger.openingBalance,
+            balance: Number(ledger.openingBalance || 0),
             startupId: startupId,
           },
         });
@@ -180,7 +180,11 @@ router.post('/tally', authenticateToken, async (req: Request, res: Response) => 
       for (const transaction of ledger.transactions) {
         try {
           const transactionDate = new Date(transaction.date);
-          const transactionAmount = transaction.debit > transaction.credit ? transaction.debit : -transaction.credit;
+          // Calculate net amount: credit - debit
+          // Positive = money in (CREDIT), Negative = money out (DEBIT)
+          const netAmount = Number(transaction.credit || 0) - Number(transaction.debit || 0);
+          const transactionAmount = Math.abs(netAmount);
+          const transactionType = netAmount >= 0 ? 'CREDIT' : 'DEBIT';
 
           // Create imported transaction record
           await prisma.importedTransaction.create({
@@ -200,10 +204,10 @@ router.post('/tally', authenticateToken, async (req: Request, res: Response) => 
           });
 
           // Create actual Transaction record for dashboard
-          await prisma.transaction.create({
+          const createdTransaction = await prisma.transaction.create({
             data: {
-              amount: transactionAmount,
-              type: transactionAmount > 0 ? 'CREDIT' : 'DEBIT',
+              amount: Number(transactionAmount),
+              type: transactionType,
               description: `${transaction.voucherType} - ${transaction.narration}`,
               date: transactionDate,
               accountId: account.id,
@@ -211,10 +215,13 @@ router.post('/tally', authenticateToken, async (req: Request, res: Response) => 
             },
           });
 
-          // Update account balance
+          // Update account balance (CREDIT increases balance, DEBIT decreases)
+          const balanceChange = transactionType === 'CREDIT' ? Number(transactionAmount) : -Number(transactionAmount);
           await prisma.mockBankAccount.update({
             where: { id: account.id },
-            data: { balance: { increment: transactionAmount } },
+            data: { 
+              balance: { increment: balanceChange }
+            },
           });
 
           importStats.transactionsCreated++;

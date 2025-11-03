@@ -13,7 +13,7 @@ export const createAccount = async (startupId: string, data: CreateAccountData) 
   const account = await prisma.mockBankAccount.create({
     data: {
       accountName,
-      balance,
+      balance: Number(balance),
       startupId
     }
   });
@@ -72,9 +72,18 @@ export const updateAccount = async (
     throw new Error('Account not found');
   }
 
+  // Ensure balance is a number if provided
+  const updateData: { accountName?: string; balance?: number } = {};
+  if (data.accountName !== undefined) {
+    updateData.accountName = data.accountName;
+  }
+  if (data.balance !== undefined) {
+    updateData.balance = Number(data.balance);
+  }
+
   const account = await prisma.mockBankAccount.update({
     where: { id: accountId },
-    data
+    data: updateData
   });
 
   return account;

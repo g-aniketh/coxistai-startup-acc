@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/Badge';
 import { 
   Send, 
   Bot, 
@@ -13,7 +14,12 @@ import {
   Minimize2,
   Maximize2,
   X,
-  ArrowUpRight
+  ArrowUpRight,
+  TrendingUp,
+  DollarSign,
+  Calendar,
+  AlertTriangle,
+  CheckCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
@@ -25,6 +31,7 @@ interface Message {
   type: 'user' | 'ai';
   content: string;
   timestamp: Date;
+  data?: any; // For structured data responses
 }
 
 const currencyFormatter = new Intl.NumberFormat('en-IN', {
@@ -35,7 +42,116 @@ const currencyFormatter = new Intl.NumberFormat('en-IN', {
 });
 
 // Parse markdown and return React elements
-const parseMarkdown = (text: string) => {
+  const getDataIcon = (dataType: string) => {
+    switch (dataType) {
+      case 'revenue':
+        return <TrendingUp className="h-4 w-4 text-green-500" />;
+      case 'burn_rate':
+        return <AlertTriangle className="h-4 w-4 text-red-500" />;
+      case 'cash_balance':
+        return <DollarSign className="h-4 w-4 text-blue-500" />;
+      case 'runway':
+        return <Calendar className="h-4 w-4 text-purple-500" />;
+      case 'customers':
+        return <CheckCircle className="h-4 w-4 text-indigo-500" />;
+      default:
+        return <Sparkles className="h-4 w-4 text-blue-500" />;
+    }
+  };
+
+  const renderDataVisualization = (data: any) => {
+    if (!data) return null;
+
+    switch (data.type) {
+      case 'cash_balance':
+        return (
+          <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-center gap-2 mb-2">
+              {getDataIcon(data.type)}
+              <span className="font-semibold text-blue-800">Cash Balance</span>
+            </div>
+            <div className="text-2xl font-bold text-blue-900 mb-2">
+              {currencyFormatter.format(data.value)}
+            </div>
+            {data.accounts && data.accounts.length > 0 && (
+              <div className="space-y-1">
+                {data.accounts.map((account: any, index: number) => (
+                  <div key={index} className="flex justify-between text-sm text-gray-700">
+                    <span>{account.name}</span>
+                    <span className="font-medium">{currencyFormatter.format(account.balance)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+
+      case 'revenue':
+        return (
+          <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+            <div className="flex items-center gap-2 mb-2">
+              {getDataIcon(data.type)}
+              <span className="font-semibold text-green-800">Monthly Revenue</span>
+            </div>
+            <div className="text-2xl font-bold text-green-900 mb-2">
+              {currencyFormatter.format(data.value)}
+            </div>
+            {data.period && (
+              <div className="text-sm text-green-700">Period: {data.period}</div>
+            )}
+          </div>
+        );
+
+      case 'burn_rate':
+        return (
+          <div className="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
+            <div className="flex items-center gap-2 mb-2">
+              {getDataIcon(data.type)}
+              <span className="font-semibold text-red-800">Monthly Burn Rate</span>
+            </div>
+            <div className="text-2xl font-bold text-red-900 mb-2">
+              {currencyFormatter.format(data.value)}
+            </div>
+            {data.breakdown && (
+              <div className="space-y-1">
+                {data.breakdown.map((item: any, index: number) => (
+                  <div key={index} className="flex justify-between text-sm text-gray-700">
+                    <span>{item.category}</span>
+                    <span className="font-medium">{currencyFormatter.format(item.amount)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+
+      case 'runway':
+        return (
+          <div className="mt-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+            <div className="flex items-center gap-2 mb-2">
+              {getDataIcon(data.type)}
+              <span className="font-semibold text-purple-800">Runway Analysis</span>
+            </div>
+            <div className="text-2xl font-bold text-purple-900 mb-2">
+              {data.months.toFixed(1)} months
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge className={data.status === 'healthy' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                {data.status}
+              </Badge>
+              {data.recommendation && (
+                <span className="text-sm text-purple-700">{data.recommendation}</span>
+              )}
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  const parseMarkdown = (text: string) => {
   const parts: (string | React.ReactElement)[] = [];
   let key = 0;
 
@@ -146,7 +262,8 @@ export default function FloatingChatbot() {
         id: (Date.now() + 1).toString(),
         type: 'ai',
         content: response.content,
-        timestamp: new Date()
+        timestamp: new Date(),
+        data: response.data
       };
 
       setMessages(prev => [...prev, aiMessage]);
@@ -164,14 +281,94 @@ export default function FloatingChatbot() {
     }
   };
 
-  const generateAIResponse = async (question: string): Promise<{ content: string }> => {
+  const generateAIResponse = async (question: string): Promise<{ content: string; data?: any }> => {
+    // Ensure we have summary data
+    let data = summary;
+    if (!data) {
+      try {
+        const summaryResponse = await apiClient.dashboard.summary();
+        if (summaryResponse.success && summaryResponse.data) {
+          data = summaryResponse.data;
+          setSummary(summaryResponse.data);
+        }
+      } catch (fetchError) {
+        console.error('Failed to fetch summary:', fetchError);
+      }
+    }
+
+    if (!data) {
+      return {
+        content: "I'm having trouble accessing your financial data right now. Please try again in a moment."
+      };
+    }
+
     try {
       // Use AI chat endpoint for conversational responses
       const response = await apiClient.ai.chat(question);
       
       if (response.success && response.data) {
+        const aiText = response.data.response;
+        const lowerQuestion = question.toLowerCase();
+
+        // Detect what type of query this is and extract structured data
+        let structuredData: any = null;
+
+        // Cash balance queries - be more specific to avoid matching "money" in descriptive questions
+        const isCashBalanceQuery = (
+          lowerQuestion.includes('cash balance') ||
+          lowerQuestion === 'what is my cash' ||
+          lowerQuestion === 'how much cash do i have' ||
+          (lowerQuestion.includes('what is my') && lowerQuestion.includes('cash') && !lowerQuestion.includes('use') && !lowerQuestion.includes('spend') && !lowerQuestion.includes('invest')) ||
+          (lowerQuestion.includes('how much') && lowerQuestion.includes('cash') && !lowerQuestion.includes('use') && !lowerQuestion.includes('spend'))
+        );
+        
+        if (isCashBalanceQuery) {
+          structuredData = {
+            type: 'cash_balance',
+            value: data.financial.totalBalance || 0,
+            accounts: data.accounts?.breakdown?.map((acc: any) => ({
+              name: acc.name || acc.accountName || 'Account',
+              balance: acc.balance || 0
+            })) || []
+          };
+        }
+        // Revenue queries - be specific
+        else if (
+          lowerQuestion.includes('monthly revenue') ||
+          lowerQuestion.includes('what is my revenue') ||
+          lowerQuestion.includes('what is my monthly revenue') ||
+          (lowerQuestion.includes('revenue') && lowerQuestion.includes('what')) ||
+          (lowerQuestion.includes('revenue') && lowerQuestion.includes('how much'))
+        ) {
+          structuredData = {
+            type: 'revenue',
+            value: data.financial.monthlyRevenue || 0,
+            period: 'Current Month'
+          };
+        }
+        // Burn rate / expenses queries
+        else if (lowerQuestion.includes('burn') || lowerQuestion.includes('expense') || lowerQuestion.includes('spend')) {
+          structuredData = {
+            type: 'burn_rate',
+            value: data.financial.monthlyBurn || 0
+          };
+        }
+        // Runway queries
+        else if (lowerQuestion.includes('runway') || lowerQuestion.includes('months') || lowerQuestion.includes('survive')) {
+          structuredData = {
+            type: 'runway',
+            months: data.financial.runwayMonths || 0,
+            status: (data.financial.runwayMonths || 0) >= 6 ? 'healthy' : 'low',
+            recommendation: (data.financial.runwayMonths || 0) >= 6 
+              ? 'You have a healthy runway. Consider fundraising before it drops below 6 months.'
+              : 'Your runway is getting low. Consider fundraising soon.'
+          };
+        }
+
+        // Always return the AI's text response, and optionally include the card
         return {
-          content: response.data.response
+          content: aiText,
+          data: structuredData // Card is supplementary, not replacement
         };
       } else {
         throw new Error(response.message || 'Failed to get AI response');
@@ -179,25 +376,22 @@ export default function FloatingChatbot() {
     } catch (error: any) {
       console.error('AI chat error:', error);
       
-      // Fallback: Try to provide basic answer using local data
-      let data = summary;
-      if (!data) {
-        try {
-          const summaryResponse = await apiClient.dashboard.summary();
-          if (summaryResponse.success && summaryResponse.data) {
-            data = summaryResponse.data;
-            setSummary(summaryResponse.data);
-          }
-        } catch (fetchError) {
-          console.error('Failed to fetch summary:', fetchError);
-        }
-      }
+      // Fallback: Provide basic answer using local data with structured visualization
+      const lowerQuestion = question.toLowerCase();
+      let structuredData: any = null;
 
-      // If we have data, provide a helpful response
-      if (data) {
-        const summaryText = `I'm having trouble connecting to the AI service right now, but here's a quick overview:\n\n• **Cash Balance:** ${currencyFormatter.format(data.financial.totalBalance || 0)}\n• **Monthly Revenue:** ${currencyFormatter.format(data.financial.monthlyRevenue || 0)}\n• **Monthly Burn Rate:** ${currencyFormatter.format(data.financial.monthlyBurn || 0)}\n• **Runway:** ${data.financial.runwayMonths ? `${data.financial.runwayMonths.toFixed(1)} months` : 'N/A'}\n\nPlease try your question again in a moment, or visit the full AI Assistant for comprehensive analysis.`;
+      if (lowerQuestion.includes('cash') || lowerQuestion.includes('balance') || lowerQuestion.includes('money')) {
+        structuredData = {
+          type: 'cash_balance',
+          value: data.financial.totalBalance || 0,
+          accounts: data.accounts?.breakdown?.map((acc: any) => ({
+            name: acc.name || acc.accountName || 'Account',
+            balance: acc.balance || 0
+          })) || []
+        };
         return {
-          content: summaryText
+          content: `Your current cash balance is ${currencyFormatter.format(data.financial.totalBalance || 0)}.`,
+          data: structuredData
         };
       }
 
@@ -305,9 +499,17 @@ export default function FloatingChatbot() {
                           : 'bg-gray-100 text-gray-800'
                       )}
                     >
-                      <div className="text-sm whitespace-pre-wrap leading-relaxed">
-                        {parseMarkdown(message.content)}
-                      </div>
+                      {/* Always show the AI's text response, and add card as supplementary */}
+                      {message.content && (
+                        <div className="text-sm whitespace-pre-wrap leading-relaxed">
+                          {parseMarkdown(message.content)}
+                        </div>
+                      )}
+                      {message.data && (
+                        <div className="mt-2">
+                          {renderDataVisualization(message.data)}
+                        </div>
+                      )}
                       <div className="text-xs opacity-70 mt-1 text-right">
                         {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>

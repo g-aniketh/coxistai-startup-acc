@@ -27,7 +27,7 @@ export const createTransaction = async (startupId: string, data: CreateTransacti
   // Create transaction
   const transaction = await prisma.transaction.create({
     data: {
-      amount,
+      amount: Number(amount),
       type,
       description,
       startupId,
@@ -36,12 +36,12 @@ export const createTransaction = async (startupId: string, data: CreateTransacti
     }
   });
 
-  // Update account balance
-  const balanceChange = type === 'CREDIT' ? amount : -amount;
+  // Update account balance atomically (CREDIT increases, DEBIT decreases)
+  const balanceChange = type === 'CREDIT' ? Number(amount) : -Number(amount);
   await prisma.mockBankAccount.update({
     where: { id: accountId },
     data: {
-      balance: account.balance + balanceChange
+      balance: { increment: balanceChange }
     }
   });
 
@@ -133,12 +133,12 @@ export const deleteTransaction = async (startupId: string, transactionId: string
     throw new Error('Transaction not found');
   }
 
-  // Reverse the balance change
-  const balanceChange = transaction.type === 'CREDIT' ? -transaction.amount : transaction.amount;
+  // Reverse the balance change atomically
+  const balanceChange = transaction.type === 'CREDIT' ? -Number(transaction.amount) : Number(transaction.amount);
   await prisma.mockBankAccount.update({
     where: { id: transaction.accountId },
     data: {
-      balance: transaction.account.balance + balanceChange
+      balance: { increment: balanceChange }
     }
   });
 

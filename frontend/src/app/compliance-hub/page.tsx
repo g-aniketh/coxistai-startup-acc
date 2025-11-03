@@ -135,6 +135,9 @@ export default function ComplianceHubPage() {
     sgst: 0,
     igst: 0
   });
+  // String inputs for number fields to allow clearing
+  const [salesInput, setSalesInput] = useState<string>('');
+  const [purchasesInput, setPurchasesInput] = useState<string>('');
   const [tdsRecords, setTdsRecords] = useState<TDSRecord[]>([]);
   const [taxReturns, setTaxReturns] = useState<TaxReturn[]>([]);
   const [isCalculating, setIsCalculating] = useState(false);
@@ -311,15 +314,21 @@ export default function ComplianceHubPage() {
 
   // Tax & Compliance functions
   const calculateGST = async () => {
+    // Convert string inputs to numbers before calculation
+    const sales = Number(salesInput) || 0;
+    const purchases = Number(purchasesInput) || 0;
+    
     setIsCalculating(true);
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    const outputTax = gstCalculation.sales * 0.18;
-    const inputTax = gstCalculation.purchases * 0.18;
+    const outputTax = sales * 0.18;
+    const inputTax = purchases * 0.18;
     const netTax = outputTax - inputTax;
     
     setGstCalculation(prev => ({
       ...prev,
+      sales,
+      purchases,
       outputTax,
       inputTax,
       netTax,
@@ -703,9 +712,35 @@ export default function ComplianceHubPage() {
                             </Label>
                             <Input
                               id="sales"
-                              type="number"
-                              value={gstCalculation.sales}
-                              onChange={(e) => setGstCalculation(prev => ({ ...prev, sales: Number(e.target.value) }))}
+                              type="text"
+                              inputMode="numeric"
+                              value={salesInput}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                // Allow empty string, numbers, and decimal points
+                                if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                  setSalesInput(value);
+                                  // Only update calculation state if there's a valid non-empty number
+                                  if (value !== '' && !isNaN(Number(value))) {
+                                    setGstCalculation(prev => ({ ...prev, sales: Number(value) }));
+                                  } else if (value === '') {
+                                    // Clear the calculation state when field is empty
+                                    setGstCalculation(prev => ({ ...prev, sales: 0 }));
+                                  }
+                                }
+                              }}
+                              onBlur={(e) => {
+                                // On blur, ensure valid number format
+                                const value = e.target.value.trim();
+                                if (value === '' || isNaN(Number(value)) || Number(value) < 0) {
+                                  setSalesInput('');
+                                  setGstCalculation(prev => ({ ...prev, sales: 0 }));
+                                } else {
+                                  const numValue = Number(value);
+                                  setSalesInput(String(numValue));
+                                  setGstCalculation(prev => ({ ...prev, sales: numValue }));
+                                }
+                              }}
                               className="mt-2 bg-white"
                               placeholder="Enter total sales amount"
                             />
@@ -716,9 +751,35 @@ export default function ComplianceHubPage() {
                             </Label>
                             <Input
                               id="purchases"
-                              type="number"
-                              value={gstCalculation.purchases}
-                              onChange={(e) => setGstCalculation(prev => ({ ...prev, purchases: Number(e.target.value) }))}
+                              type="text"
+                              inputMode="numeric"
+                              value={purchasesInput}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                // Allow empty string, numbers, and decimal points
+                                if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                  setPurchasesInput(value);
+                                  // Only update calculation state if there's a valid non-empty number
+                                  if (value !== '' && !isNaN(Number(value))) {
+                                    setGstCalculation(prev => ({ ...prev, purchases: Number(value) }));
+                                  } else if (value === '') {
+                                    // Clear the calculation state when field is empty
+                                    setGstCalculation(prev => ({ ...prev, purchases: 0 }));
+                                  }
+                                }
+                              }}
+                              onBlur={(e) => {
+                                // On blur, ensure valid number format
+                                const value = e.target.value.trim();
+                                if (value === '' || isNaN(Number(value)) || Number(value) < 0) {
+                                  setPurchasesInput('');
+                                  setGstCalculation(prev => ({ ...prev, purchases: 0 }));
+                                } else {
+                                  const numValue = Number(value);
+                                  setPurchasesInput(String(numValue));
+                                  setGstCalculation(prev => ({ ...prev, purchases: numValue }));
+                                }
+                              }}
                               className="mt-2 bg-white"
                               placeholder="Enter total purchases amount"
                             />

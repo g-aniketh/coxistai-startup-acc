@@ -146,14 +146,14 @@ export const simulateSale = async (startupId: string, data: SimulateSaleData) =>
     throw new Error('Bank account not found');
   }
 
-  const totalPrice = product.price * quantitySold;
+  const totalPrice = Number(product.price) * Number(quantitySold);
 
   // Use a transaction to ensure atomicity
   const result = await prisma.$transaction(async (tx) => {
     // Create transaction (CREDIT for income)
     const transaction = await tx.transaction.create({
       data: {
-        amount: totalPrice,
+        amount: Number(totalPrice),
         type: 'CREDIT',
         description: `Sale of ${quantitySold}x ${product.name}`,
         startupId,
@@ -165,8 +165,8 @@ export const simulateSale = async (startupId: string, data: SimulateSaleData) =>
     // Create sale record
     const sale = await tx.sale.create({
       data: {
-        quantitySold,
-        totalPrice,
+        quantitySold: Number(quantitySold),
+        totalPrice: Number(totalPrice),
         startupId,
         productId,
         transactionId: transaction.id,
@@ -178,15 +178,15 @@ export const simulateSale = async (startupId: string, data: SimulateSaleData) =>
     const updatedProduct = await tx.product.update({
       where: { id: productId },
       data: {
-        quantity: product.quantity - quantitySold
+        quantity: Number(product.quantity) - Number(quantitySold)
       }
     });
 
-    // Update account balance
+    // Update account balance atomically (sales are CREDIT/income)
     await tx.mockBankAccount.update({
       where: { id: accountId },
       data: {
-        balance: account.balance + totalPrice
+        balance: { increment: Number(totalPrice) }
       }
     });
 

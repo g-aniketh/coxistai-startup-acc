@@ -8,7 +8,7 @@ export const getDashboardSummary = async (startupId: string) => {
     where: { startupId }
   });
 
-  const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
+  const totalBalance = accounts.reduce((sum, acc) => sum + Number(acc.balance), 0);
 
   // Calculate monthly burn rate (last 3 months)
   const threeMonthsAgo = new Date();
@@ -30,11 +30,11 @@ export const getDashboardSummary = async (startupId: string) => {
   // Calculate income and expenses
   const income = recentTransactions
     .filter(t => t.type === 'CREDIT')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const expenses = recentTransactions
     .filter(t => t.type === 'DEBIT')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const netCashflow = income - expenses;
   const monthlyBurn = expenses / 3;
@@ -49,7 +49,7 @@ export const getDashboardSummary = async (startupId: string) => {
   });
 
   const totalProducts = products.length;
-  const totalInventoryValue = products.reduce((sum, p) => sum + (p.quantity * p.price), 0);
+  const totalInventoryValue = products.reduce((sum, p) => sum + (Number(p.quantity) * Number(p.price)), 0);
   const lowStockProducts = products.filter(p => p.quantity < 10).length;
 
   // Get sales stats (last 30 days)
@@ -63,26 +63,26 @@ export const getDashboardSummary = async (startupId: string) => {
     }
   });
 
-  const totalSales = recentSales.reduce((sum, s) => sum + s.totalPrice, 0);
-  const unitsSold = recentSales.reduce((sum, s) => sum + s.quantitySold, 0);
+  const totalSales = recentSales.reduce((sum, s) => sum + Number(s.totalPrice), 0);
+  const unitsSold = recentSales.reduce((sum, s) => sum + Number(s.quantitySold), 0);
 
   return {
     financial: {
-      totalBalance,
-      monthlyBurn,
-      monthlyRevenue,
-      netCashflow,
+      totalBalance: Number(totalBalance),
+      monthlyBurn: Number(monthlyBurn),
+      monthlyRevenue: Number(monthlyRevenue),
+      netCashflow: Number(netCashflow),
       runwayMonths: runwayMonths === Infinity ? null : Number(runwayMonths.toFixed(1)),
-      income,
-      expenses
+      income: Number(income),
+      expenses: Number(expenses)
     },
     inventory: {
       totalProducts,
-      totalInventoryValue,
+      totalInventoryValue: Number(totalInventoryValue),
       lowStockProducts
     },
     sales: {
-      totalSales30Days: totalSales,
+      totalSales30Days: Number(totalSales),
       unitsSold30Days: unitsSold,
       salesCount: recentSales.length
     },
@@ -116,9 +116,9 @@ export const getCashflowChart = async (startupId: string, months: number = 6) =>
     }
 
     if (t.type === 'CREDIT') {
-      monthlyData[monthKey].income += t.amount;
+      monthlyData[monthKey].income += Number(t.amount);
     } else {
-      monthlyData[monthKey].expenses += t.amount;
+      monthlyData[monthKey].expenses += Number(t.amount);
     }
   });
 

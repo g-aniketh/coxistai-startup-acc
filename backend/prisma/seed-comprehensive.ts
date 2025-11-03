@@ -242,7 +242,7 @@ async function main() {
     transactions.push({
       accountId: accounts[0].id,
       type: 'CREDIT',
-      amount: profile.initialFunding,
+      amount: Number(profile.initialFunding),
       description: 'Initial seed funding',
       date: new Date(new Date().setDate(currentDate.getDate() - 90))
     });
@@ -257,7 +257,7 @@ async function main() {
         transactions.push({
           accountId: accounts[0].id,
           type: 'DEBIT',
-          amount: profile.monthlyExpenses * 0.6, // 60% of expenses
+          amount: Number(profile.monthlyExpenses * 0.6), // 60% of expenses
           description: 'Monthly payroll',
           date: transactionDate
         });
@@ -265,11 +265,11 @@ async function main() {
       
       // Weekly expenses
       if (i % 7 === 0) {
-        const expenseAmount = profile.monthlyExpenses * 0.1; // 10% of monthly expenses
+        const expenseAmount = Number(profile.monthlyExpenses * 0.1); // 10% of monthly expenses
         transactions.push({
           accountId: accounts[0].id,
           type: 'DEBIT',
-          amount: expenseAmount * (0.8 + Math.random() * 0.4),
+          amount: Number(expenseAmount * (0.8 + Math.random() * 0.4)),
           description: 'Operating expenses',
           date: transactionDate
         });
@@ -277,38 +277,37 @@ async function main() {
       
       // Revenue transactions
       if (i % 3 === 0) {
-        const revenueAmount = profile.monthlyRevenue / 10; // Distribute monthly revenue
+        const revenueAmount = Number(profile.monthlyRevenue / 10); // Distribute monthly revenue
         transactions.push({
           accountId: accounts[2].id, // Stripe account
           type: 'CREDIT',
-          amount: revenueAmount * (0.8 + Math.random() * 0.4),
+          amount: Number(revenueAmount * (0.8 + Math.random() * 0.4)),
           description: 'Customer payment',
           date: transactionDate
         });
       }
     }
 
-    // Create all transactions for this startup
+    // Create all transactions for this startup with proper number conversion
     await prisma.transaction.createMany({
-      data: transactions.map(t => ({ ...t, startupId: startup.id })),
+      data: transactions.map(t => ({ 
+        ...t, 
+        startupId: startup.id,
+        amount: Number(t.amount)
+      })),
     });
 
-    // Recalculate account balances
-    for (const account of accounts) {
-      const credits = await prisma.transaction.aggregate({
-        _sum: { amount: true },
-        where: { accountId: account.id, type: 'CREDIT' },
-      });
-      const debits = await prisma.transaction.aggregate({
-        _sum: { amount: true },
-        where: { accountId: account.id, type: 'DEBIT' },
-      });
-      
-      const balance = (credits._sum.amount || 0) - (debits._sum.amount || 0);
+    // Update account balances atomically (same approach as production code)
+    for (const transaction of transactions) {
+      const balanceChange = transaction.type === 'CREDIT' 
+        ? Number(transaction.amount) 
+        : -Number(transaction.amount);
       
       await prisma.mockBankAccount.update({
-        where: { id: account.id },
-        data: { balance },
+        where: { id: transaction.accountId },
+        data: { 
+          balance: { increment: balanceChange }
+        },
       });
     }
   }
@@ -320,9 +319,9 @@ async function main() {
   const mainAccounts = startupAccounts.get(mainStartup.id);
   
   const products = await Promise.all([
-    prisma.product.create({ data: { startupId: mainStartup.id, name: 'Premium SaaS License', quantity: 1000, price: 299.99 } }),
-    prisma.product.create({ data: { startupId: mainStartup.id, name: 'API Credits - 10K', quantity: 5000, price: 49.99 } }),
-    prisma.product.create({ data: { startupId: mainStartup.id, name: 'Consulting Hours - 5hr Pack', quantity: 200, price: 750.00 } }),
+    prisma.product.create({ data: { startupId: mainStartup.id, name: 'Premium SaaS License', quantity: 1000, price: Number(24999) } }), // ₹24,999
+    prisma.product.create({ data: { startupId: mainStartup.id, name: 'API Credits - 10K', quantity: 5000, price: Number(4199) } }), // ₹4,199
+    prisma.product.create({ data: { startupId: mainStartup.id, name: 'Consulting Hours - 5hr Pack', quantity: 200, price: Number(62500) } }), // ₹62,500
   ]);
 
   // Create sales linked to transactions for main startup
@@ -331,16 +330,24 @@ async function main() {
     const quantity = Math.floor(Math.random() * 5) + 1;
     const saleDate = new Date();
     saleDate.setDate(saleDate.getDate() - Math.floor(Math.random() * 90));
-    const totalPrice = product.price * quantity;
+    const totalPrice = Number(product.price) * Number(quantity);
     
     const transaction = await prisma.transaction.create({
       data: {
         startupId: mainStartup.id,
         accountId: mainAccounts[2].id, // Sales revenue to Stripe
         type: 'CREDIT',
-        amount: totalPrice,
+        amount: Number(totalPrice),
         description: `Sale: ${quantity} x ${product.name}`,
         date: saleDate,
+      }
+    });
+
+    // Update account balance atomically (sales are CREDIT/income)
+    await prisma.mockBankAccount.update({
+      where: { id: mainAccounts[2].id },
+      data: {
+        balance: { increment: Number(totalPrice) }
       }
     });
 
@@ -348,8 +355,8 @@ async function main() {
       data: {
         startupId: mainStartup.id,
         productId: product.id,
-        quantitySold: quantity,
-        totalPrice: totalPrice,
+        quantitySold: Number(quantity),
+        totalPrice: Number(totalPrice),
         saleDate: saleDate,
         transactionId: transaction.id
       }
@@ -369,8 +376,8 @@ async function main() {
     monthEnd.setMonth(monthEnd.getMonth() + 1);
     monthEnd.setDate(0);
 
-    const revenue = 3735000 + (i * 415000) + Math.random() * 664000; // Base ₹37.4L + growth
-    const expenses = 2905000 + (i * 166000) + Math.random() * 249000; // Base ₹29.1L + growth
+    const revenue = Number(3735000 + (i * 415000) + Math.random() * 664000); // Base ₹37.4L + growth
+    const expenses = Number(2905000 + (i * 166000) + Math.random() * 249000); // Base ₹29.1L + growth
     const customers = 150 + (i * 20);
 
     cashflowMetrics.push(
@@ -379,22 +386,22 @@ async function main() {
           startupId: mainStartup.id,
           periodStart: monthStart,
           periodEnd: monthEnd,
-          totalRevenue: revenue,
-          totalExpenses: expenses,
-          netCashflow: revenue - expenses,
-          burnRate: expenses,
-          runway: (41500000 / expenses), // Based on initial funding ₹4.15Cr
-          mrr: revenue * 0.85, // 85% recurring
-          arr: revenue * 0.85 * 12,
-          growthRate: i > 0 ? ((revenue / (3735000 + ((i-1) * 415000))) - 1) * 100 : 0,
-          cashBalance: 41500000 + ((revenue - expenses) * i),
-          accountsReceivable: revenue * 0.15,
-          accountsPayable: expenses * 0.2,
+          totalRevenue: Number(revenue),
+          totalExpenses: Number(expenses),
+          netCashflow: Number(revenue - expenses),
+          burnRate: Number(expenses),
+          runway: Number(41500000 / expenses), // Based on initial funding ₹4.15Cr
+          mrr: Number(revenue * 0.85), // 85% recurring
+          arr: Number(revenue * 0.85 * 12),
+          growthRate: i > 0 ? Number(((revenue / (3735000 + ((i-1) * 415000))) - 1) * 100) : 0,
+          cashBalance: Number(41500000 + ((revenue - expenses) * i)),
+          accountsReceivable: Number(revenue * 0.15),
+          accountsPayable: Number(expenses * 0.2),
           activeCustomers: customers,
           newCustomers: 12 + Math.floor(Math.random() * 8),
           churnedCustomers: Math.floor(Math.random() * 3),
-          customerAcquisitionCost: 400 + Math.random() * 150,
-          lifetimeValue: 4000 + Math.random() * 1500,
+          customerAcquisitionCost: Number(400 + Math.random() * 150), // ₹400-550
+          lifetimeValue: Number(4000 + Math.random() * 1500), // ₹4,000-5,500
         },
       })
     );
@@ -414,7 +421,7 @@ async function main() {
         projectedExpenses: 4687500, // Annual in INR (₹46.9L)
         projectedRunway: 11.5,
         confidence: 0.95,
-        insights: ['Burn rate increases by ~₹3.9L/month.', 'Runway decreases by ~4 months.'],
+        insights: ['Burn rate increases by approximately ₹3.9 lakh/month.', 'Runway decreases by approximately 4 months.'],
         recommendations: ['Consider hiring more junior engineers to reduce cost.', 'Explore remote talent in lower-cost regions.'],
         risks: ['Hiring process may take longer than expected.', 'Increased management overhead.'],
       },
@@ -428,8 +435,8 @@ async function main() {
         inputParameters: { growthRate: 0.30, churnReduction: 0.50, newCustomerTarget: 50, },
         projectedRevenue: 7885000, projectedExpenses: 3486000, projectedCashflow: 4399000, // INR values
         projectedRunway: 18.5, confidence: 0.75,
-        insights: [ 'With 30% growth, revenue could reach ₹79L/month in 3 months', 'Reduced churn would save ~₹6.6L monthly', 'Customer acquisition cost trending down', ],
-        recommendations: [ 'Invest ₹4.2L more in proven marketing channels', 'Launch referral program to reduce CAC', 'Hire customer success manager to reduce churn', ],
+        insights: [ 'With 30% growth, revenue could reach ₹79 lakh/month in 3 months', 'Reduced churn would save approximately ₹6.6 lakh monthly', 'Customer acquisition cost trending down', ],
+        recommendations: [ 'Invest ₹4.2 lakh more in proven marketing channels', 'Launch referral program to reduce CAC', 'Hire customer success manager to reduce churn', ],
         risks: [ 'Market saturation in current segment', 'Increased competition may pressure pricing', ],
       },
     }),
@@ -444,7 +451,7 @@ async function main() {
         type: 'runway',
         severity: 'warning',
         title: 'Runway is down to 8.2 months',
-        message: 'Based on your current burn rate of ₹29L/mo and cash balance of ₹2.4Cr, your runway is approximately 8.2 months. This is above the recommended 6-month threshold but trending down.',
+        message: 'Based on your current burn rate of ₹29 lakh/month and cash balance of ₹2.4 crore, your runway is approximately 8.2 months. This is above the recommended 6-month threshold but trending down.',
         currentValue: 8.2,
         thresholdValue: 6,
         recommendations: ['Consider optimizing SaaS spend to extend runway.', 'Monitor customer acquisition costs closely.', 'Prepare for Series A fundraising in Q2.'],
@@ -457,7 +464,7 @@ async function main() {
         type: 'burn_rate',
         severity: 'info',
         title: 'Burn Rate Trending Up',
-        message: 'Monthly burn rate increased 5% from last month to ₹29L.',
+        message: 'Monthly burn rate increased 5% from last month to ₹29 lakh.',
         currentValue: 2905000,
         thresholdValue: 2490000,
         recommendations: ['Audit cloud infrastructure costs', 'Review contractor and freelancer spending', 'Optimize marketing spend efficiency'],
@@ -474,12 +481,12 @@ async function main() {
       title: 'Q4 2024 - Strong Growth & Product Launch',
       periodStart: new Date('2024-10-01'),
       periodEnd: new Date('2024-12-31'),
-      metrics: { revenue: 3735000, mrr: 3174750, arr: 38097000, customers: 215, churnRate: 2.3, nps: 67, },
-      executiveSummary: `We had an exceptional Q4, achieving 25% revenue growth and successfully launching our Enterprise tier. Our ARR now stands at ₹3.8Cr, putting us on track for our ₹5Cr target by Q2 2025. Key highlights include landing 3 enterprise customers, reducing churn by 35%, and expanding our team with critical hires in engineering and customer success.`,
-      highlights: [ 'Revenue grew 25% QoQ to ₹3.7L MRR', 'Launched Enterprise tier with 3 early customers at ₹1.7L/mo each', 'Product NPS improved from 58 to 67', ],
+      metrics: { revenue: Number(3735000), mrr: Number(3174750), arr: Number(38097000), customers: 215, churnRate: 2.3, nps: 67, },
+      executiveSummary: `We had an exceptional Q4, achieving 25% revenue growth and successfully launching our Enterprise tier. Our ARR now stands at ₹3.8 crore, putting us on track for our ₹5 crore target by Q2 2025. Key highlights include landing 3 enterprise customers, reducing churn by 35%, and expanding our team with critical hires in engineering and customer success.`,
+      highlights: [ 'Revenue grew 25% QoQ to ₹3.7 lakh MRR', 'Launched Enterprise tier with 3 early customers at ₹1.7 lakh/month each', 'Product NPS improved from 58 to 67', ],
       challenges: [ 'Customer acquisition cost increased 15% due to competitive landscape', 'Enterprise sales cycle longer than anticipated (avg 60 days)', ],
       nextSteps: [ 'Launch self-service onboarding to reduce CAC', 'Develop case studies from enterprise customers', 'Begin Series A fundraising conversations', ],
-      revenueGrowth: 25, burnRate: 2905000, runway: 8.2, isDraft: false, publishedAt: new Date(),
+      revenueGrowth: 25, burnRate: Number(2905000), runway: 8.2, isDraft: false, publishedAt: new Date(),
     },
   });
   console.log('✓ Created 1 investor update for main startup');
@@ -502,6 +509,7 @@ async function main() {
 main()
   .catch((e) => {
     console.error('❌ Seed error:', e);
+    // @ts-ignore - process is available in Node.js environment
     process.exit(1);
   })
   .finally(async () => {
