@@ -19,7 +19,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { apiClient, DashboardSummary } from '@/lib/api';
+import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 interface Message {

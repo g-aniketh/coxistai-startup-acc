@@ -157,7 +157,7 @@ export default function Sidebar({ collapsed = false, onToggleCollapse }: Sidebar
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2 mt-4">
+      <nav className="flex-1 p-4 space-y-2 mt-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
         {navigation.map((item) => {
           const isActive = pathname === item.href;
           return (

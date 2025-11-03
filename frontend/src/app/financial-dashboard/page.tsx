@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { apiClient, BankAccount } from '@/lib/api';
 import { formatCurrency } from '@/lib/utils';
@@ -113,7 +113,7 @@ const expenseBreakdown = [
   { name: 'Other', value: 15000, color: '#C9E0B0' },
 ];
 
-export default function FinancialDashboardPage() {
+function FinancialDashboardContent() {
   const [activeTab, setActiveTab] = useState<'transactions' | 'statistics'>('transactions');
   const searchParams = useSearchParams();
   
@@ -777,5 +777,13 @@ export default function FinancialDashboardPage() {
         />
       </MainLayout>
     </AuthGuard>
+  );
+}
+
+export default function FinancialDashboardPage() {
+  return (
+    <Suspense fallback={null}>
+      <FinancialDashboardContent />
+    </Suspense>
   );
 }
