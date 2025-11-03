@@ -594,6 +594,11 @@ export const apiClient = {
       const response = await api.post('/ai/investor-update', { periodStart, periodEnd });
       return response.data;
     },
+
+    chat: async (message: string): Promise<ApiResponse<{ response: string }>> => {
+      const response = await api.post('/ai-cfo/chat', { message });
+      return response.data;
+    },
   },
 
   // ============================================================================

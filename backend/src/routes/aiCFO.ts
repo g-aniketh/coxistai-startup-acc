@@ -203,5 +203,39 @@ router.put('/investor-update/:id/publish', async (req: Request, res: Response) =
   }
 });
 
+/**
+ * @route   POST /api/v1/ai-cfo/chat
+ * @desc    Chat with AI CFO using financial context
+ * @access  Private
+ */
+router.post('/chat', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const startupId = (req as any).user.startupId;
+    const { message } = req.body;
+
+    if (!message) {
+      res.status(400).json({
+        success: false,
+        message: 'Message is required',
+      });
+      return;
+    }
+
+    const response = await AICFOService.chat(startupId, message);
+
+    res.json({
+      success: true,
+      data: { response },
+      message: 'Chat response generated successfully',
+    });
+  } catch (error: any) {
+    console.error('Error in chat:', error);
+    res.status(400).json({
+      success: false,
+      message: error.message || 'Failed to generate chat response',
+    });
+  }
+});
+
 export default router;
 

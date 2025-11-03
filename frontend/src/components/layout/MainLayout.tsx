@@ -1,7 +1,9 @@
 'use client';
 
 import { ReactNode, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import Sidebar from './Sidebar';
+import FloatingChatbot from '@/components/FloatingChatbot';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -9,14 +11,20 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const pathname = usePathname();
+
+  // Hide chatbot on AI assistant page
+  const shouldShowChatbot = pathname !== '/ai-assistant';
 
   return (
     <div className="h-screen flex overflow-hidden bg-white">
       {/* Section 1: Sidebar - Desktop */}
-      <aside className="hidden lg:flex lg:flex-shrink-0">
-        <div className="w-64">
-          <Sidebar />
-        </div>
+      <aside className="hidden lg:flex lg:shrink-0 relative overflow-visible">
+        <Sidebar 
+          collapsed={isSidebarCollapsed} 
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
       </aside>
 
       {/* Sidebar - Mobile (Overlay) */}
@@ -29,8 +37,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
           />
           
           {/* Sidebar */}
-          <aside className="fixed inset-y-0 left-0 w-64 z-50 lg:hidden">
-            <Sidebar />
+          <aside className="fixed inset-y-0 left-0 z-50 lg:hidden">
+            <Sidebar 
+              collapsed={false}
+              onToggleCollapse={() => setIsSidebarOpen(false)}
+            />
           </aside>
         </>
       )}
@@ -44,6 +55,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
           </div>
         </main>
       </div>
+
+      {/* Floating Chatbot Widget - Hidden on AI assistant page */}
+      {shouldShowChatbot && <FloatingChatbot />}
     </div>
   );
 }

@@ -561,5 +561,66 @@ Respond in JSON format:
       },
     });
   }
+
+  /**
+   * Chat with AI CFO using financial context
+   */
+  static async chat(startupId: string, userMessage: string): Promise<string> {
+    if (!openai) {
+      throw new Error('OpenAI service is not available. Please check your API key configuration.');
+    }
+
+    try {
+      // Get dashboard summary for context
+      const { getDashboardSummary } = await import('../dashboard/dashboard.service');
+      const summary = await getDashboardSummary(startupId);
+
+      // Format financial context
+      const financialContext = `
+CURRENT FINANCIAL STATE:
+- Total Cash Balance: ₹${summary.financial.totalBalance.toLocaleString('en-IN')}
+- Monthly Revenue: ₹${summary.financial.monthlyRevenue.toLocaleString('en-IN')}
+- Monthly Burn Rate: ₹${summary.financial.monthlyBurn.toLocaleString('en-IN')}
+- Net Cash Flow: ₹${summary.financial.netCashflow.toLocaleString('en-IN')}
+- Runway: ${summary.financial.runwayMonths ? `${summary.financial.runwayMonths.toFixed(1)} months` : 'Infinite'}
+- Total Income (last 3 months): ₹${summary.financial.income.toLocaleString('en-IN')}
+- Total Expenses (last 3 months): ₹${summary.financial.expenses.toLocaleString('en-IN')}
+      `.trim();
+
+      // Create AI prompt
+      const systemPrompt = `You are an expert AI CFO assistant for startups. You help founders understand their financial situation in a friendly, conversational, and professional manner. 
+
+You have access to their current financial data and should provide specific, actionable insights. Always use Indian Rupee (₹) currency format. Be conversational and natural, as if you're having a friendly chat with the founder.
+
+Key principles:
+- Provide specific numbers from their actual financial data
+- Give actionable advice based on their current situation
+- Be encouraging but honest about challenges
+- Use simple language, avoid jargon unless necessary
+- Format numbers in Indian numbering system (e.g., ₹4,41,13,501 not ₹44,113,501)
+- Be warm and supportive, like a trusted advisor`;
+
+      const userPrompt = `${financialContext}
+
+USER'S QUESTION: ${userMessage}
+
+Please provide a helpful, specific answer based on their actual financial data. Be conversational and natural.`;
+
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.7,
+        max_tokens: 500,
+      });
+
+      return completion.choices[0].message.content || "I'm sorry, I couldn't generate a response. Please try again.";
+    } catch (error: any) {
+      console.error('Error in AI chat:', error);
+      throw new Error(error.message || 'Failed to generate chat response');
+    }
+  }
 }
 
