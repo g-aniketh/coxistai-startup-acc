@@ -36,6 +36,10 @@ model Startup {
   fiscalConfig     CompanyFiscalConfig?
   securityConfig   CompanySecuritySetting?
   currencyConfig   CompanyCurrencySetting?
+  featureToggle    CompanyFeatureToggle?
+  voucherTypes     VoucherType[]
+  voucherSeries    VoucherNumberingSeries[]
+  vouchers         Voucher[]
 }
 
 model User {
@@ -191,6 +195,185 @@ model CompanyCurrencySetting {
   @@index([startupId])
 }
 
+model CompanyFeatureToggle {
+  id                          String   @id @default(cuid())
+  startupId                   String   @unique
+  enableAccounting            Boolean  @default(true)
+  enableInventory             Boolean  @default(true)
+  enableTaxation              Boolean  @default(true)
+  enablePayroll               Boolean  @default(false)
+  enableAIInsights            Boolean  @default(true)
+  enableScenarioPlanning      Boolean  @default(true)
+  enableAutomations           Boolean  @default(false)
+  enableVendorManagement      Boolean  @default(false)
+  enableBillingAndInvoicing   Boolean  @default(true)
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
+  startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@index([startupId])
+}
+
+enum VoucherCategory {
+  PAYMENT
+  RECEIPT
+  CONTRA
+  JOURNAL
+  SALES
+  PURCHASE
+  DEBIT_NOTE
+  CREDIT_NOTE
+  MEMO
+  REVERSING_JOURNAL
+  OPTIONAL
+  DELIVERY_NOTE
+  RECEIPT_NOTE
+  REJECTION_IN
+  REJECTION_OUT
+  STOCK_JOURNAL
+  PHYSICAL_STOCK
+  JOB_WORK_IN
+  JOB_WORK_OUT
+  MATERIAL_IN
+  MATERIAL_OUT
+}
+
+enum VoucherNumberingMethod {
+  NONE
+  MANUAL
+  AUTOMATIC
+  AUTOMATIC_WITH_OVERRIDE
+  MULTI_USER_AUTO
+}
+
+enum VoucherNumberingBehavior {
+  RENUMBER
+  RETAIN
+}
+
+model VoucherType {
+  id                   String                 @id @default(cuid())
+  startupId            String
+  name                 String
+  abbreviation         String?
+  category             VoucherCategory
+  isDefault            Boolean                @default(false)
+  numberingMethod      VoucherNumberingMethod @default(AUTOMATIC)
+  numberingBehavior    VoucherNumberingBehavior @default(RENUMBER)
+  nextNumber           Int                    @default(1)
+  prefix               String?
+  suffix               String?
+  allowManualOverride  Boolean                @default(false)
+  allowDuplicateNumbers Boolean               @default(false)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+
+  startup        Startup                 @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  numberingSeries VoucherNumberingSeries[]
+  vouchers        Voucher[]
+
+  @@unique([startupId, name])
+  @@index([startupId, category])
+}
+
+model VoucherNumberingSeries {
+  id                   String                 @id @default(cuid())
+  startupId            String
+  voucherTypeId        String
+  name                 String
+  prefix               String?
+  suffix               String?
+  startNumber          Int                    @default(1)
+  nextNumber           Int                    @default(1)
+  numberingMethod      VoucherNumberingMethod @default(AUTOMATIC)
+  numberingBehavior    VoucherNumberingBehavior @default(RENUMBER)
+  allowManualOverride  Boolean                @default(false)
+  allowDuplicateNumbers Boolean               @default(false)
+  isDefault            Boolean                @default(false)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+
+  startup     Startup     @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  voucherType VoucherType @relation(fields: [voucherTypeId], references: [id], onDelete: Cascade)
+  vouchers    Voucher[]
+
+  @@unique([voucherTypeId, name])
+  @@index([startupId, voucherTypeId])
+}
+
+model Voucher {
+  id                String      @id @default(cuid())
+  startupId         String
+  voucherTypeId     String
+  numberingSeriesId String?
+  voucherNumber     String
+  date              DateTime    @default(now())
+  reference         String?
+  narration         String?
+  createdById       String?
+  transactionId     String?     @unique
+  totalAmount       Decimal     @default(0)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  startup         Startup                 @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  voucherType     VoucherType             @relation(fields: [voucherTypeId], references: [id], onDelete: Cascade)
+  numberingSeries VoucherNumberingSeries? @relation(fields: [numberingSeriesId], references: [id], onDelete: SetNull)
+  transaction     Transaction?            @relation("TransactionVoucher", fields: [transactionId], references: [id], onDelete: SetNull)
+  entries         VoucherEntry[]
+
+  @@unique([startupId, voucherTypeId, voucherNumber])
+  @@index([startupId, date])
+}
+
+enum VoucherEntryType {
+  DEBIT
+  CREDIT
+}
+
+enum VoucherBillReferenceType {
+  AGAINST
+  NEW
+  ADVANCE
+  ON_ACCOUNT
+}
+
+model VoucherEntry {
+  id             String           @id @default(cuid())
+  voucherId      String
+  ledgerName     String
+  ledgerCode     String?
+  entryType      VoucherEntryType
+  amount         Decimal
+  narration      String?
+  costCenterName String?
+  costCategory   String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  voucher       Voucher               @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+  billReferences VoucherBillReference[]
+
+  @@index([voucherId])
+}
+
+model VoucherBillReference {
+  id             String                   @id @default(cuid())
+  voucherEntryId String
+  reference      String
+  referenceType  VoucherBillReferenceType @default(AGAINST)
+  amount         Decimal
+  dueDate        DateTime?
+  remarks        String?
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+
+  voucherEntry VoucherEntry @relation(fields: [voucherEntryId], references: [id], onDelete: Cascade)
+
+  @@index([voucherEntryId])
+}
+
 enum TransactionType {
   CREDIT
   DEBIT
@@ -223,6 +406,7 @@ model Transaction {
   account   MockBankAccount @relation(fields: [accountId], references: [id])
 
   sale Sale?
+  voucher Voucher? @relation("TransactionVoucher")
 }
 
 // ============================================================================

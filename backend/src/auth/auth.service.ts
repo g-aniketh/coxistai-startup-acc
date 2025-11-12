@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { ensureDefaultVoucherTypes } from '../services/voucherTypes';
 
 const prisma = new PrismaClient();
 
@@ -50,6 +51,18 @@ const createDefaultCurrencyConfig = () => ({
   symbolOnRight: false,
   spaceBetweenAmountAndSymbol: false,
   showAmountInMillions: false,
+});
+
+const createDefaultFeatureToggle = () => ({
+  enableAccounting: true,
+  enableInventory: true,
+  enableTaxation: true,
+  enablePayroll: false,
+  enableAIInsights: true,
+  enableScenarioPlanning: true,
+  enableAutomations: false,
+  enableVendorManagement: false,
+  enableBillingAndInvoicing: true,
 });
 
 export const signup = async (data: SignupData) => {
@@ -121,6 +134,9 @@ export const signup = async (data: SignupData) => {
       currencyConfig: {
         create: createDefaultCurrencyConfig(),
       },
+      featureToggle: {
+        create: createDefaultFeatureToggle(),
+      },
     },
     include: { 
       users: {
@@ -143,9 +159,12 @@ export const signup = async (data: SignupData) => {
       },
       fiscalConfig: true,
       securityConfig: true,
-      currencyConfig: true
+      currencyConfig: true,
+      featureToggle: true
     },
   });
+
+  await ensureDefaultVoucherTypes(prisma, startup.id);
 
   const user = startup.users[0];
   const roleNames = user.roles.map(userRole => userRole.role.name);
@@ -231,6 +250,20 @@ export const signup = async (data: SignupData) => {
           showAmountInMillions: startup.currencyConfig.showAmountInMillions,
           createdAt: startup.currencyConfig.createdAt,
           updatedAt: startup.currencyConfig.updatedAt
+        } : null,
+        featureToggle: startup.featureToggle ? {
+          id: startup.featureToggle.id,
+          enableAccounting: startup.featureToggle.enableAccounting,
+          enableInventory: startup.featureToggle.enableInventory,
+          enableTaxation: startup.featureToggle.enableTaxation,
+          enablePayroll: startup.featureToggle.enablePayroll,
+          enableAIInsights: startup.featureToggle.enableAIInsights,
+          enableScenarioPlanning: startup.featureToggle.enableScenarioPlanning,
+          enableAutomations: startup.featureToggle.enableAutomations,
+          enableVendorManagement: startup.featureToggle.enableVendorManagement,
+          enableBillingAndInvoicing: startup.featureToggle.enableBillingAndInvoicing,
+          createdAt: startup.featureToggle.createdAt,
+          updatedAt: startup.featureToggle.updatedAt
         } : null
       },
       roles: roleNames,
@@ -257,6 +290,7 @@ export const login = async (data: LoginData) => {
           fiscalConfig: true,
           securityConfig: true
           currencyConfig: true
+          featureToggle: true
         }
       },
       roles: { 
@@ -370,6 +404,20 @@ export const login = async (data: LoginData) => {
           showAmountInMillions: user.startup.currencyConfig.showAmountInMillions,
           createdAt: user.startup.currencyConfig.createdAt,
           updatedAt: user.startup.currencyConfig.updatedAt
+        } : null,
+        featureToggle: user.startup.featureToggle ? {
+          id: user.startup.featureToggle.id,
+          enableAccounting: user.startup.featureToggle.enableAccounting,
+          enableInventory: user.startup.featureToggle.enableInventory,
+          enableTaxation: user.startup.featureToggle.enableTaxation,
+          enablePayroll: user.startup.featureToggle.enablePayroll,
+          enableAIInsights: user.startup.featureToggle.enableAIInsights,
+          enableScenarioPlanning: user.startup.featureToggle.enableScenarioPlanning,
+          enableAutomations: user.startup.featureToggle.enableAutomations,
+          enableVendorManagement: user.startup.featureToggle.enableVendorManagement,
+          enableBillingAndInvoicing: user.startup.featureToggle.enableBillingAndInvoicing,
+          createdAt: user.startup.featureToggle.createdAt,
+          updatedAt: user.startup.featureToggle.updatedAt
         } : null
       },
       roles: roleNames,

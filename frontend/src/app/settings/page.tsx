@@ -11,6 +11,10 @@ import {
   CompanyFiscalInput,
   CompanySecurityConfig,
   CompanySecurityInput,
+  CompanyCurrencyConfig,
+  CompanyCurrencyInput,
+  CompanyFeatureToggle,
+  CompanyFeatureToggleInput,
 } from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthGuard from '@/components/auth/AuthGuard';
@@ -134,6 +138,55 @@ interface SecurityForm {
   currentPassword: string;
 }
 
+interface FeatureToggleForm {
+  enableAccounting: boolean;
+  enableInventory: boolean;
+  enableTaxation: boolean;
+  enablePayroll: boolean;
+  enableAIInsights: boolean;
+  enableScenarioPlanning: boolean;
+  enableAutomations: boolean;
+  enableVendorManagement: boolean;
+  enableBillingAndInvoicing: boolean;
+}
+
+const voucherCategoryOptions: Array<{ value: VoucherCategory; label: string }> = [
+  { value: 'PAYMENT', label: 'Payment' },
+  { value: 'RECEIPT', label: 'Receipt' },
+  { value: 'CONTRA', label: 'Contra' },
+  { value: 'JOURNAL', label: 'Journal' },
+  { value: 'SALES', label: 'Sales' },
+  { value: 'PURCHASE', label: 'Purchase' },
+  { value: 'DEBIT_NOTE', label: 'Debit Note' },
+  { value: 'CREDIT_NOTE', label: 'Credit Note' },
+  { value: 'MEMO', label: 'Memo' },
+  { value: 'REVERSING_JOURNAL', label: 'Reversing Journal' },
+  { value: 'OPTIONAL', label: 'Optional' },
+  { value: 'DELIVERY_NOTE', label: 'Delivery Note' },
+  { value: 'RECEIPT_NOTE', label: 'Receipt Note' },
+  { value: 'REJECTION_IN', label: 'Rejection In' },
+  { value: 'REJECTION_OUT', label: 'Rejection Out' },
+  { value: 'STOCK_JOURNAL', label: 'Stock Journal' },
+  { value: 'PHYSICAL_STOCK', label: 'Physical Stock' },
+  { value: 'JOB_WORK_IN', label: 'Job Work In' },
+  { value: 'JOB_WORK_OUT', label: 'Job Work Out' },
+  { value: 'MATERIAL_IN', label: 'Material In' },
+  { value: 'MATERIAL_OUT', label: 'Material Out' },
+];
+
+const numberingMethodOptions: Array<{ value: VoucherNumberingMethod; label: string }> = [
+  { value: 'AUTOMATIC', label: 'Automatic' },
+  { value: 'AUTOMATIC_WITH_OVERRIDE', label: 'Automatic (Manual Override)' },
+  { value: 'MULTI_USER_AUTO', label: 'Multi-user Automatic' },
+  { value: 'MANUAL', label: 'Manual' },
+  { value: 'NONE', label: 'None' },
+];
+
+const numberingBehaviorOptions: Array<{ value: VoucherNumberingBehavior; label: string }> = [
+  { value: 'RENUMBER', label: 'Renumber on insert/delete' },
+  { value: 'RETAIN', label: 'Retain original numbers' },
+];
+
 const toDateInputValue = (value?: string | null) => {
   if (!value) return '';
   return value.slice(0, 10);
@@ -200,6 +253,18 @@ const mapCurrencyToForm = (currency: CompanyCurrencyConfig | null): CurrencyForm
   showAmountInMillions: currency?.showAmountInMillions ?? false,
 });
 
+const mapFeatureToggleToForm = (toggle: CompanyFeatureToggle | null): FeatureToggleForm => ({
+  enableAccounting: toggle?.enableAccounting ?? true,
+  enableInventory: toggle?.enableInventory ?? true,
+  enableTaxation: toggle?.enableTaxation ?? true,
+  enablePayroll: toggle?.enablePayroll ?? false,
+  enableAIInsights: toggle?.enableAIInsights ?? true,
+  enableScenarioPlanning: toggle?.enableScenarioPlanning ?? true,
+  enableAutomations: toggle?.enableAutomations ?? false,
+  enableVendorManagement: toggle?.enableVendorManagement ?? false,
+  enableBillingAndInvoicing: toggle?.enableBillingAndInvoicing ?? true,
+});
+
 export default function SettingsPage() {
   const { user, setUser } = useAuthStore();
   const [plaidItems, setPlaidItems] = useState<any[]>([]);
@@ -215,6 +280,24 @@ export default function SettingsPage() {
   const [currencyForm, setCurrencyForm] = useState<CurrencyForm | null>(null);
   const [currencyLoading, setCurrencyLoading] = useState(true);
   const [currencySaving, setCurrencySaving] = useState(false);
+  const [featureForm, setFeatureForm] = useState<FeatureToggleForm | null>(null);
+  const [featureLoading, setFeatureLoading] = useState(true);
+  const [featureSaving, setFeatureSaving] = useState(false);
+  const [voucherTypes, setVoucherTypes] = useState<VoucherType[]>([]);
+  const [voucherLoading, setVoucherLoading] = useState(true);
+  const [voucherSaving, setVoucherSaving] = useState<Record<string, boolean>>({});
+  const [newVoucherType, setNewVoucherType] = useState<VoucherTypeInput & { prefix?: string; suffix?: string; abbreviation?: string }>({
+    name: '',
+    abbreviation: '',
+    category: 'PAYMENT',
+    numberingMethod: 'AUTOMATIC',
+    numberingBehavior: 'RENUMBER',
+    prefix: '',
+    suffix: '',
+    allowManualOverride: false,
+    allowDuplicateNumbers: false,
+  });
+  const [seriesDrafts, setSeriesDrafts] = useState<Record<string, { name: string; prefix: string; suffix: string }>>({});
 
   const hasAddresses = useMemo(() => (profileForm?.addresses?.length ?? 0) > 0, [profileForm]);
 
@@ -236,11 +319,21 @@ export default function SettingsPage() {
       setFiscalLoading(true);
       setSecurityLoading(true);
       setCurrencyLoading(true);
-      const [profileResponse, fiscalResponse, securityResponse, currencyResponse] = await Promise.all([
+      setFeatureLoading(true);
+      const [
+        profileResponse,
+        fiscalResponse,
+        securityResponse,
+        currencyResponse,
+        featureResponse,
+        voucherResponse,
+      ] = await Promise.all([
         apiClient.company.getProfile(),
         apiClient.company.getFiscal(),
         apiClient.company.getSecurity(),
         apiClient.company.getCurrency(),
+        apiClient.company.getFeatureToggles(),
+        apiClient.vouchers.listTypes(),
       ]);
       const fallbackName = user?.startup?.name;
       if (profileResponse.success) {
@@ -270,18 +363,243 @@ export default function SettingsPage() {
         setCurrencyForm(mapCurrencyToForm(null));
         toast.error(currencyResponse.error || 'Failed to load currency configuration');
       }
+
+      if (featureResponse.success) {
+        setFeatureForm(mapFeatureToggleToForm(featureResponse.data || null));
+      } else {
+        setFeatureForm(mapFeatureToggleToForm(null));
+        toast.error(featureResponse.error || 'Failed to load feature configuration');
+      }
+
+      if (voucherResponse.success) {
+        const items = voucherResponse.data ?? [];
+        setVoucherTypes(items);
+        const draftMap: Record<string, { name: string; prefix: string; suffix: string }> = {};
+        items.forEach((type) => {
+          draftMap[type.id] = { name: '', prefix: '', suffix: '' };
+        });
+        setSeriesDrafts(draftMap);
+      } else {
+        setVoucherTypes([]);
+        setSeriesDrafts({});
+        toast.error(voucherResponse.error || 'Failed to load voucher configuration');
+      }
     } catch (error) {
       console.error('Failed to load company settings:', error);
       setProfileForm(mapProfileToForm(null, user?.startup?.name));
       setFiscalForm(mapFiscalToForm(null));
       setSecurityForm(mapSecurityToForm(null));
       setCurrencyForm(mapCurrencyToForm(null));
+      setFeatureForm(mapFeatureToggleToForm(null));
+      setVoucherTypes([]);
+      setSeriesDrafts({});
       toast.error('Unable to load company settings');
     } finally {
       setProfileLoading(false);
       setFiscalLoading(false);
       setSecurityLoading(false);
       setCurrencyLoading(false);
+      setFeatureLoading(false);
+      setVoucherLoading(false);
+    }
+  };
+  const syncVoucherTypes = (items: VoucherType[]) => {
+    setVoucherTypes(items);
+    const drafts: Record<string, { name: string; prefix: string; suffix: string }> = {};
+    items.forEach((type) => {
+      drafts[type.id] = { name: '', prefix: '', suffix: '' };
+    });
+    setSeriesDrafts(drafts);
+  };
+
+  const refreshVoucherTypes = async () => {
+    try {
+      setVoucherLoading(true);
+      const response = await apiClient.vouchers.listTypes();
+      if (response.success && response.data) {
+        syncVoucherTypes(response.data);
+      } else {
+        syncVoucherTypes([]);
+        if (!response.success) {
+          toast.error(response.error || 'Failed to load voucher types');
+        }
+      }
+    } catch (error) {
+      console.error('Refresh voucher types error:', error);
+      syncVoucherTypes([]);
+      toast.error('Unable to load voucher types');
+    } finally {
+      setVoucherLoading(false);
+    }
+  };
+
+  const handleVoucherTypeFieldChange = <K extends keyof VoucherType>(
+    voucherTypeId: string,
+    field: K,
+    value: VoucherType[K]
+  ) => {
+    setVoucherTypes((prev) =>
+      prev.map((type) =>
+        type.id === voucherTypeId
+          ? ({
+              ...type,
+              [field]: value,
+            } as VoucherType)
+          : type
+      )
+    );
+  };
+
+  const handleVoucherTypeSave = async (voucherTypeId: string) => {
+    const voucherType = voucherTypes.find((type) => type.id === voucherTypeId);
+    if (!voucherType) return;
+
+    const payload: VoucherTypeUpdateInput = {
+      abbreviation: voucherType.abbreviation ?? null,
+      numberingMethod: voucherType.numberingMethod,
+      numberingBehavior: voucherType.numberingBehavior,
+      prefix: voucherType.prefix ?? null,
+      suffix: voucherType.suffix ?? null,
+      allowManualOverride: voucherType.allowManualOverride,
+      allowDuplicateNumbers: voucherType.allowDuplicateNumbers,
+      nextNumber: voucherType.nextNumber,
+    };
+
+    setVoucherSaving((prev) => ({ ...prev, [voucherTypeId]: true }));
+    try {
+      const response = await apiClient.vouchers.updateType(voucherTypeId, payload);
+      if (!response.success || !response.data) {
+        toast.error(response.error || 'Failed to update voucher type');
+        return;
+      }
+      await refreshVoucherTypes();
+      toast.success('Voucher type updated');
+    } catch (error) {
+      console.error('Save voucher type error:', error);
+      toast.error('Unable to update voucher type');
+    } finally {
+      setVoucherSaving((prev) => ({ ...prev, [voucherTypeId]: false }));
+    }
+  };
+
+  const handleGenerateNextNumber = async (voucherTypeId: string, numberingSeriesId?: string) => {
+    setVoucherSaving((prev) => ({ ...prev, [voucherTypeId]: true }));
+    try {
+      const response = await apiClient.vouchers.generateNextNumber(voucherTypeId, numberingSeriesId);
+      if (!response.success || !response.data) {
+        toast.error(response.error || 'Failed to generate voucher number');
+        return;
+      }
+      toast.success(`Next voucher number: ${response.data.voucherNumber}`);
+      await refreshVoucherTypes();
+    } catch (error) {
+      console.error('Generate voucher number error:', error);
+      toast.error('Unable to generate voucher number');
+    } finally {
+      setVoucherSaving((prev) => ({ ...prev, [voucherTypeId]: false }));
+    }
+  };
+
+  const handleNewVoucherTypeChange = <K extends keyof typeof newVoucherType>(
+    field: K,
+    value: (typeof newVoucherType)[K]
+  ) => {
+    setNewVoucherType((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleCreateVoucherType = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!newVoucherType.name.trim()) {
+      toast.error('Voucher type name is required');
+      return;
+    }
+
+    try {
+      setVoucherLoading(true);
+      const response = await apiClient.vouchers.createType({
+        name: newVoucherType.name.trim(),
+        abbreviation: newVoucherType.abbreviation?.trim() || undefined,
+        category: newVoucherType.category,
+        numberingMethod: newVoucherType.numberingMethod,
+        numberingBehavior: newVoucherType.numberingBehavior,
+        prefix: newVoucherType.prefix?.trim() || undefined,
+        suffix: newVoucherType.suffix?.trim() || undefined,
+        allowManualOverride: newVoucherType.allowManualOverride,
+        allowDuplicateNumbers: newVoucherType.allowDuplicateNumbers,
+      });
+
+      if (!response.success || !response.data) {
+        toast.error(response.error || 'Failed to create voucher type');
+        return;
+      }
+
+      setNewVoucherType({
+        name: '',
+        abbreviation: '',
+        category: 'PAYMENT',
+        numberingMethod: 'AUTOMATIC',
+        numberingBehavior: 'RENUMBER',
+        prefix: '',
+        suffix: '',
+        allowManualOverride: false,
+        allowDuplicateNumbers: false,
+      });
+
+      await refreshVoucherTypes();
+      toast.success('Voucher type created');
+    } catch (error) {
+      console.error('Create voucher type error:', error);
+      toast.error('Unable to create voucher type');
+    } finally {
+      setVoucherLoading(false);
+    }
+  };
+
+  const handleSeriesDraftChange = (
+    voucherTypeId: string,
+    field: 'name' | 'prefix' | 'suffix',
+    value: string
+  ) => {
+    setSeriesDrafts((prev) => ({
+      ...prev,
+      [voucherTypeId]: {
+        ...(prev[voucherTypeId] ?? { name: '', prefix: '', suffix: '' }),
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleCreateSeries = async (voucherTypeId: string) => {
+    const draft = seriesDrafts[voucherTypeId];
+    if (!draft || !draft.name.trim()) {
+      toast.error('Series name is required');
+      return;
+    }
+
+    setVoucherSaving((prev) => ({ ...prev, [voucherTypeId]: true }));
+    try {
+      const response = await apiClient.vouchers.createSeries(voucherTypeId, {
+        name: draft.name.trim(),
+        prefix: draft.prefix?.trim() || undefined,
+        suffix: draft.suffix?.trim() || undefined,
+      });
+
+      if (!response.success || !response.data) {
+        toast.error(response.error || 'Failed to create numbering series');
+        return;
+      }
+
+      toast.success('Numbering series created');
+      await refreshVoucherTypes();
+      setSeriesDrafts((prev) => ({
+        ...prev,
+        [voucherTypeId]: { name: '', prefix: '', suffix: '' },
+      }));
+    } catch (error) {
+      console.error('Create numbering series error:', error);
+      toast.error('Unable to create numbering series');
+    } finally {
+      setVoucherSaving((prev) => ({ ...prev, [voucherTypeId]: false }));
     }
   };
   
@@ -660,28 +978,70 @@ export default function SettingsPage() {
     }
   };
 
+  const handleFeatureFieldChange = <K extends keyof FeatureToggleForm>(field: K, value: FeatureToggleForm[K]) => {
+    setFeatureForm(prev => (prev ? { ...prev, [field]: value } : prev));
+  };
+
+  const handleFeatureSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!featureForm) return;
+
+    setFeatureSaving(true);
+    try {
+      const payload: CompanyFeatureToggleInput = {
+        ...featureForm,
+      };
+
+      const response = await apiClient.company.updateFeatureToggles(payload);
+      if (!response.success || !response.data) {
+        toast.error(response.error || 'Failed to update feature configuration');
+        return;
+      }
+
+      const updatedConfig = response.data;
+      setFeatureForm(mapFeatureToggleToForm(updatedConfig));
+
+      if (user) {
+        setUser({
+          ...user,
+          startup: {
+            ...user.startup,
+            featureToggle: updatedConfig,
+          },
+        });
+      }
+
+      toast.success('Feature configuration updated successfully');
+    } catch (error) {
+      console.error('Update feature configuration error:', error);
+      toast.error(error instanceof Error ? error.message : 'Unable to update feature configuration');
+    } finally {
+      setFeatureSaving(false);
+    }
+  };
+  
   const sections = [
     {
       icon: <User className="h-5 w-5" />,
       title: 'Account Information',
       content: (
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-          <div>
-            <dt className="text-muted-foreground">Email</dt>
-            <dd className="mt-1 font-semibold">{user?.email}</dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground">Role</dt>
-            <dd className="mt-1 font-semibold capitalize">{user?.roles.join(', ')}</dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground">Organization</dt>
-            <dd className="mt-1 font-semibold">{user?.startup?.name}</dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground">Member Since</dt>
-            <dd className="mt-1 font-semibold">{user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</dd>
-          </div>
+            <div>
+              <dt className="text-muted-foreground">Email</dt>
+              <dd className="mt-1 font-semibold">{user?.email}</dd>
+            </div>
+             <div>
+              <dt className="text-muted-foreground">Role</dt>
+              <dd className="mt-1 font-semibold capitalize">{user?.roles.join(', ')}</dd>
+            </div>
+             <div>
+              <dt className="text-muted-foreground">Organization</dt>
+              <dd className="mt-1 font-semibold">{user?.startup?.name}</dd>
+            </div>
+             <div>
+              <dt className="text-muted-foreground">Member Since</dt>
+              <dd className="mt-1 font-semibold">{user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</dd>
+            </div>
         </dl>
       ),
     },
@@ -690,22 +1050,22 @@ export default function SettingsPage() {
       title: 'Connections',
       content: (
         <div className="space-y-4">
-          {plaidItems.map((item) => (
-            <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div>
-                <p className="font-semibold">{item.institutionName || 'Bank Account'}</p>
-                <p className="text-xs text-muted-foreground">{item.accounts?.length || 0} accounts</p>
-              </div>
+           {plaidItems.map((item) => (
+              <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div>
+                  <p className="font-semibold">{item.institutionName || 'Bank Account'}</p>
+                  <p className="text-xs text-muted-foreground">{item.accounts?.length || 0} accounts</p>
+                </div>
               <Button
                 onClick={() => handleDisconnectBank(item.id)}
                 variant="ghost"
                 size="sm"
                 className="text-xs text-red-500 hover:text-red-600"
               >
-                <Trash2 className="h-3 w-3 mr-1" /> Disconnect
-              </Button>
-            </div>
-          ))}
+                  <Trash2 className="h-3 w-3 mr-1" /> Disconnect
+                </Button>
+              </div>
+            ))}
           <PlaidLink
             onSuccess={handlePlaidSuccess}
             onError={(e: any) => toast.error(e.display_message || 'An error occurred.')}
@@ -770,8 +1130,8 @@ export default function SettingsPage() {
                         value={profileForm.mailingName}
                         onChange={(event) => handleProfileFieldChange('mailingName', event.target.value)}
                       />
-                    </div>
-                  </div>
+            </div>
+          </div>
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
@@ -1004,12 +1364,12 @@ export default function SettingsPage() {
             <CardHeader className="flex flex-col gap-2">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Shield className="h-5 w-5 text-[#2C2C2C]" /> Financial Year & Edit Log
-              </CardTitle>
+                  </CardTitle>
               <p className="text-sm text-muted-foreground">
                 Control financial year boundaries, book start dates, back-dated entry permissions, and audit logging.
               </p>
-            </CardHeader>
-            <CardContent>
+                </CardHeader>
+                <CardContent>
               {fiscalLoading || !fiscalForm ? (
                 <div className="flex items-center justify-center py-8 text-muted-foreground">
                   <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading fiscal configuration...
@@ -1098,8 +1458,8 @@ export default function SettingsPage() {
                   </div>
                 </form>
               )}
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
 
           <Card className="rounded-2xl shadow-lg border-0 bg-white">
             <CardHeader className="flex flex-col gap-2">
@@ -1432,6 +1792,555 @@ export default function SettingsPage() {
                         </>
                       ) : (
                         'Save Currency Settings'
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-2xl shadow-lg border-0 bg-white">
+            <CardHeader className="flex flex-col gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Building2 className="h-5 w-5 text-[#2C2C2C]" /> Voucher Types & Numbering
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Configure standard voucher types, numbering sequences, and prefixes to mirror your TallyPrime setup.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <form
+                className="grid gap-4 md:grid-cols-3 bg-gray-50 border border-dashed border-gray-300 rounded-xl p-4"
+                onSubmit={handleCreateVoucherType}
+              >
+                <div className="space-y-2 md:col-span-3">
+                  <h3 className="text-sm font-semibold text-[#2C2C2C]">Create Voucher Type</h3>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="voucherTypeName">Name *</Label>
+                  <Input
+                    id="voucherTypeName"
+                    value={newVoucherType.name}
+                    onChange={(event) => handleNewVoucherTypeChange('name', event.target.value)}
+                    placeholder="e.g., Payment"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="voucherTypeCategory">Category *</Label>
+                  <select
+                    id="voucherTypeCategory"
+                    value={newVoucherType.category}
+                    onChange={(event) =>
+                      handleNewVoucherTypeChange('category', event.target.value as VoucherCategory)
+                    }
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                  >
+                    {voucherCategoryOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="voucherTypeAbbreviation">Abbreviation</Label>
+                  <Input
+                    id="voucherTypeAbbreviation"
+                    value={newVoucherType.abbreviation}
+                    onChange={(event) => handleNewVoucherTypeChange('abbreviation', event.target.value)}
+                    placeholder="Optional short code"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="voucherTypeNumberingMethod">Numbering Method</Label>
+                  <select
+                    id="voucherTypeNumberingMethod"
+                    value={newVoucherType.numberingMethod}
+                    onChange={(event) =>
+                      handleNewVoucherTypeChange(
+                        'numberingMethod',
+                        event.target.value as VoucherNumberingMethod
+                      )
+                    }
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                  >
+                    {numberingMethodOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="voucherTypeNumberingBehavior">Numbering Behaviour</Label>
+                  <select
+                    id="voucherTypeNumberingBehavior"
+                    value={newVoucherType.numberingBehavior}
+                    onChange={(event) =>
+                      handleNewVoucherTypeChange(
+                        'numberingBehavior',
+                        event.target.value as VoucherNumberingBehavior
+                      )
+                    }
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                  >
+                    {numberingBehaviorOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="voucherTypePrefix">Prefix</Label>
+                  <Input
+                    id="voucherTypePrefix"
+                    value={newVoucherType.prefix}
+                    onChange={(event) => handleNewVoucherTypeChange('prefix', event.target.value)}
+                    placeholder="e.g., PMT/"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="voucherTypeSuffix">Suffix</Label>
+                  <Input
+                    id="voucherTypeSuffix"
+                    value={newVoucherType.suffix}
+                    onChange={(event) => handleNewVoucherTypeChange('suffix', event.target.value)}
+                    placeholder="Optional suffix"
+                  />
+                </div>
+                <div className="flex items-center gap-2 md:col-span-3 text-sm">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={newVoucherType.allowManualOverride}
+                      onChange={(event) =>
+                        handleNewVoucherTypeChange('allowManualOverride', event.target.checked)
+                      }
+                    />
+                    Allow manual override
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={newVoucherType.allowDuplicateNumbers}
+                      onChange={(event) =>
+                        handleNewVoucherTypeChange('allowDuplicateNumbers', event.target.checked)
+                      }
+                    />
+                    Allow duplicate numbers
+                  </label>
+                </div>
+                <div className="flex items-center gap-3 md:col-span-3 justify-end">
+                  <Button
+                    type="submit"
+                    disabled={voucherLoading}
+                    className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                  >
+                    Add Voucher Type
+                  </Button>
+                </div>
+              </form>
+
+              {voucherLoading ? (
+                <div className="flex items-center justify-center py-8 text-muted-foreground">
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading voucher types...
+                </div>
+              ) : voucherTypes.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-muted-foreground bg-gray-50">
+                  No voucher types configured yet.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {voucherTypes.map((voucherType) => {
+                    const seriesDraft = seriesDrafts[voucherType.id] ?? { name: '', prefix: '', suffix: '' };
+                    const saving = voucherSaving[voucherType.id] ?? false;
+                    return (
+                      <div
+                        key={voucherType.id}
+                        className="space-y-4 rounded-xl border border-gray-200 p-4 bg-gray-50"
+                      >
+                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
+                          <div>
+                            <h4 className="text-sm font-semibold text-[#2C2C2C]">{voucherType.name}</h4>
+                            <p className="text-xs text-muted-foreground">
+                              {voucherCategoryOptions.find((option) => option.value === voucherType.category)?.label ??
+                                voucherType.category}
+                              {' '}• Next Number: {voucherType.nextNumber}
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                            <span className="px-2 py-1 rounded bg-white border border-gray-200">
+                              Method: {numberingMethodOptions.find((option) => option.value === voucherType.numberingMethod)?.label ?? voucherType.numberingMethod}
+                            </span>
+                            <span className="px-2 py-1 rounded bg-white border border-gray-200">
+                              Behaviour: {numberingBehaviorOptions.find((option) => option.value === voucherType.numberingBehavior)?.label ?? voucherType.numberingBehavior}
+                            </span>
+                            {voucherType.allowManualOverride && (
+                              <span className="px-2 py-1 rounded bg-white border border-gray-200">Manual override</span>
+                            )}
+                            {voucherType.allowDuplicateNumbers && (
+                              <span className="px-2 py-1 rounded bg-white border border-gray-200">Duplicates allowed</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-3">
+                          <div className="space-y-2">
+                            <Label htmlFor={`voucher-prefix-${voucherType.id}`}>Prefix</Label>
+                            <Input
+                              id={`voucher-prefix-${voucherType.id}`}
+                              value={voucherType.prefix ?? ''}
+                              onChange={(event) =>
+                                handleVoucherTypeFieldChange(voucherType.id, 'prefix', event.target.value || null)
+                              }
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`voucher-suffix-${voucherType.id}`}>Suffix</Label>
+                            <Input
+                              id={`voucher-suffix-${voucherType.id}`}
+                              value={voucherType.suffix ?? ''}
+                              onChange={(event) =>
+                                handleVoucherTypeFieldChange(voucherType.id, 'suffix', event.target.value || null)
+                              }
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`voucher-next-${voucherType.id}`}>Next Number</Label>
+                            <Input
+                              id={`voucher-next-${voucherType.id}`}
+                              type="number"
+                              min={1}
+                              value={voucherType.nextNumber}
+                              onChange={(event) =>
+                                handleVoucherTypeFieldChange(
+                                  voucherType.id,
+                                  'nextNumber',
+                                  Number(event.target.value || 1)
+                                )
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-4 text-sm">
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={voucherType.allowManualOverride}
+                              onChange={(event) =>
+                                handleVoucherTypeFieldChange(
+                                  voucherType.id,
+                                  'allowManualOverride',
+                                  event.target.checked
+                                )
+                              }
+                            />
+                            Allow manual override
+                          </label>
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={voucherType.allowDuplicateNumbers}
+                              onChange={(event) =>
+                                handleVoucherTypeFieldChange(
+                                  voucherType.id,
+                                  'allowDuplicateNumbers',
+                                  event.target.checked
+                                )
+                              }
+                            />
+                            Allow duplicate numbers
+                          </label>
+                        </div>
+
+                        <div className="flex flex-wrap gap-3">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            disabled={saving}
+                            onClick={() => handleVoucherTypeSave(voucherType.id)}
+                          >
+                            {saving ? 'Saving...' : 'Save Settings'}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={saving}
+                            onClick={() => handleGenerateNextNumber(voucherType.id)}
+                          >
+                            Preview Next Number
+                          </Button>
+                        </div>
+
+                        <div className="space-y-3 bg-white border border-gray-200 rounded-lg p-3">
+                          <h5 className="text-xs font-semibold text-[#2C2C2C] uppercase tracking-wide">
+                            Numbering Series
+                          </h5>
+                          {voucherType.numberingSeries.length === 0 ? (
+                            <p className="text-xs text-muted-foreground">No additional series configured.</p>
+                          ) : (
+                            <ul className="space-y-2 text-xs text-[#2C2C2C]">
+                              {voucherType.numberingSeries.map((series) => (
+                                <li
+                                  key={series.id}
+                                  className="flex items-center justify-between rounded border border-gray-200 px-3 py-2"
+                                >
+                                  <div>
+                                    <p className="font-medium">
+                                      {series.name} {series.isDefault ? '(Default)' : ''}
+                                    </p>
+                                    <p className="text-muted-foreground">
+                                      Prefix: {series.prefix ?? '-'} • Suffix: {series.suffix ?? '-'} • Next:{' '}
+                                      {series.nextNumber}
+                                    </p>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    disabled={saving}
+                                    onClick={() => handleGenerateNextNumber(voucherType.id, series.id)}
+                                  >
+                                    Preview Next
+                                  </Button>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+
+                          <div className="grid gap-3 md:grid-cols-4">
+                            <div className="md:col-span-2 space-y-1">
+                              <Label htmlFor={`series-name-${voucherType.id}`}>Series Name</Label>
+                              <Input
+                                id={`series-name-${voucherType.id}`}
+                                value={seriesDraft.name}
+                                onChange={(event) =>
+                                  handleSeriesDraftChange(voucherType.id, 'name', event.target.value)
+                                }
+                                placeholder="e.g., HO-2025"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor={`series-prefix-${voucherType.id}`}>Prefix</Label>
+                              <Input
+                                id={`series-prefix-${voucherType.id}`}
+                                value={seriesDraft.prefix}
+                                onChange={(event) =>
+                                  handleSeriesDraftChange(voucherType.id, 'prefix', event.target.value)
+                                }
+                                placeholder="Optional"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor={`series-suffix-${voucherType.id}`}>Suffix</Label>
+                              <Input
+                                id={`series-suffix-${voucherType.id}`}
+                                value={seriesDraft.suffix}
+                                onChange={(event) =>
+                                  handleSeriesDraftChange(voucherType.id, 'suffix', event.target.value)
+                                }
+                                placeholder="Optional"
+                              />
+                            </div>
+                            <div className="md:col-span-4 flex justify-end">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={saving}
+                                onClick={() => handleCreateSeries(voucherType.id)}
+                              >
+                                Add Series
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-2xl shadow-lg border-0 bg-white">
+            <CardHeader className="flex flex-col gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Shield className="h-5 w-5 text-[#2C2C2C]" /> Feature Access
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Enable or disable major modules for this company. Disabled modules will be hidden across the product.
+              </p>
+            </CardHeader>
+            <CardContent>
+              {featureLoading || !featureForm ? (
+                <div className="flex items-center justify-center py-8 text-muted-foreground">
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading feature configuration...
+                </div>
+              ) : (
+                <form className="space-y-6" onSubmit={handleFeatureSubmit}>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={featureForm.enableAccounting}
+                        onChange={event =>
+                          handleFeatureFieldChange('enableAccounting', event.target.checked)
+                        }
+                      />
+                      <span>
+                        <span className="font-semibold text-[#2C2C2C]">Accounting & Ledgers</span>
+                        <p className="text-xs text-muted-foreground">
+                          Core ledger management, vouchers, and financial statements.
+                        </p>
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={featureForm.enableInventory}
+                        onChange={event =>
+                          handleFeatureFieldChange('enableInventory', event.target.checked)
+                        }
+                      />
+                      <span>
+                        <span className="font-semibold text-[#2C2C2C]">Inventory & Stock</span>
+                        <p className="text-xs text-muted-foreground">
+                          Stock items, batches, pricing, and warehouse reporting.
+                        </p>
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={featureForm.enableTaxation}
+                        onChange={event =>
+                          handleFeatureFieldChange('enableTaxation', event.target.checked)
+                        }
+                      />
+                      <span>
+                        <span className="font-semibold text-[#2C2C2C]">Tax & Compliance</span>
+                        <p className="text-xs text-muted-foreground">
+                          GST, TDS/TCS modules, filings, and statutory reports.
+                        </p>
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={featureForm.enablePayroll}
+                        onChange={event =>
+                          handleFeatureFieldChange('enablePayroll', event.target.checked)
+                        }
+                      />
+                      <span>
+                        <span className="font-semibold text-[#2C2C2C]">Payroll & HR</span>
+                        <p className="text-xs text-muted-foreground">
+                          Employee payroll processing and statutory deductions.
+                        </p>
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={featureForm.enableAIInsights}
+                        onChange={event =>
+                          handleFeatureFieldChange('enableAIInsights', event.target.checked)
+                        }
+                      />
+                      <span>
+                        <span className="font-semibold text-[#2C2C2C]">AI Insights</span>
+                        <p className="text-xs text-muted-foreground">
+                          Automated anomaly detection, alerts, and AI recommendations.
+                        </p>
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={featureForm.enableScenarioPlanning}
+                        onChange={event =>
+                          handleFeatureFieldChange('enableScenarioPlanning', event.target.checked)
+                        }
+                      />
+                      <span>
+                        <span className="font-semibold text-[#2C2C2C]">Scenario Planning</span>
+                        <p className="text-xs text-muted-foreground">
+                          What-if analysis, runway simulations, and forecasting sandbox.
+                        </p>
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={featureForm.enableAutomations}
+                        onChange={event =>
+                          handleFeatureFieldChange('enableAutomations', event.target.checked)
+                        }
+                      />
+                      <span>
+                        <span className="font-semibold text-[#2C2C2C]">Automations</span>
+                        <p className="text-xs text-muted-foreground">
+                          Background reconciliations, smart reminders, and workflows.
+                        </p>
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={featureForm.enableVendorManagement}
+                        onChange={event =>
+                          handleFeatureFieldChange('enableVendorManagement', event.target.checked)
+                        }
+                      />
+                      <span>
+                        <span className="font-semibold text-[#2C2C2C]">Vendor Management</span>
+                        <p className="text-xs text-muted-foreground">
+                          Procurement workflows, vendor portals, and purchase approvals.
+                        </p>
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={featureForm.enableBillingAndInvoicing}
+                        onChange={event =>
+                          handleFeatureFieldChange('enableBillingAndInvoicing', event.target.checked)
+                        }
+                      />
+                      <span>
+                        <span className="font-semibold text-[#2C2C2C]">Billing & Invoicing</span>
+                        <p className="text-xs text-muted-foreground">
+                          Sales invoices, collections, reminders, and payment reconciliation.
+                        </p>
+                      </span>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-3">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={loadCompanyData}
+                      disabled={featureLoading || featureSaving}
+                    >
+                      Reset
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={featureSaving}
+                      className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                    >
+                      {featureSaving ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" /> Saving...
+                        </>
+                      ) : (
+                        'Save Feature Settings'
                       )}
                     </Button>
                   </div>

@@ -121,6 +121,211 @@ export interface CompanyCurrencyInput {
   showAmountInMillions?: boolean;
 }
 
+export interface CompanyFeatureToggle {
+  id: string;
+  enableAccounting: boolean;
+  enableInventory: boolean;
+  enableTaxation: boolean;
+  enablePayroll: boolean;
+  enableAIInsights: boolean;
+  enableScenarioPlanning: boolean;
+  enableAutomations: boolean;
+  enableVendorManagement: boolean;
+  enableBillingAndInvoicing: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CompanyFeatureToggleInput {
+  enableAccounting?: boolean;
+  enableInventory?: boolean;
+  enableTaxation?: boolean;
+  enablePayroll?: boolean;
+  enableAIInsights?: boolean;
+  enableScenarioPlanning?: boolean;
+  enableAutomations?: boolean;
+  enableVendorManagement?: boolean;
+  enableBillingAndInvoicing?: boolean;
+}
+
+export type VoucherCategory =
+  | 'PAYMENT'
+  | 'RECEIPT'
+  | 'CONTRA'
+  | 'JOURNAL'
+  | 'SALES'
+  | 'PURCHASE'
+  | 'DEBIT_NOTE'
+  | 'CREDIT_NOTE'
+  | 'MEMO'
+  | 'REVERSING_JOURNAL'
+  | 'OPTIONAL'
+  | 'DELIVERY_NOTE'
+  | 'RECEIPT_NOTE'
+  | 'REJECTION_IN'
+  | 'REJECTION_OUT'
+  | 'STOCK_JOURNAL'
+  | 'PHYSICAL_STOCK'
+  | 'JOB_WORK_IN'
+  | 'JOB_WORK_OUT'
+  | 'MATERIAL_IN'
+  | 'MATERIAL_OUT';
+
+export type VoucherNumberingMethod =
+  | 'NONE'
+  | 'MANUAL'
+  | 'AUTOMATIC'
+  | 'AUTOMATIC_WITH_OVERRIDE'
+  | 'MULTI_USER_AUTO';
+
+export type VoucherNumberingBehavior = 'RENUMBER' | 'RETAIN';
+
+export interface VoucherNumberingSeries {
+  id: string;
+  startupId: string;
+  voucherTypeId: string;
+  name: string;
+  prefix?: string | null;
+  suffix?: string | null;
+  startNumber: number;
+  nextNumber: number;
+  numberingMethod: VoucherNumberingMethod;
+  numberingBehavior: VoucherNumberingBehavior;
+  allowManualOverride: boolean;
+  allowDuplicateNumbers: boolean;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VoucherType {
+  id: string;
+  startupId: string;
+  name: string;
+  abbreviation?: string | null;
+  category: VoucherCategory;
+  isDefault: boolean;
+  numberingMethod: VoucherNumberingMethod;
+  numberingBehavior: VoucherNumberingBehavior;
+  nextNumber: number;
+  prefix?: string | null;
+  suffix?: string | null;
+  allowManualOverride: boolean;
+  allowDuplicateNumbers: boolean;
+  createdAt: string;
+  updatedAt: string;
+  numberingSeries: VoucherNumberingSeries[];
+}
+
+export interface VoucherTypeInput {
+  name: string;
+  abbreviation?: string;
+  category: VoucherCategory;
+  numberingMethod?: VoucherNumberingMethod;
+  numberingBehavior?: VoucherNumberingBehavior;
+  prefix?: string;
+  suffix?: string;
+  allowManualOverride?: boolean;
+  allowDuplicateNumbers?: boolean;
+}
+
+export interface VoucherTypeUpdateInput {
+  abbreviation?: string | null;
+  numberingMethod?: VoucherNumberingMethod;
+  numberingBehavior?: VoucherNumberingBehavior;
+  prefix?: string | null;
+  suffix?: string | null;
+  allowManualOverride?: boolean;
+  allowDuplicateNumbers?: boolean;
+  nextNumber?: number;
+}
+
+export interface VoucherNumberingSeriesInput {
+  name: string;
+  prefix?: string;
+  suffix?: string;
+  numberingMethod?: VoucherNumberingMethod;
+  numberingBehavior?: VoucherNumberingBehavior;
+  startNumber?: number;
+  allowManualOverride?: boolean;
+  allowDuplicateNumbers?: boolean;
+  isDefault?: boolean;
+}
+
+export type VoucherEntryType = 'DEBIT' | 'CREDIT';
+export type VoucherBillReferenceType = 'AGAINST' | 'NEW' | 'ADVANCE' | 'ON_ACCOUNT';
+
+export interface VoucherBillReference {
+  id: string;
+  voucherEntryId: string;
+  reference: string;
+  referenceType: VoucherBillReferenceType;
+  amount: number;
+  dueDate?: string | null;
+  remarks?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VoucherEntry {
+  id: string;
+  voucherId: string;
+  ledgerName: string;
+  ledgerCode?: string | null;
+  entryType: VoucherEntryType;
+  amount: number;
+  narration?: string | null;
+  costCenterName?: string | null;
+  costCategory?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  billReferences: VoucherBillReference[];
+}
+
+export interface Voucher {
+  id: string;
+  startupId: string;
+  voucherTypeId: string;
+  numberingSeriesId?: string | null;
+  voucherNumber: string;
+  date: string;
+  reference?: string | null;
+  narration?: string | null;
+  createdById?: string | null;
+  transactionId?: string | null;
+  totalAmount: number;
+  createdAt: string;
+  updatedAt: string;
+  voucherType: VoucherType;
+  numberingSeries?: VoucherNumberingSeries | null;
+  entries: VoucherEntry[];
+}
+
+export interface CreateVoucherRequest {
+  voucherTypeId: string;
+  numberingSeriesId?: string | null;
+  date?: string;
+  reference?: string;
+  narration?: string;
+  createdById?: string;
+  entries: Array<{
+    ledgerName: string;
+    ledgerCode?: string;
+    entryType: VoucherEntryType;
+    amount: number;
+    narration?: string;
+    costCenterName?: string;
+    costCategory?: string;
+    billReferences?: Array<{
+      reference: string;
+      amount: number;
+      referenceType?: VoucherBillReferenceType;
+      dueDate?: string;
+      remarks?: string;
+    }>;
+  }>;
+}
+
 export interface Startup {
   id: string;
   name: string;
@@ -131,6 +336,8 @@ export interface Startup {
   fiscalConfig?: CompanyFiscalConfig | null;
   securityConfig?: CompanySecurityConfig | null;
   currencyConfig?: CompanyCurrencyConfig | null;
+  featureToggle?: CompanyFeatureToggle | null;
+  voucherTypes?: VoucherType[];
 }
 
 export interface SignupRequest {
@@ -725,6 +932,69 @@ export const apiClient = {
       data: CompanyCurrencyInput
     ): Promise<ApiResponse<CompanyCurrencyConfig>> => {
       const response = await api.put('/company/currency', data);
+      return response.data;
+    },
+
+    getFeatureToggles: async (): Promise<ApiResponse<CompanyFeatureToggle | null>> => {
+      const response = await api.get('/company/feature-toggles');
+      return response.data;
+    },
+
+    updateFeatureToggles: async (
+      data: CompanyFeatureToggleInput
+    ): Promise<ApiResponse<CompanyFeatureToggle>> => {
+      const response = await api.put('/company/feature-toggles', data);
+      return response.data;
+    },
+  },
+
+  vouchers: {
+    listTypes: async (): Promise<ApiResponse<VoucherType[]>> => {
+      const response = await api.get('/vouchers/types');
+      return response.data;
+    },
+
+    createType: async (data: VoucherTypeInput): Promise<ApiResponse<VoucherType>> => {
+      const response = await api.post('/vouchers/types', data);
+      return response.data;
+    },
+
+    updateType: async (
+      voucherTypeId: string,
+      data: VoucherTypeUpdateInput
+    ): Promise<ApiResponse<VoucherType>> => {
+      const response = await api.put(`/vouchers/types/${voucherTypeId}`, data);
+      return response.data;
+    },
+
+    createSeries: async (
+      voucherTypeId: string,
+      data: VoucherNumberingSeriesInput
+    ): Promise<ApiResponse<VoucherNumberingSeries>> => {
+      const response = await api.post(`/vouchers/types/${voucherTypeId}/series`, data);
+      return response.data;
+    },
+
+    generateNextNumber: async (
+      voucherTypeId: string,
+      numberingSeriesId?: string
+    ): Promise<ApiResponse<{ voucherNumber: string }>> => {
+      const response = await api.post(`/vouchers/types/${voucherTypeId}/next-number`, {
+        numberingSeriesId,
+      });
+      return response.data;
+    },
+    list: async (params?: {
+      voucherTypeId?: string;
+      fromDate?: string;
+      toDate?: string;
+      limit?: number;
+    }): Promise<ApiResponse<Voucher[]>> => {
+      const response = await api.get('/vouchers', { params });
+      return response.data;
+    },
+    create: async (data: CreateVoucherRequest): Promise<ApiResponse<Voucher>> => {
+      const response = await api.post('/vouchers', data);
       return response.data;
     },
   },

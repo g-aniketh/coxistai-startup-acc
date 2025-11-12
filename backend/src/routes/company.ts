@@ -4,6 +4,7 @@ import { getCompanyProfile, upsertCompanyProfile } from '../services/companyProf
 import { getCompanyFiscal, upsertCompanyFiscal } from '../services/companyFiscal';
 import { getCompanySecurity, upsertCompanySecurity } from '../services/companySecurity';
 import { getCompanyCurrency, upsertCompanyCurrency } from '../services/companyCurrency';
+import { getCompanyFeatureToggle, upsertCompanyFeatureToggle } from '../services/companyFeatureToggle';
 
 const router = Router();
 
@@ -231,6 +232,59 @@ router.put('/currency', authenticateToken, async (req: Request, res: Response) =
     return res.status(400).json({
       success: false,
       message: error instanceof Error ? error.message : 'Failed to update currency configuration',
+    });
+  }
+});
+
+router.get('/feature-toggles', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const startupId = req.user?.startupId;
+
+    if (!startupId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Startup context is required',
+      });
+    }
+
+    const featureToggle = await getCompanyFeatureToggle(startupId);
+
+    return res.json({
+      success: true,
+      data: featureToggle,
+    });
+  } catch (error) {
+    console.error('Get feature toggle configuration error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch feature toggle configuration',
+    });
+  }
+});
+
+router.put('/feature-toggles', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const startupId = req.user?.startupId;
+
+    if (!startupId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Startup context is required',
+      });
+    }
+
+    const featureToggle = await upsertCompanyFeatureToggle(startupId, req.body);
+
+    return res.json({
+      success: true,
+      data: featureToggle,
+      message: 'Feature configuration updated successfully',
+    });
+  } catch (error) {
+    console.error('Update feature toggle configuration error:', error);
+    return res.status(400).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to update feature toggle configuration',
     });
   }
 });

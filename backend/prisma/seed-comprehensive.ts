@@ -1,5 +1,6 @@
 import { PrismaClient, TransactionType } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { DEFAULT_VOUCHER_TYPES } from "../src/services/voucherTypes";
 
 const prisma = new PrismaClient();
 
@@ -403,6 +404,62 @@ async function main() {
     )
   );
   console.log("✓ Seeded currency configuration for all startups");
+
+  await Promise.all(
+    startups.map(startup =>
+      prisma.companyFeatureToggle.create({
+        data: {
+          startupId: startup.id,
+          enableAccounting: true,
+          enableInventory: true,
+          enableTaxation: true,
+          enablePayroll: startup.subscriptionPlan === "enterprise",
+          enableAIInsights: true,
+          enableScenarioPlanning: true,
+          enableAutomations: startup.subscriptionPlan === "enterprise",
+          enableVendorManagement: startup.subscriptionPlan !== "starter",
+          enableBillingAndInvoicing: true,
+        },
+      })
+    )
+  );
+  console.log("✓ Seeded feature toggles for all startups");
+
+  for (const startup of startups) {
+    for (const definition of DEFAULT_VOUCHER_TYPES) {
+      const voucherType = await prisma.voucherType.create({
+        data: {
+          startupId: startup.id,
+          name: definition.name,
+          abbreviation: definition.abbreviation,
+          category: definition.category,
+          numberingMethod: definition.numberingMethod ?? "AUTOMATIC",
+          numberingBehavior: definition.numberingBehavior ?? "RENUMBER",
+          prefix: definition.prefix,
+          suffix: definition.suffix,
+          allowManualOverride: definition.allowManualOverride ?? false,
+          allowDuplicateNumbers: definition.allowDuplicateNumbers ?? false,
+          isDefault: true,
+        },
+      });
+
+      await prisma.voucherNumberingSeries.create({
+        data: {
+          startupId: startup.id,
+          voucherTypeId: voucherType.id,
+          name: "Default",
+          prefix: definition.prefix,
+          suffix: definition.suffix,
+          numberingMethod: voucherType.numberingMethod,
+          numberingBehavior: voucherType.numberingBehavior,
+          allowManualOverride: voucherType.allowManualOverride,
+          allowDuplicateNumbers: voucherType.allowDuplicateNumbers,
+          isDefault: true,
+        },
+      });
+    }
+  }
+  console.log("✓ Seeded voucher types and numbering for all startups");
 
   // 5. Create users for each startup
   const hashedPassword = await bcrypt.hash("password123", 10);

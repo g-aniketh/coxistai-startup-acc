@@ -15,11 +15,11 @@
 - [x] Fiscal configuration service & UI (financial year, books start, backdated controls, edit log toggle)
 - [x] Security settings (TallyVault toggle, user access control, MFA switch)
 - [x] Currency configuration service & UI (base code, symbol, formatting preferences)
+- [x] Feature toggle service & UI (per-module enablement for accounting, inventory, taxation, etc.)
+- [x] Voucher type catalog & numbering management (default types, series, settings UI)
 
 ## 🚧 Feature Parity Gaps
 
-- [ ] Company feature toggles (accounting, inventory, taxation, payroll)
-- [ ] Voucher type catalog with numbering modes & multi-series management
 - [ ] Typed vouchers (Payment, Receipt, Sales, Purchase, Contra, etc.) with bill references
 - [ ] Bill-wise receivables/payables tracking and settlement flows
 - [ ] Cost centre/category hierarchy and interest calculation settings
