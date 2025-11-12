@@ -63,6 +63,14 @@ export const signup = async (data: SignupData) => {
           },
         },
       },
+      companyProfile: {
+        create: {
+          displayName: startupName,
+          legalName: startupName,
+          mailingName: startupName,
+          baseCurrency: 'INR',
+        },
+      },
     },
     include: { 
       users: {
@@ -77,7 +85,12 @@ export const signup = async (data: SignupData) => {
             }
           }
         }
-      } 
+      },
+      companyProfile: {
+        include: {
+          addresses: true
+        }
+      }
     },
   });
 
@@ -117,7 +130,23 @@ export const signup = async (data: SignupData) => {
         name: startup.name,
         subscriptionPlan: startup.subscriptionPlan,
         subscriptionStatus: startup.subscriptionStatus,
-        trialEndsAt: startup.trialEndsAt
+        trialEndsAt: startup.trialEndsAt,
+        companyProfile: startup.companyProfile ? {
+          id: startup.companyProfile.id,
+          displayName: startup.companyProfile.displayName,
+          legalName: startup.companyProfile.legalName,
+          mailingName: startup.companyProfile.mailingName,
+          baseCurrency: startup.companyProfile.baseCurrency,
+          country: startup.companyProfile.country,
+          state: startup.companyProfile.state,
+          city: startup.companyProfile.city,
+          postalCode: startup.companyProfile.postalCode,
+          phone: startup.companyProfile.phone,
+          mobile: startup.companyProfile.mobile,
+          email: startup.companyProfile.email,
+          website: startup.companyProfile.website,
+          addresses: startup.companyProfile.addresses
+        } : null
       },
       roles: roleNames,
       permissions: permissions,
@@ -133,7 +162,15 @@ export const login = async (data: LoginData) => {
   const user = await prisma.user.findUnique({
     where: { email },
     include: { 
-      startup: true,
+      startup: {
+        include: {
+          companyProfile: {
+            include: {
+              addresses: true
+            }
+          }
+        }
+      },
       roles: { 
         include: { 
           role: {
@@ -197,7 +234,23 @@ export const login = async (data: LoginData) => {
         name: user.startup.name,
         subscriptionPlan: user.startup.subscriptionPlan,
         subscriptionStatus: user.startup.subscriptionStatus,
-        trialEndsAt: user.startup.trialEndsAt
+        trialEndsAt: user.startup.trialEndsAt,
+        companyProfile: user.startup.companyProfile ? {
+          id: user.startup.companyProfile.id,
+          displayName: user.startup.companyProfile.displayName,
+          legalName: user.startup.companyProfile.legalName,
+          mailingName: user.startup.companyProfile.mailingName,
+          baseCurrency: user.startup.companyProfile.baseCurrency,
+          country: user.startup.companyProfile.country,
+          state: user.startup.companyProfile.state,
+          city: user.startup.companyProfile.city,
+          postalCode: user.startup.companyProfile.postalCode,
+          phone: user.startup.companyProfile.phone,
+          mobile: user.startup.companyProfile.mobile,
+          email: user.startup.companyProfile.email,
+          website: user.startup.companyProfile.website,
+          addresses: user.startup.companyProfile.addresses
+        } : null
       },
       roles: roleNames,
       permissions: permissions,

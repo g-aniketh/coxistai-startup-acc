@@ -21,12 +21,48 @@ export interface User {
   updatedAt?: string;
 }
 
+export interface CompanyAddress {
+  id: string;
+  label?: string | null;
+  line1: string;
+  line2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  country?: string | null;
+  postalCode?: string | null;
+  isPrimary: boolean;
+  isBilling: boolean;
+  isShipping: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CompanyProfile {
+  id: string;
+  displayName: string;
+  legalName?: string | null;
+  mailingName?: string | null;
+  baseCurrency: string;
+  country?: string | null;
+  state?: string | null;
+  city?: string | null;
+  postalCode?: string | null;
+  phone?: string | null;
+  mobile?: string | null;
+  email?: string | null;
+  website?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  addresses: CompanyAddress[];
+}
+
 export interface Startup {
   id: string;
   name: string;
   subscriptionPlan: string;
   subscriptionStatus: string;
   trialEndsAt?: string;
+  companyProfile?: CompanyProfile | null;
 }
 
 export interface SignupRequest {
@@ -56,6 +92,36 @@ export interface ApiResponse<T = any> {
   data?: T;
   error?: string;
   message?: string;
+}
+
+export interface CompanyAddressInput {
+  id?: string;
+  label?: string;
+  line1: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
+  isPrimary?: boolean;
+  isBilling?: boolean;
+  isShipping?: boolean;
+}
+
+export interface CompanyProfileInput {
+  displayName: string;
+  legalName?: string;
+  mailingName?: string;
+  baseCurrency?: string;
+  country?: string;
+  state?: string;
+  city?: string;
+  postalCode?: string;
+  phone?: string;
+  mobile?: string;
+  email?: string;
+  website?: string;
+  addresses?: CompanyAddressInput[];
 }
 
 // Transaction Types
@@ -537,6 +603,24 @@ export const apiClient = {
 
     deactivate: async (userId: string): Promise<ApiResponse> => {
       const response = await api.post(`/team/${userId}/deactivate`);
+      return response.data;
+    },
+  },
+
+  // ============================================================================
+  // COMPANY PROFILE
+  // ============================================================================
+
+  company: {
+    getProfile: async (): Promise<ApiResponse<CompanyProfile | null>> => {
+      const response = await api.get('/company/profile');
+      return response.data;
+    },
+
+    updateProfile: async (
+      data: CompanyProfileInput
+    ): Promise<ApiResponse<CompanyProfile>> => {
+      const response = await api.put('/company/profile', data);
       return response.data;
     },
   },

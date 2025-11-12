@@ -118,6 +118,155 @@ async function main() {
   ]);
   console.log('✓ Created 5 demo startups');
 
+  // 4b. Create company profiles for each startup
+  const profileSeedData = [
+    {
+      displayName: 'Coxist AI',
+      legalName: 'Coxist AI Private Limited',
+      mailingName: 'Coxist AI Pvt Ltd',
+      country: 'India',
+      state: 'Karnataka',
+      city: 'Bengaluru',
+      postalCode: '560001',
+      phone: '+91-80-4000-1234',
+      email: 'hello@coxistai.com',
+      website: 'https://www.coxistai.com',
+      address: {
+        label: 'Headquarters',
+        line1: '91 Springboard, Residency Road',
+        city: 'Bengaluru',
+        state: 'Karnataka',
+        country: 'India',
+        postalCode: '560025',
+        isPrimary: true,
+        isBilling: true,
+        isShipping: false,
+      },
+    },
+    {
+      displayName: 'Coxist AI Cloud',
+      legalName: 'Coxist AI Cloud Private Limited',
+      mailingName: 'Coxist AI Cloud',
+      country: 'India',
+      state: 'Maharashtra',
+      city: 'Mumbai',
+      postalCode: '400001',
+      phone: '+91-22-4500-7788',
+      email: 'contact@coxistaicloud.com',
+      website: 'https://cloud.coxistai.com',
+      address: {
+        label: 'Registered Office',
+        line1: '5th Floor, BKC Tech Park',
+        city: 'Mumbai',
+        state: 'Maharashtra',
+        country: 'India',
+        postalCode: '400051',
+        isPrimary: true,
+        isBilling: true,
+        isShipping: true,
+      },
+    },
+    {
+      displayName: 'Coxist AI Analytics',
+      legalName: 'Coxist Analytics Labs Pvt Ltd',
+      mailingName: 'Coxist AI Analytics',
+      country: 'India',
+      state: 'Delhi',
+      city: 'New Delhi',
+      postalCode: '110001',
+      phone: '+91-11-4100-6677',
+      email: 'info@coxistanalytics.com',
+      website: 'https://analytics.coxistai.com',
+      address: {
+        label: 'Analytics Center',
+        line1: 'Plot 12, Cyber City',
+        city: 'Gurugram',
+        state: 'Haryana',
+        country: 'India',
+        postalCode: '122002',
+        isPrimary: true,
+        isBilling: true,
+        isShipping: false,
+      },
+    },
+    {
+      displayName: 'Coxist AI Innovations',
+      legalName: 'Coxist Innovations Pvt Ltd',
+      mailingName: 'Coxist AI Innovations',
+      country: 'India',
+      state: 'Telangana',
+      city: 'Hyderabad',
+      postalCode: '500081',
+      phone: '+91-40-6900-8899',
+      email: 'hello@coxistinnovations.com',
+      website: 'https://innovations.coxistai.com',
+      address: {
+        label: 'Innovation Hub',
+        line1: 'T-Hub Phase 2, Hitech City',
+        city: 'Hyderabad',
+        state: 'Telangana',
+        country: 'India',
+        postalCode: '500081',
+        isPrimary: true,
+        isBilling: true,
+        isShipping: true,
+      },
+    },
+    {
+      displayName: 'Coxist AI Ventures',
+      legalName: 'Coxist Ventures Pvt Ltd',
+      mailingName: 'Coxist AI Ventures',
+      country: 'India',
+      state: 'Tamil Nadu',
+      city: 'Chennai',
+      postalCode: '600032',
+      phone: '+91-44-4200-5599',
+      email: 'invest@coxistventures.com',
+      website: 'https://ventures.coxistai.com',
+      address: {
+        label: 'Venture Studio',
+        line1: 'DLF IT Park, Ramapuram',
+        city: 'Chennai',
+        state: 'Tamil Nadu',
+        country: 'India',
+        postalCode: '600089',
+        isPrimary: true,
+        isBilling: true,
+        isShipping: true,
+      },
+    },
+  ];
+
+  await Promise.all(
+    startups.map((startup, index) =>
+      prisma.companyProfile.create({
+        data: {
+          startupId: startup.id,
+          displayName: profileSeedData[index].displayName,
+          legalName: profileSeedData[index].legalName,
+          mailingName: profileSeedData[index].mailingName,
+          baseCurrency: 'INR',
+          country: profileSeedData[index].country,
+          state: profileSeedData[index].state,
+          city: profileSeedData[index].city,
+          postalCode: profileSeedData[index].postalCode,
+          phone: profileSeedData[index].phone,
+          mobile: null,
+          email: profileSeedData[index].email,
+          website: profileSeedData[index].website,
+          addresses: {
+            create: [
+              {
+                ...profileSeedData[index].address,
+              },
+            ],
+          },
+        },
+      })
+    )
+  );
+  console.log('✓ Seeded company profiles for all startups');
+
   // 5. Create users for each startup
   const hashedPassword = await bcrypt.hash('password123', 10);
   

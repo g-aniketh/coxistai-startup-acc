@@ -10,10 +10,10 @@
 - [x] AI dashboard endpoints (summary, cashflow chart, recent activity) and UI widgets
 - [x] Tally XML import pipeline for ledgers, parties, and vouchers (basic CREDIT/DEBIT mapping)
 - [x] Frontend auth guard + dashboard shell with AI insight components
+- [x] Company master profile API (identity, contacts, multi-address support)
 
 ## 🚧 Feature Parity Gaps
 
-- [ ] Company master profile (legal name, mailing names, multi-address, contacts)
 - [ ] Fiscal configuration (financial year start, books start, backdated controls)
 - [ ] Security settings (TallyVault-equivalent encryption, user access controls)
 - [ ] Base currency configuration UI & schema extensions

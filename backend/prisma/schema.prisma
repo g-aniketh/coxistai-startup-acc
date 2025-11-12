@@ -32,6 +32,7 @@ model Startup {
   partyMasters     PartyMaster[]
   importedTransactions ImportedTransaction[]
   importHistories  ImportHistory[]
+  companyProfile   CompanyProfile?
 }
 
 model User {
@@ -89,6 +90,51 @@ model UserRole {
 // ============================================================================
 // SIMULATED FINANCIAL DATA MODELS
 // ============================================================================
+model CompanyProfile {
+  id              String   @id @default(cuid())
+  startupId       String   @unique
+  displayName     String
+  legalName       String?
+  mailingName     String?
+  baseCurrency    String   @default("INR")
+  country         String?
+  state           String?
+  city            String?
+  postalCode      String?
+  phone           String?
+  mobile          String?
+  email           String?
+  website         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  startup   Startup          @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  addresses CompanyAddress[]
+
+  @@index([startupId])
+}
+
+model CompanyAddress {
+  id           String   @id @default(cuid())
+  profileId    String
+  label        String?
+  line1        String
+  line2        String?
+  city         String?
+  state        String?
+  country      String?
+  postalCode   String?
+  isPrimary    Boolean  @default(false)
+  isBilling    Boolean  @default(false)
+  isShipping   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  profile CompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@index([isPrimary])
+}
 
 enum TransactionType {
   CREDIT
