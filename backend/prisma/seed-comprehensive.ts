@@ -1,10 +1,10 @@
-import { PrismaClient, TransactionType } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import { PrismaClient, TransactionType } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting comprehensive seed...');
+  console.log("🌱 Starting comprehensive seed...");
 
   // NOTE: The data cleanup step has been removed as `prisma migrate reset --force`
   // already handles dropping the database, making this step redundant and error-prone.
@@ -12,50 +12,121 @@ async function main() {
   // 2. Create Permissions
   const permissions = [
     // User Management
-    { action: 'manage', subject: 'User' },
-    { action: 'create', subject: 'User' },
-    { action: 'read', subject: 'User' },
-    { action: 'update', subject: 'User' },
-    { action: 'delete', subject: 'User' },
+    { action: "manage", subject: "User" },
+    { action: "create", subject: "User" },
+    { action: "read", subject: "User" },
+    { action: "update", subject: "User" },
+    { action: "delete", subject: "User" },
     // Financials
-    { action: 'manage', subject: 'transactions' },
-    { action: 'read', subject: 'transactions' },
-    { action: 'manage', subject: 'Account' },
-    { action: 'read', subject: 'Account' },
-    { action: 'read', subject: 'cashflow_dashboard' },
-    { action: 'manage', subject: 'billing' },
+    { action: "manage", subject: "transactions" },
+    { action: "read", subject: "transactions" },
+    { action: "manage", subject: "Account" },
+    { action: "read", subject: "Account" },
+    { action: "read", subject: "cashflow_dashboard" },
+    { action: "manage", subject: "billing" },
     // Inventory
-    { action: 'manage', subject: 'inventory' },
-    { action: 'read', subject: 'inventory' },
-    { action: 'read', subject: 'inventory_dashboard' },
+    { action: "manage", subject: "inventory" },
+    { action: "read", subject: "inventory" },
+    { action: "read", subject: "inventory_dashboard" },
     // Team Management
-    { action: 'manage', subject: 'team' },
-    { action: 'read', subject: 'team' },
+    { action: "manage", subject: "team" },
+    { action: "read", subject: "team" },
     // AI Features
-    { action: 'manage', subject: 'CFO' },
-    { action: 'read', subject: 'CFO' },
-    { action: 'read', subject: 'Dashboard' },
-    { action: 'read', subject: 'analytics' },
-    { action: 'use', subject: 'what_if_scenarios' },
-    { action: 'manage', subject: 'investor_updates' },
+    { action: "manage", subject: "CFO" },
+    { action: "read", subject: "CFO" },
+    { action: "read", subject: "Dashboard" },
+    { action: "read", subject: "analytics" },
+    { action: "use", subject: "what_if_scenarios" },
+    { action: "manage", subject: "investor_updates" },
   ];
 
   const createdPermissions = await Promise.all(
-    permissions.map((p) => prisma.permission.create({ data: p }))
+    permissions.map(p => prisma.permission.create({ data: p }))
   );
-  const permissionMap = new Map(createdPermissions.map((p) => [`${p.action}-${p.subject}`, p]));
-  console.log('✓ Created permissions');
+  const permissionMap = new Map(
+    createdPermissions.map(p => [`${p.action}-${p.subject}`, p])
+  );
+  console.log("✓ Created permissions");
 
   // 3. Create Roles and Assign Permissions
   const roles = {
-    Admin: ['manage-User', 'manage-transactions', 'manage-Account', 'manage-inventory', 'manage-CFO', 'read-Dashboard', 'read-cashflow_dashboard', 'manage-billing', 'manage-team', 'read-analytics', 'use-what_if_scenarios', 'manage-investor_updates'],
-    CFO: ['read-User', 'manage-transactions', 'manage-Account', 'read-inventory', 'manage-CFO', 'read-Dashboard', 'read-cashflow_dashboard', 'manage-billing', 'read-team', 'read-analytics', 'use-what_if_scenarios', 'manage-investor_updates'],
-    Accountant: ['read-User', 'manage-transactions', 'manage-Account', 'read-inventory', 'read-CFO', 'read-Dashboard', 'read-cashflow_dashboard', 'manage-billing', 'read-team', 'read-analytics'],
-    OperationsManager: ['read-User', 'read-transactions', 'read-Account', 'manage-inventory', 'read-CFO', 'read-Dashboard', 'read-cashflow_dashboard', 'read-inventory_dashboard', 'read-team'],
-    SalesManager: ['read-transactions', 'read-Account', 'read-inventory', 'read-CFO', 'read-Dashboard', 'read-cashflow_dashboard', 'read-team'],
-    Engineer: ['read-Dashboard', 'read-cashflow_dashboard'],
-    MarketingLead: ['read-Dashboard', 'read-CFO', 'read-cashflow_dashboard', 'read-analytics'],
-    ReadOnly: ['read-User', 'read-transactions', 'read-Account', 'read-inventory', 'read-CFO', 'read-Dashboard', 'read-cashflow_dashboard', 'read-team'],
+    Admin: [
+      "manage-User",
+      "manage-transactions",
+      "manage-Account",
+      "manage-inventory",
+      "manage-CFO",
+      "read-Dashboard",
+      "read-cashflow_dashboard",
+      "manage-billing",
+      "manage-team",
+      "read-analytics",
+      "use-what_if_scenarios",
+      "manage-investor_updates",
+    ],
+    CFO: [
+      "read-User",
+      "manage-transactions",
+      "manage-Account",
+      "read-inventory",
+      "manage-CFO",
+      "read-Dashboard",
+      "read-cashflow_dashboard",
+      "manage-billing",
+      "read-team",
+      "read-analytics",
+      "use-what_if_scenarios",
+      "manage-investor_updates",
+    ],
+    Accountant: [
+      "read-User",
+      "manage-transactions",
+      "manage-Account",
+      "read-inventory",
+      "read-CFO",
+      "read-Dashboard",
+      "read-cashflow_dashboard",
+      "manage-billing",
+      "read-team",
+      "read-analytics",
+    ],
+    OperationsManager: [
+      "read-User",
+      "read-transactions",
+      "read-Account",
+      "manage-inventory",
+      "read-CFO",
+      "read-Dashboard",
+      "read-cashflow_dashboard",
+      "read-inventory_dashboard",
+      "read-team",
+    ],
+    SalesManager: [
+      "read-transactions",
+      "read-Account",
+      "read-inventory",
+      "read-CFO",
+      "read-Dashboard",
+      "read-cashflow_dashboard",
+      "read-team",
+    ],
+    Engineer: ["read-Dashboard", "read-cashflow_dashboard"],
+    MarketingLead: [
+      "read-Dashboard",
+      "read-CFO",
+      "read-cashflow_dashboard",
+      "read-analytics",
+    ],
+    ReadOnly: [
+      "read-User",
+      "read-transactions",
+      "read-Account",
+      "read-inventory",
+      "read-CFO",
+      "read-Dashboard",
+      "read-cashflow_dashboard",
+      "read-team",
+    ],
   };
 
   const createdRoles = await Promise.all(
@@ -64,172 +135,174 @@ async function main() {
         data: {
           name,
           permissions: {
-            connect: perms.map((pKey) => ({ id: permissionMap.get(pKey)?.id })).filter((p) => p.id),
+            connect: perms
+              .map(pKey => ({ id: permissionMap.get(pKey)?.id }))
+              .filter(p => p.id),
           },
         },
       })
     )
   );
-  const roleMap = new Map(createdRoles.map((r) => [r.name, r]));
-  console.log('✓ Created roles and assigned permissions');
+  const roleMap = new Map(createdRoles.map(r => [r.name, r]));
+  console.log("✓ Created roles and assigned permissions");
 
   // 4. Create 5 demo startups for comprehensive demo
   const startups = await Promise.all([
     prisma.startup.create({
       data: {
-        name: 'Coxist AI',
-        subscriptionPlan: 'pro_trial',
-        subscriptionStatus: 'active',
+        name: "Coxist AI",
+        subscriptionPlan: "pro_trial",
+        subscriptionStatus: "active",
         trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       },
     }),
     prisma.startup.create({
       data: {
-        name: 'Coxist AI Cloud',
-        subscriptionPlan: 'pro',
-        subscriptionStatus: 'active',
+        name: "Coxist AI Cloud",
+        subscriptionPlan: "pro",
+        subscriptionStatus: "active",
         trialEndsAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
       },
     }),
     prisma.startup.create({
       data: {
-        name: 'Coxist AI Analytics',
-        subscriptionPlan: 'enterprise',
-        subscriptionStatus: 'active',
+        name: "Coxist AI Analytics",
+        subscriptionPlan: "enterprise",
+        subscriptionStatus: "active",
         trialEndsAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
       },
     }),
     prisma.startup.create({
       data: {
-        name: 'Coxist AI Innovations',
-        subscriptionPlan: 'starter',
-        subscriptionStatus: 'active',
+        name: "Coxist AI Innovations",
+        subscriptionPlan: "starter",
+        subscriptionStatus: "active",
         trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
     }),
     prisma.startup.create({
       data: {
-        name: 'Coxist AI Ventures',
-        subscriptionPlan: 'pro_trial',
-        subscriptionStatus: 'active',
+        name: "Coxist AI Ventures",
+        subscriptionPlan: "pro_trial",
+        subscriptionStatus: "active",
         trialEndsAt: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
       },
     }),
   ]);
-  console.log('✓ Created 5 demo startups');
+  console.log("✓ Created 5 demo startups");
 
   // 4b. Create company profiles for each startup
   const profileSeedData = [
     {
-      displayName: 'Coxist AI',
-      legalName: 'Coxist AI Private Limited',
-      mailingName: 'Coxist AI Pvt Ltd',
-      country: 'India',
-      state: 'Karnataka',
-      city: 'Bengaluru',
-      postalCode: '560001',
-      phone: '+91-80-4000-1234',
-      email: 'hello@coxistai.com',
-      website: 'https://www.coxistai.com',
+      displayName: "Coxist AI",
+      legalName: "Coxist AI Private Limited",
+      mailingName: "Coxist AI Pvt Ltd",
+      country: "India",
+      state: "Karnataka",
+      city: "Bengaluru",
+      postalCode: "560001",
+      phone: "+91-80-4000-1234",
+      email: "hello@coxistai.com",
+      website: "https://www.coxistai.com",
       address: {
-        label: 'Headquarters',
-        line1: '91 Springboard, Residency Road',
-        city: 'Bengaluru',
-        state: 'Karnataka',
-        country: 'India',
-        postalCode: '560025',
+        label: "Headquarters",
+        line1: "91 Springboard, Residency Road",
+        city: "Bengaluru",
+        state: "Karnataka",
+        country: "India",
+        postalCode: "560025",
         isPrimary: true,
         isBilling: true,
         isShipping: false,
       },
     },
     {
-      displayName: 'Coxist AI Cloud',
-      legalName: 'Coxist AI Cloud Private Limited',
-      mailingName: 'Coxist AI Cloud',
-      country: 'India',
-      state: 'Maharashtra',
-      city: 'Mumbai',
-      postalCode: '400001',
-      phone: '+91-22-4500-7788',
-      email: 'contact@coxistaicloud.com',
-      website: 'https://cloud.coxistai.com',
+      displayName: "Coxist AI Cloud",
+      legalName: "Coxist AI Cloud Private Limited",
+      mailingName: "Coxist AI Cloud",
+      country: "India",
+      state: "Maharashtra",
+      city: "Mumbai",
+      postalCode: "400001",
+      phone: "+91-22-4500-7788",
+      email: "contact@coxistaicloud.com",
+      website: "https://cloud.coxistai.com",
       address: {
-        label: 'Registered Office',
-        line1: '5th Floor, BKC Tech Park',
-        city: 'Mumbai',
-        state: 'Maharashtra',
-        country: 'India',
-        postalCode: '400051',
+        label: "Registered Office",
+        line1: "5th Floor, BKC Tech Park",
+        city: "Mumbai",
+        state: "Maharashtra",
+        country: "India",
+        postalCode: "400051",
         isPrimary: true,
         isBilling: true,
         isShipping: true,
       },
     },
     {
-      displayName: 'Coxist AI Analytics',
-      legalName: 'Coxist Analytics Labs Pvt Ltd',
-      mailingName: 'Coxist AI Analytics',
-      country: 'India',
-      state: 'Delhi',
-      city: 'New Delhi',
-      postalCode: '110001',
-      phone: '+91-11-4100-6677',
-      email: 'info@coxistanalytics.com',
-      website: 'https://analytics.coxistai.com',
+      displayName: "Coxist AI Analytics",
+      legalName: "Coxist Analytics Labs Pvt Ltd",
+      mailingName: "Coxist AI Analytics",
+      country: "India",
+      state: "Delhi",
+      city: "New Delhi",
+      postalCode: "110001",
+      phone: "+91-11-4100-6677",
+      email: "info@coxistanalytics.com",
+      website: "https://analytics.coxistai.com",
       address: {
-        label: 'Analytics Center',
-        line1: 'Plot 12, Cyber City',
-        city: 'Gurugram',
-        state: 'Haryana',
-        country: 'India',
-        postalCode: '122002',
+        label: "Analytics Center",
+        line1: "Plot 12, Cyber City",
+        city: "Gurugram",
+        state: "Haryana",
+        country: "India",
+        postalCode: "122002",
         isPrimary: true,
         isBilling: true,
         isShipping: false,
       },
     },
     {
-      displayName: 'Coxist AI Innovations',
-      legalName: 'Coxist Innovations Pvt Ltd',
-      mailingName: 'Coxist AI Innovations',
-      country: 'India',
-      state: 'Telangana',
-      city: 'Hyderabad',
-      postalCode: '500081',
-      phone: '+91-40-6900-8899',
-      email: 'hello@coxistinnovations.com',
-      website: 'https://innovations.coxistai.com',
+      displayName: "Coxist AI Innovations",
+      legalName: "Coxist Innovations Pvt Ltd",
+      mailingName: "Coxist AI Innovations",
+      country: "India",
+      state: "Telangana",
+      city: "Hyderabad",
+      postalCode: "500081",
+      phone: "+91-40-6900-8899",
+      email: "hello@coxistinnovations.com",
+      website: "https://innovations.coxistai.com",
       address: {
-        label: 'Innovation Hub',
-        line1: 'T-Hub Phase 2, Hitech City',
-        city: 'Hyderabad',
-        state: 'Telangana',
-        country: 'India',
-        postalCode: '500081',
+        label: "Innovation Hub",
+        line1: "T-Hub Phase 2, Hitech City",
+        city: "Hyderabad",
+        state: "Telangana",
+        country: "India",
+        postalCode: "500081",
         isPrimary: true,
         isBilling: true,
         isShipping: true,
       },
     },
     {
-      displayName: 'Coxist AI Ventures',
-      legalName: 'Coxist Ventures Pvt Ltd',
-      mailingName: 'Coxist AI Ventures',
-      country: 'India',
-      state: 'Tamil Nadu',
-      city: 'Chennai',
-      postalCode: '600032',
-      phone: '+91-44-4200-5599',
-      email: 'invest@coxistventures.com',
-      website: 'https://ventures.coxistai.com',
+      displayName: "Coxist AI Ventures",
+      legalName: "Coxist Ventures Pvt Ltd",
+      mailingName: "Coxist AI Ventures",
+      country: "India",
+      state: "Tamil Nadu",
+      city: "Chennai",
+      postalCode: "600032",
+      phone: "+91-44-4200-5599",
+      email: "invest@coxistventures.com",
+      website: "https://ventures.coxistai.com",
       address: {
-        label: 'Venture Studio',
-        line1: 'DLF IT Park, Ramapuram',
-        city: 'Chennai',
-        state: 'Tamil Nadu',
-        country: 'India',
-        postalCode: '600089',
+        label: "Venture Studio",
+        line1: "DLF IT Park, Ramapuram",
+        city: "Chennai",
+        state: "Tamil Nadu",
+        country: "India",
+        postalCode: "600089",
         isPrimary: true,
         isBilling: true,
         isShipping: true,
@@ -245,7 +318,7 @@ async function main() {
           displayName: profileSeedData[index].displayName,
           legalName: profileSeedData[index].legalName,
           mailingName: profileSeedData[index].mailingName,
-          baseCurrency: 'INR',
+          baseCurrency: "INR",
           country: profileSeedData[index].country,
           state: profileSeedData[index].state,
           city: profileSeedData[index].city,
@@ -265,120 +338,261 @@ async function main() {
       })
     )
   );
-  console.log('✓ Seeded company profiles for all startups');
+  console.log("✓ Seeded company profiles for all startups");
+
+  const now = new Date();
+  const defaultFinancialYearStart = () => {
+    const fiscalMonth = 3; // April (0-indexed)
+    const year =
+      now.getUTCMonth() >= fiscalMonth
+        ? now.getUTCFullYear()
+        : now.getUTCFullYear() - 1;
+    return new Date(Date.UTC(year, fiscalMonth, 1));
+  };
+
+  await Promise.all(
+    startups.map(startup =>
+      prisma.companyFiscalConfig.create({
+        data: {
+          startupId: startup.id,
+          financialYearStart: defaultFinancialYearStart(),
+          booksStart: new Date(
+            Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+          ),
+          allowBackdatedEntries: true,
+          backdatedFrom: defaultFinancialYearStart(),
+          enableEditLog: startup.subscriptionPlan === "enterprise",
+        },
+      })
+    )
+  );
+  console.log("✓ Seeded fiscal configuration for all startups");
+
+  await Promise.all(
+    startups.map(startup =>
+      prisma.companySecuritySetting.create({
+        data: {
+          startupId: startup.id,
+          tallyVaultEnabled: false,
+          tallyVaultPasswordHash: null,
+          tallyVaultPasswordHint: null,
+          userAccessControlEnabled: startup.subscriptionPlan !== "starter",
+          multiFactorRequired: startup.subscriptionPlan === "enterprise",
+        },
+      })
+    )
+  );
+  console.log("✓ Seeded security configuration for all startups");
+
+  await Promise.all(
+    startups.map(startup =>
+      prisma.companyCurrencySetting.create({
+        data: {
+          startupId: startup.id,
+          baseCurrencyCode: "INR",
+          baseCurrencySymbol: "₹",
+          baseCurrencyFormalName: "Indian Rupee",
+          decimalPlaces: 2,
+          decimalSeparator: ".",
+          thousandSeparator: ",",
+          symbolOnRight: false,
+          spaceBetweenAmountAndSymbol: false,
+          showAmountInMillions: false,
+        },
+      })
+    )
+  );
+  console.log("✓ Seeded currency configuration for all startups");
 
   // 5. Create users for each startup
-  const hashedPassword = await bcrypt.hash('password123', 10);
-  
+  const hashedPassword = await bcrypt.hash("password123", 10);
+
   // Create users for Coxist AI (main demo account)
-  const coxistAIUsers = await Promise.all([
-    { email: 'admin@coxistai.com', firstName: 'Alex', lastName: 'Johnson', roleName: 'Admin', startupId: startups[0].id },
-    { email: 'cfo@coxistai.com', firstName: 'Brenda', lastName: 'Chen', roleName: 'CFO', startupId: startups[0].id },
-    { email: 'accountant@coxistai.com', firstName: 'Carlos', lastName: 'Mendoza', roleName: 'Accountant', startupId: startups[0].id },
-    { email: 'demo@coxistai.com', firstName: 'Demo', lastName: 'User', roleName: 'Admin', startupId: startups[0].id },
-  ].map(async (userData) => {
-    const user = await prisma.user.create({
-      data: {
-        email: userData.email,
-        password: hashedPassword,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        isActive: true,
-        startupId: userData.startupId,
+  const coxistAIUsers = await Promise.all(
+    [
+      {
+        email: "admin@coxistai.com",
+        firstName: "Alex",
+        lastName: "Johnson",
+        roleName: "Admin",
+        startupId: startups[0].id,
       },
-    });
-    const role = roleMap.get(userData.roleName);
-    if (role) {
-      await prisma.userRole.create({
+      {
+        email: "cfo@coxistai.com",
+        firstName: "Brenda",
+        lastName: "Chen",
+        roleName: "CFO",
+        startupId: startups[0].id,
+      },
+      {
+        email: "accountant@coxistai.com",
+        firstName: "Carlos",
+        lastName: "Mendoza",
+        roleName: "Accountant",
+        startupId: startups[0].id,
+      },
+      {
+        email: "demo@coxistai.com",
+        firstName: "Demo",
+        lastName: "User",
+        roleName: "Admin",
+        startupId: startups[0].id,
+      },
+    ].map(async userData => {
+      const user = await prisma.user.create({
         data: {
-          userId: user.id,
-          roleId: role.id,
+          email: userData.email,
+          password: hashedPassword,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          isActive: true,
+          startupId: userData.startupId,
         },
       });
-    }
-    return user;
-  }));
+      const role = roleMap.get(userData.roleName);
+      if (role) {
+        await prisma.userRole.create({
+          data: {
+            userId: user.id,
+            roleId: role.id,
+          },
+        });
+      }
+      return user;
+    })
+  );
 
   // Create users for other startups
-  const otherStartupUsers = await Promise.all([
-    { email: 'ceo@coxistai.cloud', firstName: 'Sarah', lastName: 'Wilson', roleName: 'Admin', startupId: startups[1].id },
-    { email: 'ceo@coxistai.analytics', firstName: 'Michael', lastName: 'Brown', roleName: 'Admin', startupId: startups[2].id },
-    { email: 'ceo@coxistai.innovations', firstName: 'Lisa', lastName: 'Garcia', roleName: 'Admin', startupId: startups[3].id },
-    { email: 'ceo@coxistai.ventures', firstName: 'David', lastName: 'Lee', roleName: 'Admin', startupId: startups[4].id },
-  ].map(async (userData) => {
-    const user = await prisma.user.create({
-      data: {
-        email: userData.email,
-        password: hashedPassword,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        isActive: true,
-        startupId: userData.startupId,
+  const otherStartupUsers = await Promise.all(
+    [
+      {
+        email: "ceo@coxistai.cloud",
+        firstName: "Sarah",
+        lastName: "Wilson",
+        roleName: "Admin",
+        startupId: startups[1].id,
       },
-    });
-    const role = roleMap.get(userData.roleName);
-    if (role) {
-      await prisma.userRole.create({
+      {
+        email: "ceo@coxistai.analytics",
+        firstName: "Michael",
+        lastName: "Brown",
+        roleName: "Admin",
+        startupId: startups[2].id,
+      },
+      {
+        email: "ceo@coxistai.innovations",
+        firstName: "Lisa",
+        lastName: "Garcia",
+        roleName: "Admin",
+        startupId: startups[3].id,
+      },
+      {
+        email: "ceo@coxistai.ventures",
+        firstName: "David",
+        lastName: "Lee",
+        roleName: "Admin",
+        startupId: startups[4].id,
+      },
+    ].map(async userData => {
+      const user = await prisma.user.create({
         data: {
-          userId: user.id,
-          roleId: role.id,
+          email: userData.email,
+          password: hashedPassword,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          isActive: true,
+          startupId: userData.startupId,
         },
       });
-    }
-    return user;
-  }));
+      const role = roleMap.get(userData.roleName);
+      if (role) {
+        await prisma.userRole.create({
+          data: {
+            userId: user.id,
+            roleId: role.id,
+          },
+        });
+      }
+      return user;
+    })
+  );
 
-  console.log('✓ Created users for all startups');
+  console.log("✓ Created users for all startups");
 
   // 6. Create Mock Bank Accounts for each startup
   const startupAccounts = new Map();
-  
+
   for (let i = 0; i < startups.length; i++) {
     const startup = startups[i];
     const accounts = await Promise.all([
-      prisma.mockBankAccount.create({ 
-        data: { 
-          startupId: startup.id, 
-          accountName: 'Main Checking Account', 
-          balance: 0 // Will be calculated from transactions
-        } 
+      prisma.mockBankAccount.create({
+        data: {
+          startupId: startup.id,
+          accountName: "Main Checking Account",
+          balance: 0, // Will be calculated from transactions
+        },
       }),
-      prisma.mockBankAccount.create({ 
-        data: { 
-          startupId: startup.id, 
-          accountName: 'Business Savings', 
-          balance: 0 
-        } 
+      prisma.mockBankAccount.create({
+        data: {
+          startupId: startup.id,
+          accountName: "Business Savings",
+          balance: 0,
+        },
       }),
-      prisma.mockBankAccount.create({ 
-        data: { 
-          startupId: startup.id, 
-          accountName: 'Stripe Payouts', 
-          balance: 0 
-        } 
+      prisma.mockBankAccount.create({
+        data: {
+          startupId: startup.id,
+          accountName: "Stripe Payouts",
+          balance: 0,
+        },
       }),
     ]);
     startupAccounts.set(startup.id, accounts);
   }
-  console.log('✓ Created bank accounts for all startups');
+  console.log("✓ Created bank accounts for all startups");
 
   // 7. Create Transactions for each startup
   const currentDate = new Date();
-  
+
   // Different financial profiles for each startup
   const startupProfiles = [
-    { name: 'Coxist AI', initialFunding: 41500000, monthlyRevenue: 3735000, monthlyExpenses: 2905000 }, // ₹4.15Cr, ₹37.4L, ₹29.1L
-    { name: 'Coxist AI Cloud', initialFunding: 16600000, monthlyRevenue: 2075000, monthlyExpenses: 1660000 }, // ₹1.66Cr, ₹20.8L, ₹16.6L
-    { name: 'Coxist AI Analytics', initialFunding: 83000000, monthlyRevenue: 6640000, monthlyExpenses: 4980000 }, // ₹8.3Cr, ₹66.4L, ₹49.8L
-    { name: 'Coxist AI Lab', initialFunding: 4150000, monthlyRevenue: 996000, monthlyExpenses: 1245000 }, // ₹41.5L, ₹9.96L, ₹12.5L
-    { name: 'Coxist AI Green', initialFunding: 24900000, monthlyRevenue: 2490000, monthlyExpenses: 2075000 }, // ₹2.49Cr, ₹24.9L, ₹20.8L
+    {
+      name: "Coxist AI",
+      initialFunding: 41500000,
+      monthlyRevenue: 3735000,
+      monthlyExpenses: 2905000,
+    }, // ₹4.15Cr, ₹37.4L, ₹29.1L
+    {
+      name: "Coxist AI Cloud",
+      initialFunding: 16600000,
+      monthlyRevenue: 2075000,
+      monthlyExpenses: 1660000,
+    }, // ₹1.66Cr, ₹20.8L, ₹16.6L
+    {
+      name: "Coxist AI Analytics",
+      initialFunding: 83000000,
+      monthlyRevenue: 6640000,
+      monthlyExpenses: 4980000,
+    }, // ₹8.3Cr, ₹66.4L, ₹49.8L
+    {
+      name: "Coxist AI Lab",
+      initialFunding: 4150000,
+      monthlyRevenue: 996000,
+      monthlyExpenses: 1245000,
+    }, // ₹41.5L, ₹9.96L, ₹12.5L
+    {
+      name: "Coxist AI Green",
+      initialFunding: 24900000,
+      monthlyRevenue: 2490000,
+      monthlyExpenses: 2075000,
+    }, // ₹2.49Cr, ₹24.9L, ₹20.8L
   ];
 
   for (let startupIndex = 0; startupIndex < startups.length; startupIndex++) {
     const startup = startups[startupIndex];
     const profile = startupProfiles[startupIndex];
     const accounts = startupAccounts.get(startup.id);
-    
+
     const transactions: {
       accountId: string;
       type: TransactionType;
@@ -390,114 +604,136 @@ async function main() {
     // Initial funding
     transactions.push({
       accountId: accounts[0].id,
-      type: 'CREDIT',
+      type: "CREDIT",
       amount: Number(profile.initialFunding),
-      description: 'Initial seed funding',
-      date: new Date(new Date().setDate(currentDate.getDate() - 90))
+      description: "Initial seed funding",
+      date: new Date(new Date().setDate(currentDate.getDate() - 90)),
     });
 
     // Generate 90 days of transactions
     for (let i = 0; i < 90; i++) {
       const transactionDate = new Date();
       transactionDate.setDate(transactionDate.getDate() - i);
-      
+
       // Monthly expenses (payroll, rent, etc.)
       if (i % 30 === 0) {
         transactions.push({
           accountId: accounts[0].id,
-          type: 'DEBIT',
+          type: "DEBIT",
           amount: Number(profile.monthlyExpenses * 0.6), // 60% of expenses
-          description: 'Monthly payroll',
-          date: transactionDate
+          description: "Monthly payroll",
+          date: transactionDate,
         });
       }
-      
+
       // Weekly expenses
       if (i % 7 === 0) {
         const expenseAmount = Number(profile.monthlyExpenses * 0.1); // 10% of monthly expenses
         transactions.push({
           accountId: accounts[0].id,
-          type: 'DEBIT',
+          type: "DEBIT",
           amount: Number(expenseAmount * (0.8 + Math.random() * 0.4)),
-          description: 'Operating expenses',
-          date: transactionDate
+          description: "Operating expenses",
+          date: transactionDate,
         });
       }
-      
+
       // Revenue transactions
       if (i % 3 === 0) {
         const revenueAmount = Number(profile.monthlyRevenue / 10); // Distribute monthly revenue
         transactions.push({
           accountId: accounts[2].id, // Stripe account
-          type: 'CREDIT',
+          type: "CREDIT",
           amount: Number(revenueAmount * (0.8 + Math.random() * 0.4)),
-          description: 'Customer payment',
-          date: transactionDate
+          description: "Customer payment",
+          date: transactionDate,
         });
       }
     }
 
     // Create all transactions for this startup with proper number conversion
     await prisma.transaction.createMany({
-      data: transactions.map(t => ({ 
-        ...t, 
+      data: transactions.map(t => ({
+        ...t,
         startupId: startup.id,
-        amount: Number(t.amount)
+        amount: Number(t.amount),
       })),
     });
 
     // Update account balances atomically (same approach as production code)
     for (const transaction of transactions) {
-      const balanceChange = transaction.type === 'CREDIT' 
-        ? Number(transaction.amount) 
-        : -Number(transaction.amount);
-      
+      const balanceChange =
+        transaction.type === "CREDIT"
+          ? Number(transaction.amount)
+          : -Number(transaction.amount);
+
       await prisma.mockBankAccount.update({
         where: { id: transaction.accountId },
-        data: { 
-          balance: { increment: balanceChange }
+        data: {
+          balance: { increment: balanceChange },
         },
       });
     }
   }
 
-  console.log('✓ Created transactions and updated balances for all startups');
+  console.log("✓ Created transactions and updated balances for all startups");
 
   // 8. Create Products and Sales for TechNova Solutions (main demo)
   const mainStartup = startups[0];
   const mainAccounts = startupAccounts.get(mainStartup.id);
-  
+
   const products = await Promise.all([
-    prisma.product.create({ data: { startupId: mainStartup.id, name: 'Premium SaaS License', quantity: 1000, price: Number(24999) } }), // ₹24,999
-    prisma.product.create({ data: { startupId: mainStartup.id, name: 'API Credits - 10K', quantity: 5000, price: Number(4199) } }), // ₹4,199
-    prisma.product.create({ data: { startupId: mainStartup.id, name: 'Consulting Hours - 5hr Pack', quantity: 200, price: Number(62500) } }), // ₹62,500
+    prisma.product.create({
+      data: {
+        startupId: mainStartup.id,
+        name: "Premium SaaS License",
+        quantity: 1000,
+        price: Number(24999),
+      },
+    }), // ₹24,999
+    prisma.product.create({
+      data: {
+        startupId: mainStartup.id,
+        name: "API Credits - 10K",
+        quantity: 5000,
+        price: Number(4199),
+      },
+    }), // ₹4,199
+    prisma.product.create({
+      data: {
+        startupId: mainStartup.id,
+        name: "Consulting Hours - 5hr Pack",
+        quantity: 200,
+        price: Number(62500),
+      },
+    }), // ₹62,500
   ]);
 
   // Create sales linked to transactions for main startup
-  for(let i = 0; i < 20; i++) {
+  for (let i = 0; i < 20; i++) {
     const product = products[Math.floor(Math.random() * products.length)];
     const quantity = Math.floor(Math.random() * 5) + 1;
     const saleDate = new Date();
     saleDate.setDate(saleDate.getDate() - Math.floor(Math.random() * 90));
     const totalPrice = Number(product.price) * Number(quantity);
-    
+
     const transaction = await prisma.transaction.create({
       data: {
         startupId: mainStartup.id,
         accountId: mainAccounts[2].id, // Sales revenue to Stripe
-        type: 'CREDIT',
+        type: "CREDIT",
         amount: Number(totalPrice),
         description: `Sale: ${quantity} x ${product.name}`,
         date: saleDate,
-      }
+      },
     });
 
     // Update account balance atomically (sales are CREDIT/income)
     await prisma.mockBankAccount.update({
       where: { id: mainAccounts[2].id },
       data: {
-        balance: { increment: Number(totalPrice) }
-      }
+        balance: { increment: Number(totalPrice) },
+      },
     });
 
     await prisma.sale.create({
@@ -507,27 +743,29 @@ async function main() {
         quantitySold: Number(quantity),
         totalPrice: Number(totalPrice),
         saleDate: saleDate,
-        transactionId: transaction.id
-      }
+        transactionId: transaction.id,
+      },
     });
   }
 
-  console.log(`✓ Created ${products.length} products and simulated sales for main startup`);
-  
+  console.log(
+    `✓ Created ${products.length} products and simulated sales for main startup`
+  );
+
   // 9. Create Cashflow Metrics for main startup (last 6 months)
   const cashflowMetrics: Promise<any>[] = [];
   for (let i = 0; i < 6; i++) {
     const monthStart = new Date();
     monthStart.setMonth(monthStart.getMonth() - (6 - i));
     monthStart.setDate(1);
-    
+
     const monthEnd = new Date(monthStart);
     monthEnd.setMonth(monthEnd.getMonth() + 1);
     monthEnd.setDate(0);
 
-    const revenue = Number(3735000 + (i * 415000) + Math.random() * 664000); // Base ₹37.4L + growth
-    const expenses = Number(2905000 + (i * 166000) + Math.random() * 249000); // Base ₹29.1L + growth
-    const customers = 150 + (i * 20);
+    const revenue = Number(3735000 + i * 415000 + Math.random() * 664000); // Base ₹37.4L + growth
+    const expenses = Number(2905000 + i * 166000 + Math.random() * 249000); // Base ₹29.1L + growth
+    const customers = 150 + i * 20;
 
     cashflowMetrics.push(
       prisma.cashflowMetric.create({
@@ -542,8 +780,11 @@ async function main() {
           runway: Number(41500000 / expenses), // Based on initial funding ₹4.15Cr
           mrr: Number(revenue * 0.85), // 85% recurring
           arr: Number(revenue * 0.85 * 12),
-          growthRate: i > 0 ? Number(((revenue / (3735000 + ((i-1) * 415000))) - 1) * 100) : 0,
-          cashBalance: Number(41500000 + ((revenue - expenses) * i)),
+          growthRate:
+            i > 0
+              ? Number((revenue / (3735000 + (i - 1) * 415000) - 1) * 100)
+              : 0,
+          cashBalance: Number(41500000 + (revenue - expenses) * i),
           accountsReceivable: Number(revenue * 0.15),
           accountsPayable: Number(expenses * 0.2),
           activeCustomers: customers,
@@ -556,112 +797,176 @@ async function main() {
     );
   }
   await Promise.all(cashflowMetrics);
-  console.log('✓ Created 6 months of cashflow metrics for main startup');
+  console.log("✓ Created 6 months of cashflow metrics for main startup");
 
   // 10. Create AI Scenarios for main startup
   await Promise.all([
     prisma.aIScenario.create({
       data: {
         startupId: mainStartup.id,
-        name: 'Hire 3 Engineers',
-        description: 'Simulate financial impact of hiring 3 Senior Software Engineers at ₹12.5L/yr each.',
-        scenarioType: 'what_if',
-        inputParameters: { hireCount: 3, avgSalary: 1250000, benefitsPercent: 0.25 }, // ₹12.5L/yr each
+        name: "Hire 3 Engineers",
+        description:
+          "Simulate financial impact of hiring 3 Senior Software Engineers at ₹12.5L/yr each.",
+        scenarioType: "what_if",
+        inputParameters: {
+          hireCount: 3,
+          avgSalary: 1250000,
+          benefitsPercent: 0.25,
+        }, // ₹12.5L/yr each
         projectedExpenses: 4687500, // Annual in INR (₹46.9L)
         projectedRunway: 11.5,
         confidence: 0.95,
-        insights: ['Burn rate increases by approximately ₹3.9 lakh/month.', 'Runway decreases by approximately 4 months.'],
-        recommendations: ['Consider hiring more junior engineers to reduce cost.', 'Explore remote talent in lower-cost regions.'],
-        risks: ['Hiring process may take longer than expected.', 'Increased management overhead.'],
+        insights: [
+          "Burn rate increases by approximately ₹3.9 lakh/month.",
+          "Runway decreases by approximately 4 months.",
+        ],
+        recommendations: [
+          "Consider hiring more junior engineers to reduce cost.",
+          "Explore remote talent in lower-cost regions.",
+        ],
+        risks: [
+          "Hiring process may take longer than expected.",
+          "Increased management overhead.",
+        ],
       },
     }),
     prisma.aIScenario.create({
       data: {
         startupId: mainStartup.id,
-        name: 'Revenue Growth - Best Case',
-        description: '30% MoM growth with reduced churn',
-        scenarioType: 'forecast',
-        inputParameters: { growthRate: 0.30, churnReduction: 0.50, newCustomerTarget: 50, },
-        projectedRevenue: 7885000, projectedExpenses: 3486000, projectedCashflow: 4399000, // INR values
-        projectedRunway: 18.5, confidence: 0.75,
-        insights: [ 'With 30% growth, revenue could reach ₹79 lakh/month in 3 months', 'Reduced churn would save approximately ₹6.6 lakh monthly', 'Customer acquisition cost trending down', ],
-        recommendations: [ 'Invest ₹4.2 lakh more in proven marketing channels', 'Launch referral program to reduce CAC', 'Hire customer success manager to reduce churn', ],
-        risks: [ 'Market saturation in current segment', 'Increased competition may pressure pricing', ],
+        name: "Revenue Growth - Best Case",
+        description: "30% MoM growth with reduced churn",
+        scenarioType: "forecast",
+        inputParameters: {
+          growthRate: 0.3,
+          churnReduction: 0.5,
+          newCustomerTarget: 50,
+        },
+        projectedRevenue: 7885000,
+        projectedExpenses: 3486000,
+        projectedCashflow: 4399000, // INR values
+        projectedRunway: 18.5,
+        confidence: 0.75,
+        insights: [
+          "With 30% growth, revenue could reach ₹79 lakh/month in 3 months",
+          "Reduced churn would save approximately ₹6.6 lakh monthly",
+          "Customer acquisition cost trending down",
+        ],
+        recommendations: [
+          "Invest ₹4.2 lakh more in proven marketing channels",
+          "Launch referral program to reduce CAC",
+          "Hire customer success manager to reduce churn",
+        ],
+        risks: [
+          "Market saturation in current segment",
+          "Increased competition may pressure pricing",
+        ],
       },
     }),
   ]);
-  console.log('✓ Created 2 AI scenarios for main startup');
+  console.log("✓ Created 2 AI scenarios for main startup");
 
   // 11. Create Alerts for main startup
   await Promise.all([
     prisma.alert.create({
       data: {
         startupId: mainStartup.id,
-        type: 'runway',
-        severity: 'warning',
-        title: 'Runway is down to 8.2 months',
-        message: 'Based on your current burn rate of ₹29 lakh/month and cash balance of ₹2.4 crore, your runway is approximately 8.2 months. This is above the recommended 6-month threshold but trending down.',
+        type: "runway",
+        severity: "warning",
+        title: "Runway is down to 8.2 months",
+        message:
+          "Based on your current burn rate of ₹29 lakh/month and cash balance of ₹2.4 crore, your runway is approximately 8.2 months. This is above the recommended 6-month threshold but trending down.",
         currentValue: 8.2,
         thresholdValue: 6,
-        recommendations: ['Consider optimizing SaaS spend to extend runway.', 'Monitor customer acquisition costs closely.', 'Prepare for Series A fundraising in Q2.'],
+        recommendations: [
+          "Consider optimizing SaaS spend to extend runway.",
+          "Monitor customer acquisition costs closely.",
+          "Prepare for Series A fundraising in Q2.",
+        ],
         isRead: false,
       },
     }),
     prisma.alert.create({
       data: {
         startupId: mainStartup.id,
-        type: 'burn_rate',
-        severity: 'info',
-        title: 'Burn Rate Trending Up',
-        message: 'Monthly burn rate increased 5% from last month to ₹29 lakh.',
+        type: "burn_rate",
+        severity: "info",
+        title: "Burn Rate Trending Up",
+        message: "Monthly burn rate increased 5% from last month to ₹29 lakh.",
         currentValue: 2905000,
         thresholdValue: 2490000,
-        recommendations: ['Audit cloud infrastructure costs', 'Review contractor and freelancer spending', 'Optimize marketing spend efficiency'],
+        recommendations: [
+          "Audit cloud infrastructure costs",
+          "Review contractor and freelancer spending",
+          "Optimize marketing spend efficiency",
+        ],
         isRead: false,
       },
     }),
   ]);
-  console.log('✓ Created 2 alerts for main startup');
+  console.log("✓ Created 2 alerts for main startup");
 
   // 12. Create Investor Updates for main startup
   await prisma.investorUpdate.create({
     data: {
       startupId: mainStartup.id,
-      title: 'Q4 2024 - Strong Growth & Product Launch',
-      periodStart: new Date('2024-10-01'),
-      periodEnd: new Date('2024-12-31'),
-      metrics: { revenue: Number(3735000), mrr: Number(3174750), arr: Number(38097000), customers: 215, churnRate: 2.3, nps: 67, },
+      title: "Q4 2024 - Strong Growth & Product Launch",
+      periodStart: new Date("2024-10-01"),
+      periodEnd: new Date("2024-12-31"),
+      metrics: {
+        revenue: Number(3735000),
+        mrr: Number(3174750),
+        arr: Number(38097000),
+        customers: 215,
+        churnRate: 2.3,
+        nps: 67,
+      },
       executiveSummary: `We had an exceptional Q4, achieving 25% revenue growth and successfully launching our Enterprise tier. Our ARR now stands at ₹3.8 crore, putting us on track for our ₹5 crore target by Q2 2025. Key highlights include landing 3 enterprise customers, reducing churn by 35%, and expanding our team with critical hires in engineering and customer success.`,
-      highlights: [ 'Revenue grew 25% QoQ to ₹3.7 lakh MRR', 'Launched Enterprise tier with 3 early customers at ₹1.7 lakh/month each', 'Product NPS improved from 58 to 67', ],
-      challenges: [ 'Customer acquisition cost increased 15% due to competitive landscape', 'Enterprise sales cycle longer than anticipated (avg 60 days)', ],
-      nextSteps: [ 'Launch self-service onboarding to reduce CAC', 'Develop case studies from enterprise customers', 'Begin Series A fundraising conversations', ],
-      revenueGrowth: 25, burnRate: Number(2905000), runway: 8.2, isDraft: false, publishedAt: new Date(),
+      highlights: [
+        "Revenue grew 25% QoQ to ₹3.7 lakh MRR",
+        "Launched Enterprise tier with 3 early customers at ₹1.7 lakh/month each",
+        "Product NPS improved from 58 to 67",
+      ],
+      challenges: [
+        "Customer acquisition cost increased 15% due to competitive landscape",
+        "Enterprise sales cycle longer than anticipated (avg 60 days)",
+      ],
+      nextSteps: [
+        "Launch self-service onboarding to reduce CAC",
+        "Develop case studies from enterprise customers",
+        "Begin Series A fundraising conversations",
+      ],
+      revenueGrowth: 25,
+      burnRate: Number(2905000),
+      runway: 8.2,
+      isDraft: false,
+      publishedAt: new Date(),
     },
   });
-  console.log('✓ Created 1 investor update for main startup');
+  console.log("✓ Created 1 investor update for main startup");
 
-  console.log('\n✅ Comprehensive seed completed successfully!');
+  console.log("\n✅ Comprehensive seed completed successfully!");
   console.log('\n🔑 Login Credentials (password for all is "password123"):');
-  console.log('\n📊 Main Demo Account (Coxist AI):');
-  console.log('  - Admin: admin@coxistai.com');
-  console.log('  - CFO: cfo@coxistai.com');
-  console.log('  - Accountant: accountant@coxistai.com');
-  console.log('  - Demo User: demo@coxistai.com');
-  console.log('\n🏢 Other Demo Accounts:');
-  console.log('  - Coxist AI Cloud: ceo@coxistai.cloud');
-  console.log('  - Coxist AI Analytics: ceo@coxistai.analytics');
-  console.log('  - Coxist AI Innovations: ceo@coxistai.innovations');
-  console.log('  - Coxist AI Ventures: ceo@coxistai.ventures');
-  console.log('\n💡 Use demo@coxistai.com for the best demo experience with full transaction history!');
+  console.log("\n📊 Main Demo Account (Coxist AI):");
+  console.log("  - Admin: admin@coxistai.com");
+  console.log("  - CFO: cfo@coxistai.com");
+  console.log("  - Accountant: accountant@coxistai.com");
+  console.log("  - Demo User: demo@coxistai.com");
+  console.log("\n🏢 Other Demo Accounts:");
+  console.log("  - Coxist AI Cloud: ceo@coxistai.cloud");
+  console.log("  - Coxist AI Analytics: ceo@coxistai.analytics");
+  console.log("  - Coxist AI Innovations: ceo@coxistai.innovations");
+  console.log("  - Coxist AI Ventures: ceo@coxistai.ventures");
+  console.log(
+    "\n💡 Use demo@coxistai.com for the best demo experience with full transaction history!"
+  );
 }
 
 main()
-  .catch((e) => {
-    console.error('❌ Seed error:', e);
+  .catch(e => {
+    console.error("❌ Seed error:", e);
     // @ts-ignore - process is available in Node.js environment
     process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
   });
-

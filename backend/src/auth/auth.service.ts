@@ -17,6 +17,41 @@ interface LoginData {
   password: string;
 }
 
+const getDefaultFinancialYearStart = (): Date => {
+  const today = new Date();
+  const fiscalYearStartMonth = 3; // April (0-indexed month)
+  const year =
+    today.getUTCMonth() >= fiscalYearStartMonth
+      ? today.getUTCFullYear()
+      : today.getUTCFullYear() - 1;
+  return new Date(Date.UTC(year, fiscalYearStartMonth, 1));
+};
+
+const getDefaultBooksStart = (): Date => {
+  const today = new Date();
+  return new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+};
+
+const createDefaultSecurityConfig = () => ({
+  tallyVaultEnabled: false,
+  tallyVaultPasswordHash: null,
+  tallyVaultPasswordHint: null,
+  userAccessControlEnabled: false,
+  multiFactorRequired: false,
+});
+
+const createDefaultCurrencyConfig = () => ({
+  baseCurrencyCode: "INR",
+  baseCurrencySymbol: "₹",
+  baseCurrencyFormalName: "Indian Rupee",
+  decimalPlaces: 2,
+  decimalSeparator: ".",
+  thousandSeparator: ",",
+  symbolOnRight: false,
+  spaceBetweenAmountAndSymbol: false,
+  showAmountInMillions: false,
+});
+
 export const signup = async (data: SignupData) => {
   const { email, password, startupName, firstName, lastName } = data;
   
@@ -71,6 +106,21 @@ export const signup = async (data: SignupData) => {
           baseCurrency: 'INR',
         },
       },
+      fiscalConfig: {
+        create: {
+          financialYearStart: getDefaultFinancialYearStart(),
+          booksStart: getDefaultBooksStart(),
+          allowBackdatedEntries: true,
+          backdatedFrom: getDefaultFinancialYearStart(),
+          enableEditLog: false,
+        },
+      },
+      securityConfig: {
+        create: createDefaultSecurityConfig(),
+      },
+      currencyConfig: {
+        create: createDefaultCurrencyConfig(),
+      },
     },
     include: { 
       users: {
@@ -90,7 +140,10 @@ export const signup = async (data: SignupData) => {
         include: {
           addresses: true
         }
-      }
+      },
+      fiscalConfig: true,
+      securityConfig: true,
+      currencyConfig: true
     },
   });
 
@@ -146,6 +199,38 @@ export const signup = async (data: SignupData) => {
           email: startup.companyProfile.email,
           website: startup.companyProfile.website,
           addresses: startup.companyProfile.addresses
+        } : null,
+        fiscalConfig: startup.fiscalConfig ? {
+          id: startup.fiscalConfig.id,
+          financialYearStart: startup.fiscalConfig.financialYearStart,
+          booksStart: startup.fiscalConfig.booksStart,
+          allowBackdatedEntries: startup.fiscalConfig.allowBackdatedEntries,
+          backdatedFrom: startup.fiscalConfig.backdatedFrom,
+          enableEditLog: startup.fiscalConfig.enableEditLog,
+          createdAt: startup.fiscalConfig.createdAt,
+          updatedAt: startup.fiscalConfig.updatedAt
+        } : null,
+        securityConfig: startup.securityConfig ? {
+          id: startup.securityConfig.id,
+          tallyVaultEnabled: startup.securityConfig.tallyVaultEnabled,
+          userAccessControlEnabled: startup.securityConfig.userAccessControlEnabled,
+          multiFactorRequired: startup.securityConfig.multiFactorRequired,
+          createdAt: startup.securityConfig.createdAt,
+          updatedAt: startup.securityConfig.updatedAt
+        } : null,
+        currencyConfig: startup.currencyConfig ? {
+          id: startup.currencyConfig.id,
+          baseCurrencyCode: startup.currencyConfig.baseCurrencyCode,
+          baseCurrencySymbol: startup.currencyConfig.baseCurrencySymbol,
+          baseCurrencyFormalName: startup.currencyConfig.baseCurrencyFormalName,
+          decimalPlaces: startup.currencyConfig.decimalPlaces,
+          decimalSeparator: startup.currencyConfig.decimalSeparator,
+          thousandSeparator: startup.currencyConfig.thousandSeparator,
+          symbolOnRight: startup.currencyConfig.symbolOnRight,
+          spaceBetweenAmountAndSymbol: startup.currencyConfig.spaceBetweenAmountAndSymbol,
+          showAmountInMillions: startup.currencyConfig.showAmountInMillions,
+          createdAt: startup.currencyConfig.createdAt,
+          updatedAt: startup.currencyConfig.updatedAt
         } : null
       },
       roles: roleNames,
@@ -168,7 +253,10 @@ export const login = async (data: LoginData) => {
             include: {
               addresses: true
             }
-          }
+          },
+          fiscalConfig: true,
+          securityConfig: true
+          currencyConfig: true
         }
       },
       roles: { 
@@ -250,6 +338,38 @@ export const login = async (data: LoginData) => {
           email: user.startup.companyProfile.email,
           website: user.startup.companyProfile.website,
           addresses: user.startup.companyProfile.addresses
+        } : null,
+        fiscalConfig: user.startup.fiscalConfig ? {
+          id: user.startup.fiscalConfig.id,
+          financialYearStart: user.startup.fiscalConfig.financialYearStart,
+          booksStart: user.startup.fiscalConfig.booksStart,
+          allowBackdatedEntries: user.startup.fiscalConfig.allowBackdatedEntries,
+          backdatedFrom: user.startup.fiscalConfig.backdatedFrom,
+          enableEditLog: user.startup.fiscalConfig.enableEditLog,
+          createdAt: user.startup.fiscalConfig.createdAt,
+          updatedAt: user.startup.fiscalConfig.updatedAt
+        } : null,
+        securityConfig: user.startup.securityConfig ? {
+          id: user.startup.securityConfig.id,
+          tallyVaultEnabled: user.startup.securityConfig.tallyVaultEnabled,
+          userAccessControlEnabled: user.startup.securityConfig.userAccessControlEnabled,
+          multiFactorRequired: user.startup.securityConfig.multiFactorRequired,
+          createdAt: user.startup.securityConfig.createdAt,
+          updatedAt: user.startup.securityConfig.updatedAt
+        } : null,
+        currencyConfig: user.startup.currencyConfig ? {
+          id: user.startup.currencyConfig.id,
+          baseCurrencyCode: user.startup.currencyConfig.baseCurrencyCode,
+          baseCurrencySymbol: user.startup.currencyConfig.baseCurrencySymbol,
+          baseCurrencyFormalName: user.startup.currencyConfig.baseCurrencyFormalName,
+          decimalPlaces: user.startup.currencyConfig.decimalPlaces,
+          decimalSeparator: user.startup.currencyConfig.decimalSeparator,
+          thousandSeparator: user.startup.currencyConfig.thousandSeparator,
+          symbolOnRight: user.startup.currencyConfig.symbolOnRight,
+          spaceBetweenAmountAndSymbol: user.startup.currencyConfig.spaceBetweenAmountAndSymbol,
+          showAmountInMillions: user.startup.currencyConfig.showAmountInMillions,
+          createdAt: user.startup.currencyConfig.createdAt,
+          updatedAt: user.startup.currencyConfig.updatedAt
         } : null
       },
       roles: roleNames,

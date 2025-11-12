@@ -33,6 +33,9 @@ model Startup {
   importedTransactions ImportedTransaction[]
   importHistories  ImportHistory[]
   companyProfile   CompanyProfile?
+  fiscalConfig     CompanyFiscalConfig?
+  securityConfig   CompanySecuritySetting?
+  currencyConfig   CompanyCurrencySetting?
 }
 
 model User {
@@ -134,6 +137,58 @@ model CompanyAddress {
 
   @@index([profileId])
   @@index([isPrimary])
+}
+
+model CompanyFiscalConfig {
+  id                     String   @id @default(cuid())
+  startupId              String   @unique
+  financialYearStart     DateTime
+  booksStart             DateTime
+  allowBackdatedEntries  Boolean  @default(true)
+  backdatedFrom          DateTime?
+  enableEditLog          Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@index([startupId])
+}
+
+model CompanySecuritySetting {
+  id                        String   @id @default(cuid())
+  startupId                 String   @unique
+  tallyVaultEnabled         Boolean  @default(false)
+  tallyVaultPasswordHash    String?
+  tallyVaultPasswordHint    String?
+  userAccessControlEnabled  Boolean  @default(false)
+  multiFactorRequired       Boolean  @default(false)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@index([startupId])
+}
+
+model CompanyCurrencySetting {
+  id                    String   @id @default(cuid())
+  startupId             String   @unique
+  baseCurrencyCode      String   @default("INR")
+  baseCurrencySymbol    String   @default("₹")
+  baseCurrencyFormalName String? 
+  decimalPlaces         Int      @default(2)
+  decimalSeparator      String   @default(".")
+  thousandSeparator     String   @default(",")
+  symbolOnRight         Boolean  @default(false)
+  spaceBetweenAmountAndSymbol Boolean @default(false)
+  showAmountInMillions  Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@index([startupId])
 }
 
 enum TransactionType {

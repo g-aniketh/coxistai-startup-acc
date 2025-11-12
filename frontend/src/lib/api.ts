@@ -56,6 +56,71 @@ export interface CompanyProfile {
   addresses: CompanyAddress[];
 }
 
+export interface CompanyFiscalConfig {
+  id: string;
+  financialYearStart: string;
+  booksStart: string;
+  allowBackdatedEntries: boolean;
+  backdatedFrom?: string | null;
+  enableEditLog: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CompanyFiscalInput {
+  financialYearStart: string;
+  booksStart: string;
+  allowBackdatedEntries?: boolean;
+  backdatedFrom?: string | null;
+  enableEditLog?: boolean;
+}
+
+export interface CompanySecurityConfig {
+  id: string;
+  tallyVaultEnabled: boolean;
+  userAccessControlEnabled: boolean;
+  multiFactorRequired: boolean;
+  tallyVaultPasswordHint?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CompanySecurityInput {
+  tallyVaultEnabled?: boolean;
+  newTallyVaultPassword?: string;
+  currentTallyVaultPassword?: string;
+  tallyVaultPasswordHint?: string | null;
+  userAccessControlEnabled?: boolean;
+  multiFactorRequired?: boolean;
+}
+
+export interface CompanyCurrencyConfig {
+  id: string;
+  baseCurrencyCode: string;
+  baseCurrencySymbol: string;
+  baseCurrencyFormalName?: string | null;
+  decimalPlaces: number;
+  decimalSeparator: string;
+  thousandSeparator: string;
+  symbolOnRight: boolean;
+  spaceBetweenAmountAndSymbol: boolean;
+  showAmountInMillions: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CompanyCurrencyInput {
+  baseCurrencyCode?: string;
+  baseCurrencySymbol?: string;
+  baseCurrencyFormalName?: string | null;
+  decimalPlaces?: number;
+  decimalSeparator?: string;
+  thousandSeparator?: string;
+  symbolOnRight?: boolean;
+  spaceBetweenAmountAndSymbol?: boolean;
+  showAmountInMillions?: boolean;
+}
+
 export interface Startup {
   id: string;
   name: string;
@@ -63,6 +128,9 @@ export interface Startup {
   subscriptionStatus: string;
   trialEndsAt?: string;
   companyProfile?: CompanyProfile | null;
+  fiscalConfig?: CompanyFiscalConfig | null;
+  securityConfig?: CompanySecurityConfig | null;
+  currencyConfig?: CompanyCurrencyConfig | null;
 }
 
 export interface SignupRequest {
@@ -621,6 +689,42 @@ export const apiClient = {
       data: CompanyProfileInput
     ): Promise<ApiResponse<CompanyProfile>> => {
       const response = await api.put('/company/profile', data);
+      return response.data;
+    },
+
+    getFiscal: async (): Promise<ApiResponse<CompanyFiscalConfig | null>> => {
+      const response = await api.get('/company/fiscal');
+      return response.data;
+    },
+
+    updateFiscal: async (
+      data: CompanyFiscalInput
+    ): Promise<ApiResponse<CompanyFiscalConfig>> => {
+      const response = await api.put('/company/fiscal', data);
+      return response.data;
+    },
+
+    getSecurity: async (): Promise<ApiResponse<CompanySecurityConfig | null>> => {
+      const response = await api.get('/company/security');
+      return response.data;
+    },
+
+    updateSecurity: async (
+      data: CompanySecurityInput
+    ): Promise<ApiResponse<CompanySecurityConfig>> => {
+      const response = await api.put('/company/security', data);
+      return response.data;
+    },
+
+    getCurrency: async (): Promise<ApiResponse<CompanyCurrencyConfig | null>> => {
+      const response = await api.get('/company/currency');
+      return response.data;
+    },
+
+    updateCurrency: async (
+      data: CompanyCurrencyInput
+    ): Promise<ApiResponse<CompanyCurrencyConfig>> => {
+      const response = await api.put('/company/currency', data);
       return response.data;
     },
   },
