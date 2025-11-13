@@ -21,6 +21,8 @@ import alertsRoutes from './routes/alerts';
 import importRoutes from './routes/import';
 import companyRoutes from './routes/company';
 import vouchersRoutes from './routes/vouchers';
+import billsRoutes from './routes/bills';
+import costManagementRoutes from './routes/costManagement';
 import { TransactionSyncService } from './services/transactionSync';
 import { startJobs } from './jobs';
 
@@ -413,6 +415,8 @@ v1Router.use('/alerts', authenticateToken, alertsRoutes);
 v1Router.use('/import', authenticateToken, importRoutes);
 v1Router.use('/company', authenticateToken, companyRoutes);
 v1Router.use('/vouchers', authenticateToken, vouchersRoutes);
+v1Router.use('/bills', authenticateToken, billsRoutes);
+v1Router.use('/costing', authenticateToken, costManagementRoutes);
 
 // Mount v1 routes
 app.use('/api/v1', v1Router);

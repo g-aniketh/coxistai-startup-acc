@@ -326,6 +326,116 @@ export interface CreateVoucherRequest {
   }>;
 }
 
+export type BillType = 'RECEIVABLE' | 'PAYABLE';
+
+export type BillStatus = 'OPEN' | 'PARTIAL' | 'SETTLED' | 'CANCELLED';
+
+export interface BillSettlement {
+  id: string;
+  startupId: string;
+  billId: string;
+  voucherId: string;
+  voucherEntryId: string;
+  settlementAmount: number;
+  settlementDate: string;
+  reference?: string | null;
+  remarks?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  voucher?: Voucher;
+  voucherEntry?: VoucherEntry;
+}
+
+export interface Bill {
+  id: string;
+  startupId: string;
+  billType: BillType;
+  billNumber: string;
+  ledgerName: string;
+  ledgerCode?: string | null;
+  billDate: string;
+  dueDate?: string | null;
+  originalAmount: number;
+  settledAmount: number;
+  outstandingAmount: number;
+  status: BillStatus;
+  reference?: string | null;
+  narration?: string | null;
+  voucherId?: string | null;
+  voucherEntryId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  voucher?: Voucher | null;
+  voucherEntry?: VoucherEntry | null;
+  settlements?: BillSettlement[];
+}
+
+export interface CreateBillRequest {
+  billType: BillType;
+  billNumber: string;
+  ledgerName: string;
+  ledgerCode?: string;
+  billDate?: string;
+  dueDate?: string;
+  originalAmount: number;
+  reference?: string;
+  narration?: string;
+  voucherId?: string;
+  voucherEntryId?: string;
+}
+
+export interface SettleBillRequest {
+  voucherId: string;
+  voucherEntryId: string;
+  settlementAmount: number;
+  reference?: string;
+  remarks?: string;
+}
+
+export interface BillAgingBucket {
+  count: number;
+  amount: number;
+}
+
+export interface BillAgingReport {
+  summary: {
+    totalBills: number;
+    totalOutstanding: number;
+  };
+  aging: {
+    current: BillAgingBucket;
+    days30: BillAgingBucket;
+    days60: BillAgingBucket;
+    days90: BillAgingBucket;
+    over90: BillAgingBucket;
+  };
+  bills: Array<{
+    id: string;
+    billNumber: string;
+    billType: BillType;
+    ledgerName: string;
+    billDate: string;
+    dueDate?: string | null;
+    originalAmount: number;
+    outstandingAmount: number;
+    status: BillStatus;
+    daysOverdue: number;
+  }>;
+}
+
+export interface OutstandingLedgerSummary {
+  ledgerName: string;
+  ledgerCode?: string | null;
+  billCount: number;
+  totalOutstanding: number;
+  bills: Array<{
+    billNumber: string;
+    billDate: string;
+    dueDate?: string | null;
+    outstandingAmount: number;
+  }>;
+}
+
 export interface Startup {
   id: string;
   name: string;
@@ -944,6 +1054,56 @@ export const apiClient = {
       data: CompanyFeatureToggleInput
     ): Promise<ApiResponse<CompanyFeatureToggle>> => {
       const response = await api.put('/company/feature-toggles', data);
+      return response.data;
+    },
+  },
+
+  // ============================================================================
+  // BILL-WISE TRACKING
+  // ============================================================================
+
+  bills: {
+    list: async (params?: {
+      billType?: BillType;
+      status?: BillStatus;
+      ledgerName?: string;
+      fromDate?: string;
+      toDate?: string;
+      dueDateFrom?: string;
+      dueDateTo?: string;
+      limit?: number;
+      offset?: number;
+    }): Promise<ApiResponse<Bill[]>> => {
+      const response = await api.get('/bills', { params });
+      return response.data;
+    },
+
+    create: async (data: CreateBillRequest): Promise<ApiResponse<Bill>> => {
+      const response = await api.post('/bills', data);
+      return response.data;
+    },
+
+    settle: async (
+      billId: string,
+      data: SettleBillRequest
+    ): Promise<ApiResponse<{ settlement: BillSettlement; bill: Bill }>> => {
+      const response = await api.post(`/bills/${billId}/settle`, data);
+      return response.data;
+    },
+
+    getAgingReport: async (billType?: BillType): Promise<ApiResponse<BillAgingReport>> => {
+      const response = await api.get('/bills/aging', {
+        params: billType ? { billType } : undefined,
+      });
+      return response.data;
+    },
+
+    getOutstandingByLedger: async (
+      billType?: BillType
+    ): Promise<ApiResponse<OutstandingLedgerSummary[]>> => {
+      const response = await api.get('/bills/outstanding-by-ledger', {
+        params: billType ? { billType } : undefined,
+      });
       return response.data;
     },
   },

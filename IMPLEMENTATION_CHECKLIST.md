@@ -17,11 +17,11 @@
 - [x] Currency configuration service & UI (base code, symbol, formatting preferences)
 - [x] Feature toggle service & UI (per-module enablement for accounting, inventory, taxation, etc.)
 - [x] Voucher type catalog & numbering management (default types, series, settings UI)
+- [x] Typed voucher entry (backend services + frontend form with bill-wise ledger lines)
+- [x] Bill-wise receivables/payables tracking (bills, settlements, aging views, UI workflows)
 
 ## 🚧 Feature Parity Gaps
 
-- [ ] Typed vouchers (Payment, Receipt, Sales, Purchase, Contra, etc.) with bill references
-- [ ] Bill-wise receivables/payables tracking and settlement flows
 - [ ] Cost centre/category hierarchy and interest calculation settings
 - [ ] GST / statutory setup for multi-registration and compliance ledger mapping
 - [ ] Edit log/audit trail service capturing master & voucher changes

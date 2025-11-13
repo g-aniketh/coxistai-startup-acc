@@ -40,6 +40,12 @@ model Startup {
   voucherTypes     VoucherType[]
   voucherSeries    VoucherNumberingSeries[]
   vouchers         Voucher[]
+  bills            Bill[]
+  billSettlements  BillSettlement[]
+  costCategories   CostCategory[]
+  costCenters      CostCenter[]
+  interestProfiles InterestProfile[]
+  partyInterestSettings PartyInterestSetting[]
 }
 
 model User {
@@ -322,6 +328,8 @@ model Voucher {
   numberingSeries VoucherNumberingSeries? @relation(fields: [numberingSeriesId], references: [id], onDelete: SetNull)
   transaction     Transaction?            @relation("TransactionVoucher", fields: [transactionId], references: [id], onDelete: SetNull)
   entries         VoucherEntry[]
+  bills           Bill[]                  // Bills created from this voucher
+  settlements     BillSettlement[]        // Settlements made through this voucher
 
   @@unique([startupId, voucherTypeId, voucherNumber])
   @@index([startupId, date])
@@ -349,11 +357,17 @@ model VoucherEntry {
   narration      String?
   costCenterName String?
   costCategory   String?
+  costCenterId   String?
+  costCategoryId String?
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
 
   voucher       Voucher               @relation(fields: [voucherId], references: [id], onDelete: Cascade)
   billReferences VoucherBillReference[]
+  bills         Bill[]               // Bills created from this entry
+  settlements   BillSettlement[]     // Settlements made through this entry
+  costCenter    CostCenter?          @relation("VoucherEntryCostCenter", fields: [costCenterId], references: [id], onDelete: SetNull)
+  costCategoryRef CostCategory?      @relation("VoucherEntryCostCategory", fields: [costCategoryId], references: [id], onDelete: SetNull)
 
   @@index([voucherId])
 }
@@ -372,6 +386,182 @@ model VoucherBillReference {
   voucherEntry VoucherEntry @relation(fields: [voucherEntryId], references: [id], onDelete: Cascade)
 
   @@index([voucherEntryId])
+}
+
+// ============================================================================
+// BILL-WISE TRACKING MODELS (Receivables/Payables)
+// ============================================================================
+
+enum BillType {
+  RECEIVABLE  // Money owed to us (Sales invoices, advances from customers)
+  PAYABLE     // Money we owe (Purchase invoices, advances to suppliers)
+}
+
+enum BillStatus {
+  OPEN         // Bill is open and has outstanding amount
+  PARTIAL      // Partially settled
+  SETTLED      // Fully settled
+  CANCELLED    // Cancelled/voided
+}
+
+model Bill {
+  id              String     @id @default(cuid())
+  startupId       String
+  billType        BillType
+  billNumber      String     // Invoice/Bill number
+  ledgerName      String     // Party/Supplier/Customer ledger name
+  ledgerCode      String?    // Optional ledger code
+  billDate        DateTime   @default(now())
+  dueDate         DateTime?
+  originalAmount  Decimal    // Original bill amount
+  settledAmount   Decimal    @default(0) // Total amount settled so far
+  outstandingAmount Decimal  // Calculated: originalAmount - settledAmount
+  status          BillStatus @default(OPEN)
+  reference       String?    // External reference (PO number, etc.)
+  narration       String?    // Additional notes
+  voucherId       String?    // Optional link to the voucher that created this bill
+  voucherEntryId  String?    // Optional link to the specific voucher entry
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  startup        Startup         @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  voucher        Voucher?        @relation(fields: [voucherId], references: [id], onDelete: SetNull)
+  voucherEntry   VoucherEntry?  @relation(fields: [voucherEntryId], references: [id], onDelete: SetNull)
+  settlements    BillSettlement[]
+
+  @@unique([startupId, billNumber])
+  @@index([startupId, billType, status])
+  @@index([startupId, ledgerName])
+  @@index([startupId, dueDate])
+  @@index([voucherId])
+  @@index([voucherEntryId])
+}
+
+model BillSettlement {
+  id                String   @id @default(cuid())
+  startupId         String
+  billId            String
+  voucherId         String   // Voucher that settles this bill (Payment/Receipt)
+  voucherEntryId    String   // Specific voucher entry that settles
+  settlementAmount  Decimal  // Amount being settled in this transaction
+  settlementDate    DateTime @default(now())
+  reference         String?  // Reference from the settling voucher
+  remarks           String?  // Additional notes
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  startup      Startup      @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  bill         Bill         @relation(fields: [billId], references: [id], onDelete: Cascade)
+  voucher      Voucher      @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+  voucherEntry VoucherEntry @relation(fields: [voucherEntryId], references: [id], onDelete: Cascade)
+
+  @@index([startupId, billId])
+  @@index([startupId, voucherId])
+  @@index([startupId, settlementDate])
+}
+
+// ============================================================================
+// COST CENTRE AND INTEREST CONFIGURATION MODELS
+// ============================================================================
+
+enum InterestCalculationMode {
+  SIMPLE
+  COMPOUND
+}
+
+enum InterestCompoundingFrequency {
+  NONE
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+model CostCategory {
+  id          String        @id @default(cuid())
+  startupId   String
+  name        String
+  description String?
+  parentId    String?
+  isPrimary   Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  startup        Startup        @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  parent         CostCategory?  @relation("CostCategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children       CostCategory[] @relation("CostCategoryHierarchy")
+  costCenters    CostCenter[]
+  voucherEntries VoucherEntry[] @relation("VoucherEntryCostCategory")
+
+  @@unique([startupId, name])
+  @@index([startupId, parentId])
+}
+
+model CostCenter {
+  id            String        @id @default(cuid())
+  startupId     String
+  categoryId    String
+  name          String
+  code          String?
+  description   String?
+  parentId      String?
+  isBillable    Boolean       @default(false)
+  status        String        @default("active")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  startup        Startup        @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  category       CostCategory   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  parent         CostCenter?    @relation("CostCenterHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children       CostCenter[]   @relation("CostCenterHierarchy")
+  voucherEntries VoucherEntry[] @relation("VoucherEntryCostCenter")
+
+  @@unique([startupId, name, categoryId])
+  @@index([startupId, categoryId])
+  @@index([startupId, parentId])
+}
+
+model InterestProfile {
+  id                     String                      @id @default(cuid())
+  startupId              String
+  name                   String
+  description            String?
+  calculationMode        InterestCalculationMode      @default(SIMPLE)
+  rate                   Decimal                     @default(0)
+  compoundingFrequency   InterestCompoundingFrequency @default(NONE)
+  gracePeriodDays        Int?
+  calculateFromDueDate   Boolean                     @default(true)
+  penalRate              Decimal                     @default(0)
+  penalGraceDays         Int?
+  createdAt              DateTime                    @default(now())
+  updatedAt              DateTime                    @updatedAt
+
+  startup       Startup                @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  partySettings PartyInterestSetting[]
+
+  @@unique([startupId, name])
+}
+
+model PartyInterestSetting {
+  id                 String          @id @default(cuid())
+  startupId          String
+  partyId            String
+  interestProfileId  String
+  overrideRate       Decimal?
+  effectiveFrom      DateTime?
+  effectiveTo        DateTime?
+  applyOnReceivables Boolean         @default(true)
+  applyOnPayables    Boolean         @default(false)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  startup         Startup         @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  party           PartyMaster     @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  interestProfile InterestProfile @relation(fields: [interestProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([startupId, partyId])
+  @@index([startupId, interestProfileId])
 }
 
 enum TransactionType {
@@ -621,6 +811,7 @@ model PartyMaster {
 
   startupId String
   startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  interestSetting PartyInterestSetting?
 
   @@unique([startupId, name])
   @@index([startupId])

@@ -22,6 +22,7 @@ import {
   Upload,
   ChevronLeft,
   ChevronRight,
+  HandCoins,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
 import Image from 'next/image';
@@ -47,6 +48,7 @@ export default function Sidebar({ collapsed = false, onToggleCollapse }: Sidebar
     { name: 'AI Assistant', href: '/ai-assistant', icon: Sparkles },
     { name: 'Compliance Hub', href: '/compliance-hub', icon: Calculator },
     { name: 'Banking & Payments', href: '/banking-payments', icon: CreditCard },
+    { name: 'Bills', href: '/bills', icon: HandCoins },
     { name: 'Smart Alerts', href: '/alerts', icon: AlertTriangle },
     { name: 'Financial Dashboard', href: '/financial-dashboard', icon: BarChart2 },
     { name: 'Products', href: '/products', icon: Package },

@@ -1,0 +1,238 @@
+import { Router, Request, Response } from 'express';
+import { authenticateToken } from '../middleware/auth';
+import {
+  createBill,
+  settleBill,
+  listBills,
+  getBillAgingReport,
+  getOutstandingByLedger,
+} from '../services/bills';
+import { BillType, BillStatus } from '@prisma/client';
+
+const router = Router();
+
+router.use(authenticateToken);
+
+// Create a new bill
+router.post('/', async (req: Request, res: Response) => {
+  try {
+    const startupId = req.user?.startupId;
+    if (!startupId) {
+      return res.status(400).json({ success: false, message: 'Startup context is required' });
+    }
+
+    const {
+      billType,
+      billNumber,
+      ledgerName,
+      ledgerCode,
+      billDate,
+      dueDate,
+      originalAmount,
+      reference,
+      narration,
+      voucherId,
+      voucherEntryId,
+    } = req.body;
+
+    if (!billType || !billNumber || !ledgerName || !originalAmount) {
+      return res.status(400).json({
+        success: false,
+        message: 'billType, billNumber, ledgerName, and originalAmount are required',
+      });
+    }
+
+    if (!(billType in BillType)) {
+      return res.status(400).json({ success: false, message: 'Invalid bill type' });
+    }
+
+    const bill = await createBill(startupId, {
+      billType,
+      billNumber,
+      ledgerName,
+      ledgerCode,
+      billDate,
+      dueDate,
+      originalAmount: Number(originalAmount),
+      reference,
+      narration,
+      voucherId,
+      voucherEntryId,
+    });
+
+    return res.status(201).json({
+      success: true,
+      data: bill,
+      message: 'Bill created successfully',
+    });
+  } catch (error) {
+    console.error('Create bill error:', error);
+    return res.status(400).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to create bill',
+    });
+  }
+});
+
+// List bills with filters
+router.get('/', async (req: Request, res: Response) => {
+  try {
+    const startupId = req.user?.startupId;
+    if (!startupId) {
+      return res.status(400).json({ success: false, message: 'Startup context is required' });
+    }
+
+    const {
+      billType,
+      status,
+      ledgerName,
+      fromDate,
+      toDate,
+      dueDateFrom,
+      dueDateTo,
+      limit,
+      offset,
+    } = req.query;
+
+    const filters: any = {};
+    if (billType && billType in BillType) {
+      filters.billType = billType as BillType;
+    }
+    if (status && status in BillStatus) {
+      filters.status = status as BillStatus;
+    }
+    if (ledgerName) {
+      filters.ledgerName = ledgerName as string;
+    }
+    if (fromDate) {
+      filters.fromDate = fromDate as string;
+    }
+    if (toDate) {
+      filters.toDate = toDate as string;
+    }
+    if (dueDateFrom) {
+      filters.dueDateFrom = dueDateFrom as string;
+    }
+    if (dueDateTo) {
+      filters.dueDateTo = dueDateTo as string;
+    }
+    if (limit) {
+      filters.limit = parseInt(limit as string, 10);
+    }
+    if (offset) {
+      filters.offset = parseInt(offset as string, 10);
+    }
+
+    const result = await listBills(startupId, filters);
+
+    return res.json({
+      success: true,
+      data: result.bills,
+      total: result.total,
+    });
+  } catch (error) {
+    console.error('List bills error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch bills',
+    });
+  }
+});
+
+// Settle a bill
+router.post('/:billId/settle', async (req: Request, res: Response) => {
+  try {
+    const startupId = req.user?.startupId;
+    if (!startupId) {
+      return res.status(400).json({ success: false, message: 'Startup context is required' });
+    }
+
+    const { billId } = req.params;
+    const { voucherId, voucherEntryId, settlementAmount, reference, remarks } = req.body;
+
+    if (!voucherId || !voucherEntryId || !settlementAmount) {
+      return res.status(400).json({
+        success: false,
+        message: 'voucherId, voucherEntryId, and settlementAmount are required',
+      });
+    }
+
+    const result = await settleBill(startupId, {
+      billId,
+      voucherId,
+      voucherEntryId,
+      settlementAmount: Number(settlementAmount),
+      reference,
+      remarks,
+    });
+
+    return res.json({
+      success: true,
+      data: result,
+      message: 'Bill settled successfully',
+    });
+  } catch (error) {
+    console.error('Settle bill error:', error);
+    return res.status(400).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to settle bill',
+    });
+  }
+});
+
+// Get aging report
+router.get('/aging', async (req: Request, res: Response) => {
+  try {
+    const startupId = req.user?.startupId;
+    if (!startupId) {
+      return res.status(400).json({ success: false, message: 'Startup context is required' });
+    }
+
+    const { billType } = req.query;
+    const report = await getBillAgingReport(
+      startupId,
+      billType && billType in BillType ? (billType as BillType) : undefined
+    );
+
+    return res.json({
+      success: true,
+      data: report,
+    });
+  } catch (error) {
+    console.error('Get aging report error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to generate aging report',
+    });
+  }
+});
+
+// Get outstanding by ledger
+router.get('/outstanding-by-ledger', async (req: Request, res: Response) => {
+  try {
+    const startupId = req.user?.startupId;
+    if (!startupId) {
+      return res.status(400).json({ success: false, message: 'Startup context is required' });
+    }
+
+    const { billType } = req.query;
+    const result = await getOutstandingByLedger(
+      startupId,
+      billType && billType in BillType ? (billType as BillType) : undefined
+    );
+
+    return res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error('Get outstanding by ledger error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch outstanding by ledger',
+    });
+  }
+});
+
+export default router;
+
