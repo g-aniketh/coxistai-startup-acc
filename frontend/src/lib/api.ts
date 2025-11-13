@@ -650,6 +650,170 @@ export interface GstLedgerMappingInput {
   description?: string;
 }
 
+// ============================================================================
+// AUDIT LOG TYPES
+// ============================================================================
+
+export enum AuditAction {
+  CREATE = 'CREATE',
+  UPDATE = 'UPDATE',
+  DELETE = 'DELETE',
+  VIEW = 'VIEW',
+  EXPORT = 'EXPORT',
+  APPROVE = 'APPROVE',
+  REJECT = 'REJECT',
+  CANCEL = 'CANCEL',
+}
+
+export enum AuditEntityType {
+  VOUCHER = 'VOUCHER',
+  VOUCHER_ENTRY = 'VOUCHER_ENTRY',
+  BILL = 'BILL',
+  BILL_SETTLEMENT = 'BILL_SETTLEMENT',
+  COMPANY_PROFILE = 'COMPANY_PROFILE',
+  COMPANY_ADDRESS = 'COMPANY_ADDRESS',
+  FISCAL_CONFIG = 'FISCAL_CONFIG',
+  SECURITY_CONFIG = 'SECURITY_CONFIG',
+  CURRENCY_CONFIG = 'CURRENCY_CONFIG',
+  FEATURE_TOGGLE = 'FEATURE_TOGGLE',
+  VOUCHER_TYPE = 'VOUCHER_TYPE',
+  VOUCHER_NUMBERING_SERIES = 'VOUCHER_NUMBERING_SERIES',
+  COST_CATEGORY = 'COST_CATEGORY',
+  COST_CENTER = 'COST_CENTER',
+  INTEREST_PROFILE = 'INTEREST_PROFILE',
+  PARTY_INTEREST_SETTING = 'PARTY_INTEREST_SETTING',
+  GST_REGISTRATION = 'GST_REGISTRATION',
+  GST_TAX_RATE = 'GST_TAX_RATE',
+  GST_LEDGER_MAPPING = 'GST_LEDGER_MAPPING',
+  PARTY_MASTER = 'PARTY_MASTER',
+  PRODUCT = 'PRODUCT',
+  TRANSACTION = 'TRANSACTION',
+  USER = 'USER',
+  ROLE = 'ROLE',
+  PERMISSION = 'PERMISSION',
+}
+
+export interface AuditLog {
+  id: string;
+  startupId: string;
+  userId?: string | null;
+  entityType: AuditEntityType;
+  entityId: string;
+  action: AuditAction;
+  description?: string | null;
+  oldValues?: any;
+  newValues?: any;
+  metadata?: any;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  createdAt: string;
+  user?: {
+    id: string;
+    email: string;
+    firstName?: string | null;
+    lastName?: string | null;
+  } | null;
+}
+
+export interface AuditLogFilters {
+  entityType?: AuditEntityType;
+  entityId?: string;
+  action?: AuditAction;
+  userId?: string;
+  fromDate?: string;
+  toDate?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface AuditLogSummary {
+  totalLogs: number;
+  byAction: Array<{ action: AuditAction; count: number }>;
+  byEntityType: Array<{ entityType: AuditEntityType; count: number }>;
+  recentActivity: AuditLog[];
+}
+
+// ============================================================================
+// ROLE MANAGEMENT TYPES
+// ============================================================================
+
+export interface Permission {
+  id: string;
+  action: string;
+  subject: string;
+  description?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    roles: number;
+  };
+}
+
+export interface PermissionInput {
+  action: string;
+  subject: string;
+  description?: string;
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  description?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  permissions: Array<{
+    id: string;
+    action: string;
+    subject: string;
+    description?: string | null;
+  }>;
+  _count?: {
+    users: number;
+  };
+  users?: Array<{
+    user: {
+      id: string;
+      email: string;
+      firstName?: string | null;
+      lastName?: string | null;
+      isActive: boolean;
+    };
+  }>;
+}
+
+export interface RoleInput {
+  name: string;
+  description?: string;
+  permissionIds?: string[];
+}
+
+export interface UserRole {
+  userId: string;
+  roleId: string;
+  assignedAt: string;
+  role: Role;
+  user: {
+    id: string;
+    email: string;
+    firstName?: string | null;
+    lastName?: string | null;
+  };
+}
+
+export interface UserWithRoles {
+  id: string;
+  email: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  roles: Array<{
+    role: Role;
+    assignedAt: string;
+  }>;
+}
+
 export interface Startup {
   id: string;
   name: string;
@@ -1641,6 +1805,113 @@ export const apiClient = {
   import: {
     tally: async (importData: any): Promise<ApiResponse<any>> => {
       const response = await api.post('/import/tally', importData);
+      return response.data;
+    },
+  },
+
+  // ============================================================================
+  // AUDIT LOG
+  // ============================================================================
+
+  audit: {
+    list: async (filters?: AuditLogFilters): Promise<ApiResponse<{ data: AuditLog[]; total: number }>> => {
+      const response = await api.get('/audit', { params: filters });
+      return response.data;
+    },
+
+    getEntityLog: async (
+      entityType: AuditEntityType,
+      entityId: string
+    ): Promise<ApiResponse<AuditLog[]>> => {
+      const response = await api.get(`/audit/entity/${entityType}/${entityId}`);
+      return response.data;
+    },
+
+    getSummary: async (fromDate?: string, toDate?: string): Promise<ApiResponse<AuditLogSummary>> => {
+      const response = await api.get('/audit/summary', { params: { fromDate, toDate } });
+      return response.data;
+    },
+  },
+
+  // ============================================================================
+  // ROLE MANAGEMENT
+  // ============================================================================
+
+  roles: {
+    list: async (): Promise<ApiResponse<Role[]>> => {
+      const response = await api.get('/admin/roles');
+      return response.data;
+    },
+
+    get: async (roleId: string): Promise<ApiResponse<Role>> => {
+      const response = await api.get(`/admin/roles/${roleId}`);
+      return response.data;
+    },
+
+    create: async (data: RoleInput): Promise<ApiResponse<Role>> => {
+      const response = await api.post('/admin/roles', data);
+      return response.data;
+    },
+
+    update: async (roleId: string, data: Partial<RoleInput>): Promise<ApiResponse<Role>> => {
+      const response = await api.put(`/admin/roles/${roleId}`, data);
+      return response.data;
+    },
+
+    delete: async (roleId: string): Promise<ApiResponse> => {
+      const response = await api.delete(`/admin/roles/${roleId}`);
+      return response.data;
+    },
+  },
+
+  permissions: {
+    list: async (): Promise<ApiResponse<Permission[]>> => {
+      const response = await api.get('/admin/permissions');
+      return response.data;
+    },
+
+    get: async (permissionId: string): Promise<ApiResponse<Permission>> => {
+      const response = await api.get(`/admin/permissions/${permissionId}`);
+      return response.data;
+    },
+
+    create: async (data: PermissionInput): Promise<ApiResponse<Permission>> => {
+      const response = await api.post('/admin/permissions', data);
+      return response.data;
+    },
+
+    update: async (
+      permissionId: string,
+      data: Partial<PermissionInput>
+    ): Promise<ApiResponse<Permission>> => {
+      const response = await api.put(`/admin/permissions/${permissionId}`, data);
+      return response.data;
+    },
+
+    delete: async (permissionId: string): Promise<ApiResponse> => {
+      const response = await api.delete(`/admin/permissions/${permissionId}`);
+      return response.data;
+    },
+  },
+
+  userRoles: {
+    list: async (): Promise<ApiResponse<UserWithRoles[]>> => {
+      const response = await api.get('/admin/users');
+      return response.data;
+    },
+
+    assign: async (userId: string, roleId: string): Promise<ApiResponse<UserRole>> => {
+      const response = await api.post(`/admin/users/${userId}/roles`, { roleId });
+      return response.data;
+    },
+
+    remove: async (userId: string, roleId: string): Promise<ApiResponse> => {
+      const response = await api.delete(`/admin/users/${userId}/roles/${roleId}`);
+      return response.data;
+    },
+
+    set: async (userId: string, roleIds: string[]): Promise<ApiResponse<UserWithRoles>> => {
+      const response = await api.put(`/admin/users/${userId}/roles`, { roleIds });
       return response.data;
     },
   },

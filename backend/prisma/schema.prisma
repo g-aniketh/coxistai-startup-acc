@@ -49,6 +49,7 @@ model Startup {
   gstRegistrations GstRegistration[]
   gstTaxRates      GstTaxRate[]
   gstLedgerMappings GstLedgerMapping[]
+  auditLogs        AuditLog[]
 }
 
 model User {
@@ -64,7 +65,8 @@ model User {
   startupId String
   startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
 
-  roles UserRole[]
+  roles     UserRole[]
+  auditLogs AuditLog[]
 }
 
 model Role {
@@ -957,4 +959,72 @@ model ImportHistory {
 
   @@index([startupId])
   @@index([createdAt])
+}
+
+// ============================================================================
+// AUDIT TRAIL / EDIT LOG MODELS
+// ============================================================================
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  VIEW
+  EXPORT
+  APPROVE
+  REJECT
+  CANCEL
+}
+
+enum AuditEntityType {
+  VOUCHER
+  VOUCHER_ENTRY
+  BILL
+  BILL_SETTLEMENT
+  COMPANY_PROFILE
+  COMPANY_ADDRESS
+  FISCAL_CONFIG
+  SECURITY_CONFIG
+  CURRENCY_CONFIG
+  FEATURE_TOGGLE
+  VOUCHER_TYPE
+  VOUCHER_NUMBERING_SERIES
+  COST_CATEGORY
+  COST_CENTER
+  INTEREST_PROFILE
+  PARTY_INTEREST_SETTING
+  GST_REGISTRATION
+  GST_TAX_RATE
+  GST_LEDGER_MAPPING
+  PARTY_MASTER
+  PRODUCT
+  TRANSACTION
+  USER
+  ROLE
+  PERMISSION
+}
+
+model AuditLog {
+  id            String          @id @default(cuid())
+  startupId     String
+  userId        String?         // User who performed the action
+  entityType    AuditEntityType
+  entityId      String          // ID of the entity that was changed
+  action        AuditAction
+  description   String?         // Human-readable description
+  oldValues     Json?           // Previous state (for UPDATE/DELETE)
+  newValues     Json?           // New state (for CREATE/UPDATE)
+  metadata      Json?           // Additional context (IP address, user agent, etc.)
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime        @default(now())
+
+  startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([startupId, entityType, entityId])
+  @@index([startupId, userId])
+  @@index([startupId, createdAt])
+  @@index([startupId, action])
+  @@index([entityType, entityId])
 }

@@ -24,6 +24,8 @@ import {
   ChevronLeft,
   ChevronRight,
   HandCoins,
+  History,
+  Shield,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
 import Image from 'next/image';
@@ -53,6 +55,8 @@ export default function Sidebar({ collapsed = false, onToggleCollapse }: Sidebar
     { name: 'Bills', href: '/bills', icon: HandCoins },
     { name: 'GST', href: '/gst', icon: Globe },
     { name: 'Cost Management', href: '/cost-management', icon: Settings },
+    { name: 'Audit Log', href: '/audit-log', icon: History },
+    { name: 'Role Management', href: '/role-management', icon: Shield },
     { name: 'Smart Alerts', href: '/alerts', icon: AlertTriangle },
     { name: 'Financial Dashboard', href: '/financial-dashboard', icon: BarChart2 },
     { name: 'Products', href: '/products', icon: Package },

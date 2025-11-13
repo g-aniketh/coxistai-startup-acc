@@ -21,10 +21,10 @@
 - [x] Bill-wise receivables/payables tracking (bills, settlements, aging views, UI workflows)
 - [x] Cost centre/category hierarchy and interest calculation settings (hierarchical categories, cost centers, interest profiles, party-level interest assignments)
 - [x] GST/statutory configuration (multi-registration, tax rates, ledger mappings, UI workflows)
+- [x] Edit log/audit trail service (comprehensive audit logging for all entity changes, filtering, summary views, UI)
+- [x] Role management UI (comprehensive role and permission management, user role assignment, CRUD operations)
 
 ## 🚧 Feature Parity Gaps
-- [ ] Edit log/audit trail service capturing master & voucher changes
-- [ ] Role management UI for admins to assign granular permissions
 - [ ] Enhanced Tally import/export (multi-series vouchers, GST data, Excel templates)
 - [ ] AI workflows tied to real voucher data (alerts, scenarios, variance detection)
 
