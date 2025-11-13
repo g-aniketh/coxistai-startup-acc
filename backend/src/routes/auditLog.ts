@@ -1,22 +1,24 @@
-import { Router, Response } from 'express';
-import { authenticateToken, AuthRequest } from '../middleware/auth';
+import { Router, Response } from "express";
+import { authenticateToken, AuthRequest } from "../middleware/auth";
 import {
   listAuditLogs,
   getEntityAuditLog,
   getAuditLogSummary,
-} from '../services/auditLog';
-import { AuditAction, AuditEntityType } from '@prisma/client';
+} from "../services/auditLog";
+import { AuditAction, AuditEntityType } from "@prisma/client";
 
 const router = Router();
 
 router.use(authenticateToken);
 
 // List audit logs with filters
-router.get('/', async (req: AuthRequest, res: Response) => {
+router.get("/", async (req: AuthRequest, res: Response) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: 'Startup context is required' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const {
@@ -31,13 +33,17 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     } = req.query;
 
     const filters: any = {};
-    if (entityType && entityType in AuditEntityType) {
+    if (
+      entityType &&
+      typeof entityType === "string" &&
+      entityType in AuditEntityType
+    ) {
       filters.entityType = entityType as AuditEntityType;
     }
     if (entityId) {
       filters.entityId = entityId as string;
     }
-    if (action && action in AuditAction) {
+    if (action && typeof action === "string" && action in AuditAction) {
       filters.action = action as AuditAction;
     }
     if (userId) {
@@ -64,53 +70,66 @@ router.get('/', async (req: AuthRequest, res: Response) => {
       total: result.total,
     });
   } catch (error) {
-    console.error('List audit logs error:', error);
+    console.error("List audit logs error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : 'Failed to fetch audit logs',
+      message:
+        error instanceof Error ? error.message : "Failed to fetch audit logs",
     });
   }
 });
 
 // Get audit log for a specific entity
-router.get('/entity/:entityType/:entityId', async (req: AuthRequest, res: Response) => {
-  try {
-    const startupId = req.user?.startupId;
-    if (!startupId) {
-      return res.status(400).json({ success: false, message: 'Startup context is required' });
+router.get(
+  "/entity/:entityType/:entityId",
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const startupId = req.user?.startupId;
+      if (!startupId) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Startup context is required" });
+      }
+
+      const { entityType, entityId } = req.params;
+
+      if (!(entityType in AuditEntityType)) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid entity type" });
+      }
+
+      const logs = await getEntityAuditLog(
+        startupId,
+        entityType as AuditEntityType,
+        entityId
+      );
+
+      return res.json({
+        success: true,
+        data: logs,
+      });
+    } catch (error) {
+      console.error("Get entity audit log error:", error);
+      return res.status(500).json({
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch entity audit log",
+      });
     }
-
-    const { entityType, entityId } = req.params;
-
-    if (!(entityType in AuditEntityType)) {
-      return res.status(400).json({ success: false, message: 'Invalid entity type' });
-    }
-
-    const logs = await getEntityAuditLog(
-      startupId,
-      entityType as AuditEntityType,
-      entityId
-    );
-
-    return res.json({
-      success: true,
-      data: logs,
-    });
-  } catch (error) {
-    console.error('Get entity audit log error:', error);
-    return res.status(500).json({
-      success: false,
-      message: error instanceof Error ? error.message : 'Failed to fetch entity audit log',
-    });
   }
-});
+);
 
 // Get audit log summary
-router.get('/summary', async (req: AuthRequest, res: Response) => {
+router.get("/summary", async (req: AuthRequest, res: Response) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: 'Startup context is required' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const { fromDate, toDate } = req.query;
@@ -126,13 +145,15 @@ router.get('/summary', async (req: AuthRequest, res: Response) => {
       data: summary,
     });
   } catch (error) {
-    console.error('Get audit log summary error:', error);
+    console.error("Get audit log summary error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : 'Failed to fetch audit log summary',
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch audit log summary",
     });
   }
 });
 
 export default router;
-

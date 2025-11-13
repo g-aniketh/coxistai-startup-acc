@@ -49,10 +49,10 @@ router.get('/roles/:roleId', async (req: AuthRequest, res: Response) => {
     if (!role) {
       return res.status(404).json({ success: false, message: 'Role not found' });
     }
-    res.json({ success: true, data: role });
+    return res.json({ success: true, data: role });
   } catch (error) {
     console.error('Get role error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error instanceof Error ? error.message : 'Failed to fetch role',
     });
@@ -129,10 +129,10 @@ router.get('/permissions/:permissionId', async (req: AuthRequest, res: Response)
     if (!permission) {
       return res.status(404).json({ success: false, message: 'Permission not found' });
     }
-    res.json({ success: true, data: permission });
+    return res.json({ success: true, data: permission });
   } catch (error) {
     console.error('Get permission error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error instanceof Error ? error.message : 'Failed to fetch permission',
     });
@@ -213,10 +213,10 @@ router.post('/users/:userId/roles', async (req: AuthRequest, res: Response) => {
     }
 
     const userRole = await assignRoleToUser(userId, roleId);
-    res.status(201).json({ success: true, data: userRole });
+    return res.status(201).json({ success: true, data: userRole });
   } catch (error) {
     console.error('Assign role to user error:', error);
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       message: error instanceof Error ? error.message : 'Failed to assign role to user',
     });
@@ -249,10 +249,10 @@ router.put('/users/:userId/roles', async (req: AuthRequest, res: Response) => {
     }
 
     const user = await setUserRoles(userId, roleIds);
-    res.json({ success: true, data: user });
+    return res.json({ success: true, data: user });
   } catch (error) {
     console.error('Set user roles error:', error);
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       message: error instanceof Error ? error.message : 'Failed to set user roles',
     });

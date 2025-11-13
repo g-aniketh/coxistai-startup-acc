@@ -1,5 +1,5 @@
-import { Prisma, AuditAction, AuditEntityType } from '@prisma/client';
-import { prisma } from '../lib/prisma';
+import { Prisma, AuditAction, AuditEntityType } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 
 export interface CreateAuditLogInput {
   startupId: string;
@@ -40,7 +40,11 @@ export const createAuditLog = async (input: CreateAuditLogInput) => {
   });
 
   // If edit log is disabled, skip logging (except for critical actions)
-  const criticalActions = [AuditAction.DELETE, AuditAction.APPROVE, AuditAction.REJECT];
+  const criticalActions: AuditAction[] = [
+    AuditAction.DELETE,
+    AuditAction.APPROVE,
+    AuditAction.REJECT,
+  ];
   if (!fiscalConfig?.enableEditLog && !criticalActions.includes(action)) {
     return null;
   }
@@ -134,7 +138,7 @@ export const listAuditLogs = async (
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: limit,
       skip: offset,
     }),
@@ -168,7 +172,7 @@ export const getEntityAuditLog = async (
         },
       },
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: "desc" },
   });
 };
 
@@ -194,42 +198,44 @@ export const getAuditLogSummary = async (
     }
   }
 
-  const [totalLogs, byAction, byEntityType, recentActivity] = await Promise.all([
-    prisma.auditLog.count({ where }),
-    prisma.auditLog.groupBy({
-      by: ['action'],
-      where,
-      _count: { action: true },
-    }),
-    prisma.auditLog.groupBy({
-      by: ['entityType'],
-      where,
-      _count: { entityType: true },
-    }),
-    prisma.auditLog.findMany({
-      where,
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
+  const [totalLogs, byAction, byEntityType, recentActivity] = await Promise.all(
+    [
+      prisma.auditLog.count({ where }),
+      prisma.auditLog.groupBy({
+        by: ["action"],
+        where,
+        _count: { action: true },
+      }),
+      prisma.auditLog.groupBy({
+        by: ["entityType"],
+        where,
+        _count: { entityType: true },
+      }),
+      prisma.auditLog.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 10,
-    }),
-  ]);
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      }),
+    ]
+  );
 
   return {
     totalLogs,
-    byAction: byAction.map((item) => ({
+    byAction: byAction.map(item => ({
       action: item.action,
       count: item._count.action,
     })),
-    byEntityType: byEntityType.map((item) => ({
+    byEntityType: byEntityType.map(item => ({
       entityType: item.entityType,
       count: item._count.entityType,
     })),
@@ -240,9 +246,15 @@ export const getAuditLogSummary = async (
 /**
  * Helper function to extract changed fields between old and new objects
  */
-export const getChangedFields = (oldValues: any, newValues: any): Record<string, { old: any; new: any }> => {
+export const getChangedFields = (
+  oldValues: any,
+  newValues: any
+): Record<string, { old: any; new: any }> => {
   const changes: Record<string, { old: any; new: any }> = {};
-  const allKeys = new Set([...Object.keys(oldValues || {}), ...Object.keys(newValues || {})]);
+  const allKeys = new Set([
+    ...Object.keys(oldValues || {}),
+    ...Object.keys(newValues || {}),
+  ]);
 
   for (const key of allKeys) {
     const oldVal = oldValues?.[key];
@@ -256,4 +268,3 @@ export const getChangedFields = (oldValues: any, newValues: any): Record<string,
 
   return changes;
 };
-

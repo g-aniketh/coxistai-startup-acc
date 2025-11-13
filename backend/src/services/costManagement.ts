@@ -1,5 +1,5 @@
-import { Prisma } from '@prisma/client';
-import { prisma } from '../lib/prisma';
+import { Prisma } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 
 // ------------------------------
 // Cost Category / Cost Center
@@ -19,14 +19,14 @@ export interface CostCenterInput {
   description?: string;
   parentId?: string | null;
   isBillable?: boolean;
-  status?: 'active' | 'inactive';
+  status?: "active" | "inactive";
 }
 
 const buildCategoryTree = (categories: Array<any>) => {
   const map = new Map<string, any>();
   const roots: any[] = [];
 
-  categories.forEach((category) => {
+  categories.forEach(category => {
     map.set(category.id, {
       id: category.id,
       name: category.name,
@@ -53,7 +53,7 @@ const buildCategoryTree = (categories: Array<any>) => {
     });
   });
 
-  categories.forEach((category) => {
+  categories.forEach(category => {
     const node = map.get(category.id);
     if (!node) {
       return;
@@ -83,10 +83,10 @@ export const getCostCategoryTree = async (startupId: string) => {
         include: {
           parent: { select: { id: true, name: true } },
         },
-        orderBy: [{ name: 'asc' }],
+        orderBy: [{ name: "asc" }],
       },
     },
-    orderBy: [{ isPrimary: 'desc' }, { name: 'asc' }],
+    orderBy: [{ isPrimary: "desc" }, { name: "asc" }],
   });
 
   return buildCategoryTree(categories);
@@ -99,7 +99,7 @@ export const createCostCategory = async (
   const { name, description, parentId, isPrimary } = input;
 
   if (!name?.trim()) {
-    throw new Error('Category name is required');
+    throw new Error("Category name is required");
   }
 
   if (parentId) {
@@ -107,7 +107,7 @@ export const createCostCategory = async (
       where: { id: parentId, startupId },
     });
     if (!parent) {
-      throw new Error('Parent category not found');
+      throw new Error("Parent category not found");
     }
   }
 
@@ -117,7 +117,7 @@ export const createCostCategory = async (
     });
 
     if (existingPrimary) {
-      throw new Error('Primary cost category already exists');
+      throw new Error("Primary cost category already exists");
     }
   }
 
@@ -142,7 +142,7 @@ export const updateCostCategory = async (
   });
 
   if (!category) {
-    throw new Error('Cost category not found');
+    throw new Error("Cost category not found");
   }
 
   if (input.parentId) {
@@ -150,11 +150,11 @@ export const updateCostCategory = async (
       where: { id: input.parentId, startupId },
     });
     if (!parent) {
-      throw new Error('Parent category not found');
+      throw new Error("Parent category not found");
     }
 
     if (input.parentId === categoryId) {
-      throw new Error('Category cannot be its own parent');
+      throw new Error("Category cannot be its own parent");
     }
   }
 
@@ -164,7 +164,7 @@ export const updateCostCategory = async (
     });
 
     if (existingPrimary) {
-      throw new Error('Primary cost category already exists');
+      throw new Error("Primary cost category already exists");
     }
   }
 
@@ -177,29 +177,36 @@ export const updateCostCategory = async (
           ? input.description?.trim() || null
           : category.description,
       parentId:
-        input.parentId !== undefined ? input.parentId || null : category.parentId,
+        input.parentId !== undefined
+          ? input.parentId || null
+          : category.parentId,
       isPrimary:
-        input.isPrimary !== undefined ? Boolean(input.isPrimary) : category.isPrimary,
+        input.isPrimary !== undefined
+          ? Boolean(input.isPrimary)
+          : category.isPrimary,
     },
   });
 };
 
-export const deleteCostCategory = async (startupId: string, categoryId: string) => {
+export const deleteCostCategory = async (
+  startupId: string,
+  categoryId: string
+) => {
   const category = await prisma.costCategory.findFirst({
     where: { id: categoryId, startupId },
     include: { children: true, costCenters: true },
   });
 
   if (!category) {
-    throw new Error('Cost category not found');
+    throw new Error("Cost category not found");
   }
 
   if (category.children.length > 0) {
-    throw new Error('Cannot delete category with child categories');
+    throw new Error("Cannot delete category with child categories");
   }
 
   if (category.costCenters.length > 0) {
-    throw new Error('Cannot delete category with cost centres');
+    throw new Error("Cannot delete category with cost centres");
   }
 
   const usageCount = await prisma.voucherEntry.count({
@@ -210,11 +217,11 @@ export const deleteCostCategory = async (startupId: string, categoryId: string) 
   });
 
   if (usageCount > 0) {
-    throw new Error('Cannot delete category that is linked to vouchers');
+    throw new Error("Cannot delete category that is linked to vouchers");
   }
 
   if (category.isPrimary) {
-    throw new Error('Primary category cannot be deleted');
+    throw new Error("Primary category cannot be deleted");
   }
 
   await prisma.costCategory.delete({ where: { id: categoryId } });
@@ -236,7 +243,7 @@ export const listCostCenters = async (
       category: { select: { id: true, name: true } },
       parent: { select: { id: true, name: true } },
     },
-    orderBy: [{ name: 'asc' }],
+    orderBy: [{ name: "asc" }],
   });
 };
 
@@ -244,10 +251,11 @@ export const createCostCenter = async (
   startupId: string,
   input: CostCenterInput
 ) => {
-  const { categoryId, name, code, description, parentId, isBillable, status } = input;
+  const { categoryId, name, code, description, parentId, isBillable, status } =
+    input;
 
   if (!name?.trim()) {
-    throw new Error('Cost center name is required');
+    throw new Error("Cost center name is required");
   }
 
   const category = await prisma.costCategory.findFirst({
@@ -255,7 +263,7 @@ export const createCostCenter = async (
   });
 
   if (!category) {
-    throw new Error('Cost category not found');
+    throw new Error("Cost category not found");
   }
 
   if (parentId) {
@@ -263,7 +271,7 @@ export const createCostCenter = async (
       where: { id: parentId, startupId },
     });
     if (!parent) {
-      throw new Error('Parent cost center not found');
+      throw new Error("Parent cost center not found");
     }
   }
 
@@ -276,7 +284,7 @@ export const createCostCenter = async (
       description: description?.trim() || null,
       parentId: parentId || null,
       isBillable: Boolean(isBillable),
-      status: status ?? 'active',
+      status: status ?? "active",
     },
   });
 };
@@ -291,7 +299,7 @@ export const updateCostCenter = async (
   });
 
   if (!costCenter) {
-    throw new Error('Cost center not found');
+    throw new Error("Cost center not found");
   }
 
   if (input.categoryId) {
@@ -299,20 +307,20 @@ export const updateCostCenter = async (
       where: { id: input.categoryId, startupId },
     });
     if (!category) {
-      throw new Error('Cost category not found');
+      throw new Error("Cost category not found");
     }
   }
 
   if (input.parentId) {
     if (input.parentId === centerId) {
-      throw new Error('Cost center cannot be its own parent');
+      throw new Error("Cost center cannot be its own parent");
     }
 
     const parent = await prisma.costCenter.findFirst({
       where: { id: input.parentId, startupId },
     });
     if (!parent) {
-      throw new Error('Parent cost center not found');
+      throw new Error("Parent cost center not found");
     }
   }
 
@@ -322,17 +330,19 @@ export const updateCostCenter = async (
       categoryId: input.categoryId ?? costCenter.categoryId,
       name: input.name?.trim() ?? costCenter.name,
       code:
-        input.code !== undefined
-          ? input.code?.trim() || null
-          : costCenter.code,
+        input.code !== undefined ? input.code?.trim() || null : costCenter.code,
       description:
         input.description !== undefined
           ? input.description?.trim() || null
           : costCenter.description,
       parentId:
-        input.parentId !== undefined ? input.parentId || null : costCenter.parentId,
+        input.parentId !== undefined
+          ? input.parentId || null
+          : costCenter.parentId,
       isBillable:
-        input.isBillable !== undefined ? Boolean(input.isBillable) : costCenter.isBillable,
+        input.isBillable !== undefined
+          ? Boolean(input.isBillable)
+          : costCenter.isBillable,
       status: input.status ?? costCenter.status,
     },
     include: {
@@ -348,7 +358,7 @@ export const deleteCostCenter = async (startupId: string, centerId: string) => {
   });
 
   if (!costCenter) {
-    throw new Error('Cost center not found');
+    throw new Error("Cost center not found");
   }
 
   const usageCount = await prisma.voucherEntry.count({
@@ -359,7 +369,7 @@ export const deleteCostCenter = async (startupId: string, centerId: string) => {
   });
 
   if (usageCount > 0) {
-    throw new Error('Cannot delete cost center that is linked to vouchers');
+    throw new Error("Cannot delete cost center that is linked to vouchers");
   }
 
   const hasChildren = await prisma.costCenter.count({
@@ -367,7 +377,7 @@ export const deleteCostCenter = async (startupId: string, centerId: string) => {
   });
 
   if (hasChildren > 0) {
-    throw new Error('Cannot delete cost center with child cost centers');
+    throw new Error("Cannot delete cost center with child cost centers");
   }
 
   await prisma.costCenter.delete({ where: { id: centerId } });
@@ -382,9 +392,15 @@ export const deleteCostCenter = async (startupId: string, centerId: string) => {
 export interface InterestProfileInput {
   name: string;
   description?: string;
-  calculationMode?: 'SIMPLE' | 'COMPOUND';
+  calculationMode?: "SIMPLE" | "COMPOUND";
   rate: number;
-  compoundingFrequency?: 'NONE' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+  compoundingFrequency?:
+    | "NONE"
+    | "DAILY"
+    | "WEEKLY"
+    | "MONTHLY"
+    | "QUARTERLY"
+    | "YEARLY";
   gracePeriodDays?: number | null;
   calculateFromDueDate?: boolean;
   penalRate?: number | null;
@@ -411,7 +427,7 @@ export const listInterestProfiles = async (startupId: string) => {
         },
       },
     },
-    orderBy: [{ name: 'asc' }],
+    orderBy: [{ name: "asc" }],
   });
 };
 
@@ -432,12 +448,12 @@ export const createInterestProfile = async (
   } = input;
 
   if (!name?.trim()) {
-    throw new Error('Interest profile name is required');
+    throw new Error("Interest profile name is required");
   }
 
   const numericRate = new Prisma.Decimal(rate ?? 0);
   if (numericRate.lt(0)) {
-    throw new Error('Interest rate cannot be negative');
+    throw new Error("Interest rate cannot be negative");
   }
 
   return prisma.interestProfile.create({
@@ -445,12 +461,14 @@ export const createInterestProfile = async (
       startupId,
       name: name.trim(),
       description: description?.trim() || null,
-      calculationMode: calculationMode ?? 'SIMPLE',
+      calculationMode: calculationMode ?? "SIMPLE",
       rate: numericRate,
-      compoundingFrequency: compoundingFrequency ?? 'NONE',
+      compoundingFrequency: compoundingFrequency ?? "NONE",
       gracePeriodDays: gracePeriodDays ?? 0,
       calculateFromDueDate: calculateFromDueDate ?? true,
-      penalRate: penalRate ? new Prisma.Decimal(penalRate) : new Prisma.Decimal(0),
+      penalRate: penalRate
+        ? new Prisma.Decimal(penalRate)
+        : new Prisma.Decimal(0),
       penalGraceDays: penalGraceDays ?? 0,
     },
   });
@@ -466,14 +484,14 @@ export const updateInterestProfile = async (
   });
 
   if (!profile) {
-    throw new Error('Interest profile not found');
+    throw new Error("Interest profile not found");
   }
 
   const data: any = {};
 
   if (input.name !== undefined) {
     if (!input.name.trim()) {
-      throw new Error('Interest profile name cannot be empty');
+      throw new Error("Interest profile name cannot be empty");
     }
     data.name = input.name.trim();
   }
@@ -489,7 +507,7 @@ export const updateInterestProfile = async (
   if (input.rate !== undefined) {
     const numericRate = new Prisma.Decimal(input.rate);
     if (numericRate.lt(0)) {
-      throw new Error('Interest rate cannot be negative');
+      throw new Error("Interest rate cannot be negative");
     }
     data.rate = numericRate;
   }
@@ -500,7 +518,7 @@ export const updateInterestProfile = async (
 
   if (input.gracePeriodDays !== undefined) {
     if (input.gracePeriodDays !== null && input.gracePeriodDays < 0) {
-      throw new Error('Grace period cannot be negative');
+      throw new Error("Grace period cannot be negative");
     }
     data.gracePeriodDays = input.gracePeriodDays ?? 0;
   }
@@ -511,7 +529,7 @@ export const updateInterestProfile = async (
 
   if (input.penalRate !== undefined) {
     if (input.penalRate !== null && input.penalRate < 0) {
-      throw new Error('Penal rate cannot be negative');
+      throw new Error("Penal rate cannot be negative");
     }
     data.penalRate =
       input.penalRate !== null
@@ -521,7 +539,7 @@ export const updateInterestProfile = async (
 
   if (input.penalGraceDays !== undefined) {
     if (input.penalGraceDays !== null && input.penalGraceDays < 0) {
-      throw new Error('Penal grace days cannot be negative');
+      throw new Error("Penal grace days cannot be negative");
     }
     data.penalGraceDays = input.penalGraceDays ?? 0;
   }
@@ -532,18 +550,21 @@ export const updateInterestProfile = async (
   });
 };
 
-export const deleteInterestProfile = async (startupId: string, profileId: string) => {
+export const deleteInterestProfile = async (
+  startupId: string,
+  profileId: string
+) => {
   const profile = await prisma.interestProfile.findFirst({
     where: { id: profileId, startupId },
     include: { partySettings: true },
   });
 
   if (!profile) {
-    throw new Error('Interest profile not found');
+    throw new Error("Interest profile not found");
   }
 
   if (profile.partySettings.length > 0) {
-    throw new Error('Cannot delete profile while it is assigned to parties');
+    throw new Error("Cannot delete profile while it is assigned to parties");
   }
 
   await prisma.interestProfile.delete({ where: { id: profileId } });
@@ -558,7 +579,7 @@ export const listPartyInterestSettings = async (startupId: string) => {
       party: { select: { id: true, name: true, type: true } },
       interestProfile: { select: { id: true, name: true } },
     },
-    orderBy: [{ createdAt: 'desc' }],
+    orderBy: [{ createdAt: "desc" }],
   });
 };
 
@@ -581,7 +602,7 @@ export const assignInterestProfileToParty = async (
   });
 
   if (!party) {
-    throw new Error('Party not found');
+    throw new Error("Party not found");
   }
 
   const profile = await prisma.interestProfile.findFirst({
@@ -589,15 +610,12 @@ export const assignInterestProfileToParty = async (
   });
 
   if (!profile) {
-    throw new Error('Interest profile not found');
+    throw new Error("Interest profile not found");
   }
 
   return prisma.partyInterestSetting.upsert({
     where: {
-      startupId_partyId: {
-        startupId,
-        partyId,
-      },
+      partyId,
     },
     create: {
       startupId,
@@ -642,7 +660,7 @@ export const removeInterestSettingForParty = async (
   });
 
   if (!existing) {
-    throw new Error('Interest setting not found for the specified party');
+    throw new Error("Interest setting not found for the specified party");
   }
 
   await prisma.partyInterestSetting.delete({
@@ -651,4 +669,3 @@ export const removeInterestSettingForParty = async (
 
   return true;
 };
-

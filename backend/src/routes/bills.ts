@@ -1,24 +1,26 @@
-import { Router, Request, Response } from 'express';
-import { authenticateToken } from '../middleware/auth';
+import { Router, Request, Response } from "express";
+import { authenticateToken } from "../middleware/auth";
 import {
   createBill,
   settleBill,
   listBills,
   getBillAgingReport,
   getOutstandingByLedger,
-} from '../services/bills';
-import { BillType, BillStatus } from '@prisma/client';
+} from "../services/bills";
+import { BillType, BillStatus } from "@prisma/client";
 
 const router = Router();
 
 router.use(authenticateToken);
 
 // Create a new bill
-router.post('/', async (req: Request, res: Response) => {
+router.post("/", async (req: Request, res: Response) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: 'Startup context is required' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const {
@@ -38,12 +40,15 @@ router.post('/', async (req: Request, res: Response) => {
     if (!billType || !billNumber || !ledgerName || !originalAmount) {
       return res.status(400).json({
         success: false,
-        message: 'billType, billNumber, ledgerName, and originalAmount are required',
+        message:
+          "billType, billNumber, ledgerName, and originalAmount are required",
       });
     }
 
     if (!(billType in BillType)) {
-      return res.status(400).json({ success: false, message: 'Invalid bill type' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid bill type" });
     }
 
     const bill = await createBill(startupId, {
@@ -63,23 +68,25 @@ router.post('/', async (req: Request, res: Response) => {
     return res.status(201).json({
       success: true,
       data: bill,
-      message: 'Bill created successfully',
+      message: "Bill created successfully",
     });
   } catch (error) {
-    console.error('Create bill error:', error);
+    console.error("Create bill error:", error);
     return res.status(400).json({
       success: false,
-      message: error instanceof Error ? error.message : 'Failed to create bill',
+      message: error instanceof Error ? error.message : "Failed to create bill",
     });
   }
 });
 
 // List bills with filters
-router.get('/', async (req: Request, res: Response) => {
+router.get("/", async (req: Request, res: Response) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: 'Startup context is required' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const {
@@ -95,10 +102,10 @@ router.get('/', async (req: Request, res: Response) => {
     } = req.query;
 
     const filters: any = {};
-    if (billType && billType in BillType) {
+    if (billType && typeof billType === "string" && billType in BillType) {
       filters.billType = billType as BillType;
     }
-    if (status && status in BillStatus) {
+    if (status && typeof status === "string" && status in BillStatus) {
       filters.status = status as BillStatus;
     }
     if (ledgerName) {
@@ -131,29 +138,32 @@ router.get('/', async (req: Request, res: Response) => {
       total: result.total,
     });
   } catch (error) {
-    console.error('List bills error:', error);
+    console.error("List bills error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : 'Failed to fetch bills',
+      message: error instanceof Error ? error.message : "Failed to fetch bills",
     });
   }
 });
 
 // Settle a bill
-router.post('/:billId/settle', async (req: Request, res: Response) => {
+router.post("/:billId/settle", async (req: Request, res: Response) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: 'Startup context is required' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const { billId } = req.params;
-    const { voucherId, voucherEntryId, settlementAmount, reference, remarks } = req.body;
+    const { voucherId, voucherEntryId, settlementAmount, reference, remarks } =
+      req.body;
 
     if (!voucherId || !voucherEntryId || !settlementAmount) {
       return res.status(400).json({
         success: false,
-        message: 'voucherId, voucherEntryId, and settlementAmount are required',
+        message: "voucherId, voucherEntryId, and settlementAmount are required",
       });
     }
 
@@ -169,29 +179,33 @@ router.post('/:billId/settle', async (req: Request, res: Response) => {
     return res.json({
       success: true,
       data: result,
-      message: 'Bill settled successfully',
+      message: "Bill settled successfully",
     });
   } catch (error) {
-    console.error('Settle bill error:', error);
+    console.error("Settle bill error:", error);
     return res.status(400).json({
       success: false,
-      message: error instanceof Error ? error.message : 'Failed to settle bill',
+      message: error instanceof Error ? error.message : "Failed to settle bill",
     });
   }
 });
 
 // Get aging report
-router.get('/aging', async (req: Request, res: Response) => {
+router.get("/aging", async (req: Request, res: Response) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: 'Startup context is required' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const { billType } = req.query;
     const report = await getBillAgingReport(
       startupId,
-      billType && billType in BillType ? (billType as BillType) : undefined
+      billType && typeof billType === "string" && billType in BillType
+        ? (billType as BillType)
+        : undefined
     );
 
     return res.json({
@@ -199,26 +213,33 @@ router.get('/aging', async (req: Request, res: Response) => {
       data: report,
     });
   } catch (error) {
-    console.error('Get aging report error:', error);
+    console.error("Get aging report error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : 'Failed to generate aging report',
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to generate aging report",
     });
   }
 });
 
 // Get outstanding by ledger
-router.get('/outstanding-by-ledger', async (req: Request, res: Response) => {
+router.get("/outstanding-by-ledger", async (req: Request, res: Response) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: 'Startup context is required' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const { billType } = req.query;
     const result = await getOutstandingByLedger(
       startupId,
-      billType && billType in BillType ? (billType as BillType) : undefined
+      billType && typeof billType === "string" && billType in BillType
+        ? (billType as BillType)
+        : undefined
     );
 
     return res.json({
@@ -226,13 +247,15 @@ router.get('/outstanding-by-ledger', async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error) {
-    console.error('Get outstanding by ledger error:', error);
+    console.error("Get outstanding by ledger error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : 'Failed to fetch outstanding by ledger',
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch outstanding by ledger",
     });
   }
 });
 
 export default router;
-
