@@ -46,6 +46,9 @@ model Startup {
   costCenters      CostCenter[]
   interestProfiles InterestProfile[]
   partyInterestSettings PartyInterestSetting[]
+  gstRegistrations GstRegistration[]
+  gstTaxRates      GstTaxRate[]
+  gstLedgerMappings GstLedgerMapping[]
 }
 
 model User {
@@ -546,7 +549,7 @@ model InterestProfile {
 model PartyInterestSetting {
   id                 String          @id @default(cuid())
   startupId          String
-  partyId            String
+  partyId            String          @unique
   interestProfileId  String
   overrideRate       Decimal?
   effectiveFrom      DateTime?
@@ -560,8 +563,107 @@ model PartyInterestSetting {
   party           PartyMaster     @relation(fields: [partyId], references: [id], onDelete: Cascade)
   interestProfile InterestProfile @relation(fields: [interestProfileId], references: [id], onDelete: Cascade)
 
-  @@unique([startupId, partyId])
   @@index([startupId, interestProfileId])
+}
+
+// ============================================================================
+// GST / STATUTORY CONFIGURATION MODELS
+// ============================================================================
+
+enum GstRegistrationType {
+  REGULAR
+  COMPOSITION
+  SEZ
+  ISD
+  TDS
+  TCS
+}
+
+enum GstTaxSupplyType {
+  GOODS
+  SERVICES
+}
+
+enum GstLedgerMappingType {
+  OUTPUT_CGST
+  OUTPUT_SGST
+  OUTPUT_IGST
+  OUTPUT_CESS
+  INPUT_CGST
+  INPUT_SGST
+  INPUT_IGST
+  INPUT_CESS
+  RCM_PAYABLE
+  RCM_INPUT
+}
+
+model GstRegistration {
+  id                String              @id @default(cuid())
+  startupId         String
+  gstin             String
+  legalName         String?
+  tradeName         String?
+  registrationType  GstRegistrationType @default(REGULAR)
+  stateCode         String
+  stateName         String?
+  startDate         DateTime
+  endDate           DateTime?
+  isDefault         Boolean             @default(false)
+  isActive          Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  startup        Startup         @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  taxRates       GstTaxRate[]
+  ledgerMappings GstLedgerMapping[]
+
+  @@unique([startupId, gstin])
+  @@index([startupId, isActive])
+  @@index([startupId, isDefault])
+}
+
+model GstTaxRate {
+  id             String           @id @default(cuid())
+  startupId      String
+  registrationId String?
+  supplyType     GstTaxSupplyType @default(GOODS)
+  hsnOrSac       String?
+  description    String?
+  cgstRate       Decimal          @default(0)
+  sgstRate       Decimal          @default(0)
+  igstRate       Decimal          @default(0)
+  cessRate       Decimal          @default(0)
+  effectiveFrom  DateTime?
+  effectiveTo    DateTime?
+  isActive       Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  startup      Startup         @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  registration GstRegistration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
+
+  @@index([startupId, supplyType])
+  @@index([startupId, hsnOrSac])
+  @@index([registrationId])
+}
+
+model GstLedgerMapping {
+  id             String               @id @default(cuid())
+  startupId      String
+  registrationId String?
+  mappingType    GstLedgerMappingType
+  ledgerName     String
+  ledgerCode     String?
+  description    String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  startup      Startup         @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  registration GstRegistration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
+
+  @@unique([startupId, mappingType, registrationId])
+  @@index([startupId, mappingType])
+  @@index([registrationId])
 }
 
 enum TransactionType {

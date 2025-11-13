@@ -23,6 +23,7 @@ import companyRoutes from './routes/company';
 import vouchersRoutes from './routes/vouchers';
 import billsRoutes from './routes/bills';
 import costManagementRoutes from './routes/costManagement';
+import gstRoutes from './routes/gst';
 import { TransactionSyncService } from './services/transactionSync';
 import { startJobs } from './jobs';
 
@@ -417,6 +418,7 @@ v1Router.use('/company', authenticateToken, companyRoutes);
 v1Router.use('/vouchers', authenticateToken, vouchersRoutes);
 v1Router.use('/bills', authenticateToken, billsRoutes);
 v1Router.use('/costing', authenticateToken, costManagementRoutes);
+v1Router.use('/gst', authenticateToken, gstRoutes);
 
 // Mount v1 routes
 app.use('/api/v1', v1Router);

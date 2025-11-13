@@ -436,6 +436,220 @@ export interface OutstandingLedgerSummary {
   }>;
 }
 
+export interface CostCategory {
+  id: string;
+  startupId: string;
+  name: string;
+  description?: string | null;
+  parentId?: string | null;
+  isPrimary: boolean;
+  createdAt: string;
+  updatedAt: string;
+  costCenters?: CostCenter[];
+  children?: CostCategory[];
+}
+
+export interface CostCenter {
+  id: string;
+  startupId: string;
+  categoryId: string;
+  name: string;
+  code?: string | null;
+  description?: string | null;
+  parentId?: string | null;
+  isBillable: boolean;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  category?: { id: string; name: string };
+  parent?: { id: string; name: string } | null;
+}
+
+export interface CostCategoryInput {
+  name: string;
+  description?: string;
+  parentId?: string | null;
+  isPrimary?: boolean;
+}
+
+export interface CostCenterInput {
+  categoryId: string;
+  name: string;
+  code?: string;
+  description?: string;
+  parentId?: string | null;
+  isBillable?: boolean;
+  status?: 'active' | 'inactive';
+}
+
+export type InterestCalculationMode = 'SIMPLE' | 'COMPOUND';
+export type InterestCompoundingFrequency =
+  | 'NONE'
+  | 'DAILY'
+  | 'WEEKLY'
+  | 'MONTHLY'
+  | 'QUARTERLY'
+  | 'YEARLY';
+
+export interface InterestProfile {
+  id: string;
+  startupId: string;
+  name: string;
+  description?: string | null;
+  calculationMode: InterestCalculationMode;
+  rate: number;
+  compoundingFrequency: InterestCompoundingFrequency;
+  gracePeriodDays?: number | null;
+  calculateFromDueDate: boolean;
+  penalRate: number;
+  penalGraceDays?: number | null;
+  createdAt: string;
+  updatedAt: string;
+  partySettings?: PartyInterestSetting[];
+}
+
+export interface InterestProfileInput {
+  name: string;
+  description?: string;
+  calculationMode?: InterestCalculationMode;
+  rate: number;
+  compoundingFrequency?: InterestCompoundingFrequency;
+  gracePeriodDays?: number | null;
+  calculateFromDueDate?: boolean;
+  penalRate?: number | null;
+  penalGraceDays?: number | null;
+}
+
+export interface PartyInterestSetting {
+  id: string;
+  startupId: string;
+  partyId: string;
+  interestProfileId: string;
+  overrideRate?: number | null;
+  effectiveFrom?: string | null;
+  effectiveTo?: string | null;
+  applyOnReceivables: boolean;
+  applyOnPayables: boolean;
+  createdAt: string;
+  updatedAt: string;
+  party?: { id: string; name: string; type: string };
+  interestProfile?: { id: string; name: string };
+}
+
+export interface PartyInterestInput {
+  partyId: string;
+  interestProfileId: string;
+  overrideRate?: number | null;
+  effectiveFrom?: string | null;
+  effectiveTo?: string | null;
+  applyOnReceivables?: boolean;
+  applyOnPayables?: boolean;
+}
+
+export type GstRegistrationType =
+  | 'REGULAR'
+  | 'COMPOSITION'
+  | 'SEZ'
+  | 'ISD'
+  | 'TDS'
+  | 'TCS';
+
+export type GstTaxSupplyType = 'GOODS' | 'SERVICES';
+
+export type GstLedgerMappingType =
+  | 'OUTPUT_CGST'
+  | 'OUTPUT_SGST'
+  | 'OUTPUT_IGST'
+  | 'OUTPUT_CESS'
+  | 'INPUT_CGST'
+  | 'INPUT_SGST'
+  | 'INPUT_IGST'
+  | 'INPUT_CESS'
+  | 'RCM_PAYABLE'
+  | 'RCM_INPUT';
+
+export interface GstRegistration {
+  id: string;
+  startupId: string;
+  gstin: string;
+  legalName?: string | null;
+  tradeName?: string | null;
+  registrationType: GstRegistrationType;
+  stateCode: string;
+  stateName?: string | null;
+  startDate: string;
+  endDate?: string | null;
+  isDefault: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GstRegistrationInput {
+  gstin: string;
+  legalName?: string;
+  tradeName?: string;
+  registrationType?: GstRegistrationType;
+  stateCode: string;
+  stateName?: string;
+  startDate: string;
+  endDate?: string | null;
+  isDefault?: boolean;
+  isActive?: boolean;
+}
+
+export interface GstTaxRate {
+  id: string;
+  startupId: string;
+  registrationId?: string | null;
+  supplyType: GstTaxSupplyType;
+  hsnOrSac?: string | null;
+  description?: string | null;
+  cgstRate: number;
+  sgstRate: number;
+  igstRate: number;
+  cessRate: number;
+  effectiveFrom?: string | null;
+  effectiveTo?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GstTaxRateInput {
+  registrationId?: string | null;
+  supplyType?: GstTaxSupplyType;
+  hsnOrSac?: string;
+  description?: string;
+  cgstRate?: number;
+  sgstRate?: number;
+  igstRate?: number;
+  cessRate?: number;
+  effectiveFrom?: string | null;
+  effectiveTo?: string | null;
+  isActive?: boolean;
+}
+
+export interface GstLedgerMapping {
+  id: string;
+  startupId: string;
+  registrationId?: string | null;
+  mappingType: GstLedgerMappingType;
+  ledgerName: string;
+  ledgerCode?: string | null;
+  description?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GstLedgerMappingInput {
+  registrationId?: string | null;
+  mappingType: GstLedgerMappingType;
+  ledgerName: string;
+  ledgerCode?: string;
+  description?: string;
+}
+
 export interface Startup {
   id: string;
   name: string;
@@ -1104,6 +1318,181 @@ export const apiClient = {
       const response = await api.get('/bills/outstanding-by-ledger', {
         params: billType ? { billType } : undefined,
       });
+      return response.data;
+    },
+  },
+
+  costing: {
+    listCategories: async (): Promise<ApiResponse<CostCategory[]>> => {
+      const response = await api.get('/costing/categories');
+      return response.data;
+    },
+
+    createCategory: async (data: CostCategoryInput): Promise<ApiResponse<CostCategory>> => {
+      const response = await api.post('/costing/categories', data);
+      return response.data;
+    },
+
+    updateCategory: async (
+      categoryId: string,
+      data: Partial<CostCategoryInput>
+    ): Promise<ApiResponse<CostCategory>> => {
+      const response = await api.put(`/costing/categories/${categoryId}`, data);
+      return response.data;
+    },
+
+    deleteCategory: async (categoryId: string): Promise<ApiResponse> => {
+      const response = await api.delete(`/costing/categories/${categoryId}`);
+      return response.data;
+    },
+
+    listCenters: async (params?: {
+      categoryId?: string;
+      status?: string;
+    }): Promise<ApiResponse<CostCenter[]>> => {
+      const response = await api.get('/costing/centers', { params });
+      return response.data;
+    },
+
+    createCenter: async (data: CostCenterInput): Promise<ApiResponse<CostCenter>> => {
+      const response = await api.post('/costing/centers', data);
+      return response.data;
+    },
+
+    updateCenter: async (
+      centerId: string,
+      data: Partial<CostCenterInput>
+    ): Promise<ApiResponse<CostCenter>> => {
+      const response = await api.put(`/costing/centers/${centerId}`, data);
+      return response.data;
+    },
+
+    deleteCenter: async (centerId: string): Promise<ApiResponse> => {
+      const response = await api.delete(`/costing/centers/${centerId}`);
+      return response.data;
+    },
+
+    listInterestProfiles: async (): Promise<ApiResponse<InterestProfile[]>> => {
+      const response = await api.get('/costing/interest-profiles');
+      return response.data;
+    },
+
+    createInterestProfile: async (
+      data: InterestProfileInput
+    ): Promise<ApiResponse<InterestProfile>> => {
+      const response = await api.post('/costing/interest-profiles', data);
+      return response.data;
+    },
+
+    updateInterestProfile: async (
+      profileId: string,
+      data: Partial<InterestProfileInput>
+    ): Promise<ApiResponse<InterestProfile>> => {
+      const response = await api.put(`/costing/interest-profiles/${profileId}`, data);
+      return response.data;
+    },
+
+    deleteInterestProfile: async (profileId: string): Promise<ApiResponse> => {
+      const response = await api.delete(`/costing/interest-profiles/${profileId}`);
+      return response.data;
+    },
+
+    listPartyInterestSettings: async (): Promise<ApiResponse<PartyInterestSetting[]>> => {
+      const response = await api.get('/costing/interest-settings');
+      return response.data;
+    },
+
+    assignInterestToParty: async (
+      data: PartyInterestInput
+    ): Promise<ApiResponse<PartyInterestSetting>> => {
+      const response = await api.post('/costing/interest-settings', data);
+      return response.data;
+    },
+
+    removeInterestForParty: async (partyId: string): Promise<ApiResponse> => {
+      const response = await api.delete(`/costing/interest-settings/${partyId}`);
+      return response.data;
+    },
+  },
+
+  gst: {
+    listRegistrations: async (): Promise<ApiResponse<GstRegistration[]>> => {
+      const response = await api.get('/gst/registrations');
+      return response.data;
+    },
+
+    createRegistration: async (
+      data: GstRegistrationInput
+    ): Promise<ApiResponse<GstRegistration>> => {
+      const response = await api.post('/gst/registrations', data);
+      return response.data;
+    },
+
+    updateRegistration: async (
+      registrationId: string,
+      data: Partial<GstRegistrationInput>
+    ): Promise<ApiResponse<GstRegistration>> => {
+      const response = await api.put(`/gst/registrations/${registrationId}`, data);
+      return response.data;
+    },
+
+    deleteRegistration: async (registrationId: string): Promise<ApiResponse> => {
+      const response = await api.delete(`/gst/registrations/${registrationId}`);
+      return response.data;
+    },
+
+    listTaxRates: async (params?: {
+      registrationId?: string;
+      supplyType?: GstTaxSupplyType;
+      hsnOrSac?: string;
+    }): Promise<ApiResponse<GstTaxRate[]>> => {
+      const response = await api.get('/gst/tax-rates', { params });
+      return response.data;
+    },
+
+    createTaxRate: async (data: GstTaxRateInput): Promise<ApiResponse<GstTaxRate>> => {
+      const response = await api.post('/gst/tax-rates', data);
+      return response.data;
+    },
+
+    updateTaxRate: async (
+      taxRateId: string,
+      data: GstTaxRateInput
+    ): Promise<ApiResponse<GstTaxRate>> => {
+      const response = await api.put(`/gst/tax-rates/${taxRateId}`, data);
+      return response.data;
+    },
+
+    deleteTaxRate: async (taxRateId: string): Promise<ApiResponse> => {
+      const response = await api.delete(`/gst/tax-rates/${taxRateId}`);
+      return response.data;
+    },
+
+    listLedgerMappings: async (params?: {
+      registrationId?: string;
+      mappingType?: GstLedgerMappingType;
+    }): Promise<ApiResponse<GstLedgerMapping[]>> => {
+      const response = await api.get('/gst/ledger-mappings', { params });
+      return response.data;
+    },
+
+    createLedgerMapping: async (
+      data: GstLedgerMappingInput
+    ): Promise<ApiResponse<GstLedgerMapping>> => {
+      const response = await api.post('/gst/ledger-mappings', data);
+      return response.data;
+    },
+
+    updateLedgerMapping: async (
+      mappingId: string,
+      data: Partial<GstLedgerMappingInput>
+    ): Promise<ApiResponse<GstLedgerMapping>> => {
+      const response = await api.put(`/gst/ledger-mappings/${mappingId}`, data);
+      return response.data;
+    },
+
+    deleteLedgerMapping: async (mappingId: string): Promise<ApiResponse> => {
+      const response = await api.delete(`/gst/ledger-mappings/${mappingId}`);
       return response.data;
     },
   },
