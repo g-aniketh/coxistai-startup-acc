@@ -814,6 +814,42 @@ export interface UserWithRoles {
   }>;
 }
 
+// ============================================================================
+// VOUCHER AI TYPES
+// ============================================================================
+
+export interface VoucherAlert {
+  type: 'anomaly' | 'pattern' | 'risk' | 'opportunity';
+  severity: 'info' | 'warning' | 'critical';
+  title: string;
+  message: string;
+  voucherIds: string[];
+  recommendations?: string[];
+  metadata?: any;
+}
+
+export interface VoucherVariance {
+  period: string;
+  category: string;
+  expected: number;
+  actual: number;
+  variance: number;
+  variancePercent: number;
+  vouchers: Array<{
+    id: string;
+    voucherNumber: string;
+    date: string;
+    amount: number;
+  }>;
+}
+
+export interface VoucherInsights {
+  summary: string;
+  trends: string[];
+  insights: string[];
+  recommendations: string[];
+}
+
 export interface Startup {
   id: string;
   name: string;
@@ -1807,6 +1843,47 @@ export const apiClient = {
       const response = await api.post('/import/tally', importData);
       return response.data;
     },
+
+    tallyEnhanced: async (importData: any): Promise<ApiResponse<any>> => {
+      const response = await api.post('/import/tally-enhanced', importData);
+      return response.data;
+    },
+
+    downloadTemplate: async (): Promise<Blob> => {
+      const response = await api.get('/import/template', {
+        responseType: 'blob',
+      });
+      return response.data;
+    },
+  },
+
+  export: {
+    vouchers: async (params?: {
+      voucherTypeId?: string;
+      fromDate?: string;
+      toDate?: string;
+      numberingSeriesId?: string;
+    }): Promise<Blob> => {
+      const response = await api.get('/import/export/vouchers', {
+        params,
+        responseType: 'blob',
+      });
+      return response.data;
+    },
+
+    ledgers: async (): Promise<Blob> => {
+      const response = await api.get('/import/export/ledgers', {
+        responseType: 'blob',
+      });
+      return response.data;
+    },
+
+    gst: async (): Promise<Blob> => {
+      const response = await api.get('/import/export/gst', {
+        responseType: 'blob',
+      });
+      return response.data;
+    },
   },
 
   // ============================================================================
@@ -1829,6 +1906,27 @@ export const apiClient = {
 
     getSummary: async (fromDate?: string, toDate?: string): Promise<ApiResponse<AuditLogSummary>> => {
       const response = await api.get('/audit/summary', { params: { fromDate, toDate } });
+      return response.data;
+    },
+  },
+
+  // ============================================================================
+  // VOUCHER AI
+  // ============================================================================
+
+  voucherAI: {
+    getAnomalies: async (fromDate?: string, toDate?: string): Promise<ApiResponse<VoucherAlert[]>> => {
+      const response = await api.get('/voucher-ai/anomalies', { params: { fromDate, toDate } });
+      return response.data;
+    },
+
+    getVariances: async (period?: 'monthly' | 'quarterly' | 'yearly'): Promise<ApiResponse<VoucherVariance[]>> => {
+      const response = await api.get('/voucher-ai/variances', { params: { period } });
+      return response.data;
+    },
+
+    getInsights: async (fromDate?: string, toDate?: string): Promise<ApiResponse<VoucherInsights>> => {
+      const response = await api.get('/voucher-ai/insights', { params: { fromDate, toDate } });
       return response.data;
     },
   },

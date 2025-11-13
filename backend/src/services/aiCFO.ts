@@ -163,7 +163,7 @@ Respond in JSON format:
   }
 
   /**
-   * Run "What If" scenario analysis
+   * Run "What If" scenario analysis with voucher data
    */
   static async runScenario(startupId: string, scenarioName: string, inputs: ScenarioInput) {
     if (!openai) {
@@ -177,15 +177,47 @@ Respond in JSON format:
         orderBy: { periodEnd: 'desc' },
       });
 
-      if (!latestMetrics) {
+      // Get voucher data for more accurate analysis
+      const ninetyDaysAgo = new Date();
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+      
+      const vouchers = await prisma.voucher.findMany({
+        where: {
+          startupId,
+          date: { gte: ninetyDaysAgo },
+        },
+        include: {
+          voucherType: true,
+        },
+      });
+
+      // Calculate metrics from vouchers if metrics are not available
+      let currentRevenue = latestMetrics?.totalRevenue.toNumber() || 0;
+      let currentExpenses = latestMetrics?.totalExpenses.toNumber() || 0;
+      let currentCashBalance = latestMetrics?.cashBalance.toNumber() || 0;
+      
+      if (vouchers.length > 0) {
+        // Calculate revenue from sales/receipt vouchers
+        const salesVouchers = vouchers.filter(
+          (v) => v.voucherType.category === 'SALES' || v.voucherType.category === 'RECEIPT'
+        );
+        const revenueFromVouchers = salesVouchers.reduce((sum, v) => sum + v.totalAmount.toNumber(), 0);
+        if (revenueFromVouchers > 0) currentRevenue = revenueFromVouchers;
+        
+        // Calculate expenses from purchase/payment vouchers
+        const expenseVouchers = vouchers.filter(
+          (v) => v.voucherType.category === 'PURCHASE' || v.voucherType.category === 'PAYMENT'
+        );
+        const expensesFromVouchers = expenseVouchers.reduce((sum, v) => sum + v.totalAmount.toNumber(), 0);
+        if (expensesFromVouchers > 0) currentExpenses = expensesFromVouchers;
+      }
+
+      if (!latestMetrics && vouchers.length === 0) {
         throw new Error('No historical data available');
       }
 
       // Calculate scenario impacts
       const timeHorizon = inputs.timeHorizon || 12;
-      const currentRevenue = latestMetrics.totalRevenue.toNumber();
-      const currentExpenses = latestMetrics.totalExpenses.toNumber();
-      const currentCashBalance = latestMetrics.cashBalance.toNumber();
 
       // Apply changes
       let projectedRevenue = currentRevenue;
@@ -214,13 +246,23 @@ Respond in JSON format:
       const projectedRunway = monthlyBurnRate > 0 ? projectedCashBalance / monthlyBurnRate : 999;
 
       // Create AI analysis prompt
+      const voucherStats = vouchers.length > 0 ? {
+        totalVouchers: vouchers.length,
+        byType: vouchers.reduce((acc, v) => {
+          acc[v.voucherType.name] = (acc[v.voucherType.name] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>),
+      } : null;
+
       const prompt = `You are an expert CFO analyzing a "What If" scenario for a startup.
 
 Current Situation:
 - Monthly Revenue: $${currentRevenue.toLocaleString()}
 - Monthly Expenses: $${currentExpenses.toLocaleString()}
 - Cash Balance: $${currentCashBalance.toLocaleString()}
-- Current Runway: ${latestMetrics.runway.toNumber().toFixed(1)} months
+- Current Runway: ${latestMetrics ? latestMetrics.runway.toNumber().toFixed(1) : 'N/A'} months
+${voucherStats ? `- Recent Voucher Activity (last 90 days): ${voucherStats.totalVouchers} vouchers` : ''}
+${voucherStats ? `- Vouchers by Type: ${Object.entries(voucherStats.byType).map(([type, count]) => `${type}: ${count}`).join(', ')}` : ''}
 
 Proposed Scenario: "${scenarioName}"
 Changes:

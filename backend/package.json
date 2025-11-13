@@ -36,7 +36,8 @@
     "plaid": "^38.1.0",
     "prisma": "^6.16.2",
     "resend": "^6.1.2",
-    "stripe": "^19.1.0"
+    "stripe": "^19.1.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",
@@ -46,6 +47,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.19.17",
     "@types/node-cron": "^3.0.11",
+    "@types/xlsx": "^0.0.35",
     "@typescript-eslint/eslint-plugin": "^6.13.0",
     "@typescript-eslint/parser": "^6.13.0",
     "eslint": "^8.54.0",

@@ -1,7 +1,7 @@
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { ensureDefaultVoucherTypes } from '../services/voucherTypes';
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { ensureDefaultVoucherTypes } from "../services/voucherTypes";
 
 const prisma = new PrismaClient();
 
@@ -30,7 +30,9 @@ const getDefaultFinancialYearStart = (): Date => {
 
 const getDefaultBooksStart = (): Date => {
   const today = new Date();
-  return new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+  return new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
+  );
 };
 
 const createDefaultSecurityConfig = () => ({
@@ -67,35 +69,35 @@ const createDefaultFeatureToggle = () => ({
 
 export const signup = async (data: SignupData) => {
   const { email, password, startupName, firstName, lastName } = data;
-  
+
   // Check if user already exists
   const existingUser = await prisma.user.findUnique({
-    where: { email }
+    where: { email },
   });
 
   if (existingUser) {
-    throw new Error('User with this email already exists');
+    throw new Error("User with this email already exists");
   }
 
   // Hash password
   const hashedPassword = await bcrypt.hash(password, 10);
-  
+
   // Find Admin role
-  const adminRole = await prisma.role.findUnique({ 
-    where: { name: 'Admin' },
-    include: { permissions: true }
+  const adminRole = await prisma.role.findUnique({
+    where: { name: "Admin" },
+    include: { permissions: true },
   });
-  
+
   if (!adminRole) {
-    throw new Error('Admin role not found. Please seed the database.');
+    throw new Error("Admin role not found. Please seed the database.");
   }
 
   // Create startup with admin user
   const startup = await prisma.startup.create({
     data: {
       name: startupName,
-      subscriptionPlan: 'pro_trial',
-      subscriptionStatus: 'active',
+      subscriptionPlan: "pro_trial",
+      subscriptionStatus: "active",
       trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days trial
       users: {
         create: {
@@ -116,7 +118,7 @@ export const signup = async (data: SignupData) => {
           displayName: startupName,
           legalName: startupName,
           mailingName: startupName,
-          baseCurrency: 'INR',
+          baseCurrency: "INR",
         },
       },
       fiscalConfig: {
@@ -138,29 +140,29 @@ export const signup = async (data: SignupData) => {
         create: createDefaultFeatureToggle(),
       },
     },
-    include: { 
+    include: {
       users: {
         include: {
           roles: {
             include: {
               role: {
                 include: {
-                  permissions: true
-                }
-              }
-            }
-          }
-        }
+                  permissions: true,
+                },
+              },
+            },
+          },
+        },
       },
       companyProfile: {
         include: {
-          addresses: true
-        }
+          addresses: true,
+        },
       },
       fiscalConfig: true,
       securityConfig: true,
       currencyConfig: true,
-      featureToggle: true
+      featureToggle: true,
     },
   });
 
@@ -168,29 +170,29 @@ export const signup = async (data: SignupData) => {
 
   const user = startup.users[0];
   const roleNames = user.roles.map(userRole => userRole.role.name);
-  const permissions = user.roles.flatMap(userRole => 
+  const permissions = user.roles.flatMap(userRole =>
     userRole.role.permissions.map(p => `${p.action}_${p.subject}`)
   );
 
   // Generate JWT token
   const token = jwt.sign(
-    { 
-      userId: user.id, 
-      startupId: user.startupId, 
+    {
+      userId: user.id,
+      startupId: user.startupId,
       roles: roleNames,
       permissions: permissions,
-      email: user.email
+      email: user.email,
     },
     process.env.JWT_SECRET!,
-    { 
-      expiresIn: '7d',
-      issuer: 'coxist-ai-accelerator',
-      audience: 'coxist-ai-users'
+    {
+      expiresIn: "7d",
+      issuer: "coxist-ai-accelerator",
+      audience: "coxist-ai-users",
     }
   );
 
-  return { 
-    token, 
+  return {
+    token,
     user: {
       id: user.id,
       email: user.email,
@@ -203,73 +205,89 @@ export const signup = async (data: SignupData) => {
         subscriptionPlan: startup.subscriptionPlan,
         subscriptionStatus: startup.subscriptionStatus,
         trialEndsAt: startup.trialEndsAt,
-        companyProfile: startup.companyProfile ? {
-          id: startup.companyProfile.id,
-          displayName: startup.companyProfile.displayName,
-          legalName: startup.companyProfile.legalName,
-          mailingName: startup.companyProfile.mailingName,
-          baseCurrency: startup.companyProfile.baseCurrency,
-          country: startup.companyProfile.country,
-          state: startup.companyProfile.state,
-          city: startup.companyProfile.city,
-          postalCode: startup.companyProfile.postalCode,
-          phone: startup.companyProfile.phone,
-          mobile: startup.companyProfile.mobile,
-          email: startup.companyProfile.email,
-          website: startup.companyProfile.website,
-          addresses: startup.companyProfile.addresses
-        } : null,
-        fiscalConfig: startup.fiscalConfig ? {
-          id: startup.fiscalConfig.id,
-          financialYearStart: startup.fiscalConfig.financialYearStart,
-          booksStart: startup.fiscalConfig.booksStart,
-          allowBackdatedEntries: startup.fiscalConfig.allowBackdatedEntries,
-          backdatedFrom: startup.fiscalConfig.backdatedFrom,
-          enableEditLog: startup.fiscalConfig.enableEditLog,
-          createdAt: startup.fiscalConfig.createdAt,
-          updatedAt: startup.fiscalConfig.updatedAt
-        } : null,
-        securityConfig: startup.securityConfig ? {
-          id: startup.securityConfig.id,
-          tallyVaultEnabled: startup.securityConfig.tallyVaultEnabled,
-          userAccessControlEnabled: startup.securityConfig.userAccessControlEnabled,
-          multiFactorRequired: startup.securityConfig.multiFactorRequired,
-          createdAt: startup.securityConfig.createdAt,
-          updatedAt: startup.securityConfig.updatedAt
-        } : null,
-        currencyConfig: startup.currencyConfig ? {
-          id: startup.currencyConfig.id,
-          baseCurrencyCode: startup.currencyConfig.baseCurrencyCode,
-          baseCurrencySymbol: startup.currencyConfig.baseCurrencySymbol,
-          baseCurrencyFormalName: startup.currencyConfig.baseCurrencyFormalName,
-          decimalPlaces: startup.currencyConfig.decimalPlaces,
-          decimalSeparator: startup.currencyConfig.decimalSeparator,
-          thousandSeparator: startup.currencyConfig.thousandSeparator,
-          symbolOnRight: startup.currencyConfig.symbolOnRight,
-          spaceBetweenAmountAndSymbol: startup.currencyConfig.spaceBetweenAmountAndSymbol,
-          showAmountInMillions: startup.currencyConfig.showAmountInMillions,
-          createdAt: startup.currencyConfig.createdAt,
-          updatedAt: startup.currencyConfig.updatedAt
-        } : null,
-        featureToggle: startup.featureToggle ? {
-          id: startup.featureToggle.id,
-          enableAccounting: startup.featureToggle.enableAccounting,
-          enableInventory: startup.featureToggle.enableInventory,
-          enableTaxation: startup.featureToggle.enableTaxation,
-          enablePayroll: startup.featureToggle.enablePayroll,
-          enableAIInsights: startup.featureToggle.enableAIInsights,
-          enableScenarioPlanning: startup.featureToggle.enableScenarioPlanning,
-          enableAutomations: startup.featureToggle.enableAutomations,
-          enableVendorManagement: startup.featureToggle.enableVendorManagement,
-          enableBillingAndInvoicing: startup.featureToggle.enableBillingAndInvoicing,
-          createdAt: startup.featureToggle.createdAt,
-          updatedAt: startup.featureToggle.updatedAt
-        } : null
+        companyProfile: startup.companyProfile
+          ? {
+              id: startup.companyProfile.id,
+              displayName: startup.companyProfile.displayName,
+              legalName: startup.companyProfile.legalName,
+              mailingName: startup.companyProfile.mailingName,
+              baseCurrency: startup.companyProfile.baseCurrency,
+              country: startup.companyProfile.country,
+              state: startup.companyProfile.state,
+              city: startup.companyProfile.city,
+              postalCode: startup.companyProfile.postalCode,
+              phone: startup.companyProfile.phone,
+              mobile: startup.companyProfile.mobile,
+              email: startup.companyProfile.email,
+              website: startup.companyProfile.website,
+              addresses: startup.companyProfile.addresses,
+            }
+          : null,
+        fiscalConfig: startup.fiscalConfig
+          ? {
+              id: startup.fiscalConfig.id,
+              financialYearStart: startup.fiscalConfig.financialYearStart,
+              booksStart: startup.fiscalConfig.booksStart,
+              allowBackdatedEntries: startup.fiscalConfig.allowBackdatedEntries,
+              backdatedFrom: startup.fiscalConfig.backdatedFrom,
+              enableEditLog: startup.fiscalConfig.enableEditLog,
+              createdAt: startup.fiscalConfig.createdAt,
+              updatedAt: startup.fiscalConfig.updatedAt,
+            }
+          : null,
+        securityConfig: startup.securityConfig
+          ? {
+              id: startup.securityConfig.id,
+              tallyVaultEnabled: startup.securityConfig.tallyVaultEnabled,
+              userAccessControlEnabled:
+                startup.securityConfig.userAccessControlEnabled,
+              multiFactorRequired: startup.securityConfig.multiFactorRequired,
+              createdAt: startup.securityConfig.createdAt,
+              updatedAt: startup.securityConfig.updatedAt,
+            }
+          : null,
+        currencyConfig: startup.currencyConfig
+          ? {
+              id: startup.currencyConfig.id,
+              baseCurrencyCode: startup.currencyConfig.baseCurrencyCode,
+              baseCurrencySymbol: startup.currencyConfig.baseCurrencySymbol,
+              baseCurrencyFormalName:
+                startup.currencyConfig.baseCurrencyFormalName,
+              decimalPlaces: startup.currencyConfig.decimalPlaces,
+              decimalSeparator: startup.currencyConfig.decimalSeparator,
+              thousandSeparator: startup.currencyConfig.thousandSeparator,
+              symbolOnRight: startup.currencyConfig.symbolOnRight,
+              spaceBetweenAmountAndSymbol:
+                startup.currencyConfig.spaceBetweenAmountAndSymbol,
+              showAmountInMillions: startup.currencyConfig.showAmountInMillions,
+              createdAt: startup.currencyConfig.createdAt,
+              updatedAt: startup.currencyConfig.updatedAt,
+            }
+          : null,
+        featureToggle: startup.featureToggle
+          ? {
+              id: startup.featureToggle.id,
+              enableAccounting: startup.featureToggle.enableAccounting,
+              enableInventory: startup.featureToggle.enableInventory,
+              enableTaxation: startup.featureToggle.enableTaxation,
+              enablePayroll: startup.featureToggle.enablePayroll,
+              enableAIInsights: startup.featureToggle.enableAIInsights,
+              enableScenarioPlanning:
+                startup.featureToggle.enableScenarioPlanning,
+              enableAutomations: startup.featureToggle.enableAutomations,
+              enableVendorManagement:
+                startup.featureToggle.enableVendorManagement,
+              enableBillingAndInvoicing:
+                startup.featureToggle.enableBillingAndInvoicing,
+              createdAt: startup.featureToggle.createdAt,
+              updatedAt: startup.featureToggle.updatedAt,
+            }
+          : null,
       },
       roles: roleNames,
       permissions: permissions,
-      isActive: true
-    }
+      isActive: true,
+    },
   };
 };
 
@@ -279,72 +297,72 @@ export const login = async (data: LoginData) => {
   // Find user with roles and permissions
   const user = await prisma.user.findUnique({
     where: { email },
-    include: { 
+    include: {
       startup: {
         include: {
           companyProfile: {
             include: {
-              addresses: true
-            }
+              addresses: true,
+            },
           },
           fiscalConfig: true,
-          securityConfig: true
-          currencyConfig: true
-          featureToggle: true
-        }
+          securityConfig: true,
+          currencyConfig: true,
+          featureToggle: true,
+        },
       },
-      roles: { 
-        include: { 
+      roles: {
+        include: {
           role: {
             include: {
-              permissions: true
-            }
-          } 
-        } 
-      } 
+              permissions: true,
+            },
+          },
+        },
+      },
     },
   });
 
   if (!user) {
-    throw new Error('Invalid credentials');
+    throw new Error("Invalid credentials");
   }
 
   // Check if user is active
   if (!user.isActive) {
-    throw new Error('Account is inactive. Please contact your administrator.');
+    throw new Error("Account is inactive. Please contact your administrator.");
   }
 
   // Verify password
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
-    throw new Error('Invalid credentials');
+    throw new Error("Invalid credentials");
   }
 
   // Extract role names and permissions
   const roleNames = user.roles.map(userRole => userRole.role.name);
-  const permissions = user.roles.flatMap(userRole => 
+  const permissions = user.roles.flatMap(userRole =>
     userRole.role.permissions.map(p => `${p.action}_${p.subject}`)
   );
 
   // Generate JWT token
   const token = jwt.sign(
-    { 
-      userId: user.id, 
-      startupId: user.startupId, 
+    {
+      userId: user.id,
+      startupId: user.startupId,
       roles: roleNames,
       permissions: permissions,
-      email: user.email
+      email: user.email,
     },
     process.env.JWT_SECRET!,
-    { 
-      expiresIn: '7d',
-      issuer: 'coxist-ai-accelerator',
-      audience: 'coxist-ai-users'
+    {
+      expiresIn: "7d",
+      issuer: "coxist-ai-accelerator",
+      audience: "coxist-ai-users",
     }
   );
 
-  return { 
-    token, 
+  return {
+    token,
     user: {
       id: user.id,
       email: user.email,
@@ -357,73 +375,93 @@ export const login = async (data: LoginData) => {
         subscriptionPlan: user.startup.subscriptionPlan,
         subscriptionStatus: user.startup.subscriptionStatus,
         trialEndsAt: user.startup.trialEndsAt,
-        companyProfile: user.startup.companyProfile ? {
-          id: user.startup.companyProfile.id,
-          displayName: user.startup.companyProfile.displayName,
-          legalName: user.startup.companyProfile.legalName,
-          mailingName: user.startup.companyProfile.mailingName,
-          baseCurrency: user.startup.companyProfile.baseCurrency,
-          country: user.startup.companyProfile.country,
-          state: user.startup.companyProfile.state,
-          city: user.startup.companyProfile.city,
-          postalCode: user.startup.companyProfile.postalCode,
-          phone: user.startup.companyProfile.phone,
-          mobile: user.startup.companyProfile.mobile,
-          email: user.startup.companyProfile.email,
-          website: user.startup.companyProfile.website,
-          addresses: user.startup.companyProfile.addresses
-        } : null,
-        fiscalConfig: user.startup.fiscalConfig ? {
-          id: user.startup.fiscalConfig.id,
-          financialYearStart: user.startup.fiscalConfig.financialYearStart,
-          booksStart: user.startup.fiscalConfig.booksStart,
-          allowBackdatedEntries: user.startup.fiscalConfig.allowBackdatedEntries,
-          backdatedFrom: user.startup.fiscalConfig.backdatedFrom,
-          enableEditLog: user.startup.fiscalConfig.enableEditLog,
-          createdAt: user.startup.fiscalConfig.createdAt,
-          updatedAt: user.startup.fiscalConfig.updatedAt
-        } : null,
-        securityConfig: user.startup.securityConfig ? {
-          id: user.startup.securityConfig.id,
-          tallyVaultEnabled: user.startup.securityConfig.tallyVaultEnabled,
-          userAccessControlEnabled: user.startup.securityConfig.userAccessControlEnabled,
-          multiFactorRequired: user.startup.securityConfig.multiFactorRequired,
-          createdAt: user.startup.securityConfig.createdAt,
-          updatedAt: user.startup.securityConfig.updatedAt
-        } : null,
-        currencyConfig: user.startup.currencyConfig ? {
-          id: user.startup.currencyConfig.id,
-          baseCurrencyCode: user.startup.currencyConfig.baseCurrencyCode,
-          baseCurrencySymbol: user.startup.currencyConfig.baseCurrencySymbol,
-          baseCurrencyFormalName: user.startup.currencyConfig.baseCurrencyFormalName,
-          decimalPlaces: user.startup.currencyConfig.decimalPlaces,
-          decimalSeparator: user.startup.currencyConfig.decimalSeparator,
-          thousandSeparator: user.startup.currencyConfig.thousandSeparator,
-          symbolOnRight: user.startup.currencyConfig.symbolOnRight,
-          spaceBetweenAmountAndSymbol: user.startup.currencyConfig.spaceBetweenAmountAndSymbol,
-          showAmountInMillions: user.startup.currencyConfig.showAmountInMillions,
-          createdAt: user.startup.currencyConfig.createdAt,
-          updatedAt: user.startup.currencyConfig.updatedAt
-        } : null,
-        featureToggle: user.startup.featureToggle ? {
-          id: user.startup.featureToggle.id,
-          enableAccounting: user.startup.featureToggle.enableAccounting,
-          enableInventory: user.startup.featureToggle.enableInventory,
-          enableTaxation: user.startup.featureToggle.enableTaxation,
-          enablePayroll: user.startup.featureToggle.enablePayroll,
-          enableAIInsights: user.startup.featureToggle.enableAIInsights,
-          enableScenarioPlanning: user.startup.featureToggle.enableScenarioPlanning,
-          enableAutomations: user.startup.featureToggle.enableAutomations,
-          enableVendorManagement: user.startup.featureToggle.enableVendorManagement,
-          enableBillingAndInvoicing: user.startup.featureToggle.enableBillingAndInvoicing,
-          createdAt: user.startup.featureToggle.createdAt,
-          updatedAt: user.startup.featureToggle.updatedAt
-        } : null
+        companyProfile: user.startup.companyProfile
+          ? {
+              id: user.startup.companyProfile.id,
+              displayName: user.startup.companyProfile.displayName,
+              legalName: user.startup.companyProfile.legalName,
+              mailingName: user.startup.companyProfile.mailingName,
+              baseCurrency: user.startup.companyProfile.baseCurrency,
+              country: user.startup.companyProfile.country,
+              state: user.startup.companyProfile.state,
+              city: user.startup.companyProfile.city,
+              postalCode: user.startup.companyProfile.postalCode,
+              phone: user.startup.companyProfile.phone,
+              mobile: user.startup.companyProfile.mobile,
+              email: user.startup.companyProfile.email,
+              website: user.startup.companyProfile.website,
+              addresses: user.startup.companyProfile.addresses,
+            }
+          : null,
+        fiscalConfig: user.startup.fiscalConfig
+          ? {
+              id: user.startup.fiscalConfig.id,
+              financialYearStart: user.startup.fiscalConfig.financialYearStart,
+              booksStart: user.startup.fiscalConfig.booksStart,
+              allowBackdatedEntries:
+                user.startup.fiscalConfig.allowBackdatedEntries,
+              backdatedFrom: user.startup.fiscalConfig.backdatedFrom,
+              enableEditLog: user.startup.fiscalConfig.enableEditLog,
+              createdAt: user.startup.fiscalConfig.createdAt,
+              updatedAt: user.startup.fiscalConfig.updatedAt,
+            }
+          : null,
+        securityConfig: user.startup.securityConfig
+          ? {
+              id: user.startup.securityConfig.id,
+              tallyVaultEnabled: user.startup.securityConfig.tallyVaultEnabled,
+              userAccessControlEnabled:
+                user.startup.securityConfig.userAccessControlEnabled,
+              multiFactorRequired:
+                user.startup.securityConfig.multiFactorRequired,
+              createdAt: user.startup.securityConfig.createdAt,
+              updatedAt: user.startup.securityConfig.updatedAt,
+            }
+          : null,
+        currencyConfig: user.startup.currencyConfig
+          ? {
+              id: user.startup.currencyConfig.id,
+              baseCurrencyCode: user.startup.currencyConfig.baseCurrencyCode,
+              baseCurrencySymbol:
+                user.startup.currencyConfig.baseCurrencySymbol,
+              baseCurrencyFormalName:
+                user.startup.currencyConfig.baseCurrencyFormalName,
+              decimalPlaces: user.startup.currencyConfig.decimalPlaces,
+              decimalSeparator: user.startup.currencyConfig.decimalSeparator,
+              thousandSeparator: user.startup.currencyConfig.thousandSeparator,
+              symbolOnRight: user.startup.currencyConfig.symbolOnRight,
+              spaceBetweenAmountAndSymbol:
+                user.startup.currencyConfig.spaceBetweenAmountAndSymbol,
+              showAmountInMillions:
+                user.startup.currencyConfig.showAmountInMillions,
+              createdAt: user.startup.currencyConfig.createdAt,
+              updatedAt: user.startup.currencyConfig.updatedAt,
+            }
+          : null,
+        featureToggle: user.startup.featureToggle
+          ? {
+              id: user.startup.featureToggle.id,
+              enableAccounting: user.startup.featureToggle.enableAccounting,
+              enableInventory: user.startup.featureToggle.enableInventory,
+              enableTaxation: user.startup.featureToggle.enableTaxation,
+              enablePayroll: user.startup.featureToggle.enablePayroll,
+              enableAIInsights: user.startup.featureToggle.enableAIInsights,
+              enableScenarioPlanning:
+                user.startup.featureToggle.enableScenarioPlanning,
+              enableAutomations: user.startup.featureToggle.enableAutomations,
+              enableVendorManagement:
+                user.startup.featureToggle.enableVendorManagement,
+              enableBillingAndInvoicing:
+                user.startup.featureToggle.enableBillingAndInvoicing,
+              createdAt: user.startup.featureToggle.createdAt,
+              updatedAt: user.startup.featureToggle.updatedAt,
+            }
+          : null,
       },
       roles: roleNames,
       permissions: permissions,
-      isActive: user.isActive
-    }
+      isActive: user.isActive,
+    },
   };
 };
 
@@ -446,43 +484,45 @@ export const createTeamMember = async (
         include: {
           role: {
             include: {
-              permissions: true
-            }
-          }
-        }
-      }
-    }
+              permissions: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!adminUser || adminUser.startupId !== startupId) {
-    throw new Error('Unauthorized');
+    throw new Error("Unauthorized");
   }
 
   // Check if admin has manage_team permission
   const hasPermission = adminUser.roles.some(userRole =>
-    userRole.role.permissions.some(p => p.action === 'manage' && p.subject === 'team')
+    userRole.role.permissions.some(
+      p => p.action === "manage" && p.subject === "team"
+    )
   );
 
   if (!hasPermission) {
-    throw new Error('You do not have permission to manage team members');
+    throw new Error("You do not have permission to manage team members");
   }
 
   // Check if user already exists
   const existingUser = await prisma.user.findUnique({
-    where: { email: memberData.email }
+    where: { email: memberData.email },
   });
 
   if (existingUser) {
-    throw new Error('User with this email already exists');
+    throw new Error("User with this email already exists");
   }
 
   // Find the role
   const role = await prisma.role.findUnique({
-    where: { name: memberData.roleName }
+    where: { name: memberData.roleName },
   });
 
   if (!role) {
-    throw new Error('Role not found');
+    throw new Error("Role not found");
   }
 
   // Hash password
@@ -499,21 +539,21 @@ export const createTeamMember = async (
       isActive: true,
       roles: {
         create: {
-          roleId: role.id
-        }
-      }
+          roleId: role.id,
+        },
+      },
     },
     include: {
       roles: {
         include: {
           role: {
             include: {
-              permissions: true
-            }
-          }
-        }
-      }
-    }
+              permissions: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   return {
@@ -522,7 +562,6 @@ export const createTeamMember = async (
     firstName: newUser.firstName,
     lastName: newUser.lastName,
     roles: newUser.roles.map(ur => ur.role.name),
-    isActive: newUser.isActive
+    isActive: newUser.isActive,
   };
 };
-

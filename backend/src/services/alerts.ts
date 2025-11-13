@@ -1,6 +1,7 @@
 import { prisma } from '../lib/prisma';
 import { Prisma } from '@prisma/client';
 import OpenAI from 'openai';
+import { analyzeVoucherAnomalies, VoucherAlert } from './voucherAI';
 
 // Initialize OpenAI only if API key is provided
 let openai: OpenAI | null = null;
@@ -45,6 +46,51 @@ export class AlertsService {
 
     // Check for anomalies
     await this.checkAnomalies(startupId, latestMetrics);
+    
+    // Check voucher-based anomalies
+    await this.checkVoucherAnomalies(startupId);
+  }
+
+  /**
+   * Check voucher-based anomalies and create alerts
+   */
+  private static async checkVoucherAnomalies(startupId: string): Promise<void> {
+    try {
+      const voucherAlerts = await analyzeVoucherAnomalies(startupId);
+
+      for (const alert of voucherAlerts) {
+        // Check if similar alert already exists
+        const existing = await prisma.alert.findFirst({
+          where: {
+            startupId,
+            type: 'voucher_anomaly',
+            title: alert.title,
+            isDismissed: false,
+            createdAt: {
+              gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
+            },
+          },
+        });
+
+        if (!existing) {
+          await prisma.alert.create({
+            data: {
+              startupId,
+              type: 'voucher_anomaly',
+              severity: alert.severity,
+              title: alert.title,
+              message: alert.message,
+              recommendations: alert.recommendations || [],
+              relatedEntityType: 'voucher',
+              relatedEntityId: alert.voucherIds.length > 0 ? alert.voucherIds[0] : null,
+              metadata: alert.metadata || {},
+            },
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error checking voucher anomalies:', error);
+    }
   }
 
   /**

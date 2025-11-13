@@ -23,9 +23,9 @@
 - [x] GST/statutory configuration (multi-registration, tax rates, ledger mappings, UI workflows)
 - [x] Edit log/audit trail service (comprehensive audit logging for all entity changes, filtering, summary views, UI)
 - [x] Role management UI (comprehensive role and permission management, user role assignment, CRUD operations)
+- [x] Enhanced Tally import/export (multi-series vouchers support, GST data import, Excel export templates for vouchers/ledgers/GST, enhanced voucher import with proper voucher types and numbering series)
+- [x] AI workflows tied to real voucher data (voucher anomaly detection, variance analysis, AI-powered insights, enhanced scenario analysis using voucher data, integrated voucher alerts)
 
 ## 🚧 Feature Parity Gaps
-- [ ] Enhanced Tally import/export (multi-series vouchers, GST data, Excel templates)
-- [ ] AI workflows tied to real voucher data (alerts, scenarios, variance detection)
 
 > Update this checklist as modules move from the backlog into production.
