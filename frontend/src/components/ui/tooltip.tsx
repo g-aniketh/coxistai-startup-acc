@@ -1,14 +1,21 @@
 'use client';
 
 import React from 'react';
+import { cn } from '@/lib/utils';
 
 interface TooltipProps {
   children: React.ReactNode;
   content: string;
   side?: 'top' | 'bottom' | 'left' | 'right';
+  wrapperClassName?: string;
 }
 
-export function Tooltip({ children, content, side = 'right' }: TooltipProps) {
+export function Tooltip({
+  children,
+  content,
+  side = 'right',
+  wrapperClassName,
+}: TooltipProps) {
   const [isVisible, setIsVisible] = React.useState(false);
 
   const sideClasses = {
@@ -20,7 +27,7 @@ export function Tooltip({ children, content, side = 'right' }: TooltipProps) {
 
   return (
     <div
-      className="relative inline-block w-full"
+      className={cn('relative inline-flex', wrapperClassName)}
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
     >

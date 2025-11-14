@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import AuthGuard from '@/components/auth/AuthGuard';
-import MainLayout from '@/components/layout/MainLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
+import { useEffect, useMemo, useState } from "react";
+import AuthGuard from "@/components/auth/AuthGuard";
+import MainLayout from "@/components/layout/MainLayout";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   apiClient,
   CostCategory,
@@ -18,7 +18,9 @@ import {
   CostCenterInput,
   InterestProfileInput,
   PartyInterestInput,
-} from '@/lib/api';
+  InterestCompoundingFrequency,
+} from "@/lib/api";
+import { Badge } from "@/components/ui/Badge";
 import {
   Building2,
   Calculator,
@@ -29,9 +31,8 @@ import {
   Settings,
   Trash2,
   Users,
-  X,
-} from 'lucide-react';
-import { toast } from 'react-hot-toast';
+} from "lucide-react";
+import { toast } from "react-hot-toast";
 import {
   Table,
   TableBody,
@@ -39,75 +40,164 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 
-type TabType = 'categories' | 'centers' | 'interest' | 'party-interest';
+type TabType = "categories" | "centers" | "interest" | "party-interest";
+type CategoryTreeNode = CostCategory & { children?: CategoryTreeNode[] };
+
+const flattenCategoryTree = (
+  nodes: CategoryTreeNode[],
+  depth = 0
+): Array<CategoryTreeNode & { depth: number }> => {
+  const flattened: Array<CategoryTreeNode & { depth: number }> = [];
+  nodes.forEach(node => {
+    flattened.push({ ...node, depth });
+    if (node.children && node.children.length > 0) {
+      flattened.push(...flattenCategoryTree(node.children, depth + 1));
+    }
+  });
+  return flattened;
+};
+
+const normalizeCategoryData = (items: CostCategory[]): CategoryTreeNode[] => {
+  if (!items || items.length === 0) {
+    return [];
+  }
+
+  const alreadyNested = items.some(
+    item => Array.isArray(item.children) && item.children.length > 0
+  );
+
+  if (alreadyNested) {
+    return items as CategoryTreeNode[];
+  }
+
+  const map = new Map<string, CategoryTreeNode>();
+  items.forEach(item => {
+    map.set(item.id, { ...item, children: [] });
+  });
+
+  const roots: CategoryTreeNode[] = [];
+
+  map.forEach(node => {
+    if (node.parentId && map.has(node.parentId)) {
+      map.get(node.parentId)!.children!.push(node);
+    } else {
+      roots.push(node);
+    }
+  });
+
+  return roots;
+};
+
+const collectCategoryIds = (nodes: CategoryTreeNode[], bucket: Set<string>) => {
+  nodes.forEach(node => {
+    bucket.add(node.id);
+    if (node.children && node.children.length > 0) {
+      collectCategoryIds(node.children, bucket);
+    }
+  });
+};
+
+const collectNodeAndDescendants = (
+  node: CategoryTreeNode,
+  bucket: Set<string>
+) => {
+  bucket.add(node.id);
+  node.children?.forEach(child => collectNodeAndDescendants(child, bucket));
+};
 
 export default function CostManagementPage() {
-  const [activeTab, setActiveTab] = useState<TabType>('categories');
+  const [activeTab, setActiveTab] = useState<TabType>("categories");
   const [loading, setLoading] = useState(true);
-  const [categories, setCategories] = useState<CostCategory[]>([]);
+  const [categories, setCategories] = useState<CategoryTreeNode[]>([]);
   const [centers, setCenters] = useState<CostCenter[]>([]);
-  const [interestProfiles, setInterestProfiles] = useState<InterestProfile[]>([]);
-  const [partySettings, setPartySettings] = useState<PartyInterestSetting[]>([]);
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [interestProfiles, setInterestProfiles] = useState<InterestProfile[]>(
+    []
+  );
+  const [partySettings, setPartySettings] = useState<PartyInterestSetting[]>(
+    []
+  );
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+    new Set()
+  );
 
   // Category form state
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<CostCategory | null>(null);
+  const [editingCategory, setEditingCategory] =
+    useState<CategoryTreeNode | null>(null);
   const [categoryForm, setCategoryForm] = useState<CostCategoryInput>({
-    name: '',
-    description: '',
+    name: "",
+    description: "",
     parentId: null,
     isPrimary: false,
   });
+  const [categorySaving, setCategorySaving] = useState(false);
 
   // Center form state
   const [centerDialogOpen, setCenterDialogOpen] = useState(false);
   const [editingCenter, setEditingCenter] = useState<CostCenter | null>(null);
   const [centerForm, setCenterForm] = useState<CostCenterInput>({
-    categoryId: '',
-    name: '',
-    code: '',
-    description: '',
+    categoryId: "",
+    name: "",
+    code: "",
+    description: "",
     parentId: null,
     isBillable: true,
-    status: 'active',
+    status: "active",
   });
+  const [centerSaving, setCenterSaving] = useState(false);
 
   // Interest profile form state
   const [interestDialogOpen, setInterestDialogOpen] = useState(false);
-  const [editingInterest, setEditingInterest] = useState<InterestProfile | null>(null);
+  const [editingInterest, setEditingInterest] =
+    useState<InterestProfile | null>(null);
   const [interestForm, setInterestForm] = useState<InterestProfileInput>({
-    name: '',
-    description: '',
-    calculationMode: 'SIMPLE',
+    name: "",
+    description: "",
+    calculationMode: "SIMPLE",
     rate: 0,
-    compoundingFrequency: 'NONE',
+    compoundingFrequency: "NONE",
     gracePeriodDays: null,
     calculateFromDueDate: true,
     penalRate: 0,
     penalGraceDays: null,
   });
+  const [interestSaving, setInterestSaving] = useState(false);
 
   // Party interest form state
   const [partyInterestDialogOpen, setPartyInterestDialogOpen] = useState(false);
-  const [partyInterestForm, setPartyInterestForm] = useState<PartyInterestInput>({
-    partyId: '',
-    interestProfileId: '',
-    overrideRate: null,
-    effectiveFrom: '',
-    effectiveTo: '',
-    applyOnReceivables: true,
-    applyOnPayables: false,
-  });
+  const [partyInterestForm, setPartyInterestForm] =
+    useState<PartyInterestInput>({
+      partyId: "",
+      interestProfileId: "",
+      overrideRate: null,
+      effectiveFrom: "",
+      effectiveTo: "",
+      applyOnReceivables: true,
+      applyOnPayables: false,
+    });
+  const [partySaving, setPartySaving] = useState(false);
+
+  const flatCategories = useMemo(
+    () => flattenCategoryTree(categories),
+    [categories]
+  );
+
+  const blockedParentIds = useMemo(() => {
+    const blocked = new Set<string>();
+    if (editingCategory) {
+      collectNodeAndDescendants(editingCategory, blocked);
+    }
+    return blocked;
+  }, [editingCategory]);
 
   const loadData = async () => {
     try {
@@ -120,7 +210,14 @@ export default function CostManagementPage() {
       ]);
 
       if (catsRes.success && catsRes.data) {
-        setCategories(catsRes.data);
+        const tree = normalizeCategoryData(catsRes.data);
+        setCategories(tree);
+        const expanded = new Set<string>();
+        collectCategoryIds(tree, expanded);
+        setExpandedCategories(expanded);
+      } else {
+        setCategories([]);
+        setExpandedCategories(new Set());
       }
       if (centersRes.success && centersRes.data) {
         setCenters(centersRes.data);
@@ -132,8 +229,8 @@ export default function CostManagementPage() {
         setPartySettings(partyRes.data);
       }
     } catch (error) {
-      console.error('Load cost management data error:', error);
-      toast.error('Failed to load cost management data');
+      console.error("Load cost management data error:", error);
+      toast.error("Failed to load cost management data");
     } finally {
       setLoading(false);
     }
@@ -146,60 +243,69 @@ export default function CostManagementPage() {
   // Category handlers
   const handleCreateCategory = async () => {
     try {
+      setCategorySaving(true);
       const response = await apiClient.costing.createCategory(categoryForm);
       if (response.success && response.data) {
-        toast.success('Cost category created successfully');
+        toast.success("Cost category created successfully");
         setCategoryDialogOpen(false);
         resetCategoryForm();
         await loadData();
       } else {
-        toast.error(response.error || 'Failed to create category');
+        toast.error(response.error || "Failed to create category");
       }
     } catch (error) {
-      console.error('Create category error:', error);
-      toast.error('Failed to create category');
+      console.error("Create category error:", error);
+      toast.error("Failed to create category");
+    } finally {
+      setCategorySaving(false);
     }
   };
 
   const handleUpdateCategory = async () => {
     if (!editingCategory) return;
     try {
-      const response = await apiClient.costing.updateCategory(editingCategory.id, categoryForm);
+      setCategorySaving(true);
+      const response = await apiClient.costing.updateCategory(
+        editingCategory.id,
+        categoryForm
+      );
       if (response.success && response.data) {
-        toast.success('Cost category updated successfully');
+        toast.success("Cost category updated successfully");
         setCategoryDialogOpen(false);
         setEditingCategory(null);
         resetCategoryForm();
         await loadData();
       } else {
-        toast.error(response.error || 'Failed to update category');
+        toast.error(response.error || "Failed to update category");
       }
     } catch (error) {
-      console.error('Update category error:', error);
-      toast.error('Failed to update category');
+      console.error("Update category error:", error);
+      toast.error("Failed to update category");
+    } finally {
+      setCategorySaving(false);
     }
   };
 
   const handleDeleteCategory = async (categoryId: string) => {
-    if (!confirm('Are you sure you want to delete this category?')) return;
+    if (!confirm("Are you sure you want to delete this category?")) return;
     try {
       const response = await apiClient.costing.deleteCategory(categoryId);
       if (response.success) {
-        toast.success('Category deleted successfully');
+        toast.success("Category deleted successfully");
         await loadData();
       } else {
-        toast.error(response.error || 'Failed to delete category');
+        toast.error(response.error || "Failed to delete category");
       }
     } catch (error) {
-      console.error('Delete category error:', error);
-      toast.error('Failed to delete category');
+      console.error("Delete category error:", error);
+      toast.error("Failed to delete category");
     }
   };
 
   const resetCategoryForm = () => {
     setCategoryForm({
-      name: '',
-      description: '',
+      name: "",
+      description: "",
       parentId: null,
       isPrimary: false,
     });
@@ -211,7 +317,7 @@ export default function CostManagementPage() {
       setEditingCategory(category);
       setCategoryForm({
         name: category.name,
-        description: category.description || '',
+        description: category.description || "",
         parentId: category.parentId || null,
         isPrimary: category.isPrimary,
       });
@@ -224,65 +330,74 @@ export default function CostManagementPage() {
   // Center handlers
   const handleCreateCenter = async () => {
     try {
+      setCenterSaving(true);
       const response = await apiClient.costing.createCenter(centerForm);
       if (response.success && response.data) {
-        toast.success('Cost center created successfully');
+        toast.success("Cost center created successfully");
         setCenterDialogOpen(false);
         resetCenterForm();
         await loadData();
       } else {
-        toast.error(response.error || 'Failed to create center');
+        toast.error(response.error || "Failed to create center");
       }
     } catch (error) {
-      console.error('Create center error:', error);
-      toast.error('Failed to create center');
+      console.error("Create center error:", error);
+      toast.error("Failed to create center");
+    } finally {
+      setCenterSaving(false);
     }
   };
 
   const handleUpdateCenter = async () => {
     if (!editingCenter) return;
     try {
-      const response = await apiClient.costing.updateCenter(editingCenter.id, centerForm);
+      setCenterSaving(true);
+      const response = await apiClient.costing.updateCenter(
+        editingCenter.id,
+        centerForm
+      );
       if (response.success && response.data) {
-        toast.success('Cost center updated successfully');
+        toast.success("Cost center updated successfully");
         setCenterDialogOpen(false);
         setEditingCenter(null);
         resetCenterForm();
         await loadData();
       } else {
-        toast.error(response.error || 'Failed to update center');
+        toast.error(response.error || "Failed to update center");
       }
     } catch (error) {
-      console.error('Update center error:', error);
-      toast.error('Failed to update center');
+      console.error("Update center error:", error);
+      toast.error("Failed to update center");
+    } finally {
+      setCenterSaving(false);
     }
   };
 
   const handleDeleteCenter = async (centerId: string) => {
-    if (!confirm('Are you sure you want to delete this cost center?')) return;
+    if (!confirm("Are you sure you want to delete this cost center?")) return;
     try {
       const response = await apiClient.costing.deleteCenter(centerId);
       if (response.success) {
-        toast.success('Cost center deleted successfully');
+        toast.success("Cost center deleted successfully");
         await loadData();
       } else {
-        toast.error(response.error || 'Failed to delete center');
+        toast.error(response.error || "Failed to delete center");
       }
     } catch (error) {
-      console.error('Delete center error:', error);
-      toast.error('Failed to delete center');
+      console.error("Delete center error:", error);
+      toast.error("Failed to delete center");
     }
   };
 
   const resetCenterForm = () => {
     setCenterForm({
-      categoryId: categories[0]?.id || '',
-      name: '',
-      code: '',
-      description: '',
+      categoryId: flatCategories[0]?.id || "",
+      name: "",
+      code: "",
+      description: "",
       parentId: null,
       isBillable: true,
-      status: 'active',
+      status: "active",
     });
     setEditingCenter(null);
   };
@@ -293,11 +408,11 @@ export default function CostManagementPage() {
       setCenterForm({
         categoryId: center.categoryId,
         name: center.name,
-        code: center.code || '',
-        description: center.description || '',
+        code: center.code || "",
+        description: center.description || "",
         parentId: center.parentId || null,
         isBillable: center.isBillable,
-        status: center.status as 'active' | 'inactive',
+        status: center.status as "active" | "inactive",
       });
     } else {
       resetCenterForm();
@@ -308,66 +423,75 @@ export default function CostManagementPage() {
   // Interest profile handlers
   const handleCreateInterest = async () => {
     try {
-      const response = await apiClient.costing.createInterestProfile(interestForm);
+      setInterestSaving(true);
+      const response = await apiClient.costing.createInterestProfile(
+        interestForm
+      );
       if (response.success && response.data) {
-        toast.success('Interest profile created successfully');
+        toast.success("Interest profile created successfully");
         setInterestDialogOpen(false);
         resetInterestForm();
         await loadData();
       } else {
-        toast.error(response.error || 'Failed to create interest profile');
+        toast.error(response.error || "Failed to create interest profile");
       }
     } catch (error) {
-      console.error('Create interest profile error:', error);
-      toast.error('Failed to create interest profile');
+      console.error("Create interest profile error:", error);
+      toast.error("Failed to create interest profile");
+    } finally {
+      setInterestSaving(false);
     }
   };
 
   const handleUpdateInterest = async () => {
     if (!editingInterest) return;
     try {
+      setInterestSaving(true);
       const response = await apiClient.costing.updateInterestProfile(
         editingInterest.id,
         interestForm
       );
       if (response.success && response.data) {
-        toast.success('Interest profile updated successfully');
+        toast.success("Interest profile updated successfully");
         setInterestDialogOpen(false);
         setEditingInterest(null);
         resetInterestForm();
         await loadData();
       } else {
-        toast.error(response.error || 'Failed to update interest profile');
+        toast.error(response.error || "Failed to update interest profile");
       }
     } catch (error) {
-      console.error('Update interest profile error:', error);
-      toast.error('Failed to update interest profile');
+      console.error("Update interest profile error:", error);
+      toast.error("Failed to update interest profile");
+    } finally {
+      setInterestSaving(false);
     }
   };
 
   const handleDeleteInterest = async (profileId: string) => {
-    if (!confirm('Are you sure you want to delete this interest profile?')) return;
+    if (!confirm("Are you sure you want to delete this interest profile?"))
+      return;
     try {
       const response = await apiClient.costing.deleteInterestProfile(profileId);
       if (response.success) {
-        toast.success('Interest profile deleted successfully');
+        toast.success("Interest profile deleted successfully");
         await loadData();
       } else {
-        toast.error(response.error || 'Failed to delete interest profile');
+        toast.error(response.error || "Failed to delete interest profile");
       }
     } catch (error) {
-      console.error('Delete interest profile error:', error);
-      toast.error('Failed to delete interest profile');
+      console.error("Delete interest profile error:", error);
+      toast.error("Failed to delete interest profile");
     }
   };
 
   const resetInterestForm = () => {
     setInterestForm({
-      name: '',
-      description: '',
-      calculationMode: 'SIMPLE',
+      name: "",
+      description: "",
+      calculationMode: "SIMPLE",
       rate: 0,
-      compoundingFrequency: 'NONE',
+      compoundingFrequency: "NONE",
       gracePeriodDays: null,
       calculateFromDueDate: true,
       penalRate: 0,
@@ -381,7 +505,7 @@ export default function CostManagementPage() {
       setEditingInterest(profile);
       setInterestForm({
         name: profile.name,
-        description: profile.description || '',
+        description: profile.description || "",
         calculationMode: profile.calculationMode,
         rate: profile.rate,
         compoundingFrequency: profile.compoundingFrequency,
@@ -399,44 +523,54 @@ export default function CostManagementPage() {
   // Party interest handlers
   const handleAssignInterest = async () => {
     try {
-      const response = await apiClient.costing.assignInterestToParty(partyInterestForm);
+      setPartySaving(true);
+      const response = await apiClient.costing.assignInterestToParty(
+        partyInterestForm
+      );
       if (response.success && response.data) {
-        toast.success('Interest assigned to party successfully');
+        toast.success("Interest assigned to party successfully");
         setPartyInterestDialogOpen(false);
         resetPartyInterestForm();
         await loadData();
       } else {
-        toast.error(response.error || 'Failed to assign interest');
+        toast.error(response.error || "Failed to assign interest");
       }
     } catch (error) {
-      console.error('Assign interest error:', error);
-      toast.error('Failed to assign interest');
+      console.error("Assign interest error:", error);
+      toast.error("Failed to assign interest");
+    } finally {
+      setPartySaving(false);
     }
   };
 
   const handleRemoveInterest = async (partyId: string) => {
-    if (!confirm('Are you sure you want to remove interest settings for this party?')) return;
+    if (
+      !confirm(
+        "Are you sure you want to remove interest settings for this party?"
+      )
+    )
+      return;
     try {
       const response = await apiClient.costing.removeInterestForParty(partyId);
       if (response.success) {
-        toast.success('Interest settings removed successfully');
+        toast.success("Interest settings removed successfully");
         await loadData();
       } else {
-        toast.error(response.error || 'Failed to remove interest settings');
+        toast.error(response.error || "Failed to remove interest settings");
       }
     } catch (error) {
-      console.error('Remove interest error:', error);
-      toast.error('Failed to remove interest settings');
+      console.error("Remove interest error:", error);
+      toast.error("Failed to remove interest settings");
     }
   };
 
   const resetPartyInterestForm = () => {
     setPartyInterestForm({
-      partyId: '',
-      interestProfileId: '',
+      partyId: "",
+      interestProfileId: "",
       overrideRate: null,
-      effectiveFrom: '',
-      effectiveTo: '',
+      effectiveFrom: "",
+      effectiveTo: "",
       applyOnReceivables: true,
       applyOnPayables: false,
     });
@@ -453,13 +587,18 @@ export default function CostManagementPage() {
   };
 
   const renderCategoriesTab = () => {
-    const rootCategories = categories.filter((cat) => !cat.parentId);
+    const rootCategories = categories;
 
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Cost Categories</h3>
-          <Button onClick={() => openCategoryDialog()} className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-[#2C2C2C]">
+            Cost Categories
+          </h3>
+          <Button
+            onClick={() => openCategoryDialog()}
+            className="flex items-center gap-2"
+          >
             <Plus className="h-4 w-4" /> Add Category
           </Button>
         </div>
@@ -470,17 +609,17 @@ export default function CostManagementPage() {
           </div>
         ) : categories.length === 0 ? (
           <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-muted-foreground bg-gray-50">
-            No cost categories defined yet. Create your first category to get started.
+            No cost categories defined yet. Create your first category to get
+            started.
           </div>
         ) : (
           <div className="space-y-2">
-            {rootCategories.map((category) => (
+            {rootCategories.map(category => (
               <CategoryTree
                 key={category.id}
                 category={category}
-                allCategories={categories}
-                expanded={expandedCategories.has(category.id)}
-                onToggle={() => toggleCategory(category.id)}
+                expandedIds={expandedCategories}
+                onToggle={toggleCategory}
                 onEdit={openCategoryDialog}
                 onDelete={handleDeleteCategory}
               />
@@ -495,7 +634,7 @@ export default function CostManagementPage() {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Cost Centers</h3>
+          <h3 className="text-lg font-semibold text-[#2C2C2C]">Cost Centers</h3>
           <Button
             onClick={() => openCenterDialog()}
             className="flex items-center gap-2"
@@ -511,33 +650,36 @@ export default function CostManagementPage() {
           </div>
         ) : centers.length === 0 ? (
           <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-muted-foreground bg-gray-50">
-            No cost centers defined yet. Create your first center to get started.
+            No cost centers defined yet. Create your first center to get
+            started.
           </div>
         ) : (
           <div className="rounded-lg border border-gray-200 overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Billable</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-[#2C2C2C]">Name</TableHead>
+                  <TableHead className="text-[#2C2C2C]">Code</TableHead>
+                  <TableHead className="text-[#2C2C2C]">Category</TableHead>
+                  <TableHead className="text-[#2C2C2C]">Status</TableHead>
+                  <TableHead className="text-[#2C2C2C]">Billable</TableHead>
+                  <TableHead className="text-right text-[#2C2C2C]">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {centers.map((center) => (
+                {centers.map(center => (
                   <TableRow key={center.id}>
                     <TableCell className="font-medium">{center.name}</TableCell>
-                    <TableCell>{center.code || '-'}</TableCell>
-                    <TableCell>{center.category?.name || '-'}</TableCell>
+                    <TableCell>{center.code || "-"}</TableCell>
+                    <TableCell>{center.category?.name || "-"}</TableCell>
                     <TableCell>
                       <span
                         className={`px-2 py-1 rounded text-xs ${
-                          center.status === 'active'
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-gray-100 text-gray-700'
+                          center.status === "active"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-gray-100 text-gray-700"
                         }`}
                       >
                         {center.status}
@@ -583,8 +725,13 @@ export default function CostManagementPage() {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Interest Profiles</h3>
-          <Button onClick={() => openInterestDialog()} className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-[#2C2C2C]">
+            Interest Profiles
+          </h3>
+          <Button
+            onClick={() => openInterestDialog()}
+            className="flex items-center gap-2 bg-[#607c47] hover:bg-[#4a6129] text-white"
+          >
             <Plus className="h-4 w-4" /> Add Profile
           </Button>
         </div>
@@ -595,68 +742,97 @@ export default function CostManagementPage() {
           </div>
         ) : interestProfiles.length === 0 ? (
           <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-muted-foreground bg-gray-50">
-            No interest profiles defined yet. Create your first profile to get started.
+            No interest profiles defined yet. Create your first profile to get
+            started.
           </div>
         ) : (
-          <div className="space-y-4">
-            {interestProfiles.map((profile) => (
-              <Card key={profile.id} className="rounded-xl border border-gray-200">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base">{profile.name}</CardTitle>
-                    {profile.description && (
-                      <p className="text-sm text-muted-foreground mt-1">{profile.description}</p>
-                    )}
+          <div className="space-y-3">
+            {interestProfiles.map(profile => (
+              <Card
+                key={profile.id}
+                className="rounded-xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow"
+              >
+                <CardContent className="p-4 md:p-5">
+                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <CardTitle className="text-base font-semibold text-[#2C2C2C]">
+                        {profile.name}
+                      </CardTitle>
+                      {profile.description && (
+                        <p className="text-xs text-[#2C2C2C]/70 mt-0.5">
+                          {profile.description}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openInterestDialog(profile)}
+                        className="border-gray-300 text-[#2C2C2C] hover:bg-gray-100 text-xs px-3"
+                      >
+                        <Edit className="h-4 w-4" />
+                        <span>Edit</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteInterest(profile.id)}
+                        className="border-red-200 text-red-600 hover:bg-red-50 text-xs px-3"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span>Delete</span>
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => openInterestDialog(profile)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteInterest(profile.id)}
-                      className="text-red-500 hover:text-red-600"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <span className="text-muted-foreground">Rate:</span>{' '}
-                      <span className="font-medium">{profile.rate}%</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 text-sm text-[#2C2C2C]">
+                    <div className="rounded-lg bg-gray-50 p-2.5">
+                      <p className="text-[11px] uppercase tracking-wide text-[#2C2C2C]/60">
+                        Rate
+                      </p>
+                      <p className="text-base font-semibold">{profile.rate}%</p>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">Mode:</span>{' '}
-                      <span className="font-medium">{profile.calculationMode}</span>
+                    <div className="rounded-lg bg-gray-50 p-2.5">
+                      <p className="text-[11px] uppercase tracking-wide text-[#2C2C2C]/60">
+                        Mode
+                      </p>
+                      <p className="text-base font-semibold">
+                        {profile.calculationMode}
+                      </p>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">Compounding:</span>{' '}
-                      <span className="font-medium">{profile.compoundingFrequency}</span>
+                    <div className="rounded-lg bg-gray-50 p-2.5">
+                      <p className="text-[11px] uppercase tracking-wide text-[#2C2C2C]/60">
+                        Compounding
+                      </p>
+                      <p className="text-base font-semibold">
+                        {profile.compoundingFrequency}
+                      </p>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">Grace Period:</span>{' '}
-                      <span className="font-medium">
+                    <div className="rounded-lg bg-gray-50 p-2.5">
+                      <p className="text-[11px] uppercase tracking-wide text-[#2C2C2C]/60">
+                        Grace Period
+                      </p>
+                      <p className="text-base font-semibold">
                         {profile.gracePeriodDays ?? 0} days
-                      </span>
+                      </p>
                     </div>
                     {profile.penalRate > 0 && (
                       <>
-                        <div>
-                          <span className="text-muted-foreground">Penal Rate:</span>{' '}
-                          <span className="font-medium">{profile.penalRate}%</span>
+                        <div className="rounded-lg bg-gray-50 p-2.5">
+                          <p className="text-[11px] uppercase tracking-wide text-[#2C2C2C]/60">
+                            Penal Rate
+                          </p>
+                          <p className="text-base font-semibold">
+                            {profile.penalRate}%
+                          </p>
                         </div>
-                        <div>
-                          <span className="text-muted-foreground">Penal Grace:</span>{' '}
-                          <span className="font-medium">
+                        <div className="rounded-lg bg-gray-50 p-2.5">
+                          <p className="text-[11px] uppercase tracking-wide text-[#2C2C2C]/60">
+                            Penal Grace
+                          </p>
+                          <p className="text-base font-semibold">
                             {profile.penalGraceDays ?? 0} days
-                          </span>
+                          </p>
                         </div>
                       </>
                     )}
@@ -674,7 +850,9 @@ export default function CostManagementPage() {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Party Interest Settings</h3>
+          <h3 className="text-lg font-semibold text-[#2C2C2C]">
+            Party Interest Settings
+          </h3>
           <Button
             onClick={() => setPartyInterestDialogOpen(true)}
             className="flex items-center gap-2"
@@ -690,30 +868,38 @@ export default function CostManagementPage() {
           </div>
         ) : partySettings.length === 0 ? (
           <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-muted-foreground bg-gray-50">
-            No party interest settings defined yet. Assign interest profiles to parties to get
-            started.
+            No party interest settings defined yet. Assign interest profiles to
+            parties to get started.
           </div>
         ) : (
           <div className="rounded-lg border border-gray-200 overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Party</TableHead>
-                  <TableHead>Interest Profile</TableHead>
-                  <TableHead>Override Rate</TableHead>
-                  <TableHead>Applies To</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-[#2C2C2C]">Party</TableHead>
+                  <TableHead className="text-[#2C2C2C]">
+                    Interest Profile
+                  </TableHead>
+                  <TableHead className="text-[#2C2C2C]">
+                    Override Rate
+                  </TableHead>
+                  <TableHead className="text-[#2C2C2C]">Applies To</TableHead>
+                  <TableHead className="text-right text-[#2C2C2C]">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {partySettings.map((setting) => (
+                {partySettings.map(setting => (
                   <TableRow key={setting.id}>
                     <TableCell className="font-medium">
-                      {setting.party?.name || 'Unknown'}
+                      {setting.party?.name || "Unknown"}
                     </TableCell>
-                    <TableCell>{setting.interestProfile?.name || '-'}</TableCell>
                     <TableCell>
-                      {setting.overrideRate ? `${setting.overrideRate}%` : '-'}
+                      {setting.interestProfile?.name || "-"}
+                    </TableCell>
+                    <TableCell>
+                      {setting.overrideRate ? `${setting.overrideRate}%` : "-"}
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
@@ -756,9 +942,12 @@ export default function CostManagementPage() {
           <div className="flex items-center gap-3">
             <Settings className="h-8 w-8 text-[#2C2C2C]" />
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">Cost Management</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">
+                Cost Management
+              </h1>
               <p className="text-sm text-[#2C2C2C]/70">
-                Manage cost centres, categories, and interest calculation settings.
+                Manage cost centres, categories, and interest calculation
+                settings.
               </p>
             </div>
           </div>
@@ -766,11 +955,27 @@ export default function CostManagementPage() {
           {/* Tabs */}
           <div className="flex gap-2 border-b border-gray-200">
             {[
-              { id: 'categories' as TabType, label: 'Categories', icon: Building2 },
-              { id: 'centers' as TabType, label: 'Cost Centers', icon: Calculator },
-              { id: 'interest' as TabType, label: 'Interest Profiles', icon: Settings },
-              { id: 'party-interest' as TabType, label: 'Party Interest', icon: Users },
-            ].map((tab) => {
+              {
+                id: "categories" as TabType,
+                label: "Categories",
+                icon: Building2,
+              },
+              {
+                id: "centers" as TabType,
+                label: "Cost Centers",
+                icon: Calculator,
+              },
+              {
+                id: "interest" as TabType,
+                label: "Interest Profiles",
+                icon: Settings,
+              },
+              {
+                id: "party-interest" as TabType,
+                label: "Party Interest",
+                icon: Users,
+              },
+            ].map(tab => {
               const Icon = tab.icon;
               return (
                 <button
@@ -778,8 +983,8 @@ export default function CostManagementPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
                     activeTab === tab.id
-                      ? 'border-[#607c47] text-[#607c47] font-medium'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                      ? "border-[#607c47] text-[#607c47] font-medium"
+                      : "border-transparent text-gray-500 hover:text-gray-700"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -792,24 +997,27 @@ export default function CostManagementPage() {
           {/* Tab Content */}
           <Card className="rounded-2xl shadow-lg border-0 bg-white">
             <CardContent className="p-6">
-              {activeTab === 'categories' && renderCategoriesTab()}
-              {activeTab === 'centers' && renderCentersTab()}
-              {activeTab === 'interest' && renderInterestTab()}
-              {activeTab === 'party-interest' && renderPartyInterestTab()}
+              {activeTab === "categories" && renderCategoriesTab()}
+              {activeTab === "centers" && renderCentersTab()}
+              {activeTab === "interest" && renderInterestTab()}
+              {activeTab === "party-interest" && renderPartyInterestTab()}
             </CardContent>
           </Card>
 
           {/* Category Dialog */}
-          <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
+          <Dialog
+            open={categoryDialogOpen}
+            onOpenChange={setCategoryDialogOpen}
+          >
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>
-                  {editingCategory ? 'Edit Category' : 'Create Cost Category'}
+                <DialogTitle className="text-[#2C2C2C]">
+                  {editingCategory ? "Edit Category" : "Create Cost Category"}
                 </DialogTitle>
-                <DialogDescription>
+                <DialogDescription className="text-[#2C2C2C]/70">
                   {editingCategory
-                    ? 'Update the cost category details.'
-                    : 'Create a new cost category for organizing expenses.'}
+                    ? "Update the cost category details."
+                    : "Create a new cost category for organizing expenses."}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
@@ -817,16 +1025,21 @@ export default function CostManagementPage() {
                   <Label>Name *</Label>
                   <Input
                     value={categoryForm.name}
-                    onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                    onChange={e =>
+                      setCategoryForm({ ...categoryForm, name: e.target.value })
+                    }
                     placeholder="Category name"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Description</Label>
                   <Textarea
-                    value={categoryForm.description || ''}
-                    onChange={(e) =>
-                      setCategoryForm({ ...categoryForm, description: e.target.value })
+                    value={categoryForm.description || ""}
+                    onChange={e =>
+                      setCategoryForm({
+                        ...categoryForm,
+                        description: e.target.value,
+                      })
                     }
                     placeholder="Optional description"
                   />
@@ -834,21 +1047,21 @@ export default function CostManagementPage() {
                 <div className="space-y-2">
                   <Label>Parent Category</Label>
                   <select
-                    value={categoryForm.parentId || ''}
-                    onChange={(e) =>
+                    value={categoryForm.parentId || ""}
+                    onChange={e =>
                       setCategoryForm({
                         ...categoryForm,
                         parentId: e.target.value || null,
                       })
                     }
-                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                   >
                     <option value="">None (Root Category)</option>
-                    {categories
-                      .filter((cat) => cat.id !== editingCategory?.id)
-                      .map((cat) => (
+                    {flatCategories
+                      .filter(cat => !blockedParentIds.has(cat.id))
+                      .map(cat => (
                         <option key={cat.id} value={cat.id}>
-                          {cat.name}
+                          {`${"— ".repeat(cat.depth)}${cat.name}`}
                         </option>
                       ))}
                   </select>
@@ -858,8 +1071,11 @@ export default function CostManagementPage() {
                     type="checkbox"
                     id="isPrimary"
                     checked={categoryForm.isPrimary}
-                    onChange={(e) =>
-                      setCategoryForm({ ...categoryForm, isPrimary: e.target.checked })
+                    onChange={e =>
+                      setCategoryForm({
+                        ...categoryForm,
+                        isPrimary: e.target.checked,
+                      })
                     }
                     className="rounded border-gray-300"
                   />
@@ -868,15 +1084,28 @@ export default function CostManagementPage() {
                   </Label>
                 </div>
                 <div className="flex justify-end gap-2">
-                  <Button variant="ghost" onClick={() => setCategoryDialogOpen(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setCategoryDialogOpen(false)}
+                    className="text-[#2C2C2C] border-gray-300 hover:bg-gray-100"
+                    disabled={categorySaving}
+                  >
                     Cancel
                   </Button>
                   <Button
-                    onClick={editingCategory ? handleUpdateCategory : handleCreateCategory}
-                    disabled={!categoryForm.name.trim()}
+                    onClick={
+                      editingCategory
+                        ? handleUpdateCategory
+                        : handleCreateCategory
+                    }
+                    disabled={categorySaving || !categoryForm.name.trim()}
                     className="bg-[#607c47] hover:bg-[#4a6129] text-white"
                   >
-                    {editingCategory ? 'Update' : 'Create'}
+                    {categorySaving
+                      ? "Saving..."
+                      : editingCategory
+                      ? "Update"
+                      : "Create"}
                   </Button>
                 </div>
               </div>
@@ -888,12 +1117,12 @@ export default function CostManagementPage() {
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>
-                  {editingCenter ? 'Edit Cost Center' : 'Create Cost Center'}
+                  {editingCenter ? "Edit Cost Center" : "Create Cost Center"}
                 </DialogTitle>
                 <DialogDescription>
                   {editingCenter
-                    ? 'Update the cost center details.'
-                    : 'Create a new cost center for tracking expenses.'}
+                    ? "Update the cost center details."
+                    : "Create a new cost center for tracking expenses."}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
@@ -901,16 +1130,19 @@ export default function CostManagementPage() {
                   <Label>Category *</Label>
                   <select
                     value={centerForm.categoryId}
-                    onChange={(e) =>
-                      setCenterForm({ ...centerForm, categoryId: e.target.value })
+                    onChange={e =>
+                      setCenterForm({
+                        ...centerForm,
+                        categoryId: e.target.value,
+                      })
                     }
-                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                     required
                   >
                     <option value="">Select category</option>
-                    {categories.map((cat) => (
+                    {flatCategories.map(cat => (
                       <option key={cat.id} value={cat.id}>
-                        {cat.name}
+                        {`${"— ".repeat(cat.depth)}${cat.name}`}
                       </option>
                     ))}
                   </select>
@@ -919,24 +1151,31 @@ export default function CostManagementPage() {
                   <Label>Name *</Label>
                   <Input
                     value={centerForm.name}
-                    onChange={(e) => setCenterForm({ ...centerForm, name: e.target.value })}
+                    onChange={e =>
+                      setCenterForm({ ...centerForm, name: e.target.value })
+                    }
                     placeholder="Cost center name"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Code</Label>
                   <Input
-                    value={centerForm.code || ''}
-                    onChange={(e) => setCenterForm({ ...centerForm, code: e.target.value })}
+                    value={centerForm.code || ""}
+                    onChange={e =>
+                      setCenterForm({ ...centerForm, code: e.target.value })
+                    }
                     placeholder="Optional code"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Description</Label>
                   <Textarea
-                    value={centerForm.description || ''}
-                    onChange={(e) =>
-                      setCenterForm({ ...centerForm, description: e.target.value })
+                    value={centerForm.description || ""}
+                    onChange={e =>
+                      setCenterForm({
+                        ...centerForm,
+                        description: e.target.value,
+                      })
                     }
                     placeholder="Optional description"
                   />
@@ -944,16 +1183,19 @@ export default function CostManagementPage() {
                 <div className="space-y-2">
                   <Label>Parent Center</Label>
                   <select
-                    value={centerForm.parentId || ''}
-                    onChange={(e) =>
-                      setCenterForm({ ...centerForm, parentId: e.target.value || null })
+                    value={centerForm.parentId || ""}
+                    onChange={e =>
+                      setCenterForm({
+                        ...centerForm,
+                        parentId: e.target.value || null,
+                      })
                     }
-                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                   >
                     <option value="">None (Root Center)</option>
                     {centers
-                      .filter((c) => c.id !== editingCenter?.id)
-                      .map((c) => (
+                      .filter(c => c.id !== editingCenter?.id)
+                      .map(c => (
                         <option key={c.id} value={c.id}>
                           {c.name}
                         </option>
@@ -965,8 +1207,11 @@ export default function CostManagementPage() {
                     type="checkbox"
                     id="isBillable"
                     checked={centerForm.isBillable}
-                    onChange={(e) =>
-                      setCenterForm({ ...centerForm, isBillable: e.target.checked })
+                    onChange={e =>
+                      setCenterForm({
+                        ...centerForm,
+                        isBillable: e.target.checked,
+                      })
                     }
                     className="rounded border-gray-300"
                   />
@@ -978,28 +1223,43 @@ export default function CostManagementPage() {
                   <Label>Status</Label>
                   <select
                     value={centerForm.status}
-                    onChange={(e) =>
+                    onChange={e =>
                       setCenterForm({
                         ...centerForm,
-                        status: e.target.value as 'active' | 'inactive',
+                        status: e.target.value as "active" | "inactive",
                       })
                     }
-                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                   >
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
                   </select>
                 </div>
                 <div className="flex justify-end gap-2">
-                  <Button variant="ghost" onClick={() => setCenterDialogOpen(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setCenterDialogOpen(false)}
+                    className="text-[#2C2C2C] border-gray-300 hover:bg-gray-100"
+                    disabled={centerSaving}
+                  >
                     Cancel
                   </Button>
                   <Button
-                    onClick={editingCenter ? handleUpdateCenter : handleCreateCenter}
-                    disabled={!centerForm.name.trim() || !centerForm.categoryId}
+                    onClick={
+                      editingCenter ? handleUpdateCenter : handleCreateCenter
+                    }
+                    disabled={
+                      centerSaving ||
+                      !centerForm.name.trim() ||
+                      !centerForm.categoryId
+                    }
                     className="bg-[#607c47] hover:bg-[#4a6129] text-white"
                   >
-                    {editingCenter ? 'Update' : 'Create'}
+                    {centerSaving
+                      ? "Saving..."
+                      : editingCenter
+                      ? "Update"
+                      : "Create"}
                   </Button>
                 </div>
               </div>
@@ -1007,16 +1267,21 @@ export default function CostManagementPage() {
           </Dialog>
 
           {/* Interest Profile Dialog */}
-          <Dialog open={interestDialogOpen} onOpenChange={setInterestDialogOpen}>
+          <Dialog
+            open={interestDialogOpen}
+            onOpenChange={setInterestDialogOpen}
+          >
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>
-                  {editingInterest ? 'Edit Interest Profile' : 'Create Interest Profile'}
-                </DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="text-[#2C2C2C]">
                   {editingInterest
-                    ? 'Update the interest calculation profile.'
-                    : 'Create a new interest profile for calculating interest on receivables/payables.'}
+                    ? "Edit Interest Profile"
+                    : "Create Interest Profile"}
+                </DialogTitle>
+                <DialogDescription className="text-[#2C2C2C]/70">
+                  {editingInterest
+                    ? "Update the interest calculation profile."
+                    : "Create a new interest profile for calculating interest on receivables/payables."}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
@@ -1025,8 +1290,11 @@ export default function CostManagementPage() {
                     <Label>Name *</Label>
                     <Input
                       value={interestForm.name}
-                      onChange={(e) =>
-                        setInterestForm({ ...interestForm, name: e.target.value })
+                      onChange={e =>
+                        setInterestForm({
+                          ...interestForm,
+                          name: e.target.value,
+                        })
                       }
                       placeholder="Profile name"
                     />
@@ -1038,8 +1306,14 @@ export default function CostManagementPage() {
                       step="0.01"
                       min="0"
                       value={interestForm.rate}
-                      onChange={(e) =>
-                        setInterestForm({ ...interestForm, rate: Number(e.target.value) })
+                      onChange={e =>
+                        setInterestForm({
+                          ...interestForm,
+                          rate:
+                            e.target.value === ""
+                              ? 0
+                              : Math.max(0, Number(e.target.value)),
+                        })
                       }
                       placeholder="0.00"
                     />
@@ -1048,9 +1322,12 @@ export default function CostManagementPage() {
                 <div className="space-y-2">
                   <Label>Description</Label>
                   <Textarea
-                    value={interestForm.description || ''}
-                    onChange={(e) =>
-                      setInterestForm({ ...interestForm, description: e.target.value })
+                    value={interestForm.description || ""}
+                    onChange={e =>
+                      setInterestForm({
+                        ...interestForm,
+                        description: e.target.value,
+                      })
                     }
                     placeholder="Optional description"
                   />
@@ -1060,13 +1337,15 @@ export default function CostManagementPage() {
                     <Label>Calculation Mode</Label>
                     <select
                       value={interestForm.calculationMode}
-                      onChange={(e) =>
+                      onChange={e =>
                         setInterestForm({
                           ...interestForm,
-                          calculationMode: e.target.value as 'SIMPLE' | 'COMPOUND',
+                          calculationMode: e.target.value as
+                            | "SIMPLE"
+                            | "COMPOUND",
                         })
                       }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                     >
                       <option value="SIMPLE">Simple</option>
                       <option value="COMPOUND">Compound</option>
@@ -1076,13 +1355,14 @@ export default function CostManagementPage() {
                     <Label>Compounding Frequency</Label>
                     <select
                       value={interestForm.compoundingFrequency}
-                      onChange={(e) =>
+                      onChange={e =>
                         setInterestForm({
                           ...interestForm,
-                          compoundingFrequency: e.target.value as any,
+                          compoundingFrequency: e.target
+                            .value as InterestCompoundingFrequency,
                         })
                       }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                     >
                       <option value="NONE">None</option>
                       <option value="DAILY">Daily</option>
@@ -1099,11 +1379,13 @@ export default function CostManagementPage() {
                     <Input
                       type="number"
                       min="0"
-                      value={interestForm.gracePeriodDays || ''}
-                      onChange={(e) =>
+                      value={interestForm.gracePeriodDays || ""}
+                      onChange={e =>
                         setInterestForm({
                           ...interestForm,
-                          gracePeriodDays: e.target.value ? Number(e.target.value) : null,
+                          gracePeriodDays: e.target.value
+                            ? Number(e.target.value)
+                            : null,
                         })
                       }
                       placeholder="0"
@@ -1115,9 +1397,15 @@ export default function CostManagementPage() {
                       type="number"
                       step="0.01"
                       min="0"
-                      value={interestForm.penalRate || 0}
-                      onChange={(e) =>
-                        setInterestForm({ ...interestForm, penalRate: Number(e.target.value) })
+                      value={interestForm.penalRate ?? 0}
+                      onChange={e =>
+                        setInterestForm({
+                          ...interestForm,
+                          penalRate:
+                            e.target.value === ""
+                              ? 0
+                              : Math.max(0, Number(e.target.value)),
+                        })
                       }
                       placeholder="0.00"
                     />
@@ -1129,11 +1417,13 @@ export default function CostManagementPage() {
                     <Input
                       type="number"
                       min="0"
-                      value={interestForm.penalGraceDays || ''}
-                      onChange={(e) =>
+                      value={interestForm.penalGraceDays || ""}
+                      onChange={e =>
                         setInterestForm({
                           ...interestForm,
-                          penalGraceDays: e.target.value ? Number(e.target.value) : null,
+                          penalGraceDays: e.target.value
+                            ? Number(e.target.value)
+                            : null,
                         })
                       }
                       placeholder="0"
@@ -1144,7 +1434,7 @@ export default function CostManagementPage() {
                       type="checkbox"
                       id="calculateFromDueDate"
                       checked={interestForm.calculateFromDueDate}
-                      onChange={(e) =>
+                      onChange={e =>
                         setInterestForm({
                           ...interestForm,
                           calculateFromDueDate: e.target.checked,
@@ -1152,21 +1442,37 @@ export default function CostManagementPage() {
                       }
                       className="rounded border-gray-300"
                     />
-                    <Label htmlFor="calculateFromDueDate" className="cursor-pointer">
+                    <Label
+                      htmlFor="calculateFromDueDate"
+                      className="cursor-pointer"
+                    >
                       Calculate from due date
                     </Label>
                   </div>
                 </div>
                 <div className="flex justify-end gap-2">
-                  <Button variant="ghost" onClick={() => setInterestDialogOpen(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setInterestDialogOpen(false)}
+                    className="text-[#2C2C2C] border-gray-300 hover:bg-gray-100"
+                    disabled={interestSaving}
+                  >
                     Cancel
                   </Button>
                   <Button
-                    onClick={editingInterest ? handleUpdateInterest : handleCreateInterest}
-                    disabled={!interestForm.name.trim()}
+                    onClick={
+                      editingInterest
+                        ? handleUpdateInterest
+                        : handleCreateInterest
+                    }
+                    disabled={interestSaving || !interestForm.name.trim()}
                     className="bg-[#607c47] hover:bg-[#4a6129] text-white"
                   >
-                    {editingInterest ? 'Update' : 'Create'}
+                    {interestSaving
+                      ? "Saving..."
+                      : editingInterest
+                      ? "Update"
+                      : "Create"}
                   </Button>
                 </div>
               </div>
@@ -1174,12 +1480,16 @@ export default function CostManagementPage() {
           </Dialog>
 
           {/* Party Interest Dialog */}
-          <Dialog open={partyInterestDialogOpen} onOpenChange={setPartyInterestDialogOpen}>
+          <Dialog
+            open={partyInterestDialogOpen}
+            onOpenChange={setPartyInterestDialogOpen}
+          >
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Assign Interest to Party</DialogTitle>
                 <DialogDescription>
-                  Assign an interest profile to a party for automatic interest calculation.
+                  Assign an interest profile to a party for automatic interest
+                  calculation.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
@@ -1187,17 +1497,17 @@ export default function CostManagementPage() {
                   <Label>Interest Profile *</Label>
                   <select
                     value={partyInterestForm.interestProfileId}
-                    onChange={(e) =>
+                    onChange={e =>
                       setPartyInterestForm({
                         ...partyInterestForm,
                         interestProfileId: e.target.value,
                       })
                     }
-                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                     required
                   >
                     <option value="">Select profile</option>
-                    {interestProfiles.map((profile) => (
+                    {interestProfiles.map(profile => (
                       <option key={profile.id} value={profile.id}>
                         {profile.name} ({profile.rate}%)
                       </option>
@@ -1208,8 +1518,11 @@ export default function CostManagementPage() {
                   <Label>Party ID *</Label>
                   <Input
                     value={partyInterestForm.partyId}
-                    onChange={(e) =>
-                      setPartyInterestForm({ ...partyInterestForm, partyId: e.target.value })
+                    onChange={e =>
+                      setPartyInterestForm({
+                        ...partyInterestForm,
+                        partyId: e.target.value,
+                      })
                     }
                     placeholder="Enter party ID"
                   />
@@ -1223,11 +1536,13 @@ export default function CostManagementPage() {
                     type="number"
                     step="0.01"
                     min="0"
-                    value={partyInterestForm.overrideRate || ''}
-                    onChange={(e) =>
+                    value={partyInterestForm.overrideRate || ""}
+                    onChange={e =>
                       setPartyInterestForm({
                         ...partyInterestForm,
-                        overrideRate: e.target.value ? Number(e.target.value) : null,
+                        overrideRate: e.target.value
+                          ? Number(e.target.value)
+                          : null,
                       })
                     }
                     placeholder="Leave empty to use profile rate"
@@ -1238,8 +1553,8 @@ export default function CostManagementPage() {
                     <Label>Effective From</Label>
                     <Input
                       type="date"
-                      value={partyInterestForm.effectiveFrom || ''}
-                      onChange={(e) =>
+                      value={partyInterestForm.effectiveFrom || ""}
+                      onChange={e =>
                         setPartyInterestForm({
                           ...partyInterestForm,
                           effectiveFrom: e.target.value,
@@ -1251,8 +1566,8 @@ export default function CostManagementPage() {
                     <Label>Effective To</Label>
                     <Input
                       type="date"
-                      value={partyInterestForm.effectiveTo || ''}
-                      onChange={(e) =>
+                      value={partyInterestForm.effectiveTo || ""}
+                      onChange={e =>
                         setPartyInterestForm({
                           ...partyInterestForm,
                           effectiveTo: e.target.value,
@@ -1269,7 +1584,7 @@ export default function CostManagementPage() {
                         type="checkbox"
                         id="applyOnReceivables"
                         checked={partyInterestForm.applyOnReceivables}
-                        onChange={(e) =>
+                        onChange={e =>
                           setPartyInterestForm({
                             ...partyInterestForm,
                             applyOnReceivables: e.target.checked,
@@ -1277,7 +1592,10 @@ export default function CostManagementPage() {
                         }
                         className="rounded border-gray-300"
                       />
-                      <Label htmlFor="applyOnReceivables" className="cursor-pointer">
+                      <Label
+                        htmlFor="applyOnReceivables"
+                        className="cursor-pointer"
+                      >
                         Receivables
                       </Label>
                     </div>
@@ -1286,7 +1604,7 @@ export default function CostManagementPage() {
                         type="checkbox"
                         id="applyOnPayables"
                         checked={partyInterestForm.applyOnPayables}
-                        onChange={(e) =>
+                        onChange={e =>
                           setPartyInterestForm({
                             ...partyInterestForm,
                             applyOnPayables: e.target.checked,
@@ -1294,25 +1612,34 @@ export default function CostManagementPage() {
                         }
                         className="rounded border-gray-300"
                       />
-                      <Label htmlFor="applyOnPayables" className="cursor-pointer">
+                      <Label
+                        htmlFor="applyOnPayables"
+                        className="cursor-pointer"
+                      >
                         Payables
                       </Label>
                     </div>
                   </div>
                 </div>
                 <div className="flex justify-end gap-2">
-                  <Button variant="ghost" onClick={() => setPartyInterestDialogOpen(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setPartyInterestDialogOpen(false)}
+                    className="text-[#2C2C2C] border-gray-300 hover:bg-gray-100"
+                    disabled={partySaving}
+                  >
                     Cancel
                   </Button>
                   <Button
                     onClick={handleAssignInterest}
                     disabled={
+                      partySaving ||
                       !partyInterestForm.partyId.trim() ||
                       !partyInterestForm.interestProfileId.trim()
                     }
                     className="bg-[#607c47] hover:bg-[#4a6129] text-white"
                   >
-                    Assign
+                    {partySaving ? "Assigning..." : "Assign"}
                   </Button>
                 </div>
               </div>
@@ -1327,69 +1654,112 @@ export default function CostManagementPage() {
 // Helper component for category tree
 function CategoryTree({
   category,
-  allCategories,
-  expanded,
+  expandedIds,
   onToggle,
   onEdit,
   onDelete,
 }: {
-  category: CostCategory;
-  allCategories: CostCategory[];
-  expanded: boolean;
-  onToggle: () => void;
-  onEdit: (cat: CostCategory) => void;
+  category: CategoryTreeNode;
+  expandedIds: Set<string>;
+  onToggle: (categoryId: string) => void;
+  onEdit: (cat: CategoryTreeNode) => void;
   onDelete: (id: string) => void;
 }) {
-  const children = allCategories.filter((cat) => cat.parentId === category.id);
+  const children = category.children ?? [];
+  const isExpanded = expandedIds.has(category.id);
+  const childCount = children.length;
+  const costCenterCount = category.costCenters?.length ?? 0;
 
   return (
-    <div className="border border-gray-200 rounded-lg">
-      <div className="flex items-center justify-between p-3 bg-gray-50">
-        <div className="flex items-center gap-2 flex-1">
-          {children.length > 0 ? (
-            <button onClick={onToggle} className="p-1 hover:bg-gray-200 rounded">
-              {expanded ? (
-                <ChevronDown className="h-4 w-4" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
+    <div className="rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between p-4">
+        <div className="space-y-2 flex-1">
+          <div className="flex items-center gap-3">
+            {childCount > 0 ? (
+              <button
+                onClick={() => onToggle(category.id)}
+                className="h-9 w-9 flex items-center justify-center rounded-full border border-gray-200 text-gray-600 hover:bg-gray-100"
+                aria-label={
+                  isExpanded ? "Collapse category" : "Expand category"
+                }
+              >
+                {isExpanded ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </button>
+            ) : (
+              <div className="h-9 w-9 rounded-full border border-dashed border-gray-200 flex items-center justify-center text-gray-300">
+                •
+              </div>
+            )}
+
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-lg font-semibold text-[#2C2C2C]">
+                  {category.name}
+                </span>
+                {category.isPrimary && (
+                  <Badge
+                    variant="outline"
+                    className="border-blue-200 text-blue-700 bg-blue-50"
+                  >
+                    Primary
+                  </Badge>
+                )}
+              </div>
+              {category.description && (
+                <p className="text-sm text-[#2C2C2C]/70">
+                  {category.description}
+                </p>
               )}
-            </button>
-          ) : (
-            <div className="w-6" />
-          )}
-          <span className="font-medium">{category.name}</span>
-          {category.isPrimary && (
-            <span className="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-700">
-              Primary
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-4 text-xs uppercase tracking-wide text-[#2C2C2C]/70 pl-12">
+            <span>
+              Sub-categories:{" "}
+              <span className="font-semibold text-[#2C2C2C]">{childCount}</span>
             </span>
-          )}
-          {category.description && (
-            <span className="text-sm text-muted-foreground">- {category.description}</span>
-          )}
+            <span>
+              Cost centres:{" "}
+              <span className="font-semibold text-[#2C2C2C]">
+                {costCenterCount}
+              </span>
+            </span>
+          </div>
         </div>
+
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => onEdit(category)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onEdit(category)}
+            className="border-gray-200 text-[#2C2C2C] hover:bg-gray-100 text-xs px-3"
+          >
             <Edit className="h-4 w-4" />
+            <span>Edit</span>
           </Button>
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={() => onDelete(category.id)}
-            className="text-red-500 hover:text-red-600"
+            className="border-red-200 text-red-600 hover:bg-red-50 text-xs px-3"
           >
             <Trash2 className="h-4 w-4" />
+            <span>Delete</span>
           </Button>
         </div>
       </div>
-      {expanded && children.length > 0 && (
-        <div className="pl-8 border-t border-gray-200">
-          {children.map((child) => (
+      {isExpanded && childCount > 0 && (
+        <div className="pl-10 pr-4 pb-4 space-y-3">
+          {children.map(child => (
             <CategoryTree
               key={child.id}
               category={child}
-              allCategories={allCategories}
-              expanded={false}
-              onToggle={() => {}}
+              expandedIds={expandedIds}
+              onToggle={onToggle}
               onEdit={onEdit}
               onDelete={onDelete}
             />
@@ -1399,4 +1769,3 @@ function CategoryTree({
     </div>
   );
 }
-

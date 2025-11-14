@@ -14,7 +14,7 @@ datasource db {
 model Startup {
   id                 String   @id @default(cuid())
   name               String
-  subscriptionPlan   String   @default("pro_trial") // pro_trial, starter, pro, enterprise
+  subscriptionPlan   String   @default("starter_earlybird") // starter_earlybird, starter, pro, enterprise
   subscriptionStatus String   @default("active") // active, cancelled, expired
   trialEndsAt        DateTime?
   createdAt          DateTime @default(now())

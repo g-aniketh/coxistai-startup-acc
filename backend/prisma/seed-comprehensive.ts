@@ -152,9 +152,9 @@ async function main() {
     prisma.startup.create({
       data: {
         name: "Coxist AI",
-        subscriptionPlan: "pro_trial",
+        subscriptionPlan: "starter_earlybird",
         subscriptionStatus: "active",
-        trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        trialEndsAt: null,
       },
     }),
     prisma.startup.create({
@@ -377,7 +377,7 @@ async function main() {
           tallyVaultEnabled: false,
           tallyVaultPasswordHash: null,
           tallyVaultPasswordHint: null,
-          userAccessControlEnabled: startup.subscriptionPlan !== "starter",
+          userAccessControlEnabled: !["starter", "starter_earlybird"].includes(startup.subscriptionPlan),
           multiFactorRequired: startup.subscriptionPlan === "enterprise",
         },
       })
@@ -417,7 +417,7 @@ async function main() {
           enableAIInsights: true,
           enableScenarioPlanning: true,
           enableAutomations: startup.subscriptionPlan === "enterprise",
-          enableVendorManagement: startup.subscriptionPlan !== "starter",
+          enableVendorManagement: !["starter", "starter_earlybird"].includes(startup.subscriptionPlan),
           enableBillingAndInvoicing: true,
         },
       })

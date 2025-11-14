@@ -1,72 +1,75 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
-import AuthGuard from '@/components/auth/AuthGuard';
-import MainLayout from '@/components/layout/MainLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
+import { useEffect, useMemo, useState } from "react";
+import AuthGuard from "@/components/auth/AuthGuard";
+import MainLayout from "@/components/layout/MainLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   apiClient,
   VoucherType,
-  VoucherNumberingSeries,
   CreateVoucherRequest,
   VoucherEntryType,
   VoucherBillReferenceType,
   Voucher,
-} from '@/lib/api';
-import { format } from 'date-fns';
-import { Plus, Receipt, Trash2 } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+} from "@/lib/api";
+import { format } from "date-fns";
+import { Plus, Receipt, Trash2 } from "lucide-react";
+import { toast } from "react-hot-toast";
+
+type BillReferenceForm = {
+  reference: string;
+  amount: string;
+  referenceType: VoucherBillReferenceType;
+  dueDate: string;
+  remarks: string;
+};
 
 type EntryForm = {
   ledgerName: string;
-  ledgerCode: string;
+  ledgerCode?: string;
   entryType: VoucherEntryType;
   amount: string;
-  narration: string;
-  costCenterName: string;
-  costCategory: string;
-  billReferences: Array<{
-    reference: string;
-    amount: string;
-    referenceType: VoucherBillReferenceType;
-    dueDate: string;
-    remarks: string;
-  }>;
+  narration?: string;
+  costCenterName?: string;
+  costCategory?: string;
+  billReferences: BillReferenceForm[];
+};
+
+type VoucherFormState = Omit<CreateVoucherRequest, "entries"> & {
+  entries: EntryForm[];
 };
 
 const DEFAULT_ENTRY: EntryForm = {
-  ledgerName: '',
-  ledgerCode: '',
-  entryType: 'DEBIT',
-  amount: '',
-  narration: '',
-  costCenterName: '',
-  costCategory: '',
+  ledgerName: "",
+  ledgerCode: "",
+  entryType: "DEBIT",
+  amount: "",
+  narration: "",
+  costCenterName: "",
+  costCategory: "",
   billReferences: [],
 };
 
 const numberingMethodLabels: Record<string, string> = {
-  AUTOMATIC: 'Automatic',
-  AUTOMATIC_WITH_OVERRIDE: 'Automatic (Manual Override)',
-  MULTI_USER_AUTO: 'Multi-user Automatic',
-  MANUAL: 'Manual',
-  NONE: 'None',
+  AUTOMATIC: "Automatic",
+  AUTOMATIC_WITH_OVERRIDE: "Automatic (Manual Override)",
+  MULTI_USER_AUTO: "Multi-user Automatic",
+  MANUAL: "Manual",
+  NONE: "None",
 };
 
-const numberingBehaviorLabels: Record<string, string> = {
-  RENUMBER: 'Renumber on insert/delete',
-  RETAIN: 'Retain original numbers',
-};
-
-const billReferenceOptions: Array<{ value: VoucherBillReferenceType; label: string }> = [
-  { value: 'AGAINST', label: 'Against' },
-  { value: 'NEW', label: 'New Reference' },
-  { value: 'ADVANCE', label: 'Advance' },
-  { value: 'ON_ACCOUNT', label: 'On Account' },
+const billReferenceOptions: Array<{
+  value: VoucherBillReferenceType;
+  label: string;
+}> = [
+  { value: "AGAINST", label: "Against" },
+  { value: "NEW", label: "New Reference" },
+  { value: "ADVANCE", label: "Advance" },
+  { value: "ON_ACCOUNT", label: "On Account" },
 ];
 
 export default function VouchersPage() {
@@ -74,17 +77,17 @@ export default function VouchersPage() {
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState<CreateVoucherRequest>({
-    voucherTypeId: '',
+  const [form, setForm] = useState<VoucherFormState>({
+    voucherTypeId: "",
     numberingSeriesId: undefined,
-    date: format(new Date(), 'yyyy-MM-dd'),
-    reference: '',
-    narration: '',
-    entries: [DEFAULT_ENTRY, { ...DEFAULT_ENTRY, entryType: 'CREDIT' }],
+    date: format(new Date(), "yyyy-MM-dd"),
+    reference: "",
+    narration: "",
+    entries: [DEFAULT_ENTRY, { ...DEFAULT_ENTRY, entryType: "CREDIT" }],
   });
 
   const selectedVoucherType = useMemo(
-    () => voucherTypes.find((type) => type.id === form.voucherTypeId),
+    () => voucherTypes.find(type => type.id === form.voucherTypeId),
     [voucherTypes, form.voucherTypeId]
   );
 
@@ -95,13 +98,13 @@ export default function VouchersPage() {
 
   const totalDebit = useMemo(() => {
     return form.entries
-      .filter((entry) => entry.entryType === 'DEBIT')
+      .filter(entry => entry.entryType === "DEBIT")
       .reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
   }, [form.entries]);
 
   const totalCredit = useMemo(() => {
     return form.entries
-      .filter((entry) => entry.entryType === 'CREDIT')
+      .filter(entry => entry.entryType === "CREDIT")
       .reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
   }, [form.entries]);
 
@@ -120,26 +123,29 @@ export default function VouchersPage() {
       if (typesRes.success && typesRes.data) {
         setVoucherTypes(typesRes.data);
         if (!form.voucherTypeId && typesRes.data.length > 0) {
-          const defaultType = typesRes.data.find((type) => type.isDefault) ?? typesRes.data[0];
-          const defaultSeries = defaultType.numberingSeries.find((series) => series.isDefault);
-          setForm((prev) => ({
+          const defaultType =
+            typesRes.data.find(type => type.isDefault) ?? typesRes.data[0];
+          const defaultSeries = defaultType.numberingSeries.find(
+            series => series.isDefault
+          );
+          setForm(prev => ({
             ...prev,
             voucherTypeId: defaultType.id,
             numberingSeriesId: defaultSeries?.id,
           }));
         }
       } else if (!typesRes.success) {
-        toast.error(typesRes.error || 'Failed to load voucher types');
+        toast.error(typesRes.error || "Failed to load voucher types");
       }
 
       if (vouchersRes.success && vouchersRes.data) {
         setVouchers(vouchersRes.data);
       } else if (!vouchersRes.success) {
-        toast.error(vouchersRes.error || 'Failed to load vouchers');
+        toast.error(vouchersRes.error || "Failed to load vouchers");
       }
     } catch (error) {
-      console.error('Load voucher data error:', error);
-      toast.error('Unable to load voucher configuration');
+      console.error("Load voucher data error:", error);
+      toast.error("Unable to load voucher configuration");
     } finally {
       setLoading(false);
     }
@@ -151,46 +157,52 @@ export default function VouchersPage() {
   }, []);
 
   const handleTypeChange = (voucherTypeId: string) => {
-    const type = voucherTypes.find((item) => item.id === voucherTypeId);
-    setForm((prev) => ({
+    const type = voucherTypes.find(item => item.id === voucherTypeId);
+    setForm(prev => ({
       ...prev,
       voucherTypeId,
-      numberingSeriesId: type?.numberingSeries.find((series) => series.isDefault)?.id,
+      numberingSeriesId: type?.numberingSeries.find(series => series.isDefault)
+        ?.id,
     }));
   };
 
-  const updateEntry = (index: number, updater: (entry: EntryForm) => EntryForm) => {
-    setForm((prev) => ({
+  const updateEntry = (
+    index: number,
+    updater: (entry: EntryForm) => EntryForm
+  ) => {
+    setForm(prev => ({
       ...prev,
-      entries: prev.entries.map((entry, i) => (i === index ? updater(entry) : entry)),
+      entries: prev.entries.map((entry, i) =>
+        i === index ? updater(entry) : entry
+      ),
     }));
   };
 
   const addEntry = () => {
-    setForm((prev) => ({
+    setForm(prev => ({
       ...prev,
-      entries: [...prev.entries, { ...DEFAULT_ENTRY, entryType: 'CREDIT' }],
+      entries: [...prev.entries, { ...DEFAULT_ENTRY, entryType: "CREDIT" }],
     }));
   };
 
   const removeEntry = (index: number) => {
-    setForm((prev) => ({
+    setForm(prev => ({
       ...prev,
       entries: prev.entries.filter((_, i) => i !== index),
     }));
   };
 
   const addBillReference = (entryIndex: number) => {
-    updateEntry(entryIndex, (entry) => ({
+    updateEntry(entryIndex, entry => ({
       ...entry,
       billReferences: [
         ...entry.billReferences,
         {
-          reference: '',
-          amount: '',
-          referenceType: 'AGAINST',
-          dueDate: '',
-          remarks: '',
+          reference: "",
+          amount: "",
+          referenceType: "AGAINST",
+          dueDate: "",
+          remarks: "",
         },
       ],
     }));
@@ -199,16 +211,20 @@ export default function VouchersPage() {
   const updateBillReference = (
     entryIndex: number,
     billIndex: number,
-    updater: (bill: EntryForm['billReferences'][number]) => EntryForm['billReferences'][number]
+    updater: (
+      bill: EntryForm["billReferences"][number]
+    ) => EntryForm["billReferences"][number]
   ) => {
-    updateEntry(entryIndex, (entry) => ({
+    updateEntry(entryIndex, entry => ({
       ...entry,
-      billReferences: entry.billReferences.map((bill, i) => (i === billIndex ? updater(bill) : bill)),
+      billReferences: entry.billReferences.map((bill, i) =>
+        i === billIndex ? updater(bill) : bill
+      ),
     }));
   };
 
   const removeBillReference = (entryIndex: number, billIndex: number) => {
-    updateEntry(entryIndex, (entry) => ({
+    updateEntry(entryIndex, entry => ({
       ...entry,
       billReferences: entry.billReferences.filter((_, i) => i !== billIndex),
     }));
@@ -216,14 +232,15 @@ export default function VouchersPage() {
 
   const resetForm = () => {
     const defaultSeries =
-      selectedVoucherType?.numberingSeries.find((series) => series.isDefault)?.id ?? null;
+      selectedVoucherType?.numberingSeries.find(series => series.isDefault)
+        ?.id ?? null;
     setForm({
-      voucherTypeId: selectedVoucherType?.id ?? '',
+      voucherTypeId: selectedVoucherType?.id ?? "",
       numberingSeriesId: defaultSeries ?? undefined,
-      date: format(new Date(), 'yyyy-MM-dd'),
-      reference: '',
-      narration: '',
-      entries: [DEFAULT_ENTRY, { ...DEFAULT_ENTRY, entryType: 'CREDIT' }],
+      date: format(new Date(), "yyyy-MM-dd"),
+      reference: "",
+      narration: "",
+      entries: [DEFAULT_ENTRY, { ...DEFAULT_ENTRY, entryType: "CREDIT" }],
     });
   };
 
@@ -231,12 +248,12 @@ export default function VouchersPage() {
     event.preventDefault();
 
     if (!form.voucherTypeId) {
-      toast.error('Select a voucher type');
+      toast.error("Select a voucher type");
       return;
     }
 
     if (!isBalanced) {
-      toast.error('Voucher is not balanced');
+      toast.error("Voucher is not balanced");
       return;
     }
 
@@ -248,7 +265,7 @@ export default function VouchersPage() {
         date: form.date,
         reference: form.reference?.trim() || undefined,
         narration: form.narration?.trim() || undefined,
-        entries: form.entries.map((entry) => ({
+        entries: form.entries.map(entry => ({
           ledgerName: entry.ledgerName.trim(),
           ledgerCode: entry.ledgerCode?.trim() || undefined,
           entryType: entry.entryType,
@@ -258,7 +275,7 @@ export default function VouchersPage() {
           costCategory: entry.costCategory?.trim() || undefined,
           billReferences:
             entry.billReferences?.length > 0
-              ? entry.billReferences.map((bill) => ({
+              ? entry.billReferences.map(bill => ({
                   reference: bill.reference.trim(),
                   amount: Number(bill.amount),
                   referenceType: bill.referenceType,
@@ -271,7 +288,7 @@ export default function VouchersPage() {
 
       const response = await apiClient.vouchers.create(payload);
       if (!response.success || !response.data) {
-        toast.error(response.error || 'Failed to create voucher');
+        toast.error(response.error || "Failed to create voucher");
         return;
       }
 
@@ -279,8 +296,8 @@ export default function VouchersPage() {
       resetForm();
       await loadVoucherData();
     } catch (error) {
-      console.error('Submit voucher error:', error);
-      toast.error('Unable to create voucher');
+      console.error("Submit voucher error:", error);
+      toast.error("Unable to create voucher");
     } finally {
       setSubmitting(false);
     }
@@ -293,9 +310,12 @@ export default function VouchersPage() {
           <div className="flex items-center gap-3">
             <Receipt className="h-8 w-8 text-[#2C2C2C]" />
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">Vouchers</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">
+                Vouchers
+              </h1>
               <p className="text-sm text-[#2C2C2C]/70">
-                Create typed vouchers with debit/credit entries and bill-wise tracking.
+                Create typed vouchers with debit/credit entries and bill-wise
+                tracking.
               </p>
             </div>
           </div>
@@ -303,10 +323,12 @@ export default function VouchersPage() {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <Card className="xl:col-span-2 rounded-2xl shadow-lg border-0 bg-white">
               <CardHeader className="flex flex-col gap-2">
-                <CardTitle className="text-lg">Create Voucher</CardTitle>
+                <CardTitle className="text-lg text-[#2C2C2C]">
+                  Create Voucher
+                </CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Select the voucher type, enter ledger lines, and ensure the voucher remains
-                  balanced.
+                  Select the voucher type, enter ledger lines, and ensure the
+                  voucher remains balanced.
                 </p>
               </CardHeader>
               <CardContent>
@@ -317,12 +339,12 @@ export default function VouchersPage() {
                       <select
                         id="voucherTypeId"
                         value={form.voucherTypeId}
-                        onChange={(event) => handleTypeChange(event.target.value)}
-                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                        onChange={event => handleTypeChange(event.target.value)}
+                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                         required
                       >
                         <option value="">Select voucher type</option>
-                        {voucherTypes.map((type) => (
+                        {voucherTypes.map(type => (
                           <option key={type.id} value={type.id}>
                             {type.name}
                           </option>
@@ -331,22 +353,25 @@ export default function VouchersPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="numberingSeriesId">Numbering Series</Label>
+                      <Label htmlFor="numberingSeriesId">
+                        Numbering Series
+                      </Label>
                       <select
                         id="numberingSeriesId"
-                        value={form.numberingSeriesId ?? ''}
-                        onChange={(event) =>
-                          setForm((prev) => ({
+                        value={form.numberingSeriesId ?? ""}
+                        onChange={event =>
+                          setForm(prev => ({
                             ...prev,
                             numberingSeriesId: event.target.value || undefined,
                           }))
                         }
-                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                       >
                         <option value="">Default</option>
-                        {numberingSeriesOptions.map((series) => (
+                        {numberingSeriesOptions.map(series => (
                           <option key={series.id} value={series.id}>
-                            {series.name} ({numberingMethodLabels[series.numberingMethod]})
+                            {series.name} (
+                            {numberingMethodLabels[series.numberingMethod]})
                           </option>
                         ))}
                       </select>
@@ -358,8 +383,11 @@ export default function VouchersPage() {
                         id="voucherDate"
                         type="date"
                         value={form.date}
-                        onChange={(event) =>
-                          setForm((prev) => ({ ...prev, date: event.target.value }))
+                        onChange={event =>
+                          setForm(prev => ({
+                            ...prev,
+                            date: event.target.value,
+                          }))
                         }
                       />
                     </div>
@@ -370,9 +398,12 @@ export default function VouchersPage() {
                       <Label htmlFor="voucherReference">Reference</Label>
                       <Input
                         id="voucherReference"
-                        value={form.reference ?? ''}
-                        onChange={(event) =>
-                          setForm((prev) => ({ ...prev, reference: event.target.value }))
+                        value={form.reference ?? ""}
+                        onChange={event =>
+                          setForm(prev => ({
+                            ...prev,
+                            reference: event.target.value,
+                          }))
                         }
                         placeholder="Optional reference number"
                       />
@@ -381,9 +412,12 @@ export default function VouchersPage() {
                       <Label htmlFor="voucherNarration">Narration</Label>
                       <Textarea
                         id="voucherNarration"
-                        value={form.narration ?? ''}
-                        onChange={(event) =>
-                          setForm((prev) => ({ ...prev, narration: event.target.value }))
+                        value={form.narration ?? ""}
+                        onChange={event =>
+                          setForm(prev => ({
+                            ...prev,
+                            narration: event.target.value,
+                          }))
                         }
                         placeholder="Optional narration for the voucher"
                       />
@@ -393,10 +427,12 @@ export default function VouchersPage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-base font-semibold text-[#2C2C2C]">Voucher Entries</h3>
+                        <h3 className="text-base font-semibold text-[#2C2C2C]">
+                          Voucher Entries
+                        </h3>
                         <p className="text-xs text-muted-foreground">
-                          Debit and credit lines must balance. Add bill references to match Tally’s
-                          bill-wise tracking.
+                          Debit and credit lines must balance. Add bill
+                          references to match Tally’s bill-wise tracking.
                         </p>
                       </div>
                       <Button
@@ -442,8 +478,8 @@ export default function VouchersPage() {
                             <Label>Ledger Name *</Label>
                             <Input
                               value={entry.ledgerName}
-                              onChange={(event) =>
-                                updateEntry(index, (prevEntry) => ({
+                              onChange={event =>
+                                updateEntry(index, prevEntry => ({
                                   ...prevEntry,
                                   ledgerName: event.target.value,
                                 }))
@@ -456,8 +492,8 @@ export default function VouchersPage() {
                             <Label>Ledger Code</Label>
                             <Input
                               value={entry.ledgerCode}
-                              onChange={(event) =>
-                                updateEntry(index, (prevEntry) => ({
+                              onChange={event =>
+                                updateEntry(index, prevEntry => ({
                                   ...prevEntry,
                                   ledgerCode: event.target.value,
                                 }))
@@ -469,13 +505,14 @@ export default function VouchersPage() {
                             <Label>Type</Label>
                             <select
                               value={entry.entryType}
-                              onChange={(event) =>
-                                updateEntry(index, (prevEntry) => ({
+                              onChange={event =>
+                                updateEntry(index, prevEntry => ({
                                   ...prevEntry,
-                                  entryType: event.target.value as VoucherEntryType,
+                                  entryType: event.target
+                                    .value as VoucherEntryType,
                                 }))
                               }
-                              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                             >
                               <option value="DEBIT">Debit</option>
                               <option value="CREDIT">Credit</option>
@@ -488,8 +525,8 @@ export default function VouchersPage() {
                               min="0"
                               step="0.01"
                               value={entry.amount}
-                              onChange={(event) =>
-                                updateEntry(index, (prevEntry) => ({
+                              onChange={event =>
+                                updateEntry(index, prevEntry => ({
                                   ...prevEntry,
                                   amount: event.target.value,
                                 }))
@@ -502,8 +539,8 @@ export default function VouchersPage() {
                             <Label>Narration</Label>
                             <Input
                               value={entry.narration}
-                              onChange={(event) =>
-                                updateEntry(index, (prevEntry) => ({
+                              onChange={event =>
+                                updateEntry(index, prevEntry => ({
                                   ...prevEntry,
                                   narration: event.target.value,
                                 }))
@@ -515,8 +552,8 @@ export default function VouchersPage() {
                             <Label>Cost Center</Label>
                             <Input
                               value={entry.costCenterName}
-                              onChange={(event) =>
-                                updateEntry(index, (prevEntry) => ({
+                              onChange={event =>
+                                updateEntry(index, prevEntry => ({
                                   ...prevEntry,
                                   costCenterName: event.target.value,
                                 }))
@@ -528,8 +565,8 @@ export default function VouchersPage() {
                             <Label>Cost Category</Label>
                             <Input
                               value={entry.costCategory}
-                              onChange={(event) =>
-                                updateEntry(index, (prevEntry) => ({
+                              onChange={event =>
+                                updateEntry(index, prevEntry => ({
                                   ...prevEntry,
                                   costCategory: event.target.value,
                                 }))
@@ -557,8 +594,9 @@ export default function VouchersPage() {
 
                           {entry.billReferences.length === 0 ? (
                             <p className="text-xs text-muted-foreground">
-                              No bill references added. Use this to link invoices or advances, similar
-                              to Tally’s bill-wise details.
+                              No bill references added. Use this to link
+                              invoices or advances, similar to Tally’s bill-wise
+                              details.
                             </p>
                           ) : (
                             <div className="space-y-3">
@@ -571,11 +609,15 @@ export default function VouchersPage() {
                                     <Label className="text-xs">Reference</Label>
                                     <Input
                                       value={bill.reference}
-                                      onChange={(event) =>
-                                        updateBillReference(index, billIndex, (prevBill) => ({
-                                          ...prevBill,
-                                          reference: event.target.value,
-                                        }))
+                                      onChange={event =>
+                                        updateBillReference(
+                                          index,
+                                          billIndex,
+                                          prevBill => ({
+                                            ...prevBill,
+                                            reference: event.target.value,
+                                          })
+                                        )
                                       }
                                       placeholder="Invoice / Bill reference"
                                     />
@@ -587,11 +629,15 @@ export default function VouchersPage() {
                                       min="0"
                                       step="0.01"
                                       value={bill.amount}
-                                      onChange={(event) =>
-                                        updateBillReference(index, billIndex, (prevBill) => ({
-                                          ...prevBill,
-                                          amount: event.target.value,
-                                        }))
+                                      onChange={event =>
+                                        updateBillReference(
+                                          index,
+                                          billIndex,
+                                          prevBill => ({
+                                            ...prevBill,
+                                            amount: event.target.value,
+                                          })
+                                        )
                                       }
                                       placeholder="0.00"
                                     />
@@ -600,16 +646,24 @@ export default function VouchersPage() {
                                     <Label className="text-xs">Type</Label>
                                     <select
                                       value={bill.referenceType}
-                                      onChange={(event) =>
-                                        updateBillReference(index, billIndex, (prevBill) => ({
-                                          ...prevBill,
-                                          referenceType: event.target.value as VoucherBillReferenceType,
-                                        }))
+                                      onChange={event =>
+                                        updateBillReference(
+                                          index,
+                                          billIndex,
+                                          prevBill => ({
+                                            ...prevBill,
+                                            referenceType: event.target
+                                              .value as VoucherBillReferenceType,
+                                          })
+                                        )
                                       }
-                                      className="w-full rounded-md border border-gray-300 bg-white px-2 py-1 text-xs"
+                                      className="w-full rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-[#2C2C2C]"
                                     >
-                                      {billReferenceOptions.map((option) => (
-                                        <option key={option.value} value={option.value}>
+                                      {billReferenceOptions.map(option => (
+                                        <option
+                                          key={option.value}
+                                          value={option.value}
+                                        >
                                           {option.label}
                                         </option>
                                       ))}
@@ -620,11 +674,15 @@ export default function VouchersPage() {
                                     <Input
                                       type="date"
                                       value={bill.dueDate}
-                                      onChange={(event) =>
-                                        updateBillReference(index, billIndex, (prevBill) => ({
-                                          ...prevBill,
-                                          dueDate: event.target.value,
-                                        }))
+                                      onChange={event =>
+                                        updateBillReference(
+                                          index,
+                                          billIndex,
+                                          prevBill => ({
+                                            ...prevBill,
+                                            dueDate: event.target.value,
+                                          })
+                                        )
                                       }
                                     />
                                   </div>
@@ -632,11 +690,15 @@ export default function VouchersPage() {
                                     <Label className="text-xs">Remarks</Label>
                                     <Input
                                       value={bill.remarks}
-                                      onChange={(event) =>
-                                        updateBillReference(index, billIndex, (prevBill) => ({
-                                          ...prevBill,
-                                          remarks: event.target.value,
-                                        }))
+                                      onChange={event =>
+                                        updateBillReference(
+                                          index,
+                                          billIndex,
+                                          prevBill => ({
+                                            ...prevBill,
+                                            remarks: event.target.value,
+                                          })
+                                        )
                                       }
                                       placeholder="Optional notes"
                                     />
@@ -647,9 +709,12 @@ export default function VouchersPage() {
                                       variant="ghost"
                                       size="sm"
                                       className="text-xs text-red-500 hover:text-red-600"
-                                      onClick={() => removeBillReference(index, billIndex)}
+                                      onClick={() =>
+                                        removeBillReference(index, billIndex)
+                                      }
                                     >
-                                      <Trash2 className="h-3 w-3 mr-1" /> Remove Reference
+                                      <Trash2 className="h-3 w-3 mr-1" /> Remove
+                                      Reference
                                     </Button>
                                   </div>
                                 </div>
@@ -663,18 +728,23 @@ export default function VouchersPage() {
 
                   <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 flex items-center justify-between text-sm">
                     <span className="font-medium text-[#2C2C2C]">
-                      Total Debit: <span className="text-[#607c47]">{totalDebit.toFixed(2)}</span>
+                      Total Debit:{" "}
+                      <span className="text-[#607c47]">
+                        {totalDebit.toFixed(2)}
+                      </span>
                     </span>
                     <span className="font-medium text-[#2C2C2C]">
-                      Total Credit:{' '}
-                      <span className="text-[#607c47]">{totalCredit.toFixed(2)}</span>
+                      Total Credit:{" "}
+                      <span className="text-[#607c47]">
+                        {totalCredit.toFixed(2)}
+                      </span>
                     </span>
                     <span
                       className={`font-semibold ${
-                        isBalanced ? 'text-emerald-600' : 'text-red-500'
+                        isBalanced ? "text-emerald-600" : "text-red-500"
                       }`}
                     >
-                      {isBalanced ? 'Balanced' : 'Not Balanced'}
+                      {isBalanced ? "Balanced" : "Not Balanced"}
                     </span>
                   </div>
 
@@ -692,7 +762,7 @@ export default function VouchersPage() {
                       disabled={submitting || !isBalanced}
                       className="bg-[#607c47] hover:bg-[#4a6129] text-white"
                     >
-                      {submitting ? 'Saving...' : 'Create Voucher'}
+                      {submitting ? "Saving..." : "Create Voucher"}
                     </Button>
                   </div>
                 </form>
@@ -701,7 +771,9 @@ export default function VouchersPage() {
 
             <Card className="rounded-2xl shadow-lg border-0 bg-white">
               <CardHeader>
-                <CardTitle className="text-lg">Recent Vouchers</CardTitle>
+                <CardTitle className="text-lg text-[#2C2C2C]">
+                  Recent Vouchers
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {loading ? (
@@ -714,7 +786,7 @@ export default function VouchersPage() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {vouchers.map((voucher) => (
+                    {vouchers.map(voucher => (
                       <div
                         key={voucher.id}
                         className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-2"
@@ -725,8 +797,8 @@ export default function VouchersPage() {
                               {voucher.voucherNumber}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {voucher.voucherType.name} •{' '}
-                              {format(new Date(voucher.date), 'dd MMM yyyy')}
+                              {voucher.voucherType.name} •{" "}
+                              {format(new Date(voucher.date), "dd MMM yyyy")}
                             </p>
                           </div>
                           <div className="text-sm font-semibold text-[#607c47]">
@@ -734,13 +806,15 @@ export default function VouchersPage() {
                           </div>
                         </div>
                         {voucher.narration && (
-                          <p className="text-xs text-muted-foreground">{voucher.narration}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {voucher.narration}
+                          </p>
                         )}
                         <div className="text-xs text-muted-foreground">
-                          {voucher.entries.length} entries •{' '}
+                          {voucher.entries.length} entries •{" "}
                           {voucher.numberingSeries
                             ? `Series: ${voucher.numberingSeries.name}`
-                            : 'Default series'}
+                            : "Default series"}
                         </div>
                       </div>
                     ))}
@@ -754,4 +828,3 @@ export default function VouchersPage() {
     </AuthGuard>
   );
 }
-

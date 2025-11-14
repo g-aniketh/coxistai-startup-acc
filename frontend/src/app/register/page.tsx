@@ -239,19 +239,13 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              <Magnet>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className={cn(
-                    'w-full bg-primary text-primary-foreground font-medium py-3 px-4 rounded-lg',
-                    'hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background',
-                    'disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200'
-                  )}
-                >
-                  {isLoading ? 'Creating Account...' : 'Create Account'}
-                </button>
-              </Magnet>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-blue-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isLoading ? 'Creating Account...' : 'Create Account'}
+              </button>
 
               <p className="text-xs text-center text-muted-foreground pt-2">
                 By signing up, you agree to start with a 30-day pro trial.

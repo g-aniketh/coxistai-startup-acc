@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { ensureDefaultVoucherTypes } from "../services/voucherTypes";
+import { DEFAULT_SUBSCRIPTION_PLAN } from "../constants/subscriptions";
 
 const prisma = new PrismaClient();
 
@@ -59,11 +60,11 @@ const createDefaultFeatureToggle = () => ({
   enableAccounting: true,
   enableInventory: true,
   enableTaxation: true,
-  enablePayroll: false,
+  enablePayroll: true,
   enableAIInsights: true,
   enableScenarioPlanning: true,
-  enableAutomations: false,
-  enableVendorManagement: false,
+  enableAutomations: true,
+  enableVendorManagement: true,
   enableBillingAndInvoicing: true,
 });
 
@@ -96,9 +97,9 @@ export const signup = async (data: SignupData) => {
   const startup = await prisma.startup.create({
     data: {
       name: startupName,
-      subscriptionPlan: "pro_trial",
+      subscriptionPlan: DEFAULT_SUBSCRIPTION_PLAN,
       subscriptionStatus: "active",
-      trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days trial
+      trialEndsAt: null,
       users: {
         create: {
           email,

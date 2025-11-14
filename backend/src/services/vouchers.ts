@@ -184,6 +184,9 @@ export const createVoucher = async (startupId: string, payload: CreateVoucherInp
     });
 
     return voucher;
+  }, {
+    timeout: 20000,
+    maxWait: 5000,
   });
 };
 

@@ -51,27 +51,65 @@ export default function Sidebar({
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
 
-  const navigation: NavItem[] = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "AI Assistant", href: "/ai-assistant", icon: Sparkles },
-    { name: "Compliance Hub", href: "/compliance-hub", icon: Calculator },
-    { name: "Banking & Payments", href: "/banking-payments", icon: CreditCard },
-    { name: "Vouchers", href: "/vouchers", icon: FileText },
-    { name: "Bills", href: "/bills", icon: HandCoins },
-    { name: "GST", href: "/gst", icon: Globe },
-    { name: "Cost Management", href: "/cost-management", icon: IndianRupee },
-    { name: "Audit Log", href: "/audit-log", icon: History },
-    { name: "Role Management", href: "/role-management", icon: Shield },
-    { name: "Settings", href: "/settings", icon: Cog },
-    { name: "Smart Alerts", href: "/alerts", icon: AlertTriangle },
+  const navigationSections: { label: string; items: NavItem[] }[] = [
     {
-      name: "Financial Dashboard",
-      href: "/financial-dashboard",
-      icon: BarChart2,
+      label: "Overview",
+      items: [
+        { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+        {
+          name: "Financial Dashboard",
+          href: "/financial-dashboard",
+          icon: BarChart2,
+        },
+        { name: "AI Assistant", href: "/ai-assistant", icon: Sparkles },
+      ],
     },
-    { name: "Products", href: "/products", icon: Package },
-    { name: "Import from Tally", href: "/tally-import", icon: Upload },
+    {
+      label: "Compliance",
+      items: [
+        { name: "Compliance Hub", href: "/compliance-hub", icon: Calculator },
+        { name: "GST", href: "/gst", icon: Globe },
+        { name: "Audit Log", href: "/audit-log", icon: History },
+      ],
+    },
+    {
+      label: "Finance & Ops",
+      items: [
+        {
+          name: "Banking & Payments",
+          href: "/banking-payments",
+          icon: CreditCard,
+        },
+        { name: "Vouchers", href: "/vouchers", icon: FileText },
+        { name: "Bills", href: "/bills", icon: HandCoins },
+        {
+          name: "Cost Management",
+          href: "/cost-management",
+          icon: IndianRupee,
+        },
+        { name: "Products", href: "/products", icon: Package },
+      ],
+    },
+    {
+      label: "Automation",
+      items: [
+        { name: "Smart Alerts", href: "/alerts", icon: AlertTriangle },
+        { name: "Import from Tally", href: "/tally-import", icon: Upload },
+      ],
+    },
+    {
+      label: "Admin",
+      items: [
+        { name: "Role Management", href: "/role-management", icon: Shield },
+      ],
+    },
   ];
+
+  const standaloneNav: NavItem = {
+    name: "Settings",
+    href: "/settings",
+    icon: Cog,
+  };
 
   const NavLink = ({
     item,
@@ -84,6 +122,8 @@ export default function Sidebar({
     const linkElement = (
       <Link
         href={item.href}
+        title={collapsed ? item.name : undefined}
+        aria-label={item.name}
         className={cn(
           "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors relative w-full",
           collapsed ? "justify-center" : "",
@@ -102,7 +142,11 @@ export default function Sidebar({
 
     if (collapsed) {
       return (
-        <Tooltip content={item.name} side="right">
+        <Tooltip
+          content={item.name}
+          side="right"
+          wrapperClassName="block w-full"
+        >
           {linkElement}
         </Tooltip>
       );
@@ -118,27 +162,29 @@ export default function Sidebar({
         collapsed ? "w-20" : "w-64"
       )}
     >
-      {/* Toggle Button - At the very top */}
-      {onToggleCollapse && (
+      {/* Header / Profile / Toggle */}
+      <div className="px-4 pt-2 pb-2 flex items-center justify-between gap-3">
         <div
-          className={cn(
-            "flex items-center justify-end p-4 pb-2",
-            collapsed ? "justify-center" : ""
-          )}
+          className={cn("flex items-center gap-2", collapsed ? "mx-auto" : "")}
         >
+          <Image
+            src="/favicon-32x32.png"
+            alt="Coxist AI CFO Logo"
+            width={32}
+            height={32}
+            className="rounded-lg shrink-0"
+          />
+          {!collapsed && (
+            <h2 className="font-bold text-lg tracking-tight">Coxist AI CFO</h2>
+          )}
+        </div>
+        {onToggleCollapse && (
           <button
             onClick={e => {
               e.stopPropagation();
               onToggleCollapse();
             }}
-            className={cn(
-              "flex items-center justify-center w-8 h-8",
-              "bg-gray-800 hover:bg-gray-700 border border-gray-600",
-              "rounded-full shadow-lg transition-all duration-300",
-              "hover:scale-110 active:scale-95 cursor-pointer",
-              "focus:outline-none",
-              collapsed ? "mx-auto" : "ml-auto"
-            )}
+            className="flex items-center justify-center w-8 h-8 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-full shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 focus:outline-none"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? (
@@ -147,57 +193,72 @@ export default function Sidebar({
               <ChevronLeft className="h-4 w-4 text-white" />
             )}
           </button>
-        </div>
-      )}
-
-      {/* Header - Logo below button */}
-      <div
-        className={cn(
-          "px-6 pt-2 pb-6 flex items-center gap-3",
-          collapsed && "justify-center"
         )}
-      >
-        <Image
-          src="/favicon-32x32.png"
-          alt="Coxist AI CFO Logo"
-          width={32}
-          height={32}
-          className="rounded-lg shrink-0"
-        />
-        {!collapsed && <h2 className="font-bold text-xl">Coxist AI CFO</h2>}
       </div>
 
-      {/* User Profile */}
       {!collapsed && (
-        <div className="p-6 mt-4 flex flex-col items-center text-center">
-          <div className="h-20 w-20 rounded-full bg-gray-700 flex items-center justify-center mb-4">
-            <User className="h-10 w-10 text-gray-400" />
+        <div className="px-4 pb-4 flex items-center gap-3">
+          <div className="h-14 w-14 rounded-full bg-gray-700 flex items-center justify-center">
+            <User className="h-7 w-7 text-gray-400" />
           </div>
-          <h3 className="mt-4 font-semibold text-lg">Welcome Back,</h3>
-          <p className="text-gray-400">
-            {user
-              ? user.firstName && user.lastName
-                ? `${user.firstName} ${user.lastName}`
-                : user.firstName
-                ? user.firstName
-                : user.email.split("@")[0]
-              : "Guest"}
-          </p>
+          <div className="leading-tight">
+            <p className="text-xs uppercase tracking-wide text-gray-400">
+              Welcome Back,
+            </p>
+            <p className="text-sm font-semibold text-white">
+              {user
+                ? user.firstName && user.lastName
+                  ? `${user.firstName} ${user.lastName}`
+                  : user.firstName
+                  ? user.firstName
+                  : user.email.split("@")[0]
+                : "Guest"}
+            </p>
+          </div>
         </div>
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2 mt-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-        {navigation.map(item => {
-          const isActive = pathname === item.href;
-          return <NavLink key={item.name} item={item} isActive={isActive} />;
-        })}
+      <nav className="flex-1 p-4 pt-2 space-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+        {navigationSections.map(section => (
+          <div key={section.label} className="space-y-2">
+            {!collapsed && (
+              <p className="text-xs uppercase tracking-wide text-gray-500 px-3">
+                {section.label}
+              </p>
+            )}
+            <div className="space-y-2">
+              {section.items.map(item => {
+                const isActive = pathname === item.href;
+                return (
+                  <NavLink key={item.name} item={item} isActive={isActive} />
+                );
+              })}
+            </div>
+          </div>
+        ))}
+
+        <div className="pt-2 border-t border-gray-800 space-y-2">
+          {!collapsed && (
+            <p className="text-xs uppercase tracking-wide text-gray-500 px-3">
+              Preferences
+            </p>
+          )}
+          <NavLink
+            item={standaloneNav}
+            isActive={pathname === standaloneNav.href}
+          />
+        </div>
       </nav>
 
       {/* Footer */}
       <div className="p-4 border-t border-gray-700">
         {collapsed ? (
-          <Tooltip content="Log Out" side="right">
+          <Tooltip
+            content="Log Out"
+            side="right"
+            wrapperClassName="block w-full"
+          >
             <button
               onClick={logout}
               className="flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-700/50 hover:text-white w-full transition-colors"

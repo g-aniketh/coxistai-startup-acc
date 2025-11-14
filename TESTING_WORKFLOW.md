@@ -21,7 +21,7 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ### Step 2: Company Profile Setup
 1. Navigate to **Settings** (`/settings`)
-2. **Company Profile Tab**:
+2. Select the **General** tab and expand the **Company Profile** card:
    - Fill in company details:
      - Legal Name: "Test Company Pvt Ltd"
      - Mailing Name: "Test Company"
@@ -35,7 +35,7 @@ This document provides a step-by-step workflow to test all implemented features 
 3. **Verify**: Check that all addresses are saved and displayed
 
 ### Step 3: Fiscal Configuration
-1. Stay in **Settings** → **Fiscal Configuration Tab**
+1. Switch to the **Financial** tab and open **Financial Year & Edit Log**
 2. Configure:
    - Financial Year Start: `2024-04-01`
    - Financial Year End: `2025-03-31`
@@ -45,7 +45,7 @@ This document provides a step-by-step workflow to test all implemented features 
 3. Save changes
 
 ### Step 4: Security Settings
-1. Stay in **Settings** → **Security Tab**
+1. Switch to the **Security** tab
 2. Configure:
    - Enable TallyVault: `Yes` (toggle ON)
    - Enable User Access Control: `Yes` (toggle ON)
@@ -53,7 +53,7 @@ This document provides a step-by-step workflow to test all implemented features 
 3. Save changes
 
 ### Step 5: Currency Configuration
-1. Stay in **Settings** → **Currency Tab**
+1. In the **Financial** tab, open **Base Currency & Formatting**
 2. Configure:
    - Base Currency Code: `INR`
    - Currency Symbol: `₹`
@@ -62,7 +62,8 @@ This document provides a step-by-step workflow to test all implemented features 
 3. Save changes
 
 ### Step 6: Feature Toggles
-1. Stay in **Settings** → **Feature Toggles Tab**
+1. Switch to the **Billing & Subscription** tab → **Feature Access**
+   - Confirm the plan summary shows `Startup (Free Earlybird)` with status `active`
 2. Enable all modules:
    - ✅ Accounting
    - ✅ Inventory
@@ -376,7 +377,7 @@ This document provides a step-by-step workflow to test all implemented features 
 4. Verify all changes are logged
 
 ### Step 29: Test Edit Log Toggle
-1. Go to **Settings** → **Fiscal Configuration**
+1. Go to **Settings** → **Financial** tab → **Financial Year & Edit Log**
 2. Toggle **Enable Edit Log** to `OFF`
 3. Make a change (e.g., update a voucher)
 4. Go back to **Audit Log**
