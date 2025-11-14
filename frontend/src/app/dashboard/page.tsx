@@ -8,9 +8,10 @@ import StatCard from '@/components/dashboard/StatCard';
 import UserChart from '@/components/dashboard/UserChart';
 import ProfitChart from '@/components/dashboard/ProfitChart';
 import { Input } from '@/components/ui/input';
-import { apiClient, DashboardSummary, CashflowChartData, RecentActivity } from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { apiClient, DashboardSummary, CashflowChartData, RecentActivity, CompanyProfile } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { AlertTriangle, Brain, Calendar, DollarSign, Search, Target, TrendingDown, TrendingUp, Wallet, Zap } from 'lucide-react';
+import { AlertTriangle, Brain, Calendar, DollarSign, Search, Target, TrendingDown, TrendingUp, Wallet, Zap, Settings, X, Info } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
@@ -21,25 +22,51 @@ export default function DashboardPage() {
   const [cashflowData, setCashflowData] = useState<CashflowChartData[]>([]);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
+  const [showSetupBanner, setShowSetupBanner] = useState(false);
 
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const [summaryRes, cashflowRes, activityRes] = await Promise.all([
+      const [summaryRes, cashflowRes, activityRes, profileRes] = await Promise.all([
         apiClient.dashboard.summary(),
         apiClient.dashboard.cashflowChart(6),
         apiClient.dashboard.recentActivity(10),
+        apiClient.company.getProfile(),
       ]);
 
       if (summaryRes.success && summaryRes.data) setSummary(summaryRes.data);
       if (cashflowRes.success && cashflowRes.data) setCashflowData(cashflowRes.data);
       if (activityRes.success && activityRes.data) setRecentActivity(activityRes.data);
+      
+      if (profileRes.success && profileRes.data) {
+        setCompanyProfile(profileRes.data);
+        // Check if company profile is incomplete (missing email, phone, or addresses)
+        const isIncomplete = !profileRes.data.email || 
+                             !profileRes.data.phone || 
+                             (profileRes.data.addresses && profileRes.data.addresses.length === 0);
+        
+        // Check if user dismissed the banner (stored in localStorage)
+        const dismissed = localStorage.getItem('company-setup-banner-dismissed');
+        if (isIncomplete && !dismissed) {
+          setShowSetupBanner(true);
+        }
+      }
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
       toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDismissBanner = () => {
+    setShowSetupBanner(false);
+    localStorage.setItem('company-setup-banner-dismissed', 'true');
+  };
+
+  const handleGoToSettings = () => {
+    router.push('/settings');
   };
 
   useEffect(() => {
@@ -80,6 +107,37 @@ export default function DashboardPage() {
                   <Input placeholder="Search transactions, insights..." className="pl-10 bg-white rounded-lg" />
                 </div>
               </div>
+
+              {/* Company Setup Banner */}
+              {showSetupBanner && (
+                <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 mb-6 relative">
+                  <button
+                    onClick={handleDismissBanner}
+                    className="absolute top-3 right-3 text-amber-600 hover:text-amber-800 transition-colors"
+                    aria-label="Dismiss banner"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                  <div className="flex items-start gap-3 pr-8">
+                    <div className="p-2 bg-amber-100 rounded-lg">
+                      <Info className="h-5 w-5 text-amber-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-amber-900 mb-1">Complete Your Company Setup (Recommended)</h3>
+                      <p className="text-sm text-amber-800 mb-3">
+                        Add your company details, contact information, and addresses to get the most out of your AI CFO dashboard. This will help with invoicing, compliance, and financial reporting.
+                      </p>
+                      <Button
+                        onClick={handleGoToSettings}
+                        className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Go to Settings
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* AI CFO Status Banner */}
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-6">

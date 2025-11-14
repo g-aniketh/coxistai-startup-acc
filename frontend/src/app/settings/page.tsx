@@ -1089,7 +1089,7 @@ export default function SettingsPage() {
 
           <Card className="rounded-2xl shadow-lg border-0 bg-white">
             <CardHeader className="flex flex-col gap-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
+              <CardTitle className="flex items-center gap-2 text-lg font-bold text-[#2C2C2C]">
                 <Building2 className="h-5 w-5 text-[#2C2C2C]" /> Company Profile
               </CardTitle>
               <p className="text-sm text-muted-foreground">
@@ -1216,7 +1216,7 @@ export default function SettingsPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="text-base font-semibold text-[#2C2C2C]">Company Addresses</h3>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-[#2C2C2C]/80">
                           Add mailing, billing, and branch addresses. The primary address will be used as default.
                         </p>
                       </div>
@@ -1305,7 +1305,7 @@ export default function SettingsPage() {
                               </div>
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-4 text-sm">
+                            <div className="flex flex-wrap items-center gap-4 text-sm text-[#2C2C2C]">
                               <label className="flex items-center gap-2">
                                 <input
                                   type="checkbox"
@@ -1335,7 +1335,7 @@ export default function SettingsPage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-muted-foreground bg-gray-50">
+                      <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-[#2C2C2C]/70 bg-gray-50">
                         No addresses added yet. Use the button above to capture billing or branch locations.
                       </div>
                     )}
@@ -1362,9 +1362,9 @@ export default function SettingsPage() {
 
           <Card className="rounded-2xl shadow-lg border-0 bg-white">
             <CardHeader className="flex flex-col gap-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
+              <CardTitle className="flex items-center gap-2 text-lg font-bold text-[#2C2C2C]">
                 <Shield className="h-5 w-5 text-[#2C2C2C]" /> Financial Year & Edit Log
-                  </CardTitle>
+              </CardTitle>
               <p className="text-sm text-muted-foreground">
                 Control financial year boundaries, book start dates, back-dated entry permissions, and audit logging.
               </p>
@@ -1402,7 +1402,7 @@ export default function SettingsPage() {
                   <div className="space-y-4 rounded-xl border border-gray-200 p-4 bg-gray-50">
                     <h3 className="text-sm font-semibold text-[#2C2C2C]">Back-Dated Entries</h3>
                     <div className="flex flex-col gap-3">
-                      <label className="flex items-center gap-3 text-sm">
+                      <label className="flex items-center gap-3 text-sm text-[#2C2C2C]">
                         <input
                           type="checkbox"
                           checked={fiscalForm.allowBackdatedEntries}
@@ -1429,7 +1429,7 @@ export default function SettingsPage() {
 
                   <div className="space-y-3 rounded-xl border border-gray-200 p-4 bg-gray-50">
                     <h3 className="text-sm font-semibold text-[#2C2C2C]">Audit Trail</h3>
-                    <label className="flex items-center gap-3 text-sm">
+                    <label className="flex items-center gap-3 text-sm text-[#2C2C2C]">
                       <input
                         type="checkbox"
                         checked={fiscalForm.enableEditLog}
@@ -1463,7 +1463,7 @@ export default function SettingsPage() {
 
           <Card className="rounded-2xl shadow-lg border-0 bg-white">
             <CardHeader className="flex flex-col gap-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
+              <CardTitle className="flex items-center gap-2 text-lg font-bold text-[#2C2C2C]">
                 <Shield className="h-5 w-5 text-[#2C2C2C]" /> Security Controls
               </CardTitle>
               <p className="text-sm text-muted-foreground">
@@ -1479,7 +1479,7 @@ export default function SettingsPage() {
                 <form className="space-y-6" onSubmit={handleSecuritySubmit}>
                   <div className="space-y-4 rounded-xl border border-gray-200 p-4 bg-gray-50">
                     <h3 className="text-sm font-semibold text-[#2C2C2C]">TallyVault Encryption</h3>
-                    <label className="flex items-center gap-3 text-sm">
+                    <label className="flex items-center gap-3 text-sm text-[#2C2C2C]">
                       <input
                         type="checkbox"
                         checked={securityForm.tallyVaultEnabled}
@@ -1582,7 +1582,7 @@ export default function SettingsPage() {
 
                   <div className="space-y-4 rounded-xl border border-gray-200 p-4 bg-gray-50">
                     <h3 className="text-sm font-semibold text-[#2C2C2C]">User Access Controls</h3>
-                    <label className="flex items-center gap-3 text-sm">
+                    <label className="flex items-center gap-3 text-sm text-[#2C2C2C]">
                       <input
                         type="checkbox"
                         checked={securityForm.userAccessControlEnabled}
@@ -1595,7 +1595,7 @@ export default function SettingsPage() {
                       />
                       Require company login credentials for every user (Tally user controls)
                     </label>
-                    <label className="flex items-center gap-3 text-sm">
+                    <label className="flex items-center gap-3 text-sm text-[#2C2C2C]">
                       <input
                         type="checkbox"
                         checked={securityForm.multiFactorRequired}
@@ -1641,7 +1641,7 @@ export default function SettingsPage() {
 
           <Card className="rounded-2xl shadow-lg border-0 bg-white">
             <CardHeader className="flex flex-col gap-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
+              <CardTitle className="flex items-center gap-2 text-lg font-bold text-[#2C2C2C]">
                 <IndianRupee className="h-5 w-5 text-[#2C2C2C]" /> Base Currency & Formatting
               </CardTitle>
               <p className="text-sm text-muted-foreground">
@@ -1737,7 +1737,7 @@ export default function SettingsPage() {
 
                   <div className="space-y-3 rounded-xl border border-gray-200 p-4 bg-gray-50">
                     <h3 className="text-sm font-semibold text-[#2C2C2C]">Display Preferences</h3>
-                    <label className="flex items-center gap-3 text-sm">
+                    <label className="flex items-center gap-3 text-sm text-[#2C2C2C]">
                       <input
                         type="checkbox"
                         checked={currencyForm.symbolOnRight}
@@ -1747,7 +1747,7 @@ export default function SettingsPage() {
                       />
                       Place currency symbol after the amount
                     </label>
-                    <label className="flex items-center gap-3 text-sm">
+                    <label className="flex items-center gap-3 text-sm text-[#2C2C2C]">
                       <input
                         type="checkbox"
                         checked={currencyForm.spaceBetweenAmountAndSymbol}
@@ -1757,7 +1757,7 @@ export default function SettingsPage() {
                       />
                       Insert space between symbol and amount
                     </label>
-                    <label className="flex items-center gap-3 text-sm">
+                    <label className="flex items-center gap-3 text-sm text-[#2C2C2C]">
                       <input
                         type="checkbox"
                         checked={currencyForm.showAmountInMillions}
@@ -1802,7 +1802,7 @@ export default function SettingsPage() {
 
           <Card className="rounded-2xl shadow-lg border-0 bg-white">
             <CardHeader className="flex flex-col gap-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
+              <CardTitle className="flex items-center gap-2 text-lg font-bold text-[#2C2C2C]">
                 <Building2 className="h-5 w-5 text-[#2C2C2C]" /> Voucher Types & Numbering
               </CardTitle>
               <p className="text-sm text-muted-foreground">
@@ -1912,7 +1912,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className="flex items-center gap-2 md:col-span-3 text-sm">
-                  <label className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 text-[#2C2C2C]">
                     <input
                       type="checkbox"
                       checked={newVoucherType.allowManualOverride}
@@ -1922,7 +1922,7 @@ export default function SettingsPage() {
                     />
                     Allow manual override
                   </label>
-                  <label className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 text-[#2C2C2C]">
                     <input
                       type="checkbox"
                       checked={newVoucherType.allowDuplicateNumbers}
@@ -2027,7 +2027,7 @@ export default function SettingsPage() {
                         </div>
 
                         <div className="flex flex-wrap items-center gap-4 text-sm">
-                          <label className="flex items-center gap-2">
+                          <label className="flex items-center gap-2 text-[#2C2C2C]">
                             <input
                               type="checkbox"
                               checked={voucherType.allowManualOverride}
@@ -2041,7 +2041,7 @@ export default function SettingsPage() {
                             />
                             Allow manual override
                           </label>
-                          <label className="flex items-center gap-2">
+                          <label className="flex items-center gap-2 text-[#2C2C2C]">
                             <input
                               type="checkbox"
                               checked={voucherType.allowDuplicateNumbers}
@@ -2169,7 +2169,7 @@ export default function SettingsPage() {
 
           <Card className="rounded-2xl shadow-lg border-0 bg-white">
             <CardHeader className="flex flex-col gap-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
+              <CardTitle className="flex items-center gap-2 text-lg font-bold text-[#2C2C2C]">
                 <Shield className="h-5 w-5 text-[#2C2C2C]" /> Feature Access
               </CardTitle>
               <p className="text-sm text-muted-foreground">
@@ -2184,7 +2184,7 @@ export default function SettingsPage() {
               ) : (
                 <form className="space-y-6" onSubmit={handleFeatureSubmit}>
                   <div className="grid gap-4 md:grid-cols-2">
-                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm">
+                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
                       <input
                         type="checkbox"
                         checked={featureForm.enableAccounting}
@@ -2199,7 +2199,7 @@ export default function SettingsPage() {
                         </p>
                       </span>
                     </label>
-                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm">
+                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
                       <input
                         type="checkbox"
                         checked={featureForm.enableInventory}
@@ -2214,7 +2214,7 @@ export default function SettingsPage() {
                         </p>
                       </span>
                     </label>
-                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm">
+                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
                       <input
                         type="checkbox"
                         checked={featureForm.enableTaxation}
@@ -2229,7 +2229,7 @@ export default function SettingsPage() {
                         </p>
                       </span>
                     </label>
-                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm">
+                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
                       <input
                         type="checkbox"
                         checked={featureForm.enablePayroll}
@@ -2244,7 +2244,7 @@ export default function SettingsPage() {
                         </p>
                       </span>
                     </label>
-                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm">
+                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
                       <input
                         type="checkbox"
                         checked={featureForm.enableAIInsights}
@@ -2259,7 +2259,7 @@ export default function SettingsPage() {
                         </p>
                       </span>
                     </label>
-                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm">
+                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
                       <input
                         type="checkbox"
                         checked={featureForm.enableScenarioPlanning}
@@ -2274,7 +2274,7 @@ export default function SettingsPage() {
                         </p>
                       </span>
                     </label>
-                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm">
+                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
                       <input
                         type="checkbox"
                         checked={featureForm.enableAutomations}
@@ -2289,7 +2289,7 @@ export default function SettingsPage() {
                         </p>
                       </span>
                     </label>
-                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm">
+                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
                       <input
                         type="checkbox"
                         checked={featureForm.enableVendorManagement}
@@ -2304,7 +2304,7 @@ export default function SettingsPage() {
                         </p>
                       </span>
                     </label>
-                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm">
+                    <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
                       <input
                         type="checkbox"
                         checked={featureForm.enableBillingAndInvoicing}

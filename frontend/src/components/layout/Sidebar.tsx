@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   BarChart2,
@@ -26,10 +26,12 @@ import {
   HandCoins,
   History,
   Shield,
-} from 'lucide-react';
-import { useAuthStore } from '@/store/auth';
-import Image from 'next/image';
-import { Tooltip } from '@/components/ui/tooltip';
+  Cog,
+  IndianRupee,
+} from "lucide-react";
+import { useAuthStore } from "@/store/auth";
+import Image from "next/image";
+import { Tooltip } from "@/components/ui/tooltip";
 
 interface NavItem {
   name: string;
@@ -42,38 +44,52 @@ interface SidebarProps {
   onToggleCollapse?: () => void;
 }
 
-export default function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
+export default function Sidebar({
+  collapsed = false,
+  onToggleCollapse,
+}: SidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
 
   const navigation: NavItem[] = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'AI Assistant', href: '/ai-assistant', icon: Sparkles },
-    { name: 'Compliance Hub', href: '/compliance-hub', icon: Calculator },
-    { name: 'Banking & Payments', href: '/banking-payments', icon: CreditCard },
-    { name: 'Vouchers', href: '/vouchers', icon: FileText },
-    { name: 'Bills', href: '/bills', icon: HandCoins },
-    { name: 'GST', href: '/gst', icon: Globe },
-    { name: 'Cost Management', href: '/cost-management', icon: Settings },
-    { name: 'Audit Log', href: '/audit-log', icon: History },
-    { name: 'Role Management', href: '/role-management', icon: Shield },
-    { name: 'Smart Alerts', href: '/alerts', icon: AlertTriangle },
-    { name: 'Financial Dashboard', href: '/financial-dashboard', icon: BarChart2 },
-    { name: 'Products', href: '/products', icon: Package },
-    { name: 'Import from Tally', href: '/tally-import', icon: Upload },
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "AI Assistant", href: "/ai-assistant", icon: Sparkles },
+    { name: "Compliance Hub", href: "/compliance-hub", icon: Calculator },
+    { name: "Banking & Payments", href: "/banking-payments", icon: CreditCard },
+    { name: "Vouchers", href: "/vouchers", icon: FileText },
+    { name: "Bills", href: "/bills", icon: HandCoins },
+    { name: "GST", href: "/gst", icon: Globe },
+    { name: "Cost Management", href: "/cost-management", icon: IndianRupee },
+    { name: "Audit Log", href: "/audit-log", icon: History },
+    { name: "Role Management", href: "/role-management", icon: Shield },
+    { name: "Settings", href: "/settings", icon: Cog },
+    { name: "Smart Alerts", href: "/alerts", icon: AlertTriangle },
+    {
+      name: "Financial Dashboard",
+      href: "/financial-dashboard",
+      icon: BarChart2,
+    },
+    { name: "Products", href: "/products", icon: Package },
+    { name: "Import from Tally", href: "/tally-import", icon: Upload },
   ];
 
-  const NavLink = ({ item, isActive }: { item: NavItem; isActive: boolean }) => {
+  const NavLink = ({
+    item,
+    isActive,
+  }: {
+    item: NavItem;
+    isActive: boolean;
+  }) => {
     const Icon = item.icon;
     const linkElement = (
       <Link
         href={item.href}
         className={cn(
-          'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors relative w-full',
-          collapsed ? 'justify-center' : '',
+          "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors relative w-full",
+          collapsed ? "justify-center" : "",
           isActive
-            ? 'bg-gray-700/50 text-white'
-            : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'
+            ? "bg-gray-700/50 text-white"
+            : "text-gray-400 hover:bg-gray-700/50 hover:text-white"
         )}
       >
         {isActive && (
@@ -96,18 +112,22 @@ export default function Sidebar({ collapsed = false, onToggleCollapse }: Sidebar
   };
 
   return (
-    <div className={cn(
-      "relative flex flex-col h-full bg-[#1E1E1E] text-white transition-all duration-300",
-      collapsed ? "w-20" : "w-64"
-    )}>
+    <div
+      className={cn(
+        "relative flex flex-col h-full bg-[#1E1E1E] text-white transition-all duration-300",
+        collapsed ? "w-20" : "w-64"
+      )}
+    >
       {/* Toggle Button - At the very top */}
       {onToggleCollapse && (
-        <div className={cn(
-          "flex items-center justify-end p-4 pb-2",
-          collapsed ? "justify-center" : ""
-        )}>
+        <div
+          className={cn(
+            "flex items-center justify-end p-4 pb-2",
+            collapsed ? "justify-center" : ""
+          )}
+        >
           <button
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
               onToggleCollapse();
             }}
@@ -131,10 +151,12 @@ export default function Sidebar({ collapsed = false, onToggleCollapse }: Sidebar
       )}
 
       {/* Header - Logo below button */}
-      <div className={cn(
-        "px-6 pt-2 pb-6 flex items-center gap-3",
-        collapsed && "justify-center"
-      )}>
+      <div
+        className={cn(
+          "px-6 pt-2 pb-6 flex items-center gap-3",
+          collapsed && "justify-center"
+        )}
+      >
         <Image
           src="/favicon-32x32.png"
           alt="Coxist AI CFO Logo"
@@ -151,28 +173,24 @@ export default function Sidebar({ collapsed = false, onToggleCollapse }: Sidebar
           <div className="h-20 w-20 rounded-full bg-gray-700 flex items-center justify-center mb-4">
             <User className="h-10 w-10 text-gray-400" />
           </div>
-          <h3 className="mt-4 font-semibold text-lg">
-            Welcome Back,
-          </h3>
+          <h3 className="mt-4 font-semibold text-lg">Welcome Back,</h3>
           <p className="text-gray-400">
-            {user ? (
-              user.firstName && user.lastName 
+            {user
+              ? user.firstName && user.lastName
                 ? `${user.firstName} ${user.lastName}`
-                : user.firstName 
-                  ? user.firstName
-                  : user.email.split('@')[0]
-            ) : 'Guest'}
+                : user.firstName
+                ? user.firstName
+                : user.email.split("@")[0]
+              : "Guest"}
           </p>
         </div>
       )}
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2 mt-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-        {navigation.map((item) => {
+        {navigation.map(item => {
           const isActive = pathname === item.href;
-          return (
-            <NavLink key={item.name} item={item} isActive={isActive} />
-          );
+          return <NavLink key={item.name} item={item} isActive={isActive} />;
         })}
       </nav>
 
@@ -200,4 +218,3 @@ export default function Sidebar({ collapsed = false, onToggleCollapse }: Sidebar
     </div>
   );
 }
-
