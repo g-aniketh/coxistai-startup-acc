@@ -551,6 +551,28 @@ export interface PartyInterestInput {
   applyOnPayables?: boolean;
 }
 
+export interface Party {
+  id: string;
+  name: string;
+  type: string;
+  email?: string | null;
+  phone?: string | null;
+  openingBalance: number;
+  balanceType: string;
+  startupId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PartyInput {
+  name: string;
+  type: string;
+  email?: string;
+  phone?: string;
+  openingBalance?: number;
+  balanceType?: string;
+}
+
 export type GstRegistrationType =
   | "REGULAR"
   | "COMPOSITION"
@@ -1969,6 +1991,22 @@ export const apiClient = {
       const response = await api.get("/import/export/gst", {
         responseType: "blob",
       });
+      return response.data;
+    },
+  },
+
+  // ============================================================================
+  // PARTY MASTER
+  // ============================================================================
+
+  parties: {
+    list: async (): Promise<ApiResponse<Party[]>> => {
+      const response = await api.get("/parties");
+      return response.data;
+    },
+
+    create: async (data: PartyInput): Promise<ApiResponse<Party>> => {
+      const response = await api.post("/parties", data);
       return response.data;
     },
   },

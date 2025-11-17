@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import AuthGuard from '@/components/auth/AuthGuard';
-import MainLayout from '@/components/layout/MainLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useCallback, useEffect, useState } from "react";
+import AuthGuard from "@/components/auth/AuthGuard";
+import MainLayout from "@/components/layout/MainLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   apiClient,
   AuditLog,
@@ -14,9 +14,9 @@ import {
   AuditLogSummary,
   AuditAction,
   AuditEntityType,
-} from '@/lib/api';
-import { toast } from 'react-hot-toast';
-import { FileText, Filter, Download, Search, Calendar, User, Activity } from 'lucide-react';
+} from "@/lib/api";
+import { toast } from "react-hot-toast";
+import { FileText, Filter, User } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -24,17 +24,22 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/Badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/Badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 
 export default function AuditLogPage() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
@@ -48,40 +53,60 @@ export default function AuditLogPage() {
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 
-  useEffect(() => {
-    loadLogs();
-    loadSummary();
-  }, [filters]);
-
-  const loadLogs = async () => {
+  const loadLogs = useCallback(async () => {
     try {
       setLoading(true);
       const response = await apiClient.audit.list(filters);
       if (response.success) {
-        setLogs(response.data.data);
-        setTotal(response.data.total);
+        const list = Array.isArray(response.data?.data)
+          ? response.data.data
+          : [];
+        setLogs(list);
+        setTotal(response.data?.total ?? list.length);
+      } else {
+        setLogs([]);
+        setTotal(0);
       }
     } catch (error) {
-      console.error('Failed to load audit logs:', error);
-      toast.error('Failed to load audit logs');
+      console.error("Failed to load audit logs:", error);
+      toast.error("Failed to load audit logs");
+      setLogs([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
-  const loadSummary = async () => {
+  const loadSummary = useCallback(async () => {
     try {
-      const response = await apiClient.audit.getSummary(filters.fromDate, filters.toDate);
+      const response = await apiClient.audit.getSummary(
+        filters.fromDate,
+        filters.toDate
+      );
       if (response.success) {
-        setSummary(response.data);
+        setSummary(response.data ?? null);
       }
     } catch (error) {
-      console.error('Failed to load audit summary:', error);
+      console.error("Failed to load audit summary:", error);
     }
-  };
+  }, [filters.fromDate, filters.toDate]);
 
-  const handleFilterChange = (key: keyof AuditLogFilters, value: any) => {
-    setFilters((prev) => ({ ...prev, [key]: value, offset: 0 }));
+  useEffect(() => {
+    loadLogs();
+    loadSummary();
+  }, [loadLogs, loadSummary]);
+
+  const handleFilterChange = <K extends keyof AuditLogFilters>(
+    key: K,
+    value: AuditLogFilters[K] | undefined
+  ) => {
+    setFilters(prev => {
+      const next: AuditLogFilters = { ...prev, [key]: value };
+      if (key !== "offset") {
+        next.offset = 0;
+      }
+      return next;
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -91,22 +116,25 @@ export default function AuditLogPage() {
   const getActionColor = (action: AuditAction) => {
     switch (action) {
       case AuditAction.CREATE:
-        return 'bg-green-100 text-green-800';
+        return "bg-green-100 text-green-800";
       case AuditAction.UPDATE:
-        return 'bg-blue-100 text-blue-800';
+        return "bg-blue-100 text-blue-800";
       case AuditAction.DELETE:
-        return 'bg-red-100 text-red-800';
+        return "bg-red-100 text-red-800";
       case AuditAction.APPROVE:
-        return 'bg-purple-100 text-purple-800';
+        return "bg-purple-100 text-purple-800";
       case AuditAction.REJECT:
-        return 'bg-orange-100 text-orange-800';
+        return "bg-orange-100 text-orange-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getEntityTypeLabel = (entityType: AuditEntityType) => {
-    return entityType.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase());
+    return entityType
+      .replace(/_/g, " ")
+      .toLowerCase()
+      .replace(/\b\w/g, l => l.toUpperCase());
   };
 
   const viewDetails = (log: AuditLog) => {
@@ -117,12 +145,14 @@ export default function AuditLogPage() {
   return (
     <AuthGuard requireAuth={true}>
       <MainLayout>
-        <div className="p-4 md:p-8 space-y-6">
+        <div className="p-4 md:p-8 space-y-8 bg-[#f6f7fb] min-h-full">
           <div className="flex items-center gap-3">
-            <FileText className="h-8 w-8 text-[#2C2C2C]" />
+            <FileText className="h-9 w-9 text-[#607c47]" />
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">Audit Log</h1>
-              <p className="text-sm text-[#2C2C2C]/70">
+              <h1 className="text-2xl md:text-3xl font-bold text-[#1f1f1f]">
+                Audit Log
+              </h1>
+              <p className="text-sm text-[#1f1f1f]/70">
                 Track all changes and activities in your system
               </p>
             </div>
@@ -131,41 +161,54 @@ export default function AuditLogPage() {
           {/* Summary Cards */}
           {summary && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card>
+              <Card className="rounded-2xl border border-gray-100 shadow-sm bg-white">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Total Logs</CardTitle>
+                  <CardTitle className="text-sm font-medium text-[#1f1f1f]/60">
+                    Total Logs
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{summary.totalLogs}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Creates</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-600">
-                    {summary.byAction.find((a) => a.action === AuditAction.CREATE)?.count || 0}
+                  <div className="text-3xl font-semibold text-[#1f1f1f]">
+                    {summary.totalLogs}
                   </div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="rounded-2xl border border-gray-100 shadow-sm bg-white">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Updates</CardTitle>
+                  <CardTitle className="text-sm font-medium text-[#1f1f1f]/60">
+                    Creates
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-blue-600">
-                    {summary.byAction.find((a) => a.action === AuditAction.UPDATE)?.count || 0}
+                  <div className="text-3xl font-semibold text-emerald-600">
+                    {summary.byAction.find(a => a.action === AuditAction.CREATE)
+                      ?.count || 0}
                   </div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="rounded-2xl border border-gray-100 shadow-sm bg-white">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Deletes</CardTitle>
+                  <CardTitle className="text-sm font-medium text-[#1f1f1f]/60">
+                    Updates
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-red-600">
-                    {summary.byAction.find((a) => a.action === AuditAction.DELETE)?.count || 0}
+                  <div className="text-3xl font-semibold text-blue-600">
+                    {summary.byAction.find(a => a.action === AuditAction.UPDATE)
+                      ?.count || 0}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="rounded-2xl border border-gray-100 shadow-sm bg-white">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-[#1f1f1f]/60">
+                    Deletes
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-semibold text-red-500">
+                    {summary.byAction.find(a => a.action === AuditAction.DELETE)
+                      ?.count || 0}
                   </div>
                 </CardContent>
               </Card>
@@ -173,21 +216,26 @@ export default function AuditLogPage() {
           )}
 
           {/* Filters */}
-          <Card>
+          <Card className="rounded-3xl border border-gray-100 shadow-sm bg-white">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-[#1f1f1f]">
+                <Filter className="h-5 w-5 text-[#607c47]" />
                 Filters
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <Label htmlFor="entityType">Entity Type</Label>
+                  <Label htmlFor="entityType" className="text-xs text-[#1f1f1f]/70">
+                    Entity Type
+                  </Label>
                   <Select
-                    value={filters.entityType || 'all'}
-                    onValueChange={(value) =>
-                      handleFilterChange('entityType', value === 'all' ? undefined : value)
+                    value={filters.entityType || "all"}
+                    onValueChange={value =>
+                      handleFilterChange(
+                        "entityType",
+                        value === "all" ? undefined : (value as AuditEntityType)
+                      )
                     }
                   >
                     <SelectTrigger id="entityType">
@@ -195,7 +243,7 @@ export default function AuditLogPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Types</SelectItem>
-                      {Object.values(AuditEntityType).map((type) => (
+                      {Object.values(AuditEntityType).map(type => (
                         <SelectItem key={type} value={type}>
                           {getEntityTypeLabel(type)}
                         </SelectItem>
@@ -204,11 +252,16 @@ export default function AuditLogPage() {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="action">Action</Label>
+                  <Label htmlFor="action" className="text-xs text-[#1f1f1f]/70">
+                    Action
+                  </Label>
                   <Select
-                    value={filters.action || 'all'}
-                    onValueChange={(value) =>
-                      handleFilterChange('action', value === 'all' ? undefined : value)
+                    value={filters.action || "all"}
+                    onValueChange={value =>
+                      handleFilterChange(
+                        "action",
+                        value === "all" ? undefined : (value as AuditAction)
+                      )
                     }
                   >
                     <SelectTrigger id="action">
@@ -216,7 +269,7 @@ export default function AuditLogPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Actions</SelectItem>
-                      {Object.values(AuditAction).map((action) => (
+                      {Object.values(AuditAction).map(action => (
                         <SelectItem key={action} value={action}>
                           {action}
                         </SelectItem>
@@ -225,21 +278,32 @@ export default function AuditLogPage() {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="fromDate">From Date</Label>
+                  <Label htmlFor="fromDate" className="text-xs text-[#1f1f1f]/70">
+                    From Date
+                  </Label>
                   <Input
                     id="fromDate"
                     type="date"
-                    value={filters.fromDate || ''}
-                    onChange={(e) => handleFilterChange('fromDate', e.target.value || undefined)}
+                    value={filters.fromDate || ""}
+                    onChange={e =>
+                      handleFilterChange(
+                        "fromDate",
+                        e.target.value || undefined
+                      )
+                    }
                   />
                 </div>
                 <div>
-                  <Label htmlFor="toDate">To Date</Label>
+                  <Label htmlFor="toDate" className="text-xs text-[#1f1f1f]/70">
+                    To Date
+                  </Label>
                   <Input
                     id="toDate"
                     type="date"
-                    value={filters.toDate || ''}
-                    onChange={(e) => handleFilterChange('toDate', e.target.value || undefined)}
+                    value={filters.toDate || ""}
+                    onChange={e =>
+                      handleFilterChange("toDate", e.target.value || undefined)
+                    }
                   />
                 </div>
               </div>
@@ -247,17 +311,23 @@ export default function AuditLogPage() {
           </Card>
 
           {/* Audit Logs Table */}
-          <Card>
+          <Card className="rounded-3xl border border-gray-100 shadow-lg bg-white">
             <CardHeader>
-              <CardTitle>Audit Logs ({total})</CardTitle>
+              <CardTitle className="text-[#1f1f1f]">
+                Audit Logs ({total})
+              </CardTitle>
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="text-center py-8">Loading...</div>
+                <div className="text-center py-8 text-[#1f1f1f]/60">
+                  Loading...
+                </div>
               ) : logs.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">No audit logs found</div>
+                <div className="text-center py-8 text-gray-500">
+                  No audit logs found
+                </div>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto border border-gray-100 rounded-2xl">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -271,18 +341,21 @@ export default function AuditLogPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {logs.map((log) => (
-                        <TableRow key={log.id}>
-                          <TableCell className="text-sm">
+                      {logs.map(log => (
+                        <TableRow key={log.id} className="hover:bg-gray-50">
+                          <TableCell className="text-sm text-[#1f1f1f]">
                             {formatDate(log.createdAt)}
                           </TableCell>
                           <TableCell>
                             {log.user ? (
                               <div className="flex items-center gap-2">
-                                <User className="h-4 w-4 text-gray-400" />
-                                <span>
-                                  {log.user.firstName || ''} {log.user.lastName || ''}
-                                  {!log.user.firstName && !log.user.lastName && log.user.email}
+                                <User className="h-4 w-4 text-[#1f1f1f]/50" />
+                                <span className="text-[#1f1f1f]">
+                                  {log.user.firstName || ""}{" "}
+                                  {log.user.lastName || ""}
+                                  {!log.user.firstName &&
+                                    !log.user.lastName &&
+                                    log.user.email}
                                 </span>
                               </div>
                             ) : (
@@ -290,18 +363,25 @@ export default function AuditLogPage() {
                             )}
                           </TableCell>
                           <TableCell>
-                            <Badge className={getActionColor(log.action)}>{log.action}</Badge>
+                            <Badge className={getActionColor(log.action)}>
+                              {log.action}
+                            </Badge>
                           </TableCell>
-                          <TableCell>{getEntityTypeLabel(log.entityType)}</TableCell>
-                          <TableCell className="font-mono text-xs">{log.entityId}</TableCell>
-                          <TableCell className="max-w-xs truncate">
-                            {log.description || '-'}
+                          <TableCell className="text-[#1f1f1f]/80">
+                            {getEntityTypeLabel(log.entityType)}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-[#607c47]">
+                            {log.entityId}
+                          </TableCell>
+                          <TableCell className="max-w-xs truncate text-[#1f1f1f]/70">
+                            {log.description || "-"}
                           </TableCell>
                           <TableCell>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => viewDetails(log)}
+                              className="text-[#607c47]"
                             >
                               View Details
                             </Button>
@@ -316,19 +396,27 @@ export default function AuditLogPage() {
               {/* Pagination */}
               {total > (filters.limit || 50) && (
                 <div className="flex items-center justify-between mt-4">
-                  <div className="text-sm text-gray-600">
-                    Showing {filters.offset || 0} to{' '}
-                    {Math.min((filters.offset || 0) + (filters.limit || 50), total)} of {total}
+                  <div className="text-sm text-[#1f1f1f]/70">
+                    Showing {filters.offset || 0} to{" "}
+                    {Math.min(
+                      (filters.offset || 0) + (filters.limit || 50),
+                      total
+                    )}{" "}
+                    of {total}
                   </div>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       disabled={(filters.offset || 0) === 0}
+                      className="border-gray-200"
                       onClick={() =>
-                        setFilters((prev) => ({
+                        setFilters(prev => ({
                           ...prev,
-                          offset: Math.max(0, (prev.offset || 0) - (prev.limit || 50)),
+                          offset: Math.max(
+                            0,
+                            (prev.offset || 0) - (prev.limit || 50)
+                          ),
                         }))
                       }
                     >
@@ -337,9 +425,12 @@ export default function AuditLogPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={(filters.offset || 0) + (filters.limit || 50) >= total}
+                      disabled={
+                        (filters.offset || 0) + (filters.limit || 50) >= total
+                      }
+                      className="border-gray-200"
                       onClick={() =>
-                        setFilters((prev) => ({
+                        setFilters(prev => ({
                           ...prev,
                           offset: (prev.offset || 0) + (prev.limit || 50),
                         }))
@@ -358,22 +449,29 @@ export default function AuditLogPage() {
             <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Audit Log Details</DialogTitle>
-                <DialogDescription>Detailed information about this audit log entry</DialogDescription>
+                <DialogDescription>
+                  Detailed information about this audit log entry
+                </DialogDescription>
               </DialogHeader>
               {selectedLog && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-xs text-gray-500">Date & Time</Label>
-                      <p className="text-sm font-medium">{formatDate(selectedLog.createdAt)}</p>
+                      <Label className="text-xs text-gray-500">
+                        Date & Time
+                      </Label>
+                      <p className="text-sm font-medium">
+                        {formatDate(selectedLog.createdAt)}
+                      </p>
                     </div>
                     <div>
                       <Label className="text-xs text-gray-500">User</Label>
                       <p className="text-sm font-medium">
                         {selectedLog.user
-                          ? `${selectedLog.user.firstName || ''} ${selectedLog.user.lastName || ''}`.trim() ||
-                            selectedLog.user.email
-                          : 'System'}
+                          ? `${selectedLog.user.firstName || ""} ${
+                              selectedLog.user.lastName || ""
+                            }`.trim() || selectedLog.user.email
+                          : "System"}
                       </p>
                     </div>
                     <div>
@@ -383,18 +481,24 @@ export default function AuditLogPage() {
                       </Badge>
                     </div>
                     <div>
-                      <Label className="text-xs text-gray-500">Entity Type</Label>
+                      <Label className="text-xs text-gray-500">
+                        Entity Type
+                      </Label>
                       <p className="text-sm font-medium">
                         {getEntityTypeLabel(selectedLog.entityType)}
                       </p>
                     </div>
                     <div>
                       <Label className="text-xs text-gray-500">Entity ID</Label>
-                      <p className="text-xs font-mono">{selectedLog.entityId}</p>
+                      <p className="text-xs font-mono">
+                        {selectedLog.entityId}
+                      </p>
                     </div>
                     {selectedLog.description && (
                       <div>
-                        <Label className="text-xs text-gray-500">Description</Label>
+                        <Label className="text-xs text-gray-500">
+                          Description
+                        </Label>
                         <p className="text-sm">{selectedLog.description}</p>
                       </div>
                     )}
@@ -402,7 +506,9 @@ export default function AuditLogPage() {
 
                   {selectedLog.oldValues && (
                     <div>
-                      <Label className="text-xs text-gray-500">Old Values</Label>
+                      <Label className="text-xs text-gray-500">
+                        Old Values
+                      </Label>
                       <pre className="mt-1 p-3 bg-gray-50 rounded text-xs overflow-x-auto">
                         {JSON.stringify(selectedLog.oldValues, null, 2)}
                       </pre>
@@ -411,7 +517,9 @@ export default function AuditLogPage() {
 
                   {selectedLog.newValues && (
                     <div>
-                      <Label className="text-xs text-gray-500">New Values</Label>
+                      <Label className="text-xs text-gray-500">
+                        New Values
+                      </Label>
                       <pre className="mt-1 p-3 bg-gray-50 rounded text-xs overflow-x-auto">
                         {JSON.stringify(selectedLog.newValues, null, 2)}
                       </pre>
@@ -431,13 +539,19 @@ export default function AuditLogPage() {
                     <div className="grid grid-cols-2 gap-4">
                       {selectedLog.ipAddress && (
                         <div>
-                          <Label className="text-xs text-gray-500">IP Address</Label>
-                          <p className="text-xs font-mono">{selectedLog.ipAddress}</p>
+                          <Label className="text-xs text-gray-500">
+                            IP Address
+                          </Label>
+                          <p className="text-xs font-mono">
+                            {selectedLog.ipAddress}
+                          </p>
                         </div>
                       )}
                       {selectedLog.userAgent && (
                         <div>
-                          <Label className="text-xs text-gray-500">User Agent</Label>
+                          <Label className="text-xs text-gray-500">
+                            User Agent
+                          </Label>
                           <p className="text-xs">{selectedLog.userAgent}</p>
                         </div>
                       )}
@@ -452,4 +566,3 @@ export default function AuditLogPage() {
     </AuthGuard>
   );
 }
-

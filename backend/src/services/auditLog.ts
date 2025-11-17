@@ -39,13 +39,16 @@ export const createAuditLog = async (input: CreateAuditLogInput) => {
     select: { enableEditLog: true },
   });
 
-  // If edit log is disabled, skip logging (except for critical actions)
+  // If explicit config disables edit log, skip (except for critical actions)
   const criticalActions: AuditAction[] = [
     AuditAction.DELETE,
     AuditAction.APPROVE,
     AuditAction.REJECT,
   ];
-  if (!fiscalConfig?.enableEditLog && !criticalActions.includes(action)) {
+  const editLogExplicitlyDisabled =
+    fiscalConfig !== null && fiscalConfig.enableEditLog === false;
+
+  if (editLogExplicitlyDisabled && !criticalActions.includes(action)) {
     return null;
   }
 

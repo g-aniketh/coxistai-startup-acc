@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import AuthGuard from '@/components/auth/AuthGuard';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,6 +42,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import toast from 'react-hot-toast';
+import { apiClient, BankAccount as ApiBankAccount } from '@/lib/api';
+import CreateAccountModal from '@/components/dashboard/CreateAccountModal';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { pdf } from '@react-pdf/renderer';
@@ -102,6 +104,10 @@ export default function BankingPaymentsHubPage() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [mockAccounts, setMockAccounts] = useState<ApiBankAccount[]>([]);
+  const [mockAccountsLoading, setMockAccountsLoading] = useState(true);
+  const [mockAccountsError, setMockAccountsError] = useState<string | null>(null);
+  const [accountModalOpen, setAccountModalOpen] = useState(false);
 
   // Invoicing state
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -123,6 +129,31 @@ export default function BankingPaymentsHubPage() {
   });
 
   // Initialize mock data
+  const fetchMockBankAccounts = useCallback(async () => {
+    try {
+      setMockAccountsLoading(true);
+      setMockAccountsError(null);
+      const response = await apiClient.accounts.list();
+      if (response.success && response.data) {
+        setMockAccounts(response.data);
+      } else {
+        setMockAccounts([]);
+        setMockAccountsError(response.error || 'No accounts found yet.');
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to load accounts';
+      setMockAccountsError(message);
+      setMockAccounts([]);
+    } finally {
+      setMockAccountsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMockBankAccounts();
+  }, [fetchMockBankAccounts]);
+
   useEffect(() => {
     // Banking mock data
     setBankAccounts([
@@ -648,7 +679,63 @@ export default function BankingPaymentsHubPage() {
       <MainLayout>
         <div className="bg-gray-50 flex">
           <div className="flex-1 overflow-y-auto custom-scrollbar">
-            <div className="p-4 md:p-8 space-y-4 md:space-y-6">
+          <div className="p-4 md:p-8 space-y-4 md:space-y-6">
+            <Card className="border border-gray-200 shadow-sm">
+              <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <CardTitle className="text-lg">Mock Bank Accounts</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Keep your CFO dashboard accurate by creating simulated
+                    accounts for cash monitoring.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => setAccountModalOpen(true)}
+                  className="flex items-center gap-2 bg-[#607c47] hover:bg-[#4a6129] text-white"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Mock Account
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {mockAccountsLoading ? (
+                  <div className="flex items-center justify-center py-6 text-muted-foreground">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#607c47]" />
+                  </div>
+                ) : mockAccounts.length === 0 ? (
+                  <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-muted-foreground bg-gray-50">
+                    {mockAccountsError ||
+                      "No mock accounts yet. Use the button above to walk through the two-step setup."}
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Account</TableHead>
+                          <TableHead>Balance</TableHead>
+                          <TableHead>Created</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {mockAccounts.map(account => (
+                          <TableRow key={account.id}>
+                            <TableCell className="font-medium">
+                              {account.accountName}
+                            </TableCell>
+                            <TableCell>{formatCurrency(account.balance)}</TableCell>
+                            <TableCell>
+                              {new Date(account.createdAt).toLocaleDateString()}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -1576,6 +1663,11 @@ export default function BankingPaymentsHubPage() {
             )}
           </DialogContent>
         </Dialog>
+        <CreateAccountModal
+          isOpen={accountModalOpen}
+          onClose={() => setAccountModalOpen(false)}
+          onSuccess={fetchMockBankAccounts}
+        />
       </MainLayout>
     </AuthGuard>
   );

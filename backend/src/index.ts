@@ -27,6 +27,7 @@ import gstRoutes from './routes/gst';
 import auditLogRoutes from './routes/auditLog';
 import roleManagementRoutes from './routes/roleManagement';
 import voucherAIRoutes from './routes/voucherAI';
+import partyRoutes from './routes/party';
 import { TransactionSyncService } from './services/transactionSync';
 import { startJobs } from './jobs';
 
@@ -425,6 +426,7 @@ v1Router.use('/gst', authenticateToken, gstRoutes);
 v1Router.use('/audit', authenticateToken, auditLogRoutes);
 v1Router.use('/admin', roleManagementRoutes);
 v1Router.use('/voucher-ai', authenticateToken, voucherAIRoutes);
+v1Router.use('/parties', authenticateToken, partyRoutes);
 
 // Mount v1 routes
 app.use('/api/v1', v1Router);

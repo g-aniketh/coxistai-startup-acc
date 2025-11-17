@@ -19,6 +19,8 @@ import {
   InterestProfileInput,
   PartyInterestInput,
   InterestCompoundingFrequency,
+  Party,
+  PartyInput,
 } from "@/lib/api";
 import { Badge } from "@/components/ui/Badge";
 import {
@@ -51,6 +53,18 @@ import {
 
 type TabType = "categories" | "centers" | "interest" | "party-interest";
 type CategoryTreeNode = CostCategory & { children?: CategoryTreeNode[] };
+
+const createEmptyPartyForm = (): PartyInput => ({
+  name: "",
+  type: "Customer",
+  email: "",
+  phone: "",
+  openingBalance: 0,
+  balanceType: "Debit",
+});
+
+const PARTY_TYPES = ["Customer", "Supplier", "Employee", "Other"];
+const BALANCE_TYPES = ["Debit", "Credit"];
 
 const flattenCategoryTree = (
   nodes: CategoryTreeNode[],
@@ -125,6 +139,7 @@ export default function CostManagementPage() {
   const [partySettings, setPartySettings] = useState<PartyInterestSetting[]>(
     []
   );
+  const [parties, setParties] = useState<Party[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
   );
@@ -185,6 +200,9 @@ export default function CostManagementPage() {
       applyOnPayables: false,
     });
   const [partySaving, setPartySaving] = useState(false);
+  const [partyDialogOpen, setPartyDialogOpen] = useState(false);
+  const [partyForm, setPartyForm] = useState<PartyInput>(createEmptyPartyForm());
+  const [partyCreating, setPartyCreating] = useState(false);
 
   const flatCategories = useMemo(
     () => flattenCategoryTree(categories),
@@ -202,11 +220,18 @@ export default function CostManagementPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [catsRes, centersRes, interestRes, partyRes] = await Promise.all([
+      const [
+        catsRes,
+        centersRes,
+        interestRes,
+        partySettingsRes,
+        partiesRes,
+      ] = await Promise.all([
         apiClient.costing.listCategories(),
         apiClient.costing.listCenters(),
         apiClient.costing.listInterestProfiles(),
         apiClient.costing.listPartyInterestSettings(),
+        apiClient.parties.list(),
       ]);
 
       if (catsRes.success && catsRes.data) {
@@ -225,8 +250,13 @@ export default function CostManagementPage() {
       if (interestRes.success && interestRes.data) {
         setInterestProfiles(interestRes.data);
       }
-      if (partyRes.success && partyRes.data) {
-        setPartySettings(partyRes.data);
+      if (partySettingsRes.success && partySettingsRes.data) {
+        setPartySettings(partySettingsRes.data);
+      }
+      if (partiesRes.success && partiesRes.data) {
+        setParties(partiesRes.data);
+      } else {
+        setParties([]);
       }
     } catch (error) {
       console.error("Load cost management data error:", error);
@@ -239,6 +269,17 @@ export default function CostManagementPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  const refreshParties = async () => {
+    try {
+      const response = await apiClient.parties.list();
+      if (response.success && response.data) {
+        setParties(response.data);
+      }
+    } catch (error) {
+      console.error("Load parties error:", error);
+    }
+  };
 
   // Category handlers
   const handleCreateCategory = async () => {
@@ -310,6 +351,10 @@ export default function CostManagementPage() {
       isPrimary: false,
     });
     setEditingCategory(null);
+  };
+
+  const resetPartyForm = () => {
+    setPartyForm(createEmptyPartyForm());
   };
 
   const openCategoryDialog = (category?: CostCategory) => {
@@ -574,6 +619,37 @@ export default function CostManagementPage() {
       applyOnReceivables: true,
       applyOnPayables: false,
     });
+  };
+
+  const handleCreateParty = async () => {
+    if (!partyForm.name.trim()) {
+      toast.error("Party name is required");
+      return;
+    }
+    try {
+      setPartyCreating(true);
+      const response = await apiClient.parties.create({
+        ...partyForm,
+        openingBalance: partyForm.openingBalance ?? 0,
+      });
+      if (response.success && response.data) {
+        toast.success("Party created successfully");
+        await refreshParties();
+        setPartyDialogOpen(false);
+        resetPartyForm();
+        setPartyInterestForm(prev => ({
+          ...prev,
+          partyId: response.data.id,
+        }));
+      } else {
+        toast.error(response.error || "Failed to create party");
+      }
+    } catch (error) {
+      console.error("Create party error:", error);
+      toast.error("Failed to create party");
+    } finally {
+      setPartyCreating(false);
+    }
   };
 
   const toggleCategory = (categoryId: string) => {
@@ -847,19 +923,51 @@ export default function CostManagementPage() {
   };
 
   const renderPartyInterestTab = () => {
+    const canAssignInterest =
+      parties.length > 0 && interestProfiles.length > 0;
+
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <h3 className="text-lg font-semibold text-[#2C2C2C]">
             Party Interest Settings
           </h3>
-          <Button
-            onClick={() => setPartyInterestDialogOpen(true)}
-            className="flex items-center gap-2"
-            disabled={interestProfiles.length === 0}
-          >
-            <Plus className="h-4 w-4" /> Assign Interest
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                resetPartyForm();
+                setPartyDialogOpen(true);
+              }}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" /> Add Party
+            </Button>
+            <Button
+              onClick={() => {
+                if (!canAssignInterest) {
+                  toast.error(
+                    "Create at least one party and interest profile first."
+                  );
+                  return;
+                }
+                setPartyInterestForm(prev => ({
+                  ...prev,
+                  partyId: prev.partyId || parties[0]?.id || "",
+                  interestProfileId:
+                    prev.interestProfileId ||
+                    interestProfiles[0]?.id ||
+                    "",
+                }));
+                setPartyInterestDialogOpen(true);
+              }}
+              className="flex items-center gap-2"
+              disabled={!canAssignInterest}
+            >
+              <Plus className="h-4 w-4" /> Assign Interest
+            </Button>
+          </div>
         </div>
 
         {loading ? (
@@ -1505,6 +1613,7 @@ export default function CostManagementPage() {
                     }
                     className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                     required
+                    disabled={interestProfiles.length === 0}
                   >
                     <option value="">Select profile</option>
                     {interestProfiles.map(profile => (
@@ -1513,10 +1622,15 @@ export default function CostManagementPage() {
                       </option>
                     ))}
                   </select>
+                  {interestProfiles.length === 0 && (
+                    <p className="text-xs text-red-500">
+                      Create an interest profile before assigning it to parties.
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <Label>Party ID *</Label>
-                  <Input
+                  <Label>Party *</Label>
+                  <select
                     value={partyInterestForm.partyId}
                     onChange={e =>
                       setPartyInterestForm({
@@ -1524,11 +1638,26 @@ export default function CostManagementPage() {
                         partyId: e.target.value,
                       })
                     }
-                    placeholder="Enter party ID"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Note: Party lookup will be added in a future update
-                  </p>
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
+                    disabled={parties.length === 0}
+                    required
+                  >
+                    <option value="">Select party</option>
+                    {parties.map(party => (
+                      <option key={party.id} value={party.id}>
+                        {party.name} · {party.type}
+                      </option>
+                    ))}
+                  </select>
+                  {parties.length === 0 ? (
+                    <p className="text-xs text-red-500">
+                      Add a party before assigning interest.
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Parties are managed via the "Add Party" button above.
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Override Rate (%)</Label>
@@ -1645,6 +1774,135 @@ export default function CostManagementPage() {
               </div>
             </DialogContent>
           </Dialog>
+        <Dialog
+          open={partyDialogOpen}
+          onOpenChange={open => {
+            setPartyDialogOpen(open);
+            if (!open) {
+              resetPartyForm();
+            }
+          }}
+        >
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add Party</DialogTitle>
+              <DialogDescription>
+                Create a party record to use across bills, receivables, and
+                interest assignments.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="partyName">Party Name *</Label>
+                <Input
+                  id="partyName"
+                  value={partyForm.name}
+                  onChange={e =>
+                    setPartyForm({ ...partyForm, name: e.target.value })
+                  }
+                  placeholder="e.g., Customer ABC Pvt Ltd"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="partyType">Party Type</Label>
+                  <select
+                    id="partyType"
+                    value={partyForm.type}
+                    onChange={e =>
+                      setPartyForm({ ...partyForm, type: e.target.value })
+                    }
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
+                  >
+                    {PARTY_TYPES.map(type => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="balanceType">Balance Type</Label>
+                  <select
+                    id="balanceType"
+                    value={partyForm.balanceType}
+                    onChange={e =>
+                      setPartyForm({ ...partyForm, balanceType: e.target.value })
+                    }
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
+                  >
+                    {BALANCE_TYPES.map(type => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="partyEmail">Email</Label>
+                  <Input
+                    id="partyEmail"
+                    value={partyForm.email || ""}
+                    onChange={e =>
+                      setPartyForm({ ...partyForm, email: e.target.value })
+                    }
+                    placeholder="finance@example.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="partyPhone">Phone</Label>
+                  <Input
+                    id="partyPhone"
+                    value={partyForm.phone || ""}
+                    onChange={e =>
+                      setPartyForm({ ...partyForm, phone: e.target.value })
+                    }
+                    placeholder="+91-9000000000"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="openingBalance">Opening Balance</Label>
+                <Input
+                  id="openingBalance"
+                  type="number"
+                  step="0.01"
+                  value={partyForm.openingBalance ?? 0}
+                  onChange={e =>
+                    setPartyForm({
+                      ...partyForm,
+                      openingBalance:
+                        e.target.value === "" ? 0 : Number(e.target.value),
+                    })
+                  }
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    resetPartyForm();
+                    setPartyDialogOpen(false);
+                  }}
+                  disabled={partyCreating}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleCreateParty}
+                  disabled={partyCreating || !partyForm.name.trim()}
+                  className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                >
+                  {partyCreating ? "Creating..." : "Create Party"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
         </div>
       </MainLayout>
     </AuthGuard>

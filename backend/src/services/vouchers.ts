@@ -1,5 +1,12 @@
-import { Prisma, VoucherBillReferenceType, VoucherEntryType } from '@prisma/client';
+import {
+  AuditAction,
+  AuditEntityType,
+  Prisma,
+  VoucherBillReferenceType,
+  VoucherEntryType,
+} from '@prisma/client';
 import { prisma } from '../lib/prisma';
+import { createAuditLog } from './auditLog';
 
 export interface VoucherBillReferenceInput {
   reference: string;
@@ -80,7 +87,7 @@ const assertBalancedEntries = (entries: VoucherEntryInput[]) => {
 export const createVoucher = async (startupId: string, payload: CreateVoucherInput) => {
   const totalAmount = assertBalancedEntries(payload.entries);
 
-  return prisma.$transaction(async (tx) => {
+  const voucher = await prisma.$transaction(async (tx) => {
     const voucherType = await tx.voucherType.findFirst({
       where: { id: payload.voucherTypeId, startupId },
       include: { numberingSeries: true },
@@ -188,6 +195,39 @@ export const createVoucher = async (startupId: string, payload: CreateVoucherInp
     timeout: 20000,
     maxWait: 5000,
   });
+
+  const simplifiedEntries = voucher.entries.map((entry) => ({
+    ledgerName: entry.ledgerName,
+    entryType: entry.entryType,
+    amount: entry.amount,
+  }));
+
+  const auditPayload = {
+    startupId,
+    userId: payload.createdById,
+    entityType: AuditEntityType.VOUCHER,
+    entityId: voucher.id,
+    action: AuditAction.CREATE,
+    description: `Voucher ${voucher.voucherNumber} created`,
+    newValues: {
+      voucherId: voucher.id,
+      voucherNumber: voucher.voucherNumber,
+      voucherType: voucher.voucherType?.name || voucher.voucherTypeId,
+      date: voucher.date,
+      totalAmount: voucher.totalAmount,
+      entries: simplifiedEntries,
+    },
+    metadata: {
+      reference: voucher.reference,
+      numberingSeriesId: voucher.numberingSeriesId,
+    },
+  };
+
+  createAuditLog(auditPayload).catch((err) => {
+    console.warn('Failed to write audit log for voucher', voucher.id, err);
+  });
+
+  return voucher;
 };
 
 export const listVouchers = async (

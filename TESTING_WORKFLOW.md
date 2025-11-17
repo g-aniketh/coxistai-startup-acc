@@ -52,9 +52,9 @@ This document provides a step-by-step workflow to test all implemented features 
 
 1. Switch to the **Security** tab
 2. Configure:
-   - Enable TallyVault: `Yes` (toggle ON)
-   - Enable User Access Control: `Yes` (toggle ON)
-   - Enable MFA: `No` (can enable later)
+   - Enable **Vault Encryption** for company data (toggle ON and set a vault password if enabling for the first time)
+   - Enable **User Access Controls** (toggle ON)
+   - Enable **Multi-factor Authentication** for privileged roles (optional, toggle ON when ready)
 3. Save changes
 
 ### Step 5: Currency Configuration
@@ -71,13 +71,26 @@ This document provides a step-by-step workflow to test all implemented features 
 
 1. Switch to the **Billing & Subscription** tab → **Feature Access**
    - Confirm the plan summary shows `Startup (Free Earlybird)` with status `active`
-2. Enable all modules:
-   - ✅ Accounting
-   - ✅ Inventory
-   - ✅ Taxation
-   - ✅ Payroll
-   - ✅ Banking
+2. Enable all modules/cards in **Feature Access**:
+   - ✅ Accounting & Ledgers
+   - ✅ Inventory & Stock
+   - ✅ Tax & Compliance
+   - ✅ Payroll & HR
+   - ✅ AI Insights
+   - ✅ Scenario Planning
+   - ✅ Automations
+   - ✅ Vendor Management
+   - ✅ Billing & Invoicing
 3. Save changes
+
+### Step 6A: Create a Mock Bank Account
+
+1. Navigate to **Banking & Payments** (`/banking-payments`)
+2. In the **Mock Bank Accounts** card, click **Add Mock Account**
+3. Complete the two-step wizard:
+   - **Step 1 – Account Details:** Enter a friendly account name (e.g., "Operating Account") and click **Next**
+   - **Step 2 – Opening Balance:** Provide the opening balance, review the summary, and click **Create Account**
+4. **Verify**: The new mock account appears in the table and feeds the CFO dashboard totals
 
 ---
 
@@ -99,7 +112,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Suffix: (optional)
    - Checkboxes: Allow manual override, Allow duplicate numbers (optional)
 6. Click **Add Voucher Type** button
-7. **Verify**: The new voucher type appears in the list
+7. **Verify**: The new voucher type appears as its own card showing category, next number, and the configured numbering method/behaviour badges
 
 ### Step 8: Configure Numbering Series
 
@@ -116,7 +129,7 @@ This document provides a step-by-step workflow to test all implemented features 
 3. Example: For "Payment" voucher type:
    - Add a series: Name "PAY-2025", Prefix "PAY-", Suffix ""
    - Click **Add Series**
-4. **Verify**: Series appear under each voucher type with their details
+4. **Verify**: Series appear under each voucher type card with their details, and the preview button shows the formatted number that will be used
 
 ---
 
@@ -382,16 +395,17 @@ This document provides a step-by-step workflow to test all implemented features 
 ### Step 23: Assign Interest to Parties
 
 1. Navigate to **Cost Management** (`/cost-management`)
-2. Go to **Party Interest** tab (click on "Party Interest" tab)
-3. Click **Assign Interest** button
-4. Assign interest profiles:
-   - Select Interest Profile: "Standard Receivables" (from dropdown)
-   - Enter Party Name: "Customer ABC" (or select from existing parties)
-   - Override Rate: (optional, leave blank to use profile rate)
-   - Effective From: Today's date
-5. Click **Assign** button to save
-6. **Verify**: The assignment appears in the Party Interest table
-7. Repeat for other parties if needed
+2. Open the **Party Interest** tab
+3. Click **Add Party** and create a record:
+   - Name, type (Customer/Supplier/Employee/Other), optional email/phone
+   - Opening balance & balance type are optional but useful for context
+4. After saving, click **Assign Interest**
+   - **Interest Profile:** pick the profile you created earlier (e.g., "Standard Receivables")
+   - **Party:** choose the party from the dropdown (no manual IDs required)
+   - Configure optional override rate, effective dates, and whether it applies to Receivables and/or Payables
+5. Click **Assign**
+6. **Verify:** The new row appears in the Party Interest table with the correct party, profile, and badges
+7. Repeat for additional parties as needed
 
 ---
 
