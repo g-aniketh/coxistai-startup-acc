@@ -12,44 +12,46 @@ datasource db {
 // ============================================================================
 
 model Startup {
-  id                 String   @id @default(cuid())
+  id                 String    @id @default(cuid())
   name               String
-  subscriptionPlan   String   @default("starter_earlybird") // starter_earlybird, starter, pro, enterprise
-  subscriptionStatus String   @default("active") // active, cancelled, expired
+  subscriptionPlan   String    @default("starter_earlybird") // starter_earlybird, starter, pro, enterprise
+  subscriptionStatus String    @default("active") // active, cancelled, expired
   trialEndsAt        DateTime?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
-  users            User[]
-  mockBankAccounts MockBankAccount[]
-  transactions     Transaction[]
-  products         Product[]
-  sales            Sale[]
-  cashflowMetrics  CashflowMetric[]
-  scenarios        AIScenario[]
-  alerts           Alert[]
-  investorUpdates  InvestorUpdate[]
-  partyMasters     PartyMaster[]
-  importedTransactions ImportedTransaction[]
-  importHistories  ImportHistory[]
-  companyProfile   CompanyProfile?
-  fiscalConfig     CompanyFiscalConfig?
-  securityConfig   CompanySecuritySetting?
-  currencyConfig   CompanyCurrencySetting?
-  featureToggle    CompanyFeatureToggle?
-  voucherTypes     VoucherType[]
-  voucherSeries    VoucherNumberingSeries[]
-  vouchers         Voucher[]
-  bills            Bill[]
-  billSettlements  BillSettlement[]
-  costCategories   CostCategory[]
-  costCenters      CostCenter[]
-  interestProfiles InterestProfile[]
+  users                 User[]
+  mockBankAccounts      MockBankAccount[]
+  transactions          Transaction[]
+  products              Product[]
+  sales                 Sale[]
+  cashflowMetrics       CashflowMetric[]
+  scenarios             AIScenario[]
+  alerts                Alert[]
+  investorUpdates       InvestorUpdate[]
+  partyMasters          PartyMaster[]
+  importedTransactions  ImportedTransaction[]
+  importHistories       ImportHistory[]
+  ledgerGroups          LedgerGroup[]
+  ledgers               Ledger[]
+  companyProfile        CompanyProfile?
+  fiscalConfig          CompanyFiscalConfig?
+  securityConfig        CompanySecuritySetting?
+  currencyConfig        CompanyCurrencySetting?
+  featureToggle         CompanyFeatureToggle?
+  voucherTypes          VoucherType[]
+  voucherSeries         VoucherNumberingSeries[]
+  vouchers              Voucher[]
+  bills                 Bill[]
+  billSettlements       BillSettlement[]
+  costCategories        CostCategory[]
+  costCenters           CostCenter[]
+  interestProfiles      InterestProfile[]
   partyInterestSettings PartyInterestSetting[]
-  gstRegistrations GstRegistration[]
-  gstTaxRates      GstTaxRate[]
-  gstLedgerMappings GstLedgerMapping[]
-  auditLogs        AuditLog[]
+  gstRegistrations      GstRegistration[]
+  gstTaxRates           GstTaxRate[]
+  gstLedgerMappings     GstLedgerMapping[]
+  auditLogs             AuditLog[]
 }
 
 model User {
@@ -70,11 +72,11 @@ model User {
 }
 
 model Role {
-  id          String       @id @default(cuid())
-  name        String       @unique // e.g., "Admin", "Accountant", "CTO", "CFO", "Operations Manager"
+  id          String   @id @default(cuid())
+  name        String   @unique // e.g., "Admin", "Accountant", "CTO", "CFO", "Operations Manager"
   description String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   permissions Permission[]
   users       UserRole[]
@@ -82,8 +84,8 @@ model Role {
 
 model Permission {
   id          String   @id @default(cuid())
-  action      String   // e.g., "manage", "create", "read", "update", "delete"
-  subject     String   // e.g., "users", "transactions", "inventory", "dashboard", "analytics"
+  action      String // e.g., "manage", "create", "read", "update", "delete"
+  subject     String // e.g., "users", "transactions", "inventory", "dashboard", "analytics"
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -109,22 +111,22 @@ model UserRole {
 // SIMULATED FINANCIAL DATA MODELS
 // ============================================================================
 model CompanyProfile {
-  id              String   @id @default(cuid())
-  startupId       String   @unique
-  displayName     String
-  legalName       String?
-  mailingName     String?
-  baseCurrency    String   @default("INR")
-  country         String?
-  state           String?
-  city            String?
-  postalCode      String?
-  phone           String?
-  mobile          String?
-  email           String?
-  website         String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id           String   @id @default(cuid())
+  startupId    String   @unique
+  displayName  String
+  legalName    String?
+  mailingName  String?
+  baseCurrency String   @default("INR")
+  country      String?
+  state        String?
+  city         String?
+  postalCode   String?
+  phone        String?
+  mobile       String?
+  email        String?
+  website      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   startup   Startup          @relation(fields: [startupId], references: [id], onDelete: Cascade)
   addresses CompanyAddress[]
@@ -133,20 +135,20 @@ model CompanyProfile {
 }
 
 model CompanyAddress {
-  id           String   @id @default(cuid())
-  profileId    String
-  label        String?
-  line1        String
-  line2        String?
-  city         String?
-  state        String?
-  country      String?
-  postalCode   String?
-  isPrimary    Boolean  @default(false)
-  isBilling    Boolean  @default(false)
-  isShipping   Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id         String   @id @default(cuid())
+  profileId  String
+  label      String?
+  line1      String
+  line2      String?
+  city       String?
+  state      String?
+  country    String?
+  postalCode String?
+  isPrimary  Boolean  @default(false)
+  isBilling  Boolean  @default(false)
+  isShipping Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   profile CompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
@@ -155,15 +157,15 @@ model CompanyAddress {
 }
 
 model CompanyFiscalConfig {
-  id                     String   @id @default(cuid())
-  startupId              String   @unique
-  financialYearStart     DateTime
-  booksStart             DateTime
-  allowBackdatedEntries  Boolean  @default(true)
-  backdatedFrom          DateTime?
-  enableEditLog          Boolean  @default(false)
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  id                    String    @id @default(cuid())
+  startupId             String    @unique
+  financialYearStart    DateTime
+  booksStart            DateTime
+  allowBackdatedEntries Boolean   @default(true)
+  backdatedFrom         DateTime?
+  enableEditLog         Boolean   @default(false)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
 
@@ -171,15 +173,15 @@ model CompanyFiscalConfig {
 }
 
 model CompanySecuritySetting {
-  id                        String   @id @default(cuid())
-  startupId                 String   @unique
-  tallyVaultEnabled         Boolean  @default(false)
-  tallyVaultPasswordHash    String?
-  tallyVaultPasswordHint    String?
-  userAccessControlEnabled  Boolean  @default(false)
-  multiFactorRequired       Boolean  @default(false)
-  createdAt                 DateTime @default(now())
-  updatedAt                 DateTime @updatedAt
+  id                       String   @id @default(cuid())
+  startupId                String   @unique
+  tallyVaultEnabled        Boolean  @default(false)
+  tallyVaultPasswordHash   String?
+  tallyVaultPasswordHint   String?
+  userAccessControlEnabled Boolean  @default(false)
+  multiFactorRequired      Boolean  @default(false)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
 
   startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
 
@@ -187,19 +189,19 @@ model CompanySecuritySetting {
 }
 
 model CompanyCurrencySetting {
-  id                    String   @id @default(cuid())
-  startupId             String   @unique
-  baseCurrencyCode      String   @default("INR")
-  baseCurrencySymbol    String   @default("₹")
-  baseCurrencyFormalName String? 
-  decimalPlaces         Int      @default(2)
-  decimalSeparator      String   @default(".")
-  thousandSeparator     String   @default(",")
-  symbolOnRight         Boolean  @default(false)
-  spaceBetweenAmountAndSymbol Boolean @default(false)
-  showAmountInMillions  Boolean  @default(false)
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  id                          String   @id @default(cuid())
+  startupId                   String   @unique
+  baseCurrencyCode            String   @default("INR")
+  baseCurrencySymbol          String   @default("₹")
+  baseCurrencyFormalName      String?
+  decimalPlaces               Int      @default(2)
+  decimalSeparator            String   @default(".")
+  thousandSeparator           String   @default(",")
+  symbolOnRight               Boolean  @default(false)
+  spaceBetweenAmountAndSymbol Boolean  @default(false)
+  showAmountInMillions        Boolean  @default(false)
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
 
   startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
 
@@ -207,19 +209,19 @@ model CompanyCurrencySetting {
 }
 
 model CompanyFeatureToggle {
-  id                          String   @id @default(cuid())
-  startupId                   String   @unique
-  enableAccounting            Boolean  @default(true)
-  enableInventory             Boolean  @default(true)
-  enableTaxation              Boolean  @default(true)
-  enablePayroll               Boolean  @default(false)
-  enableAIInsights            Boolean  @default(true)
-  enableScenarioPlanning      Boolean  @default(true)
-  enableAutomations           Boolean  @default(false)
-  enableVendorManagement      Boolean  @default(false)
-  enableBillingAndInvoicing   Boolean  @default(true)
-  createdAt                   DateTime @default(now())
-  updatedAt                   DateTime @updatedAt
+  id                        String   @id @default(cuid())
+  startupId                 String   @unique
+  enableAccounting          Boolean  @default(true)
+  enableInventory           Boolean  @default(true)
+  enableTaxation            Boolean  @default(true)
+  enablePayroll             Boolean  @default(false)
+  enableAIInsights          Boolean  @default(true)
+  enableScenarioPlanning    Boolean  @default(true)
+  enableAutomations         Boolean  @default(false)
+  enableVendorManagement    Boolean  @default(false)
+  enableBillingAndInvoicing Boolean  @default(true)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
 
   startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
 
@@ -264,23 +266,23 @@ enum VoucherNumberingBehavior {
 }
 
 model VoucherType {
-  id                   String                 @id @default(cuid())
-  startupId            String
-  name                 String
-  abbreviation         String?
-  category             VoucherCategory
-  isDefault            Boolean                @default(false)
-  numberingMethod      VoucherNumberingMethod @default(AUTOMATIC)
-  numberingBehavior    VoucherNumberingBehavior @default(RENUMBER)
-  nextNumber           Int                    @default(1)
-  prefix               String?
-  suffix               String?
-  allowManualOverride  Boolean                @default(false)
-  allowDuplicateNumbers Boolean               @default(false)
-  createdAt            DateTime               @default(now())
-  updatedAt            DateTime               @updatedAt
+  id                    String                   @id @default(cuid())
+  startupId             String
+  name                  String
+  abbreviation          String?
+  category              VoucherCategory
+  isDefault             Boolean                  @default(false)
+  numberingMethod       VoucherNumberingMethod   @default(AUTOMATIC)
+  numberingBehavior     VoucherNumberingBehavior @default(RENUMBER)
+  nextNumber            Int                      @default(1)
+  prefix                String?
+  suffix                String?
+  allowManualOverride   Boolean                  @default(false)
+  allowDuplicateNumbers Boolean                  @default(false)
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
 
-  startup        Startup                 @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  startup         Startup                  @relation(fields: [startupId], references: [id], onDelete: Cascade)
   numberingSeries VoucherNumberingSeries[]
   vouchers        Voucher[]
 
@@ -289,21 +291,21 @@ model VoucherType {
 }
 
 model VoucherNumberingSeries {
-  id                   String                 @id @default(cuid())
-  startupId            String
-  voucherTypeId        String
-  name                 String
-  prefix               String?
-  suffix               String?
-  startNumber          Int                    @default(1)
-  nextNumber           Int                    @default(1)
-  numberingMethod      VoucherNumberingMethod @default(AUTOMATIC)
-  numberingBehavior    VoucherNumberingBehavior @default(RENUMBER)
-  allowManualOverride  Boolean                @default(false)
-  allowDuplicateNumbers Boolean               @default(false)
-  isDefault            Boolean                @default(false)
-  createdAt            DateTime               @default(now())
-  updatedAt            DateTime               @updatedAt
+  id                    String                   @id @default(cuid())
+  startupId             String
+  voucherTypeId         String
+  name                  String
+  prefix                String?
+  suffix                String?
+  startNumber           Int                      @default(1)
+  nextNumber            Int                      @default(1)
+  numberingMethod       VoucherNumberingMethod   @default(AUTOMATIC)
+  numberingBehavior     VoucherNumberingBehavior @default(RENUMBER)
+  allowManualOverride   Boolean                  @default(false)
+  allowDuplicateNumbers Boolean                  @default(false)
+  isDefault             Boolean                  @default(false)
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
 
   startup     Startup     @relation(fields: [startupId], references: [id], onDelete: Cascade)
   voucherType VoucherType @relation(fields: [voucherTypeId], references: [id], onDelete: Cascade)
@@ -314,27 +316,27 @@ model VoucherNumberingSeries {
 }
 
 model Voucher {
-  id                String      @id @default(cuid())
+  id                String   @id @default(cuid())
   startupId         String
   voucherTypeId     String
   numberingSeriesId String?
   voucherNumber     String
-  date              DateTime    @default(now())
+  date              DateTime @default(now())
   reference         String?
   narration         String?
   createdById       String?
-  transactionId     String?     @unique
-  totalAmount       Decimal     @default(0)
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  transactionId     String?  @unique
+  totalAmount       Decimal  @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   startup         Startup                 @relation(fields: [startupId], references: [id], onDelete: Cascade)
   voucherType     VoucherType             @relation(fields: [voucherTypeId], references: [id], onDelete: Cascade)
   numberingSeries VoucherNumberingSeries? @relation(fields: [numberingSeriesId], references: [id], onDelete: SetNull)
   transaction     Transaction?            @relation("TransactionVoucher", fields: [transactionId], references: [id], onDelete: SetNull)
   entries         VoucherEntry[]
-  bills           Bill[]                  // Bills created from this voucher
-  settlements     BillSettlement[]        // Settlements made through this voucher
+  bills           Bill[] // Bills created from this voucher
+  settlements     BillSettlement[] // Settlements made through this voucher
 
   @@unique([startupId, voucherTypeId, voucherNumber])
   @@index([startupId, date])
@@ -364,15 +366,15 @@ model VoucherEntry {
   costCategory   String?
   costCenterId   String?
   costCategoryId String?
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 
-  voucher       Voucher               @relation(fields: [voucherId], references: [id], onDelete: Cascade)
-  billReferences VoucherBillReference[]
-  bills         Bill[]               // Bills created from this entry
-  settlements   BillSettlement[]     // Settlements made through this entry
-  costCenter    CostCenter?          @relation("VoucherEntryCostCenter", fields: [costCenterId], references: [id], onDelete: SetNull)
-  costCategoryRef CostCategory?      @relation("VoucherEntryCostCategory", fields: [costCategoryId], references: [id], onDelete: SetNull)
+  voucher         Voucher                @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+  billReferences  VoucherBillReference[]
+  bills           Bill[] // Bills created from this entry
+  settlements     BillSettlement[] // Settlements made through this entry
+  costCenter      CostCenter?            @relation("VoucherEntryCostCenter", fields: [costCenterId], references: [id], onDelete: SetNull)
+  costCategoryRef CostCategory?          @relation("VoucherEntryCostCategory", fields: [costCategoryId], references: [id], onDelete: SetNull)
 
   @@index([voucherId])
 }
@@ -398,41 +400,41 @@ model VoucherBillReference {
 // ============================================================================
 
 enum BillType {
-  RECEIVABLE  // Money owed to us (Sales invoices, advances from customers)
-  PAYABLE     // Money we owe (Purchase invoices, advances to suppliers)
+  RECEIVABLE // Money owed to us (Sales invoices, advances from customers)
+  PAYABLE // Money we owe (Purchase invoices, advances to suppliers)
 }
 
 enum BillStatus {
-  OPEN         // Bill is open and has outstanding amount
-  PARTIAL      // Partially settled
-  SETTLED      // Fully settled
-  CANCELLED    // Cancelled/voided
+  OPEN // Bill is open and has outstanding amount
+  PARTIAL // Partially settled
+  SETTLED // Fully settled
+  CANCELLED // Cancelled/voided
 }
 
 model Bill {
-  id              String     @id @default(cuid())
-  startupId       String
-  billType        BillType
-  billNumber      String     // Invoice/Bill number
-  ledgerName      String     // Party/Supplier/Customer ledger name
-  ledgerCode      String?    // Optional ledger code
-  billDate        DateTime   @default(now())
-  dueDate         DateTime?
-  originalAmount  Decimal    // Original bill amount
-  settledAmount   Decimal    @default(0) // Total amount settled so far
-  outstandingAmount Decimal  // Calculated: originalAmount - settledAmount
-  status          BillStatus @default(OPEN)
-  reference       String?    // External reference (PO number, etc.)
-  narration       String?    // Additional notes
-  voucherId       String?    // Optional link to the voucher that created this bill
-  voucherEntryId  String?    // Optional link to the specific voucher entry
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  id                String     @id @default(cuid())
+  startupId         String
+  billType          BillType
+  billNumber        String // Invoice/Bill number
+  ledgerName        String // Party/Supplier/Customer ledger name
+  ledgerCode        String? // Optional ledger code
+  billDate          DateTime   @default(now())
+  dueDate           DateTime?
+  originalAmount    Decimal // Original bill amount
+  settledAmount     Decimal    @default(0) // Total amount settled so far
+  outstandingAmount Decimal // Calculated: originalAmount - settledAmount
+  status            BillStatus @default(OPEN)
+  reference         String? // External reference (PO number, etc.)
+  narration         String? // Additional notes
+  voucherId         String? // Optional link to the voucher that created this bill
+  voucherEntryId    String? // Optional link to the specific voucher entry
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 
-  startup        Startup         @relation(fields: [startupId], references: [id], onDelete: Cascade)
-  voucher        Voucher?        @relation(fields: [voucherId], references: [id], onDelete: SetNull)
-  voucherEntry   VoucherEntry?  @relation(fields: [voucherEntryId], references: [id], onDelete: SetNull)
-  settlements    BillSettlement[]
+  startup      Startup          @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  voucher      Voucher?         @relation(fields: [voucherId], references: [id], onDelete: SetNull)
+  voucherEntry VoucherEntry?    @relation(fields: [voucherEntryId], references: [id], onDelete: SetNull)
+  settlements  BillSettlement[]
 
   @@unique([startupId, billNumber])
   @@index([startupId, billType, status])
@@ -443,17 +445,17 @@ model Bill {
 }
 
 model BillSettlement {
-  id                String   @id @default(cuid())
-  startupId         String
-  billId            String
-  voucherId         String   // Voucher that settles this bill (Payment/Receipt)
-  voucherEntryId    String   // Specific voucher entry that settles
-  settlementAmount  Decimal  // Amount being settled in this transaction
-  settlementDate    DateTime @default(now())
-  reference         String?  // Reference from the settling voucher
-  remarks           String?  // Additional notes
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id               String   @id @default(cuid())
+  startupId        String
+  billId           String
+  voucherId        String // Voucher that settles this bill (Payment/Receipt)
+  voucherEntryId   String // Specific voucher entry that settles
+  settlementAmount Decimal // Amount being settled in this transaction
+  settlementDate   DateTime @default(now())
+  reference        String? // Reference from the settling voucher
+  remarks          String? // Additional notes
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   startup      Startup      @relation(fields: [startupId], references: [id], onDelete: Cascade)
   bill         Bill         @relation(fields: [billId], references: [id], onDelete: Cascade)
@@ -484,14 +486,14 @@ enum InterestCompoundingFrequency {
 }
 
 model CostCategory {
-  id          String        @id @default(cuid())
+  id          String   @id @default(cuid())
   startupId   String
   name        String
   description String?
   parentId    String?
-  isPrimary   Boolean       @default(false)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  isPrimary   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   startup        Startup        @relation(fields: [startupId], references: [id], onDelete: Cascade)
   parent         CostCategory?  @relation("CostCategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
@@ -504,17 +506,17 @@ model CostCategory {
 }
 
 model CostCenter {
-  id            String        @id @default(cuid())
-  startupId     String
-  categoryId    String
-  name          String
-  code          String?
-  description   String?
-  parentId      String?
-  isBillable    Boolean       @default(false)
-  status        String        @default("active")
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id          String   @id @default(cuid())
+  startupId   String
+  categoryId  String
+  name        String
+  code        String?
+  description String?
+  parentId    String?
+  isBillable  Boolean  @default(false)
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   startup        Startup        @relation(fields: [startupId], references: [id], onDelete: Cascade)
   category       CostCategory   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
@@ -528,19 +530,19 @@ model CostCenter {
 }
 
 model InterestProfile {
-  id                     String                      @id @default(cuid())
-  startupId              String
-  name                   String
-  description            String?
-  calculationMode        InterestCalculationMode      @default(SIMPLE)
-  rate                   Decimal                     @default(0)
-  compoundingFrequency   InterestCompoundingFrequency @default(NONE)
-  gracePeriodDays        Int?
-  calculateFromDueDate   Boolean                     @default(true)
-  penalRate              Decimal                     @default(0)
-  penalGraceDays         Int?
-  createdAt              DateTime                    @default(now())
-  updatedAt              DateTime                    @updatedAt
+  id                   String                       @id @default(cuid())
+  startupId            String
+  name                 String
+  description          String?
+  calculationMode      InterestCalculationMode      @default(SIMPLE)
+  rate                 Decimal                      @default(0)
+  compoundingFrequency InterestCompoundingFrequency @default(NONE)
+  gracePeriodDays      Int?
+  calculateFromDueDate Boolean                      @default(true)
+  penalRate            Decimal                      @default(0)
+  penalGraceDays       Int?
+  createdAt            DateTime                     @default(now())
+  updatedAt            DateTime                     @updatedAt
 
   startup       Startup                @relation(fields: [startupId], references: [id], onDelete: Cascade)
   partySettings PartyInterestSetting[]
@@ -549,17 +551,17 @@ model InterestProfile {
 }
 
 model PartyInterestSetting {
-  id                 String          @id @default(cuid())
+  id                 String    @id @default(cuid())
   startupId          String
-  partyId            String          @unique
+  partyId            String    @unique
   interestProfileId  String
   overrideRate       Decimal?
   effectiveFrom      DateTime?
   effectiveTo        DateTime?
-  applyOnReceivables Boolean         @default(true)
-  applyOnPayables    Boolean         @default(false)
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
+  applyOnReceivables Boolean   @default(true)
+  applyOnPayables    Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   startup         Startup         @relation(fields: [startupId], references: [id], onDelete: Cascade)
   party           PartyMaster     @relation(fields: [partyId], references: [id], onDelete: Cascade)
@@ -600,22 +602,22 @@ enum GstLedgerMappingType {
 }
 
 model GstRegistration {
-  id                String              @id @default(cuid())
-  startupId         String
-  gstin             String
-  legalName         String?
-  tradeName         String?
-  registrationType  GstRegistrationType @default(REGULAR)
-  stateCode         String
-  stateName         String?
-  startDate         DateTime
-  endDate           DateTime?
-  isDefault         Boolean             @default(false)
-  isActive          Boolean             @default(true)
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  id               String              @id @default(cuid())
+  startupId        String
+  gstin            String
+  legalName        String?
+  tradeName        String?
+  registrationType GstRegistrationType @default(REGULAR)
+  stateCode        String
+  stateName        String?
+  startDate        DateTime
+  endDate          DateTime?
+  isDefault        Boolean             @default(false)
+  isActive         Boolean             @default(true)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
 
-  startup        Startup         @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  startup        Startup            @relation(fields: [startupId], references: [id], onDelete: Cascade)
   taxRates       GstTaxRate[]
   ledgerMappings GstLedgerMapping[]
 
@@ -641,7 +643,7 @@ model GstTaxRate {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 
-  startup      Startup         @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  startup      Startup          @relation(fields: [startupId], references: [id], onDelete: Cascade)
   registration GstRegistration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
 
   @@index([startupId, supplyType])
@@ -660,7 +662,7 @@ model GstLedgerMapping {
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
 
-  startup      Startup         @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  startup      Startup          @relation(fields: [startupId], references: [id], onDelete: Cascade)
   registration GstRegistration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
 
   @@unique([startupId, mappingType, registrationId])
@@ -675,7 +677,7 @@ enum TransactionType {
 
 model MockBankAccount {
   id          String   @id @default(cuid())
-  accountName String   // e.g., "Main Checking Account"
+  accountName String // e.g., "Main Checking Account"
   balance     Float    @default(0.0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -692,14 +694,14 @@ model Transaction {
   type        TransactionType
   description String
   date        DateTime        @default(now())
-  
+
   startupId String
   startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
 
   accountId String
   account   MockBankAccount @relation(fields: [accountId], references: [id])
 
-  sale Sale?
+  sale    Sale?
   voucher Voucher? @relation("TransactionVoucher")
 }
 
@@ -717,7 +719,7 @@ model Product {
 
   startupId String
   startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
-  
+
   sales Sale[]
 }
 
@@ -742,46 +744,46 @@ model Sale {
 // ============================================================================
 
 model CashflowMetric {
-  id           String   @id @default(cuid())
-  startupId    String
-  periodStart  DateTime
-  periodEnd    DateTime
-  
+  id          String   @id @default(cuid())
+  startupId   String
+  periodStart DateTime
+  periodEnd   DateTime
+
   // Core Metrics
-  totalRevenue          Decimal @default(0)
-  totalExpenses         Decimal @default(0)
-  netCashflow           Decimal @default(0)
-  burnRate              Decimal @default(0) // Monthly burn rate
-  runway                Decimal @default(0) // Months of runway
-  
+  totalRevenue  Decimal @default(0)
+  totalExpenses Decimal @default(0)
+  netCashflow   Decimal @default(0)
+  burnRate      Decimal @default(0) // Monthly burn rate
+  runway        Decimal @default(0) // Months of runway
+
   // Revenue Metrics
-  mrr                   Decimal @default(0) // Monthly Recurring Revenue
-  arr                   Decimal @default(0) // Annual Recurring Revenue
-  growthRate            Decimal @default(0) // Month-over-month growth %
-  
+  mrr        Decimal @default(0) // Monthly Recurring Revenue
+  arr        Decimal @default(0) // Annual Recurring Revenue
+  growthRate Decimal @default(0) // Month-over-month growth %
+
   // Balance Metrics
-  cashBalance           Decimal @default(0)
-  accountsReceivable    Decimal @default(0)
-  accountsPayable       Decimal @default(0)
-  
+  cashBalance        Decimal @default(0)
+  accountsReceivable Decimal @default(0)
+  accountsPayable    Decimal @default(0)
+
   // Customer Metrics (from inventory sales)
-  activeCustomers       Int     @default(0)
-  newCustomers          Int     @default(0)
-  churnedCustomers      Int     @default(0)
+  activeCustomers         Int     @default(0)
+  newCustomers            Int     @default(0)
+  churnedCustomers        Int     @default(0)
   customerAcquisitionCost Decimal @default(0)
-  lifetimeValue         Decimal @default(0)
-  
+  lifetimeValue           Decimal @default(0)
+
   // Inventory Metrics
-  totalInventoryValue   Decimal @default(0)
-  inventoryTurnover     Decimal @default(0)
-  
+  totalInventoryValue Decimal @default(0)
+  inventoryTurnover   Decimal @default(0)
+
   // Additional Metrics
-  metadata              Json?
-  
+  metadata Json?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   startup   Startup  @relation(fields: [startupId], references: [id], onDelete: Cascade)
-  
+
   @@index([startupId, periodStart])
 }
 
@@ -790,15 +792,15 @@ model CashflowMetric {
 // ============================================================================
 
 model AIScenario {
-  id               String   @id @default(cuid())
-  startupId        String
-  name             String
-  description      String?
-  scenarioType     String   // forecast, what_if, sensitivity, stress_test
-  
+  id           String  @id @default(cuid())
+  startupId    String
+  name         String
+  description  String?
+  scenarioType String // forecast, what_if, sensitivity, stress_test
+
   // Input Parameters
-  inputParameters  Json     // Store scenario variables (e.g., revenue growth %, cost reduction %)
-  
+  inputParameters Json // Store scenario variables (e.g., revenue growth %, cost reduction %)
+
   // AI-Generated Results
   projectedRevenue  Decimal?
   projectedExpenses Decimal?
@@ -807,21 +809,21 @@ model AIScenario {
   projectedMRR      Decimal?
   projectedARR      Decimal?
   confidence        Decimal? // AI confidence score 0-100
-  
+
   // AI Insights
-  insights          Json?    // Array of AI-generated insights
-  recommendations   Json?    // Array of AI recommendations
-  risks             Json?    // Array of identified risks
-  opportunities     Json?    // Array of identified opportunities
-  
+  insights        Json? // Array of AI-generated insights
+  recommendations Json? // Array of AI recommendations
+  risks           Json? // Array of identified risks
+  opportunities   Json? // Array of identified opportunities
+
   // Metadata
-  createdBy    String?  // User ID who created this scenario
-  isBookmarked Boolean  @default(false)
-  
+  createdBy    String? // User ID who created this scenario
+  isBookmarked Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   startup   Startup  @relation(fields: [startupId], references: [id], onDelete: Cascade)
-  
+
   @@index([startupId, createdAt])
 }
 
@@ -830,33 +832,33 @@ model AIScenario {
 // ============================================================================
 
 model Alert {
-  id          String   @id @default(cuid())
-  startupId   String
-  type        String   // runway, burn_rate, anomaly, cash_low, churn, inventory_low
-  severity    String   // info, warning, critical
-  title       String
-  message     String   @db.Text
-  
+  id        String @id @default(cuid())
+  startupId String
+  type      String // runway, burn_rate, anomaly, cash_low, churn, inventory_low
+  severity  String // info, warning, critical
+  title     String
+  message   String @db.Text
+
   // Alert Data
   currentValue   Decimal?
   thresholdValue Decimal?
-  
+
   // AI-Generated Recommendations
   recommendations Json? // Array of actionable recommendations
-  
+
   // Related Entity (optional)
   relatedEntityType String? // product, transaction, account
   relatedEntityId   String?
-  
+
   // Status
-  isRead      Boolean  @default(false)
-  isDismissed Boolean  @default(false)
+  isRead      Boolean   @default(false)
+  isDismissed Boolean   @default(false)
   dismissedAt DateTime?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   startup   Startup  @relation(fields: [startupId], references: [id], onDelete: Cascade)
-  
+
   @@index([startupId, createdAt])
   @@index([startupId, isRead])
 }
@@ -866,35 +868,35 @@ model Alert {
 // ============================================================================
 
 model InvestorUpdate {
-  id           String   @id @default(cuid())
-  startupId    String
-  title        String
-  periodStart  DateTime
-  periodEnd    DateTime
-  
+  id          String   @id @default(cuid())
+  startupId   String
+  title       String
+  periodStart DateTime
+  periodEnd   DateTime
+
   // Key Metrics Summary
-  metrics      Json     // Snapshot of key metrics
-  
+  metrics Json // Snapshot of key metrics
+
   // AI-Generated Content
   executiveSummary String @db.Text
-  highlights       Json   // Array of highlights
-  challenges       Json   // Array of challenges
-  nextSteps        Json   // Array of next steps
-  financialData    Json?  // Detailed financial breakdown
-  
+  highlights       Json // Array of highlights
+  challenges       Json // Array of challenges
+  nextSteps        Json // Array of next steps
+  financialData    Json? // Detailed financial breakdown
+
   // Financial Data
   revenueGrowth Decimal?
   burnRate      Decimal?
   runway        Decimal?
-  
+
   // Status
   isDraft     Boolean   @default(true)
   publishedAt DateTime?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   startup   Startup  @relation(fields: [startupId], references: [id], onDelete: Cascade)
-  
+
   @@index([startupId, periodStart])
 }
 
@@ -903,18 +905,18 @@ model InvestorUpdate {
 // ============================================================================
 
 model PartyMaster {
-  id               String   @id @default(cuid())
-  name             String
-  type             String   // Customer, Supplier, Employee, Other
-  email            String?
-  phone            String?
-  openingBalance   Float    @default(0.0)
-  balanceType      String   // Debit or Credit
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id             String   @id @default(cuid())
+  name           String
+  type           String // Customer, Supplier, Employee, Other
+  email          String?
+  phone          String?
+  openingBalance Float    @default(0.0)
+  balanceType    String // Debit or Credit
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  startupId String
-  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  startupId       String
+  startup         Startup               @relation(fields: [startupId], references: [id], onDelete: Cascade)
   interestSetting PartyInterestSetting?
 
   @@unique([startupId, name])
@@ -922,10 +924,97 @@ model PartyMaster {
   @@index([type])
 }
 
+enum LedgerCategory {
+  CAPITAL
+  LOAN
+  CURRENT_ASSET
+  CURRENT_LIABILITY
+  SUNDRY_DEBTOR
+  SUNDRY_CREDITOR
+  BANK_ACCOUNT
+  CASH
+  INVESTMENT
+  STOCK
+  PURCHASE
+  SALES
+  DIRECT_EXPENSE
+  DIRECT_INCOME
+  INDIRECT_EXPENSE
+  INDIRECT_INCOME
+  OTHER
+}
+
+enum LedgerBalanceType {
+  DEBIT
+  CREDIT
+}
+
+enum InterestComputation {
+  NONE
+  SIMPLE
+  COMPOUND
+}
+
+model LedgerGroup {
+  id          String         @id @default(cuid())
+  startupId   String
+  name        String
+  code        String?
+  description String?
+  category    LedgerCategory
+  parentId    String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  startup  Startup       @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  parent   LedgerGroup?  @relation("LedgerGroupChildren", fields: [parentId], references: [id])
+  children LedgerGroup[] @relation("LedgerGroupChildren")
+  ledgers  Ledger[]
+
+  @@unique([startupId, name])
+  @@index([startupId])
+  @@index([startupId, parentId])
+}
+
+model Ledger {
+  id                      String              @id @default(cuid())
+  startupId               String
+  groupId                 String
+  name                    String
+  alias                   String?
+  description             String?
+  inventoryAffectsStock   Boolean             @default(false)
+  maintainBillByBill      Boolean             @default(false)
+  defaultCreditPeriodDays Int?
+  creditLimit             Decimal?
+  interestComputation     InterestComputation @default(NONE)
+  interestRate            Decimal?
+  penalRate               Decimal?
+  interestGraceDays       Int?
+  taxNumber               String?
+  panNumber               String?
+  gstNumber               String?
+  mailingAddress          Json?
+  bankDetails             Json?
+  costCenterApplicable    Boolean             @default(false)
+  openingBalance          Decimal?            @default(0)
+  openingBalanceType      LedgerBalanceType?  @default(DEBIT)
+  metadata                Json?
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+
+  startup Startup     @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  group   LedgerGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([startupId, name])
+  @@index([startupId])
+  @@index([startupId, groupId])
+}
+
 model ImportedTransaction {
   id          String   @id @default(cuid())
   voucherNo   String
-  voucherType String   // Sales, Purchase, Journal, Receipt, Payment, Contra
+  voucherType String // Sales, Purchase, Journal, Receipt, Payment, Contra
   date        DateTime
   narration   String
   particulars String
@@ -947,7 +1036,7 @@ model ImportedTransaction {
 model ImportHistory {
   id           String   @id @default(cuid())
   fileName     String
-  importType   String   // TALLY, QUICKBOOKS, etc.
+  importType   String // TALLY, QUICKBOOKS, etc.
   totalRecords Int
   successCount Int
   failureCount Int
@@ -1005,19 +1094,19 @@ enum AuditEntityType {
 }
 
 model AuditLog {
-  id            String          @id @default(cuid())
-  startupId     String
-  userId        String?         // User who performed the action
-  entityType    AuditEntityType
-  entityId      String          // ID of the entity that was changed
-  action        AuditAction
-  description   String?         // Human-readable description
-  oldValues     Json?           // Previous state (for UPDATE/DELETE)
-  newValues     Json?           // New state (for CREATE/UPDATE)
-  metadata      Json?           // Additional context (IP address, user agent, etc.)
-  ipAddress     String?
-  userAgent     String?
-  createdAt     DateTime        @default(now())
+  id          String          @id @default(cuid())
+  startupId   String
+  userId      String? // User who performed the action
+  entityType  AuditEntityType
+  entityId    String // ID of the entity that was changed
+  action      AuditAction
+  description String? // Human-readable description
+  oldValues   Json? // Previous state (for UPDATE/DELETE)
+  newValues   Json? // New state (for CREATE/UPDATE)
+  metadata    Json? // Additional context (IP address, user agent, etc.)
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime        @default(now())
 
   startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
   user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)

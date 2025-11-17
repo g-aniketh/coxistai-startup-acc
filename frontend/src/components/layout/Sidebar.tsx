@@ -28,6 +28,7 @@ import {
   Shield,
   Cog,
   IndianRupee,
+  BookOpen,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import Image from "next/image";
@@ -87,6 +88,7 @@ export default function Sidebar({
           href: "/cost-management",
           icon: IndianRupee,
         },
+        { name: "Bookkeeping", href: "/bookkeeping", icon: BookOpen },
         { name: "Products", href: "/products", icon: Package },
       ],
     },

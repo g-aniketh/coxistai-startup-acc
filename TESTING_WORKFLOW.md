@@ -182,9 +182,55 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 4: GST/Statutory Configuration
+## Phase 4: Bookkeeping & Ledger Master
 
-### Step 12: GST Registrations
+### Step 12: Ledger Groups (Chart of Accounts)
+
+1. Navigate to **Bookkeeping** (`/bookkeeping`)
+2. In the **Ledger Groups** panel:
+   - Create sample root groups using the provided dropdowns
+     - Name: "Sundry Debtors", Category: "Current Assets", Parent: "Root Level"
+     - Name: "Sundry Creditors", Category: "Current Liabilities", Parent: "Root Level"
+   - Create sub-groups by selecting a parent from the list (e.g., "Online Customers" under "Sundry Debtors")
+3. Click **Add Group** for each entry
+4. **Verify**:
+   - Newly created groups appear instantly in the Chart of Accounts tree
+   - Hierarchy renders correctly (child groups indented, dashed connectors shown)
+
+### Step 13: Ledger Creation
+
+1. Scroll to the **Create Ledger** card
+2. Populate the form with realistic data:
+   - Ledger Name: "Customer ABC"
+   - Under Group: "Sundry Debtors"
+   - Maintain Bill-by-bill: Enabled
+   - Opening Balance: `50000`, Type: `Debit`
+   - Default Credit Period: `30`
+   - Interest Method: Simple, Rate: 12
+   - PAN/GST/Address/Bank sections: fill sample values
+3. Click **Create Ledger**
+4. **Verify**:
+   - Success toast appears
+   - Ledger shows up in the **Ledger Register** table with the selected group, flags, and opening balance
+
+### Step 14: Persistence & Reload
+
+1. Refresh the page (or navigate away and return to `/bookkeeping`)
+2. **Verify**:
+   - Ledger groups and ledgers created above are fetched from the backend and still visible
+   - The Chart of Accounts panel states the correct total count
+
+### Step 15: Validation & Error States
+
+1. Attempt to create a ledger without selecting a group → ensure validation prevents submission
+2. Try deleting a ledger group that still has child groups or ledgers → confirm the API returns a validation error banner
+3. Delete a leaf group and a ledger to confirm the UI refreshes and the items disappear
+
+---
+
+## Phase 5: GST/Statutory Configuration
+
+### Step 16: GST Registrations
 
 1. Navigate to **GST** (`/gst`)
 2. **GST Registrations Tab**:
@@ -199,7 +245,7 @@ This document provides a step-by-step workflow to test all implemented features 
      - State: "Karnataka"
 3. Save all registrations
 
-### Step 13: GST Tax Rates
+### Step 17: GST Tax Rates
 
 1. Stay in **GST** → **Tax Rates** tab (click on "Tax Rates" tab)
 2. Click **Create Tax Rate** button
@@ -235,7 +281,7 @@ This document provides a step-by-step workflow to test all implemented features 
 4. Click **Create** (or **Update** if editing) button for each rate
 5. **Verify**: All tax rates appear in the Tax Rates table with correct percentages
 
-### Step 14: GST Ledger Mappings
+### Step 18: GST Ledger Mappings
 
 1. Stay in **GST** → **Mappings** tab (click on "Mappings" tab)
 2. Click **Create Ledger Mapping** button
@@ -271,9 +317,9 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 5: Voucher Entry & Bill-wise Tracking
+## Phase 6: Voucher Entry & Bill-wise Tracking
 
-### Step 15: Create Sales Voucher with Bill Reference
+### Step 19: Create Sales Voucher with Bill Reference
 
 1. Navigate to **Vouchers** (`/vouchers`)
 2. Click **Create Voucher**
@@ -302,7 +348,7 @@ This document provides a step-by-step workflow to test all implemented features 
 6. Save voucher
 7. **Verify**: Check that bill is created automatically
 
-### Step 16: Create Purchase Voucher with Bill Reference
+### Step 20: Create Purchase Voucher with Bill Reference
 
 1. Create another voucher: **Purchase**
 2. Fill details:
@@ -318,7 +364,7 @@ This document provides a step-by-step workflow to test all implemented features 
        - Amount: 5,000
 4. Save voucher
 
-### Step 17: Create Payment Voucher (Bill Settlement)
+### Step 21: Create Payment Voucher (Bill Settlement)
 
 1. Create **Payment** voucher
 2. Fill details:
@@ -332,7 +378,7 @@ This document provides a step-by-step workflow to test all implemented features 
 4. Save voucher
 5. **Verify**: Check that bill status changed to "Partial" or "Settled"
 
-### Step 18: Create Receipt Voucher (Bill Settlement)
+### Step 22: Create Receipt Voucher (Bill Settlement)
 
 1. Create **Receipt** voucher
 2. Fill details:
@@ -347,9 +393,9 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 6: Bills Management
+## Phase 7: Bills Management
 
-### Step 19: View Bills
+### Step 23: View Bills
 
 1. Navigate to **Bills** (`/bills`)
 2. View all bills:
@@ -357,7 +403,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Filter by Status: Open / Partial / Settled
 3. Verify bills created from vouchers are listed
 
-### Step 20: Bill Aging Report
+### Step 24: Bill Aging Report
 
 1. Stay in **Bills** page
 2. Navigate to **Aging Report** section
@@ -369,7 +415,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Over 90 days
 4. Verify bills are categorized correctly
 
-### Step 21: Outstanding by Ledger
+### Step 25: Outstanding by Ledger
 
 1. Stay in **Bills** page
 2. Navigate to **Outstanding by Ledger** section
@@ -378,7 +424,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Supplier XYZ: Outstanding amount
 4. Verify calculations are correct
 
-### Step 22: Manual Bill Settlement
+### Step 26: Manual Bill Settlement
 
 1. In **Bills** page, find an open bill
 2. Click **Settle Bill**
@@ -390,9 +436,9 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 7: Cost Management - Interest Assignment
+## Phase 8: Cost Management - Interest Assignment
 
-### Step 23: Assign Interest to Parties
+### Step 27: Assign Interest to Parties
 
 1. Navigate to **Cost Management** (`/cost-management`)
 2. Open the **Party Interest** tab
@@ -409,9 +455,9 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 8: Tally Import/Export
+## Phase 9: Tally Import/Export
 
-### Step 24: Download Tally Import Template
+### Step 28: Download Tally Import Template
 
 1. Navigate to **Import from Tally** (`/tally-import`)
 2. **Template Download Section**:
@@ -424,7 +470,7 @@ This document provides a step-by-step workflow to test all implemented features 
      - Should contain 30+ transactions across all voucher types
      - Should demonstrate real-world Tally export formats
 
-### Step 25: Import Tally Data
+### Step 29: Import Tally Data
 
 1. Stay in **Import from Tally** page
 2. **Import Process**:
@@ -455,9 +501,9 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 9: Audit Log / Edit Trail
+## Phase 10: Audit Log / Edit Trail
 
-### Step 26: View Audit Logs
+### Step 30: View Audit Logs
 
 1. Navigate to **Audit Log** (`/audit-log`)
 2. View summary cards:
@@ -466,7 +512,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Logs by entity type
 3. View recent activity list
 
-### Step 27: Filter Audit Logs
+### Step 31: Filter Audit Logs
 
 1. Stay in **Audit Log** page
 2. Apply filters:
@@ -476,7 +522,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - User: (select specific user)
 3. Verify filtered results
 
-### Step 28: View Entity Audit Trail
+### Step 32: View Entity Audit Trail
 
 1. In **Audit Log** page
 2. Click on a specific log entry
@@ -487,7 +533,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - IP address (if available)
 4. Verify all changes are logged
 
-### Step 29: Test Edit Log Toggle
+### Step 33: Test Edit Log Toggle
 
 1. Go to **Settings** → **Financial** tab → **Financial Year & Edit Log**
 2. Toggle **Enable Edit Log** to `OFF`
@@ -498,9 +544,9 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 10: Role Management
+## Phase 11: Role Management
 
-### Step 30: View Roles
+### Step 34: View Roles
 
 1. Navigate to **Role Management** (`/role-management`)
 2. **Roles Tab**:
@@ -508,7 +554,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - See permission count per role
    - See user count per role
 
-### Step 31: Create Custom Role
+### Step 35: Create Custom Role
 
 1. Stay in **Role Management** → **Roles Tab**
 2. Click **Create Role**
@@ -525,7 +571,7 @@ This document provides a step-by-step workflow to test all implemented features 
      - `gst:read`
 5. Save role
 
-### Step 32: Manage Permissions
+### Step 36: Manage Permissions
 
 1. Go to **Permissions Tab**
 2. View all available permissions
@@ -535,7 +581,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Description: "Export financial reports"
 4. Save permission
 
-### Step 33: Assign Roles to Users
+### Step 37: Assign Roles to Users
 
 1. Go to **User Assignments Tab**
 2. View all users with their roles
@@ -546,7 +592,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Save
 4. **Verify**: User now has the assigned role
 
-### Step 34: Update Role Permissions
+### Step 38: Update Role Permissions
 
 1. Go back to **Roles Tab**
 2. Edit "Finance Manager" role
@@ -556,9 +602,9 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 11: AI Workflows with Voucher Data
+## Phase 12: AI Workflows with Voucher Data
 
-### Step 35: AI Chatbot Interaction
+### Step 39: AI Chatbot Interaction
 
 1. Navigate to **AI Assistant** (`/ai-assistant`)
 2. The **Chatbot** tab should be active by default
@@ -573,7 +619,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Get insights about vouchers, bills, and other financial data
 6. **Verify**: AI responses are relevant to your actual data
 
-### Step 36: AI Scenarios Analysis
+### Step 40: AI Scenarios Analysis
 
 1. Navigate to **AI Assistant** (`/ai-assistant`)
 2. Click on the **Scenarios** tab
@@ -587,7 +633,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Check recommendations and insights
 5. **Verify**: Analysis uses real voucher and financial data
 
-### Step 37: AI-Powered Insights
+### Step 41: AI-Powered Insights
 
 1. Stay in **AI Assistant** (`/ai-assistant`)
 2. Click on the **Insights** tab
@@ -600,7 +646,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - **Alerts**: Check any financial alerts or warnings
 5. **Verify**: Insights are based on actual vouchers and financial data created
 
-### Step 38: AI Forecasting
+### Step 42: AI Forecasting
 
 1. Navigate to **AI Assistant** (`/ai-assistant`)
 2. Click on the **Forecasting** tab
@@ -616,9 +662,9 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 12: Final Verification
+## Phase 13: Final Verification
 
-### Step 39: Dashboard Verification
+### Step 43: Dashboard Verification
 
 1. Navigate to **Dashboard** (`/dashboard`)
 2. Verify:
@@ -627,7 +673,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Cashflow chart (if applicable)
    - Summary metrics
 
-### Step 40: Data Consistency Check
+### Step 44: Data Consistency Check
 
 1. Cross-verify data across modules:
    - **Vouchers**: Check voucher totals
@@ -637,7 +683,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - **Audit Log**: Verify all changes are logged
 2. Check for any inconsistencies
 
-### Step 41: Tally Import Round-trip
+### Step 45: Tally Import Round-trip
 
 1. Export data from Tally (if you have Tally setup)
 2. Import the exported file using **Import from Tally** (`/tally-import`)
@@ -647,7 +693,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Bill references are maintained
    - GST data is imported if present
 
-### Step 42: Role-Based Access Test
+### Step 46: Role-Based Access Test
 
 1. Create a test user with limited role
 2. Login as that user
@@ -682,6 +728,8 @@ This document provides a step-by-step workflow to test all implemented features 
 - [x] Outstanding by ledger
 
 ✅ **Cost Management**
+
+- [x] Bookkeeping ledger groups & ledger master (via `/bookkeeping`)
 
 - [x] Cost categories (hierarchical) - Categories tab
 - [x] Cost centers (hierarchical) - Centers tab

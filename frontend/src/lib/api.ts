@@ -487,6 +487,121 @@ export interface CostCenterInput {
   status?: "active" | "inactive";
 }
 
+export type LedgerCategoryCode =
+  | "CAPITAL"
+  | "LOAN"
+  | "CURRENT_ASSET"
+  | "CURRENT_LIABILITY"
+  | "SUNDRY_DEBTOR"
+  | "SUNDRY_CREDITOR"
+  | "BANK_ACCOUNT"
+  | "CASH"
+  | "INVESTMENT"
+  | "STOCK"
+  | "PURCHASE"
+  | "SALES"
+  | "DIRECT_EXPENSE"
+  | "DIRECT_INCOME"
+  | "INDIRECT_EXPENSE"
+  | "INDIRECT_INCOME"
+  | "OTHER";
+
+export type LedgerBalanceTypeCode = "DEBIT" | "CREDIT";
+export type InterestComputationCode = "NONE" | "SIMPLE" | "COMPOUND";
+
+export interface LedgerMailingAddress {
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface LedgerBankDetails {
+  bankName?: string;
+  branch?: string;
+  accountName?: string;
+  accountNumber?: string;
+  ifsc?: string;
+  swift?: string;
+}
+
+export interface LedgerGroup {
+  id: string;
+  startupId: string;
+  name: string;
+  code?: string | null;
+  description?: string | null;
+  category: LedgerCategoryCode;
+  parentId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LedgerGroupInput {
+  name: string;
+  category: LedgerCategoryCode;
+  code?: string | null;
+  description?: string | null;
+  parentId?: string | null;
+}
+
+export interface Ledger {
+  id: string;
+  startupId: string;
+  groupId: string;
+  name: string;
+  alias?: string | null;
+  description?: string | null;
+  inventoryAffectsStock: boolean;
+  maintainBillByBill: boolean;
+  defaultCreditPeriodDays?: number | null;
+  creditLimit?: number | null;
+  interestComputation: InterestComputationCode;
+  interestRate?: number | null;
+  penalRate?: number | null;
+  interestGraceDays?: number | null;
+  taxNumber?: string | null;
+  panNumber?: string | null;
+  gstNumber?: string | null;
+  mailingAddress?: LedgerMailingAddress | null;
+  bankDetails?: LedgerBankDetails | null;
+  costCenterApplicable: boolean;
+  openingBalance?: number | null;
+  openingBalanceType: LedgerBalanceTypeCode;
+  metadata?: Record<string, unknown> | null;
+  createdAt: string;
+  updatedAt: string;
+  group?: LedgerGroup;
+}
+
+export interface LedgerInput {
+  name: string;
+  groupId: string;
+  alias?: string | null;
+  description?: string | null;
+  inventoryAffectsStock?: boolean;
+  maintainBillByBill?: boolean;
+  defaultCreditPeriodDays?: number | null;
+  creditLimit?: number | null;
+  interestComputation?: InterestComputationCode;
+  interestRate?: number | null;
+  penalRate?: number | null;
+  interestGraceDays?: number | null;
+  taxNumber?: string | null;
+  panNumber?: string | null;
+  gstNumber?: string | null;
+  mailingAddress?: LedgerMailingAddress | null;
+  bankDetails?: LedgerBankDetails | null;
+  costCenterApplicable?: boolean;
+  openingBalance?: number | null;
+  openingBalanceType?: LedgerBalanceTypeCode;
+  metadata?: Record<string, unknown> | null;
+}
+
 export type InterestCalculationMode = "SIMPLE" | "COMPOUND";
 export type InterestCompoundingFrequency =
   | "NONE"
@@ -1687,6 +1802,61 @@ export const apiClient = {
       const response = await api.delete(
         `/costing/interest-settings/${partyId}`
       );
+      return response.data;
+    },
+  },
+
+  bookkeeping: {
+    listLedgerGroups: async (): Promise<ApiResponse<LedgerGroup[]>> => {
+      const response = await api.get("/bookkeeping/ledger-groups");
+      return response.data;
+    },
+
+    createLedgerGroup: async (
+      data: LedgerGroupInput
+    ): Promise<ApiResponse<LedgerGroup>> => {
+      const response = await api.post("/bookkeeping/ledger-groups", data);
+      return response.data;
+    },
+
+    updateLedgerGroup: async (
+      groupId: string,
+      data: Partial<LedgerGroupInput>
+    ): Promise<ApiResponse<LedgerGroup>> => {
+      const response = await api.put(
+        `/bookkeeping/ledger-groups/${groupId}`,
+        data
+      );
+      return response.data;
+    },
+
+    deleteLedgerGroup: async (groupId: string): Promise<ApiResponse> => {
+      const response = await api.delete(
+        `/bookkeeping/ledger-groups/${groupId}`
+      );
+      return response.data;
+    },
+
+    listLedgers: async (): Promise<ApiResponse<Ledger[]>> => {
+      const response = await api.get("/bookkeeping/ledgers");
+      return response.data;
+    },
+
+    createLedger: async (data: LedgerInput): Promise<ApiResponse<Ledger>> => {
+      const response = await api.post("/bookkeeping/ledgers", data);
+      return response.data;
+    },
+
+    updateLedger: async (
+      ledgerId: string,
+      data: Partial<LedgerInput>
+    ): Promise<ApiResponse<Ledger>> => {
+      const response = await api.put(`/bookkeeping/ledgers/${ledgerId}`, data);
+      return response.data;
+    },
+
+    deleteLedger: async (ledgerId: string): Promise<ApiResponse> => {
+      const response = await api.delete(`/bookkeeping/ledgers/${ledgerId}`);
       return response.data;
     },
   },

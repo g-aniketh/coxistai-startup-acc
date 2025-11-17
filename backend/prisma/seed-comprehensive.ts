@@ -1,6 +1,7 @@
 import { PrismaClient, TransactionType } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { DEFAULT_VOUCHER_TYPES } from "../src/services/voucherTypes";
+import { bootstrapLedgerStructure } from "../src/services/bookkeeping";
 
 const prisma = new PrismaClient();
 
@@ -191,6 +192,9 @@ async function main() {
     }),
   ]);
   console.log("✓ Created 5 demo startups");
+
+  await Promise.all(startups.map(startup => bootstrapLedgerStructure(startup.id)));
+  console.log("✓ Bootstrapped chart of accounts and default ledgers");
 
   // 4b. Create company profiles for each startup
   const profileSeedData = [
