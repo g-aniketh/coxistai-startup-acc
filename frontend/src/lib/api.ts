@@ -1,7 +1,8 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance } from "axios";
 
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -149,36 +150,36 @@ export interface CompanyFeatureToggleInput {
 }
 
 export type VoucherCategory =
-  | 'PAYMENT'
-  | 'RECEIPT'
-  | 'CONTRA'
-  | 'JOURNAL'
-  | 'SALES'
-  | 'PURCHASE'
-  | 'DEBIT_NOTE'
-  | 'CREDIT_NOTE'
-  | 'MEMO'
-  | 'REVERSING_JOURNAL'
-  | 'OPTIONAL'
-  | 'DELIVERY_NOTE'
-  | 'RECEIPT_NOTE'
-  | 'REJECTION_IN'
-  | 'REJECTION_OUT'
-  | 'STOCK_JOURNAL'
-  | 'PHYSICAL_STOCK'
-  | 'JOB_WORK_IN'
-  | 'JOB_WORK_OUT'
-  | 'MATERIAL_IN'
-  | 'MATERIAL_OUT';
+  | "PAYMENT"
+  | "RECEIPT"
+  | "CONTRA"
+  | "JOURNAL"
+  | "SALES"
+  | "PURCHASE"
+  | "DEBIT_NOTE"
+  | "CREDIT_NOTE"
+  | "MEMO"
+  | "REVERSING_JOURNAL"
+  | "OPTIONAL"
+  | "DELIVERY_NOTE"
+  | "RECEIPT_NOTE"
+  | "REJECTION_IN"
+  | "REJECTION_OUT"
+  | "STOCK_JOURNAL"
+  | "PHYSICAL_STOCK"
+  | "JOB_WORK_IN"
+  | "JOB_WORK_OUT"
+  | "MATERIAL_IN"
+  | "MATERIAL_OUT";
 
 export type VoucherNumberingMethod =
-  | 'NONE'
-  | 'MANUAL'
-  | 'AUTOMATIC'
-  | 'AUTOMATIC_WITH_OVERRIDE'
-  | 'MULTI_USER_AUTO';
+  | "NONE"
+  | "MANUAL"
+  | "AUTOMATIC"
+  | "AUTOMATIC_WITH_OVERRIDE"
+  | "MULTI_USER_AUTO";
 
-export type VoucherNumberingBehavior = 'RENUMBER' | 'RETAIN';
+export type VoucherNumberingBehavior = "RENUMBER" | "RETAIN";
 
 export interface VoucherNumberingSeries {
   id: string;
@@ -252,8 +253,12 @@ export interface VoucherNumberingSeriesInput {
   isDefault?: boolean;
 }
 
-export type VoucherEntryType = 'DEBIT' | 'CREDIT';
-export type VoucherBillReferenceType = 'AGAINST' | 'NEW' | 'ADVANCE' | 'ON_ACCOUNT';
+export type VoucherEntryType = "DEBIT" | "CREDIT";
+export type VoucherBillReferenceType =
+  | "AGAINST"
+  | "NEW"
+  | "ADVANCE"
+  | "ON_ACCOUNT";
 
 export interface VoucherBillReference {
   id: string;
@@ -326,9 +331,9 @@ export interface CreateVoucherRequest {
   }>;
 }
 
-export type BillType = 'RECEIVABLE' | 'PAYABLE';
+export type BillType = "RECEIVABLE" | "PAYABLE";
 
-export type BillStatus = 'OPEN' | 'PARTIAL' | 'SETTLED' | 'CANCELLED';
+export type BillStatus = "OPEN" | "PARTIAL" | "SETTLED" | "CANCELLED";
 
 export interface BillSettlement {
   id: string;
@@ -479,17 +484,17 @@ export interface CostCenterInput {
   description?: string;
   parentId?: string | null;
   isBillable?: boolean;
-  status?: 'active' | 'inactive';
+  status?: "active" | "inactive";
 }
 
-export type InterestCalculationMode = 'SIMPLE' | 'COMPOUND';
+export type InterestCalculationMode = "SIMPLE" | "COMPOUND";
 export type InterestCompoundingFrequency =
-  | 'NONE'
-  | 'DAILY'
-  | 'WEEKLY'
-  | 'MONTHLY'
-  | 'QUARTERLY'
-  | 'YEARLY';
+  | "NONE"
+  | "DAILY"
+  | "WEEKLY"
+  | "MONTHLY"
+  | "QUARTERLY"
+  | "YEARLY";
 
 export interface InterestProfile {
   id: string;
@@ -547,26 +552,26 @@ export interface PartyInterestInput {
 }
 
 export type GstRegistrationType =
-  | 'REGULAR'
-  | 'COMPOSITION'
-  | 'SEZ'
-  | 'ISD'
-  | 'TDS'
-  | 'TCS';
+  | "REGULAR"
+  | "COMPOSITION"
+  | "SEZ"
+  | "ISD"
+  | "TDS"
+  | "TCS";
 
-export type GstTaxSupplyType = 'GOODS' | 'SERVICES';
+export type GstTaxSupplyType = "GOODS" | "SERVICES";
 
 export type GstLedgerMappingType =
-  | 'OUTPUT_CGST'
-  | 'OUTPUT_SGST'
-  | 'OUTPUT_IGST'
-  | 'OUTPUT_CESS'
-  | 'INPUT_CGST'
-  | 'INPUT_SGST'
-  | 'INPUT_IGST'
-  | 'INPUT_CESS'
-  | 'RCM_PAYABLE'
-  | 'RCM_INPUT';
+  | "OUTPUT_CGST"
+  | "OUTPUT_SGST"
+  | "OUTPUT_IGST"
+  | "OUTPUT_CESS"
+  | "INPUT_CGST"
+  | "INPUT_SGST"
+  | "INPUT_IGST"
+  | "INPUT_CESS"
+  | "RCM_PAYABLE"
+  | "RCM_INPUT";
 
 export interface GstRegistration {
   id: string;
@@ -655,42 +660,42 @@ export interface GstLedgerMappingInput {
 // ============================================================================
 
 export enum AuditAction {
-  CREATE = 'CREATE',
-  UPDATE = 'UPDATE',
-  DELETE = 'DELETE',
-  VIEW = 'VIEW',
-  EXPORT = 'EXPORT',
-  APPROVE = 'APPROVE',
-  REJECT = 'REJECT',
-  CANCEL = 'CANCEL',
+  CREATE = "CREATE",
+  UPDATE = "UPDATE",
+  DELETE = "DELETE",
+  VIEW = "VIEW",
+  EXPORT = "EXPORT",
+  APPROVE = "APPROVE",
+  REJECT = "REJECT",
+  CANCEL = "CANCEL",
 }
 
 export enum AuditEntityType {
-  VOUCHER = 'VOUCHER',
-  VOUCHER_ENTRY = 'VOUCHER_ENTRY',
-  BILL = 'BILL',
-  BILL_SETTLEMENT = 'BILL_SETTLEMENT',
-  COMPANY_PROFILE = 'COMPANY_PROFILE',
-  COMPANY_ADDRESS = 'COMPANY_ADDRESS',
-  FISCAL_CONFIG = 'FISCAL_CONFIG',
-  SECURITY_CONFIG = 'SECURITY_CONFIG',
-  CURRENCY_CONFIG = 'CURRENCY_CONFIG',
-  FEATURE_TOGGLE = 'FEATURE_TOGGLE',
-  VOUCHER_TYPE = 'VOUCHER_TYPE',
-  VOUCHER_NUMBERING_SERIES = 'VOUCHER_NUMBERING_SERIES',
-  COST_CATEGORY = 'COST_CATEGORY',
-  COST_CENTER = 'COST_CENTER',
-  INTEREST_PROFILE = 'INTEREST_PROFILE',
-  PARTY_INTEREST_SETTING = 'PARTY_INTEREST_SETTING',
-  GST_REGISTRATION = 'GST_REGISTRATION',
-  GST_TAX_RATE = 'GST_TAX_RATE',
-  GST_LEDGER_MAPPING = 'GST_LEDGER_MAPPING',
-  PARTY_MASTER = 'PARTY_MASTER',
-  PRODUCT = 'PRODUCT',
-  TRANSACTION = 'TRANSACTION',
-  USER = 'USER',
-  ROLE = 'ROLE',
-  PERMISSION = 'PERMISSION',
+  VOUCHER = "VOUCHER",
+  VOUCHER_ENTRY = "VOUCHER_ENTRY",
+  BILL = "BILL",
+  BILL_SETTLEMENT = "BILL_SETTLEMENT",
+  COMPANY_PROFILE = "COMPANY_PROFILE",
+  COMPANY_ADDRESS = "COMPANY_ADDRESS",
+  FISCAL_CONFIG = "FISCAL_CONFIG",
+  SECURITY_CONFIG = "SECURITY_CONFIG",
+  CURRENCY_CONFIG = "CURRENCY_CONFIG",
+  FEATURE_TOGGLE = "FEATURE_TOGGLE",
+  VOUCHER_TYPE = "VOUCHER_TYPE",
+  VOUCHER_NUMBERING_SERIES = "VOUCHER_NUMBERING_SERIES",
+  COST_CATEGORY = "COST_CATEGORY",
+  COST_CENTER = "COST_CENTER",
+  INTEREST_PROFILE = "INTEREST_PROFILE",
+  PARTY_INTEREST_SETTING = "PARTY_INTEREST_SETTING",
+  GST_REGISTRATION = "GST_REGISTRATION",
+  GST_TAX_RATE = "GST_TAX_RATE",
+  GST_LEDGER_MAPPING = "GST_LEDGER_MAPPING",
+  PARTY_MASTER = "PARTY_MASTER",
+  PRODUCT = "PRODUCT",
+  TRANSACTION = "TRANSACTION",
+  USER = "USER",
+  ROLE = "ROLE",
+  PERMISSION = "PERMISSION",
 }
 
 export interface AuditLog {
@@ -819,8 +824,8 @@ export interface UserWithRoles {
 // ============================================================================
 
 export interface VoucherAlert {
-  type: 'anomaly' | 'pattern' | 'risk' | 'opportunity';
-  severity: 'info' | 'warning' | 'critical';
+  type: "anomaly" | "pattern" | "risk" | "opportunity";
+  severity: "info" | "warning" | "critical";
   title: string;
   message: string;
   voucherIds: string[];
@@ -927,7 +932,7 @@ export interface CompanyProfileInput {
 export interface Transaction {
   id: string;
   amount: number;
-  type: 'CREDIT' | 'DEBIT';
+  type: "CREDIT" | "DEBIT";
   description: string;
   date: string;
   startupId: string;
@@ -1051,11 +1056,11 @@ export interface CashflowChartData {
 }
 
 export interface RecentActivity {
-  type: 'transaction' | 'sale';
+  type: "transaction" | "sale";
   id: string;
   description: string;
   amount: number;
-  transactionType: 'CREDIT' | 'DEBIT';
+  transactionType: "CREDIT" | "DEBIT";
   date: string;
   account?: string;
   product?: string;
@@ -1071,6 +1076,7 @@ export interface TeamMember {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  tempPassword?: string;
 }
 
 // ============================================================================
@@ -1081,33 +1087,36 @@ const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 120000, // 2 minutes for long-running imports
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // Request interceptor to add auth token
 api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('authToken');
+  config => {
+    const token = localStorage.getItem("authToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
+  error => {
     return Promise.reject(error);
   }
 );
 
 // Response interceptor for error handling
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
+  response => response,
+  error => {
     if (error.response?.status === 401) {
       // Token expired or invalid
-      localStorage.removeItem('authToken');
-      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
+      localStorage.removeItem("authToken");
+      if (
+        typeof window !== "undefined" &&
+        !window.location.pathname.includes("/login")
+      ) {
+        window.location.href = "/login";
       }
     }
     return Promise.reject(error);
@@ -1122,25 +1131,25 @@ export const apiClient = {
   // ============================================================================
   // AUTHENTICATION
   // ============================================================================
-  
+
   auth: {
     signup: async (data: SignupRequest): Promise<AuthResponse> => {
-      const response = await api.post('/auth/signup', data);
+      const response = await api.post("/auth/signup", data);
       return response.data;
     },
 
     login: async (data: LoginRequest): Promise<AuthResponse> => {
-      const response = await api.post('/auth/login', data);
+      const response = await api.post("/auth/login", data);
       return response.data;
     },
 
     me: async (): Promise<ApiResponse<{ user: User; startup: Startup }>> => {
-      const response = await api.get('/auth/me');
+      const response = await api.get("/auth/me");
       return response.data;
     },
 
     logout: async (): Promise<ApiResponse> => {
-      const response = await api.post('/auth/logout');
+      const response = await api.post("/auth/logout");
       return response.data;
     },
   },
@@ -1148,27 +1157,27 @@ export const apiClient = {
   // ============================================================================
   // TRANSACTIONS
   // ============================================================================
-  
+
   transactions: {
     create: async (data: {
       amount: number;
-      type: 'CREDIT' | 'DEBIT';
+      type: "CREDIT" | "DEBIT";
       description: string;
       accountId: string;
     }): Promise<ApiResponse<Transaction>> => {
-      const response = await api.post('/transactions', data);
+      const response = await api.post("/transactions", data);
       return response.data;
     },
 
     list: async (params?: {
       accountId?: string;
-      type?: 'CREDIT' | 'DEBIT';
+      type?: "CREDIT" | "DEBIT";
       startDate?: string;
       endDate?: string;
       limit?: number;
       offset?: number;
     }): Promise<ApiResponse<Transaction[]>> => {
-      const response = await api.get('/transactions', { params });
+      const response = await api.get("/transactions", { params });
       return response.data;
     },
 
@@ -1186,22 +1195,26 @@ export const apiClient = {
   // ============================================================================
   // DASHBOARD
   // ============================================================================
-  
+
   dashboard: {
     summary: async (): Promise<ApiResponse<DashboardSummary>> => {
-      const response = await api.get('/dashboard/summary');
+      const response = await api.get("/dashboard/summary");
       return response.data;
     },
 
-    cashflowChart: async (months?: number): Promise<ApiResponse<CashflowChartData[]>> => {
-      const response = await api.get('/dashboard/cashflow-chart', {
+    cashflowChart: async (
+      months?: number
+    ): Promise<ApiResponse<CashflowChartData[]>> => {
+      const response = await api.get("/dashboard/cashflow-chart", {
         params: months ? { months } : {},
       });
       return response.data;
     },
 
-    recentActivity: async (limit?: number): Promise<ApiResponse<RecentActivity[]>> => {
-      const response = await api.get('/dashboard/recent-activity', {
+    recentActivity: async (
+      limit?: number
+    ): Promise<ApiResponse<RecentActivity[]>> => {
+      const response = await api.get("/dashboard/recent-activity", {
         params: limit ? { limit } : {},
       });
       return response.data;
@@ -1209,48 +1222,57 @@ export const apiClient = {
 
     // Additional dashboard methods
     dashboard: async (period: string): Promise<ApiResponse<any>> => {
-      const response = await api.get('/dashboard', { params: { period } });
+      const response = await api.get("/dashboard", { params: { period } });
       return response.data;
     },
 
     getScenarios: async (): Promise<ApiResponse<any[]>> => {
-      const response = await api.get('/ai-cfo/scenarios');
+      const response = await api.get("/ai-cfo/scenarios");
       return response.data;
     },
 
     forecast: async (months: number): Promise<ApiResponse<any>> => {
-      const response = await api.post('/ai-cfo/forecast', { months });
+      const response = await api.post("/ai-cfo/forecast", { months });
       return response.data;
     },
 
-    runScenario: async (name: string, inputs: any): Promise<ApiResponse<any>> => {
-      const response = await api.post('/ai-cfo/scenario', { name, inputs });
+    runScenario: async (
+      name: string,
+      inputs: any
+    ): Promise<ApiResponse<any>> => {
+      const response = await api.post("/ai-cfo/scenario", { name, inputs });
       return response.data;
     },
 
     latest: async (): Promise<ApiResponse<any>> => {
-      const response = await api.get('/analytics/latest');
+      const response = await api.get("/analytics/latest");
       return response.data;
     },
 
     history: async (months: number): Promise<ApiResponse<any>> => {
-      const response = await api.get('/analytics/history', { params: { months } });
+      const response = await api.get("/analytics/history", {
+        params: { months },
+      });
       return response.data;
     },
 
     calculate: async (): Promise<ApiResponse<any>> => {
-      const response = await api.post('/analytics/calculate');
+      const response = await api.post("/analytics/calculate");
       return response.data;
     },
 
     plaid: {
-      exchangePublicToken: async (publicToken: string): Promise<ApiResponse<any>> => {
-        const response = await api.post('/plaid/exchange-token', { public_token: publicToken });
+      exchangePublicToken: async (
+        publicToken: string
+      ): Promise<ApiResponse<any>> => {
+        const response = await api.post("/plaid/exchange-token", {
+          public_token: publicToken,
+        });
         return response.data;
       },
 
       syncTransactions: async (itemId: string): Promise<ApiResponse<any>> => {
-        const response = await api.post('/plaid/sync', { item_id: itemId });
+        const response = await api.post("/plaid/sync", { item_id: itemId });
         return response.data;
       },
     },
@@ -1259,7 +1281,7 @@ export const apiClient = {
   // ============================================================================
   // INVENTORY
   // ============================================================================
-  
+
   inventory: {
     products: {
       create: async (data: {
@@ -1267,12 +1289,12 @@ export const apiClient = {
         quantity: number;
         price: number;
       }): Promise<ApiResponse<Product>> => {
-        const response = await api.post('/inventory/products', data);
+        const response = await api.post("/inventory/products", data);
         return response.data;
       },
 
       list: async (): Promise<ApiResponse<Product[]>> => {
-        const response = await api.get('/inventory/products');
+        const response = await api.get("/inventory/products");
         return response.data;
       },
 
@@ -1304,13 +1326,15 @@ export const apiClient = {
         productId: string;
         quantitySold: number;
         accountId: string;
-      }): Promise<ApiResponse<{ sale: Sale; transaction: Transaction; product: Product }>> => {
-        const response = await api.post('/inventory/sales', data);
+      }): Promise<
+        ApiResponse<{ sale: Sale; transaction: Transaction; product: Product }>
+      > => {
+        const response = await api.post("/inventory/sales", data);
         return response.data;
       },
 
       list: async (limit?: number): Promise<ApiResponse<Sale[]>> => {
-        const response = await api.get('/inventory/sales', {
+        const response = await api.get("/inventory/sales", {
           params: limit ? { limit } : {},
         });
         return response.data;
@@ -1321,18 +1345,18 @@ export const apiClient = {
   // ============================================================================
   // BANK ACCOUNTS
   // ============================================================================
-  
+
   accounts: {
     create: async (data: {
       accountName: string;
       balance?: number;
     }): Promise<ApiResponse<BankAccount>> => {
-      const response = await api.post('/accounts', data);
+      const response = await api.post("/accounts", data);
       return response.data;
     },
 
     list: async (): Promise<ApiResponse<BankAccount[]>> => {
-      const response = await api.get('/accounts');
+      const response = await api.get("/accounts");
       return response.data;
     },
 
@@ -1358,18 +1382,24 @@ export const apiClient = {
     },
 
     plaid: {
-      createLinkToken: async (): Promise<ApiResponse<{ link_token: string }>> => {
-        const response = await api.post('/plaid/link-token');
+      createLinkToken: async (): Promise<
+        ApiResponse<{ link_token: string }>
+      > => {
+        const response = await api.post("/plaid/link-token");
         return response.data;
       },
 
-      exchangePublicToken: async (publicToken: string): Promise<ApiResponse<any>> => {
-        const response = await api.post('/plaid/exchange-token', { public_token: publicToken });
+      exchangePublicToken: async (
+        publicToken: string
+      ): Promise<ApiResponse<any>> => {
+        const response = await api.post("/plaid/exchange-token", {
+          public_token: publicToken,
+        });
         return response.data;
       },
 
       syncTransactions: async (itemId: string): Promise<ApiResponse<any>> => {
-        const response = await api.post('/plaid/sync', { item_id: itemId });
+        const response = await api.post("/plaid/sync", { item_id: itemId });
         return response.data;
       },
     },
@@ -1378,7 +1408,7 @@ export const apiClient = {
   // ============================================================================
   // TEAM MANAGEMENT
   // ============================================================================
-  
+
   team: {
     invite: async (data: {
       email: string;
@@ -1386,16 +1416,19 @@ export const apiClient = {
       firstName?: string;
       lastName?: string;
     }): Promise<ApiResponse<TeamMember>> => {
-      const response = await api.post('/team/invite', data);
+      const response = await api.post("/team/invite", data);
       return response.data;
     },
 
     list: async (): Promise<ApiResponse<TeamMember[]>> => {
-      const response = await api.get('/team');
+      const response = await api.get("/team");
       return response.data;
     },
 
-    updateRole: async (userId: string, roleName: string): Promise<ApiResponse<TeamMember>> => {
+    updateRole: async (
+      userId: string,
+      roleName: string
+    ): Promise<ApiResponse<TeamMember>> => {
       const response = await api.put(`/team/${userId}/role`, { roleName });
       return response.data;
     },
@@ -1412,62 +1445,68 @@ export const apiClient = {
 
   company: {
     getProfile: async (): Promise<ApiResponse<CompanyProfile | null>> => {
-      const response = await api.get('/company/profile');
+      const response = await api.get("/company/profile");
       return response.data;
     },
 
     updateProfile: async (
       data: CompanyProfileInput
     ): Promise<ApiResponse<CompanyProfile>> => {
-      const response = await api.put('/company/profile', data);
+      const response = await api.put("/company/profile", data);
       return response.data;
     },
 
     getFiscal: async (): Promise<ApiResponse<CompanyFiscalConfig | null>> => {
-      const response = await api.get('/company/fiscal');
+      const response = await api.get("/company/fiscal");
       return response.data;
     },
 
     updateFiscal: async (
       data: CompanyFiscalInput
     ): Promise<ApiResponse<CompanyFiscalConfig>> => {
-      const response = await api.put('/company/fiscal', data);
+      const response = await api.put("/company/fiscal", data);
       return response.data;
     },
 
-    getSecurity: async (): Promise<ApiResponse<CompanySecurityConfig | null>> => {
-      const response = await api.get('/company/security');
+    getSecurity: async (): Promise<
+      ApiResponse<CompanySecurityConfig | null>
+    > => {
+      const response = await api.get("/company/security");
       return response.data;
     },
 
     updateSecurity: async (
       data: CompanySecurityInput
     ): Promise<ApiResponse<CompanySecurityConfig>> => {
-      const response = await api.put('/company/security', data);
+      const response = await api.put("/company/security", data);
       return response.data;
     },
 
-    getCurrency: async (): Promise<ApiResponse<CompanyCurrencyConfig | null>> => {
-      const response = await api.get('/company/currency');
+    getCurrency: async (): Promise<
+      ApiResponse<CompanyCurrencyConfig | null>
+    > => {
+      const response = await api.get("/company/currency");
       return response.data;
     },
 
     updateCurrency: async (
       data: CompanyCurrencyInput
     ): Promise<ApiResponse<CompanyCurrencyConfig>> => {
-      const response = await api.put('/company/currency', data);
+      const response = await api.put("/company/currency", data);
       return response.data;
     },
 
-    getFeatureToggles: async (): Promise<ApiResponse<CompanyFeatureToggle | null>> => {
-      const response = await api.get('/company/feature-toggles');
+    getFeatureToggles: async (): Promise<
+      ApiResponse<CompanyFeatureToggle | null>
+    > => {
+      const response = await api.get("/company/feature-toggles");
       return response.data;
     },
 
     updateFeatureToggles: async (
       data: CompanyFeatureToggleInput
     ): Promise<ApiResponse<CompanyFeatureToggle>> => {
-      const response = await api.put('/company/feature-toggles', data);
+      const response = await api.put("/company/feature-toggles", data);
       return response.data;
     },
   },
@@ -1488,12 +1527,12 @@ export const apiClient = {
       limit?: number;
       offset?: number;
     }): Promise<ApiResponse<Bill[]>> => {
-      const response = await api.get('/bills', { params });
+      const response = await api.get("/bills", { params });
       return response.data;
     },
 
     create: async (data: CreateBillRequest): Promise<ApiResponse<Bill>> => {
-      const response = await api.post('/bills', data);
+      const response = await api.post("/bills", data);
       return response.data;
     },
 
@@ -1505,8 +1544,10 @@ export const apiClient = {
       return response.data;
     },
 
-    getAgingReport: async (billType?: BillType): Promise<ApiResponse<BillAgingReport>> => {
-      const response = await api.get('/bills/aging', {
+    getAgingReport: async (
+      billType?: BillType
+    ): Promise<ApiResponse<BillAgingReport>> => {
+      const response = await api.get("/bills/aging", {
         params: billType ? { billType } : undefined,
       });
       return response.data;
@@ -1515,7 +1556,7 @@ export const apiClient = {
     getOutstandingByLedger: async (
       billType?: BillType
     ): Promise<ApiResponse<OutstandingLedgerSummary[]>> => {
-      const response = await api.get('/bills/outstanding-by-ledger', {
+      const response = await api.get("/bills/outstanding-by-ledger", {
         params: billType ? { billType } : undefined,
       });
       return response.data;
@@ -1524,12 +1565,14 @@ export const apiClient = {
 
   costing: {
     listCategories: async (): Promise<ApiResponse<CostCategory[]>> => {
-      const response = await api.get('/costing/categories');
+      const response = await api.get("/costing/categories");
       return response.data;
     },
 
-    createCategory: async (data: CostCategoryInput): Promise<ApiResponse<CostCategory>> => {
-      const response = await api.post('/costing/categories', data);
+    createCategory: async (
+      data: CostCategoryInput
+    ): Promise<ApiResponse<CostCategory>> => {
+      const response = await api.post("/costing/categories", data);
       return response.data;
     },
 
@@ -1550,12 +1593,14 @@ export const apiClient = {
       categoryId?: string;
       status?: string;
     }): Promise<ApiResponse<CostCenter[]>> => {
-      const response = await api.get('/costing/centers', { params });
+      const response = await api.get("/costing/centers", { params });
       return response.data;
     },
 
-    createCenter: async (data: CostCenterInput): Promise<ApiResponse<CostCenter>> => {
-      const response = await api.post('/costing/centers', data);
+    createCenter: async (
+      data: CostCenterInput
+    ): Promise<ApiResponse<CostCenter>> => {
+      const response = await api.post("/costing/centers", data);
       return response.data;
     },
 
@@ -1573,14 +1618,14 @@ export const apiClient = {
     },
 
     listInterestProfiles: async (): Promise<ApiResponse<InterestProfile[]>> => {
-      const response = await api.get('/costing/interest-profiles');
+      const response = await api.get("/costing/interest-profiles");
       return response.data;
     },
 
     createInterestProfile: async (
       data: InterestProfileInput
     ): Promise<ApiResponse<InterestProfile>> => {
-      const response = await api.post('/costing/interest-profiles', data);
+      const response = await api.post("/costing/interest-profiles", data);
       return response.data;
     },
 
@@ -1588,43 +1633,52 @@ export const apiClient = {
       profileId: string,
       data: Partial<InterestProfileInput>
     ): Promise<ApiResponse<InterestProfile>> => {
-      const response = await api.put(`/costing/interest-profiles/${profileId}`, data);
+      const response = await api.put(
+        `/costing/interest-profiles/${profileId}`,
+        data
+      );
       return response.data;
     },
 
     deleteInterestProfile: async (profileId: string): Promise<ApiResponse> => {
-      const response = await api.delete(`/costing/interest-profiles/${profileId}`);
+      const response = await api.delete(
+        `/costing/interest-profiles/${profileId}`
+      );
       return response.data;
     },
 
-    listPartyInterestSettings: async (): Promise<ApiResponse<PartyInterestSetting[]>> => {
-      const response = await api.get('/costing/interest-settings');
+    listPartyInterestSettings: async (): Promise<
+      ApiResponse<PartyInterestSetting[]>
+    > => {
+      const response = await api.get("/costing/interest-settings");
       return response.data;
     },
 
     assignInterestToParty: async (
       data: PartyInterestInput
     ): Promise<ApiResponse<PartyInterestSetting>> => {
-      const response = await api.post('/costing/interest-settings', data);
+      const response = await api.post("/costing/interest-settings", data);
       return response.data;
     },
 
     removeInterestForParty: async (partyId: string): Promise<ApiResponse> => {
-      const response = await api.delete(`/costing/interest-settings/${partyId}`);
+      const response = await api.delete(
+        `/costing/interest-settings/${partyId}`
+      );
       return response.data;
     },
   },
 
   gst: {
     listRegistrations: async (): Promise<ApiResponse<GstRegistration[]>> => {
-      const response = await api.get('/gst/registrations');
+      const response = await api.get("/gst/registrations");
       return response.data;
     },
 
     createRegistration: async (
       data: GstRegistrationInput
     ): Promise<ApiResponse<GstRegistration>> => {
-      const response = await api.post('/gst/registrations', data);
+      const response = await api.post("/gst/registrations", data);
       return response.data;
     },
 
@@ -1632,11 +1686,16 @@ export const apiClient = {
       registrationId: string,
       data: Partial<GstRegistrationInput>
     ): Promise<ApiResponse<GstRegistration>> => {
-      const response = await api.put(`/gst/registrations/${registrationId}`, data);
+      const response = await api.put(
+        `/gst/registrations/${registrationId}`,
+        data
+      );
       return response.data;
     },
 
-    deleteRegistration: async (registrationId: string): Promise<ApiResponse> => {
+    deleteRegistration: async (
+      registrationId: string
+    ): Promise<ApiResponse> => {
       const response = await api.delete(`/gst/registrations/${registrationId}`);
       return response.data;
     },
@@ -1646,12 +1705,14 @@ export const apiClient = {
       supplyType?: GstTaxSupplyType;
       hsnOrSac?: string;
     }): Promise<ApiResponse<GstTaxRate[]>> => {
-      const response = await api.get('/gst/tax-rates', { params });
+      const response = await api.get("/gst/tax-rates", { params });
       return response.data;
     },
 
-    createTaxRate: async (data: GstTaxRateInput): Promise<ApiResponse<GstTaxRate>> => {
-      const response = await api.post('/gst/tax-rates', data);
+    createTaxRate: async (
+      data: GstTaxRateInput
+    ): Promise<ApiResponse<GstTaxRate>> => {
+      const response = await api.post("/gst/tax-rates", data);
       return response.data;
     },
 
@@ -1672,14 +1733,14 @@ export const apiClient = {
       registrationId?: string;
       mappingType?: GstLedgerMappingType;
     }): Promise<ApiResponse<GstLedgerMapping[]>> => {
-      const response = await api.get('/gst/ledger-mappings', { params });
+      const response = await api.get("/gst/ledger-mappings", { params });
       return response.data;
     },
 
     createLedgerMapping: async (
       data: GstLedgerMappingInput
     ): Promise<ApiResponse<GstLedgerMapping>> => {
-      const response = await api.post('/gst/ledger-mappings', data);
+      const response = await api.post("/gst/ledger-mappings", data);
       return response.data;
     },
 
@@ -1699,12 +1760,14 @@ export const apiClient = {
 
   vouchers: {
     listTypes: async (): Promise<ApiResponse<VoucherType[]>> => {
-      const response = await api.get('/vouchers/types');
+      const response = await api.get("/vouchers/types");
       return response.data;
     },
 
-    createType: async (data: VoucherTypeInput): Promise<ApiResponse<VoucherType>> => {
-      const response = await api.post('/vouchers/types', data);
+    createType: async (
+      data: VoucherTypeInput
+    ): Promise<ApiResponse<VoucherType>> => {
+      const response = await api.post("/vouchers/types", data);
       return response.data;
     },
 
@@ -1720,7 +1783,10 @@ export const apiClient = {
       voucherTypeId: string,
       data: VoucherNumberingSeriesInput
     ): Promise<ApiResponse<VoucherNumberingSeries>> => {
-      const response = await api.post(`/vouchers/types/${voucherTypeId}/series`, data);
+      const response = await api.post(
+        `/vouchers/types/${voucherTypeId}/series`,
+        data
+      );
       return response.data;
     },
 
@@ -1728,9 +1794,12 @@ export const apiClient = {
       voucherTypeId: string,
       numberingSeriesId?: string
     ): Promise<ApiResponse<{ voucherNumber: string }>> => {
-      const response = await api.post(`/vouchers/types/${voucherTypeId}/next-number`, {
-        numberingSeriesId,
-      });
+      const response = await api.post(
+        `/vouchers/types/${voucherTypeId}/next-number`,
+        {
+          numberingSeriesId,
+        }
+      );
       return response.data;
     },
     list: async (params?: {
@@ -1739,11 +1808,13 @@ export const apiClient = {
       toDate?: string;
       limit?: number;
     }): Promise<ApiResponse<Voucher[]>> => {
-      const response = await api.get('/vouchers', { params });
+      const response = await api.get("/vouchers", { params });
       return response.data;
     },
-    create: async (data: CreateVoucherRequest): Promise<ApiResponse<Voucher>> => {
-      const response = await api.post('/vouchers', data);
+    create: async (
+      data: CreateVoucherRequest
+    ): Promise<ApiResponse<Voucher>> => {
+      const response = await api.post("/vouchers", data);
       return response.data;
     },
   },
@@ -1751,59 +1822,75 @@ export const apiClient = {
   // ============================================================================
   // AI FEATURES (OpenAI Integration)
   // ============================================================================
-  
+
   ai: {
-    getInsights: async (): Promise<ApiResponse<{
-      burnAnalysis: string;
-      topSpendingCategories: string[];
-      costSavingSuggestions: string[];
-      revenueOpportunities: string[];
-      cashflowHealth: string;
-      keyMetrics: {
-        totalBalance: number;
-        monthlyBurn: number;
-        monthlyRevenue: number;
-        runway: number | null;
-      };
-    }>> => {
-      const response = await api.post('/ai/insights');
+    getInsights: async (): Promise<
+      ApiResponse<{
+        burnAnalysis: string;
+        topSpendingCategories: string[];
+        costSavingSuggestions: string[];
+        revenueOpportunities: string[];
+        cashflowHealth: string;
+        keyMetrics: {
+          totalBalance: number;
+          monthlyBurn: number;
+          monthlyRevenue: number;
+          runway: number | null;
+        };
+      }>
+    > => {
+      const response = await api.post("/ai/insights");
       return response.data;
     },
 
-    runWhatIfScenario: async (scenario: string): Promise<ApiResponse<{
-      scenario: string;
-      impact: {
-        runwayChange: string;
-        burnRateChange: string;
-        recommendation: string;
-      };
-      explanation: string;
-      risks: string[];
-      opportunities: string[];
-    }>> => {
-      const response = await api.post('/ai/scenarios', { scenario });
+    runWhatIfScenario: async (
+      scenario: string
+    ): Promise<
+      ApiResponse<{
+        scenario: string;
+        impact: {
+          runwayChange: string;
+          burnRateChange: string;
+          recommendation: string;
+        };
+        explanation: string;
+        risks: string[];
+        opportunities: string[];
+      }>
+    > => {
+      const response = await api.post("/ai/scenarios", { scenario });
       return response.data;
     },
 
-    generateInvestorUpdate: async (periodStart: string, periodEnd: string): Promise<ApiResponse<{
-      id: string;
-      executiveSummary: string;
-      highlights: string[];
-      challenges: string[];
-      nextSteps: string[];
-      financialSummary: string;
-      financialData: {
-        revenue: number;
-        expenses: number;
-        netCashflow: number;
-      };
-    }>> => {
-      const response = await api.post('/ai/investor-update', { periodStart, periodEnd });
+    generateInvestorUpdate: async (
+      periodStart: string,
+      periodEnd: string
+    ): Promise<
+      ApiResponse<{
+        id: string;
+        executiveSummary: string;
+        highlights: string[];
+        challenges: string[];
+        nextSteps: string[];
+        financialSummary: string;
+        financialData: {
+          revenue: number;
+          expenses: number;
+          netCashflow: number;
+        };
+      }>
+    > => {
+      const response = await api.post("/ai/investor-update", {
+        periodStart,
+        periodEnd,
+      });
       return response.data;
     },
 
-    chat: async (message: string): Promise<ApiResponse<{ response: string }>> => {
-      const response = await api.post('/ai-cfo/chat', { message });
+    chat: async (
+      message: string
+    ): Promise<ApiResponse<{ response: string }>> => {
+      const response = await api.post("/ai-cfo/chat", { message });
       return response.data;
     },
   },
@@ -1811,25 +1898,25 @@ export const apiClient = {
   // ============================================================================
   // STRIPE
   // ============================================================================
-  
+
   stripe: {
     sync: async (): Promise<ApiResponse<any>> => {
-      const response = await api.post('/stripe/sync');
+      const response = await api.post("/stripe/sync");
       return response.data;
     },
 
     connect: async (apiKey: string): Promise<ApiResponse<any>> => {
-      const response = await api.post('/stripe/connect', { apiKey });
+      const response = await api.post("/stripe/connect", { apiKey });
       return response.data;
     },
 
     getAccount: async (): Promise<ApiResponse<any>> => {
-      const response = await api.get('/stripe/account');
+      const response = await api.get("/stripe/account");
       return response.data;
     },
 
     disconnect: async (): Promise<ApiResponse<any>> => {
-      const response = await api.delete('/stripe/disconnect');
+      const response = await api.delete("/stripe/disconnect");
       return response.data;
     },
   },
@@ -1837,21 +1924,21 @@ export const apiClient = {
   // ============================================================================
   // IMPORT
   // ============================================================================
-  
+
   import: {
     tally: async (importData: any): Promise<ApiResponse<any>> => {
-      const response = await api.post('/import/tally', importData);
+      const response = await api.post("/import/tally", importData);
       return response.data;
     },
 
     tallyEnhanced: async (importData: any): Promise<ApiResponse<any>> => {
-      const response = await api.post('/import/tally-enhanced', importData);
+      const response = await api.post("/import/tally-enhanced", importData);
       return response.data;
     },
 
     downloadTemplate: async (): Promise<Blob> => {
-      const response = await api.get('/import/template', {
-        responseType: 'blob',
+      const response = await api.get("/import/template", {
+        responseType: "blob",
       });
       return response.data;
     },
@@ -1864,23 +1951,23 @@ export const apiClient = {
       toDate?: string;
       numberingSeriesId?: string;
     }): Promise<Blob> => {
-      const response = await api.get('/import/export/vouchers', {
+      const response = await api.get("/import/export/vouchers", {
         params,
-        responseType: 'blob',
+        responseType: "blob",
       });
       return response.data;
     },
 
     ledgers: async (): Promise<Blob> => {
-      const response = await api.get('/import/export/ledgers', {
-        responseType: 'blob',
+      const response = await api.get("/import/export/ledgers", {
+        responseType: "blob",
       });
       return response.data;
     },
 
     gst: async (): Promise<Blob> => {
-      const response = await api.get('/import/export/gst', {
-        responseType: 'blob',
+      const response = await api.get("/import/export/gst", {
+        responseType: "blob",
       });
       return response.data;
     },
@@ -1891,8 +1978,10 @@ export const apiClient = {
   // ============================================================================
 
   audit: {
-    list: async (filters?: AuditLogFilters): Promise<ApiResponse<{ data: AuditLog[]; total: number }>> => {
-      const response = await api.get('/audit', { params: filters });
+    list: async (
+      filters?: AuditLogFilters
+    ): Promise<ApiResponse<{ data: AuditLog[]; total: number }>> => {
+      const response = await api.get("/audit", { params: filters });
       return response.data;
     },
 
@@ -1904,8 +1993,13 @@ export const apiClient = {
       return response.data;
     },
 
-    getSummary: async (fromDate?: string, toDate?: string): Promise<ApiResponse<AuditLogSummary>> => {
-      const response = await api.get('/audit/summary', { params: { fromDate, toDate } });
+    getSummary: async (
+      fromDate?: string,
+      toDate?: string
+    ): Promise<ApiResponse<AuditLogSummary>> => {
+      const response = await api.get("/audit/summary", {
+        params: { fromDate, toDate },
+      });
       return response.data;
     },
   },
@@ -1915,18 +2009,32 @@ export const apiClient = {
   // ============================================================================
 
   voucherAI: {
-    getAnomalies: async (fromDate?: string, toDate?: string): Promise<ApiResponse<VoucherAlert[]>> => {
-      const response = await api.get('/voucher-ai/anomalies', { params: { fromDate, toDate } });
+    getAnomalies: async (
+      fromDate?: string,
+      toDate?: string
+    ): Promise<ApiResponse<VoucherAlert[]>> => {
+      const response = await api.get("/voucher-ai/anomalies", {
+        params: { fromDate, toDate },
+      });
       return response.data;
     },
 
-    getVariances: async (period?: 'monthly' | 'quarterly' | 'yearly'): Promise<ApiResponse<VoucherVariance[]>> => {
-      const response = await api.get('/voucher-ai/variances', { params: { period } });
+    getVariances: async (
+      period?: "monthly" | "quarterly" | "yearly"
+    ): Promise<ApiResponse<VoucherVariance[]>> => {
+      const response = await api.get("/voucher-ai/variances", {
+        params: { period },
+      });
       return response.data;
     },
 
-    getInsights: async (fromDate?: string, toDate?: string): Promise<ApiResponse<VoucherInsights>> => {
-      const response = await api.get('/voucher-ai/insights', { params: { fromDate, toDate } });
+    getInsights: async (
+      fromDate?: string,
+      toDate?: string
+    ): Promise<ApiResponse<VoucherInsights>> => {
+      const response = await api.get("/voucher-ai/insights", {
+        params: { fromDate, toDate },
+      });
       return response.data;
     },
   },
@@ -1937,7 +2045,7 @@ export const apiClient = {
 
   roles: {
     list: async (): Promise<ApiResponse<Role[]>> => {
-      const response = await api.get('/admin/roles');
+      const response = await api.get("/admin/roles");
       return response.data;
     },
 
@@ -1947,11 +2055,14 @@ export const apiClient = {
     },
 
     create: async (data: RoleInput): Promise<ApiResponse<Role>> => {
-      const response = await api.post('/admin/roles', data);
+      const response = await api.post("/admin/roles", data);
       return response.data;
     },
 
-    update: async (roleId: string, data: Partial<RoleInput>): Promise<ApiResponse<Role>> => {
+    update: async (
+      roleId: string,
+      data: Partial<RoleInput>
+    ): Promise<ApiResponse<Role>> => {
       const response = await api.put(`/admin/roles/${roleId}`, data);
       return response.data;
     },
@@ -1964,7 +2075,7 @@ export const apiClient = {
 
   permissions: {
     list: async (): Promise<ApiResponse<Permission[]>> => {
-      const response = await api.get('/admin/permissions');
+      const response = await api.get("/admin/permissions");
       return response.data;
     },
 
@@ -1974,7 +2085,7 @@ export const apiClient = {
     },
 
     create: async (data: PermissionInput): Promise<ApiResponse<Permission>> => {
-      const response = await api.post('/admin/permissions', data);
+      const response = await api.post("/admin/permissions", data);
       return response.data;
     },
 
@@ -1982,7 +2093,10 @@ export const apiClient = {
       permissionId: string,
       data: Partial<PermissionInput>
     ): Promise<ApiResponse<Permission>> => {
-      const response = await api.put(`/admin/permissions/${permissionId}`, data);
+      const response = await api.put(
+        `/admin/permissions/${permissionId}`,
+        data
+      );
       return response.data;
     },
 
@@ -1994,22 +2108,34 @@ export const apiClient = {
 
   userRoles: {
     list: async (): Promise<ApiResponse<UserWithRoles[]>> => {
-      const response = await api.get('/admin/users');
+      const response = await api.get("/admin/users");
       return response.data;
     },
 
-    assign: async (userId: string, roleId: string): Promise<ApiResponse<UserRole>> => {
-      const response = await api.post(`/admin/users/${userId}/roles`, { roleId });
+    assign: async (
+      userId: string,
+      roleId: string
+    ): Promise<ApiResponse<UserRole>> => {
+      const response = await api.post(`/admin/users/${userId}/roles`, {
+        roleId,
+      });
       return response.data;
     },
 
     remove: async (userId: string, roleId: string): Promise<ApiResponse> => {
-      const response = await api.delete(`/admin/users/${userId}/roles/${roleId}`);
+      const response = await api.delete(
+        `/admin/users/${userId}/roles/${roleId}`
+      );
       return response.data;
     },
 
-    set: async (userId: string, roleIds: string[]): Promise<ApiResponse<UserWithRoles>> => {
-      const response = await api.put(`/admin/users/${userId}/roles`, { roleIds });
+    set: async (
+      userId: string,
+      roleIds: string[]
+    ): Promise<ApiResponse<UserWithRoles>> => {
+      const response = await api.put(`/admin/users/${userId}/roles`, {
+        roleIds,
+      });
       return response.data;
     },
   },

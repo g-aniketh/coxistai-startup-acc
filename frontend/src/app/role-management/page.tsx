@@ -239,32 +239,79 @@ export default function RoleManagementPage() {
     return acc;
   }, {} as Record<string, Permission[]>);
 
+  const stats = [
+    {
+      label: 'Active Roles',
+      value: roles.length,
+      description: 'Predefined access blueprints',
+    },
+    {
+      label: 'Permissions',
+      value: permissions.length,
+      description: 'Fine-grained access rules',
+    },
+    {
+      label: 'Team Members',
+      value: users.length,
+      description: 'Users in this workspace',
+    },
+  ];
+
   return (
     <AuthGuard requireAuth={true}>
       <MainLayout>
-        <div className="p-4 md:p-8 space-y-6">
+        <div className="p-4 md:p-8 space-y-8">
           <div className="flex items-center gap-3">
-            <Shield className="h-8 w-8 text-[#2C2C2C]" />
+            <Shield className="h-9 w-9 text-[#607c47]" />
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">Role Management</h1>
-              <p className="text-sm text-[#2C2C2C]/70">
-                Manage roles, permissions, and user access control
+              <h1 className="text-2xl md:text-3xl font-bold text-[#1f1f1f]">Role Management</h1>
+              <p className="text-sm text-[#1f1f1f]/70">
+                Govern workspace access with intuitive roles and permissions
               </p>
             </div>
           </div>
 
-          <Tabs defaultValue="roles" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="roles">Roles</TabsTrigger>
-              <TabsTrigger value="permissions">Permissions</TabsTrigger>
-              <TabsTrigger value="users">User Assignments</TabsTrigger>
+          <div className="grid gap-4 md:grid-cols-3">
+            {stats.map((stat) => (
+              <Card key={stat.label} className="rounded-2xl border border-gray-100 shadow-sm bg-white">
+                <CardContent className="p-5">
+                  <p className="text-xs uppercase tracking-wide text-[#1f1f1f]/60">
+                    {stat.label}
+                  </p>
+                  <p className="text-2xl font-semibold text-[#1f1f1f]">{stat.value}</p>
+                  <p className="text-sm text-[#1f1f1f]/60">{stat.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <Tabs defaultValue="roles" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-3 rounded-2xl bg-gray-100 p-1">
+              <TabsTrigger
+                value="roles"
+                className="rounded-xl text-sm font-semibold text-[#1f1f1f]/70 data-[state=active]:bg-white data-[state=active]:text-[#1f1f1f] data-[state=active]:shadow-sm"
+              >
+                Roles
+              </TabsTrigger>
+              <TabsTrigger
+                value="permissions"
+                className="rounded-xl text-sm font-semibold text-[#1f1f1f]/70 data-[state=active]:bg-white data-[state=active]:text-[#1f1f1f] data-[state=active]:shadow-sm"
+              >
+                Permissions
+              </TabsTrigger>
+              <TabsTrigger
+                value="users"
+                className="rounded-xl text-sm font-semibold text-[#1f1f1f]/70 data-[state=active]:bg-white data-[state=active]:text-[#1f1f1f] data-[state=active]:shadow-sm"
+              >
+                User Assignments
+              </TabsTrigger>
             </TabsList>
 
             {/* Roles Tab */}
             <TabsContent value="roles">
-              <Card>
+              <Card className="rounded-3xl border border-gray-100 shadow-lg bg-white">
                 <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle>Roles</CardTitle>
+                  <CardTitle className="text-xl text-[#1f1f1f]">Roles</CardTitle>
                   <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
                     <DialogTrigger asChild>
                       <Button
@@ -272,6 +319,7 @@ export default function RoleManagementPage() {
                           setSelectedRole(null);
                           setRoleForm({ name: '', description: '', permissionIds: [] });
                         }}
+                        className="bg-[#607c47] hover:bg-[#4a6129] text-white"
                       >
                         <Plus className="h-4 w-4 mr-2" />
                         Create Role
@@ -279,10 +327,10 @@ export default function RoleManagementPage() {
                     </DialogTrigger>
                     <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                       <DialogHeader>
-                        <DialogTitle>
+                        <DialogTitle className="text-[#1f1f1f]">
                           {selectedRole ? 'Edit Role' : 'Create New Role'}
                         </DialogTitle>
-                        <DialogDescription>
+                        <DialogDescription className="text-[#1f1f1f]/70">
                           {selectedRole
                             ? 'Update role details and permissions'
                             : 'Create a new role and assign permissions'}
@@ -346,12 +394,14 @@ export default function RoleManagementPage() {
                               setSelectedRole(null);
                               setRoleForm({ name: '', description: '', permissionIds: [] });
                             }}
+                            className="border-gray-200"
                           >
                             Cancel
                           </Button>
                           <Button
                             onClick={selectedRole ? handleUpdateRole : handleCreateRole}
                             disabled={!roleForm.name}
+                            className="bg-[#607c47] hover:bg-[#4a6129] text-white"
                           >
                             {selectedRole ? 'Update' : 'Create'}
                           </Button>
@@ -362,51 +412,61 @@ export default function RoleManagementPage() {
                 </CardHeader>
                 <CardContent>
                   {loading ? (
-                    <div className="text-center py-8">Loading...</div>
+                    <div className="text-center py-12 text-[#1f1f1f]/60">Loading...</div>
                   ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Description</TableHead>
-                          <TableHead>Permissions</TableHead>
-                          <TableHead>Users</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {roles.map((role) => (
-                          <TableRow key={role.id}>
-                            <TableCell className="font-medium">{role.name}</TableCell>
-                            <TableCell>{role.description || '-'}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{role.permissions.length} permissions</Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{role._count?.users || 0} users</Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleEditRole(role)}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeleteRole(role.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-500" />
-                                </Button>
-                              </div>
-                            </TableCell>
+                    <div className="border border-gray-100 rounded-2xl overflow-hidden">
+                      <Table>
+                        <TableHeader className="bg-gray-50">
+                          <TableRow>
+                            <TableHead className="text-[#1f1f1f]">Name</TableHead>
+                            <TableHead className="text-[#1f1f1f]">Description</TableHead>
+                            <TableHead className="text-[#1f1f1f]">Permissions</TableHead>
+                            <TableHead className="text-[#1f1f1f]">Users</TableHead>
+                            <TableHead className="text-right text-[#1f1f1f]">Actions</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {roles.map((role) => (
+                            <TableRow key={role.id} className="hover:bg-gray-50">
+                              <TableCell className="font-medium">{role.name}</TableCell>
+                              <TableCell className="text-sm text-[#1f1f1f]/70">
+                                {role.description || '—'}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="border-gray-200 text-[#1f1f1f]">
+                                  {role.permissions.length} permissions
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="border-gray-200 text-[#1f1f1f]">
+                                  {role._count?.users || 0} users
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex justify-end gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleEditRole(role)}
+                                    className="border-gray-200 text-[#1f1f1f]"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDeleteRole(role.id)}
+                                    className="border-red-200 text-red-600"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -414,15 +474,16 @@ export default function RoleManagementPage() {
 
             {/* Permissions Tab */}
             <TabsContent value="permissions">
-              <Card>
+              <Card className="rounded-3xl border border-gray-100 shadow-lg bg-white">
                 <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle>Permissions</CardTitle>
+                  <CardTitle className="text-xl text-[#1f1f1f]">Permissions</CardTitle>
                   <Dialog open={showPermissionDialog} onOpenChange={setShowPermissionDialog}>
                     <DialogTrigger asChild>
                       <Button
                         onClick={() => {
                           setPermissionForm({ action: '', subject: '', description: '' });
                         }}
+                        className="bg-[#607c47] hover:bg-[#4a6129] text-white"
                       >
                         <Plus className="h-4 w-4 mr-2" />
                         Create Permission
@@ -430,8 +491,8 @@ export default function RoleManagementPage() {
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Create New Permission</DialogTitle>
-                        <DialogDescription>
+                        <DialogTitle className="text-[#1f1f1f]">Create New Permission</DialogTitle>
+                        <DialogDescription className="text-[#1f1f1f]/70">
                           Create a new permission that can be assigned to roles
                         </DialogDescription>
                       </DialogHeader>
@@ -473,12 +534,14 @@ export default function RoleManagementPage() {
                           <Button
                             variant="outline"
                             onClick={() => setShowPermissionDialog(false)}
+                            className="border-gray-200"
                           >
                             Cancel
                           </Button>
                           <Button
                             onClick={handleCreatePermission}
                             disabled={!permissionForm.action || !permissionForm.subject}
+                            className="bg-[#607c47] hover:bg-[#4a6129] text-white"
                           >
                             Create
                           </Button>
@@ -489,36 +552,42 @@ export default function RoleManagementPage() {
                 </CardHeader>
                 <CardContent>
                   {loading ? (
-                    <div className="text-center py-8">Loading...</div>
+                    <div className="text-center py-12 text-[#1f1f1f]/60">Loading...</div>
                   ) : (
                     <div className="space-y-4">
                       {Object.entries(groupedPermissions).map(([subject, perms]) => (
-                        <div key={subject} className="border rounded p-4">
-                          <h3 className="font-semibold mb-2">{subject}</h3>
+                        <div key={subject} className="border border-gray-100 rounded-2xl p-4 bg-gray-50/50">
+                          <div className="flex items-center justify-between mb-3">
+                            <h3 className="font-semibold text-[#1f1f1f]">{subject}</h3>
+                            <Badge variant="outline" className="border-gray-200 text-[#1f1f1f]">
+                              {perms.length} permissions
+                            </Badge>
+                          </div>
                           <div className="space-y-2">
                             {perms.map((perm) => (
                               <div
                                 key={perm.id}
-                                className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                                className="flex items-center justify-between p-3 rounded-xl bg-white border border-gray-100"
                               >
-                                <div>
-                                  <span className="font-medium">{perm.action}</span>
-                                  {perm.description && (
-                                    <span className="text-sm text-gray-600 ml-2">
-                                      - {perm.description}
-                                    </span>
-                                  )}
-                                  <Badge variant="outline" className="ml-2">
+                                <div className="space-y-1">
+                                  <span className="font-medium text-[#1f1f1f]">{perm.action}</span>
+                                  <div className="text-sm text-[#1f1f1f]/70">
+                                    {perm.description || perm.subject}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <Badge variant="outline" className="border-gray-200 text-[#1f1f1f]">
                                     {perm._count?.roles || 0} roles
                                   </Badge>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDeletePermission(perm.id)}
+                                    className="border-red-200 text-red-600"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
                                 </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeletePermission(perm.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-500" />
-                                </Button>
                               </div>
                             ))}
                           </div>
@@ -532,66 +601,72 @@ export default function RoleManagementPage() {
 
             {/* User Assignments Tab */}
             <TabsContent value="users">
-              <Card>
+              <Card className="rounded-3xl border border-gray-100 shadow-lg bg-white">
                 <CardHeader>
-                  <CardTitle>User Role Assignments</CardTitle>
+                  <CardTitle className="text-xl text-[#1f1f1f]">User Role Assignments</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {loading ? (
-                    <div className="text-center py-8">Loading...</div>
+                    <div className="text-center py-12 text-[#1f1f1f]/60">Loading...</div>
                   ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>User</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Roles</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {users.map((user) => (
-                          <TableRow key={user.id}>
-                            <TableCell>
-                              {user.firstName || user.lastName
-                                ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
-                                : '-'}
-                            </TableCell>
-                            <TableCell>{user.email}</TableCell>
-                            <TableCell>
-                              <div className="flex flex-wrap gap-1">
-                                {user.roles.map((ur) => (
-                                  <Badge key={ur.role.id} variant="outline">
-                                    {ur.role.name}
-                                  </Badge>
-                                ))}
-                                {user.roles.length === 0 && (
-                                  <span className="text-gray-400 text-sm">No roles</span>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={user.isActive ? 'default' : 'secondary'}
-                              >
-                                {user.isActive ? 'Active' : 'Inactive'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleAssignUserRoles(user)}
-                              >
-                                <Edit className="h-4 w-4 mr-2" />
-                                Assign Roles
-                              </Button>
-                            </TableCell>
+                    <div className="border border-gray-100 rounded-2xl overflow-hidden">
+                      <Table>
+                        <TableHeader className="bg-gray-50">
+                          <TableRow>
+                            <TableHead className="text-[#1f1f1f]">User</TableHead>
+                            <TableHead className="text-[#1f1f1f]">Email</TableHead>
+                            <TableHead className="text-[#1f1f1f]">Roles</TableHead>
+                            <TableHead className="text-[#1f1f1f]">Status</TableHead>
+                            <TableHead className="text-right text-[#1f1f1f]">Actions</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {users.map((user) => (
+                            <TableRow key={user.id} className="hover:bg-gray-50">
+                              <TableCell className="font-medium">
+                                {user.firstName || user.lastName
+                                  ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                                  : '-'}
+                              </TableCell>
+                              <TableCell className="text-sm text-[#1f1f1f]/70">{user.email}</TableCell>
+                              <TableCell>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {user.roles.map((ur) => (
+                                    <Badge key={ur.role.id} variant="outline" className="border-gray-200 text-[#1f1f1f]">
+                                      {ur.role.name}
+                                    </Badge>
+                                  ))}
+                                  {user.roles.length === 0 && (
+                                    <span className="text-gray-400 text-sm">No roles</span>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={user.isActive ? 'default' : 'outline'}
+                                  className={user.isActive ? '' : 'border-gray-200 text-[#1f1f1f]'}
+                                >
+                                  {user.isActive ? 'Active' : 'Inactive'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex justify-end">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleAssignUserRoles(user)}
+                                    className="border-gray-200 text-[#1f1f1f]"
+                                  >
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Assign Roles
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
                   )}
                 </CardContent>
               </Card>

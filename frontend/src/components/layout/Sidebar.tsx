@@ -101,6 +101,7 @@ export default function Sidebar({
       label: "Admin",
       items: [
         { name: "Role Management", href: "/role-management", icon: Shield },
+        { name: "Team Management", href: "/team", icon: Users },
       ],
     },
   ];

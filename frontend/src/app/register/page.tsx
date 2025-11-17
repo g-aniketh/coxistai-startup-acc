@@ -102,14 +102,14 @@ export default function RegisterPage() {
                   className="block text-sm font-medium text-muted-foreground mb-2"
                 >
                   <Building2 className="h-4 w-4 inline mr-1" />
-                  Startup Name
+                  Company Name
                 </label>
                 <Input
                   id="startupName"
                   name="startupName"
                   type="text"
                   required
-                  placeholder="My Amazing Startup"
+                  placeholder="My Company"
                   value={formData.startupName}
                   onChange={handleChange}
                 />

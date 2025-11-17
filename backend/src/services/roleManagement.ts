@@ -4,8 +4,8 @@ import { prisma } from '../lib/prisma';
 /**
  * List all roles with their permissions
  */
-export const listRoles = async () => {
-  return prisma.role.findMany({
+export const listRoles = async (startupId?: string) => {
+  const roles = await prisma.role.findMany({
     include: {
       permissions: {
         select: {
@@ -15,14 +15,20 @@ export const listRoles = async () => {
           description: true,
         },
       },
-      _count: {
-        select: {
-          users: true,
-        },
+      users: {
+        ...(startupId ? { where: { user: { startupId } } } : {}),
+        select: { userId: true },
       },
     },
     orderBy: { name: 'asc' },
   });
+
+  return roles.map(({ users, ...rest }) => ({
+    ...rest,
+    _count: {
+      users: users.length,
+    },
+  }));
 };
 
 /**

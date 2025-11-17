@@ -802,7 +802,7 @@ export default function VouchersPage() {
                             </p>
                           </div>
                           <div className="text-sm font-semibold text-[#607c47]">
-                            ₹{voucher.totalAmount.toFixed(2)}
+                            ₹{Number(voucher.totalAmount ?? 0).toFixed(2)}
                           </div>
                         </div>
                         {voucher.narration && (

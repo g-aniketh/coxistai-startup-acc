@@ -30,7 +30,8 @@ router.use(requireAdmin);
 // List all roles
 router.get('/roles', async (req: AuthRequest, res: Response) => {
   try {
-    const roles = await listRoles();
+    const startupId = req.user?.startupId;
+    const roles = await listRoles(startupId);
     res.json({ success: true, data: roles });
   } catch (error) {
     console.error('List roles error:', error);
