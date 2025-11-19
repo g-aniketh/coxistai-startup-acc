@@ -506,3 +506,225 @@ export const getOutstandingByLedger = async (
   }));
 };
 
+/**
+ * Get bills that need reminders (approaching due date or overdue)
+ */
+export const getBillReminders = async (
+  startupId: string,
+  billType?: BillType,
+  daysBeforeReminder: number = 7
+) => {
+  const where: Prisma.BillWhereInput = {
+    startupId,
+    status: { in: [BillStatus.OPEN, BillStatus.PARTIAL] },
+    outstandingAmount: { gt: 0 },
+  };
+
+  if (billType) {
+    where.billType = billType;
+  }
+
+  const bills = await prisma.bill.findMany({
+    where,
+    orderBy: { dueDate: 'asc' },
+  });
+
+  const now = new Date();
+  const reminders = bills
+    .filter((bill) => {
+      const dueDate = bill.dueDate || bill.billDate;
+      const daysUntilDue = Math.floor((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      const daysOverdue = Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+
+      // Include if overdue or within reminder window
+      return daysOverdue > 0 || (daysUntilDue >= 0 && daysUntilDue <= daysBeforeReminder);
+    })
+    .map((bill) => {
+      const dueDate = bill.dueDate || bill.billDate;
+      const daysUntilDue = Math.floor((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      const daysOverdue = Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+
+      return {
+        id: bill.id,
+        billNumber: bill.billNumber,
+        billType: bill.billType,
+        ledgerName: bill.ledgerName,
+        dueDate: bill.dueDate,
+        outstandingAmount: Number(bill.outstandingAmount),
+        daysUntilDue,
+        daysOverdue: daysOverdue > 0 ? daysOverdue : 0,
+        isOverdue: daysOverdue > 0,
+        reminderType: daysOverdue > 0 ? 'OVERDUE' : daysUntilDue <= 3 ? 'URGENT' : 'WARNING',
+      };
+    });
+
+  return reminders;
+};
+
+/**
+ * Get cash flow projections based on bills
+ */
+export const getBillCashFlowProjections = async (
+  startupId: string,
+  months: number = 6
+) => {
+  const now = new Date();
+  const projections: Array<{
+    month: string;
+    receivablesExpected: number;
+    payablesExpected: number;
+    netCashFlow: number;
+    bills: Array<{
+      billNumber: string;
+      ledgerName: string;
+      amount: number;
+      dueDate: string;
+      billType: BillType;
+    }>;
+  }> = [];
+
+  // Get all open/partial bills
+  const bills = await prisma.bill.findMany({
+    where: {
+      startupId,
+      status: { in: [BillStatus.OPEN, BillStatus.PARTIAL] },
+      outstandingAmount: { gt: 0 },
+    },
+    orderBy: { dueDate: 'asc' },
+  });
+
+  // Group by month
+  for (let i = 0; i < months; i++) {
+    const monthDate = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + i + 1, 1);
+
+    const monthBills = bills.filter((bill) => {
+      const dueDate = bill.dueDate || bill.billDate;
+      return dueDate >= monthDate && dueDate < nextMonth;
+    });
+
+    const receivablesExpected = monthBills
+      .filter((b) => b.billType === BillType.RECEIVABLE)
+      .reduce((sum, b) => sum.plus(b.outstandingAmount), new Prisma.Decimal(0));
+
+    const payablesExpected = monthBills
+      .filter((b) => b.billType === BillType.PAYABLE)
+      .reduce((sum, b) => sum.plus(b.outstandingAmount), new Prisma.Decimal(0));
+
+    projections.push({
+      month: monthDate.toISOString().slice(0, 7), // YYYY-MM
+      receivablesExpected: Number(receivablesExpected),
+      payablesExpected: Number(payablesExpected),
+      netCashFlow: Number(receivablesExpected) - Number(payablesExpected),
+      bills: monthBills.map((bill) => ({
+        billNumber: bill.billNumber,
+        ledgerName: bill.ledgerName,
+        amount: Number(bill.outstandingAmount),
+        dueDate: (bill.dueDate || bill.billDate).toISOString().split('T')[0],
+        billType: bill.billType,
+      })),
+    });
+  }
+
+  return projections;
+};
+
+/**
+ * Get receivables/payables analytics
+ */
+export const getBillsAnalytics = async (
+  startupId: string,
+  fromDate?: string,
+  toDate?: string
+) => {
+  const where: Prisma.BillWhereInput = {
+    startupId,
+  };
+
+  if (fromDate || toDate) {
+    where.billDate = {};
+    if (fromDate) where.billDate.gte = new Date(fromDate);
+    if (toDate) where.billDate.lte = new Date(toDate);
+  }
+
+  const bills = await prisma.bill.findMany({
+    where,
+  });
+
+  // Receivables analytics
+  const receivables = bills.filter((b) => b.billType === BillType.RECEIVABLE);
+  const receivablesTotal = receivables.reduce(
+    (sum, b) => sum.plus(b.originalAmount),
+    new Prisma.Decimal(0)
+  );
+  const receivablesOutstanding = receivables
+    .filter((b) => b.status !== BillStatus.SETTLED)
+    .reduce((sum, b) => sum.plus(b.outstandingAmount), new Prisma.Decimal(0));
+  const receivablesSettled = receivables
+    .filter((b) => b.status === BillStatus.SETTLED)
+    .reduce((sum, b) => sum.plus(b.settledAmount), new Prisma.Decimal(0));
+
+  // Payables analytics
+  const payables = bills.filter((b) => b.billType === BillType.PAYABLE);
+  const payablesTotal = payables.reduce(
+    (sum, b) => sum.plus(b.originalAmount),
+    new Prisma.Decimal(0)
+  );
+  const payablesOutstanding = payables
+    .filter((b) => b.status !== BillStatus.SETTLED)
+    .reduce((sum, b) => sum.plus(b.outstandingAmount), new Prisma.Decimal(0));
+  const payablesSettled = payables
+    .filter((b) => b.status === BillStatus.SETTLED)
+    .reduce((sum, b) => sum.plus(b.settledAmount), new Prisma.Decimal(0));
+
+  // Calculate collection/payment rates
+  const receivablesCollectionRate =
+    receivablesTotal.gt(0)
+      ? Number(receivablesSettled.div(receivablesTotal).times(100))
+      : 0;
+  const payablesPaymentRate =
+    payablesTotal.gt(0)
+      ? Number(payablesSettled.div(payablesTotal).times(100))
+      : 0;
+
+  // Average collection/payment period
+  const now = new Date();
+  const receivablesAvgDays = receivables
+    .filter((b) => b.dueDate && b.status !== BillStatus.SETTLED)
+    .reduce((sum, b) => {
+      const days = Math.floor(
+        (now.getTime() - (b.dueDate || b.billDate).getTime()) / (1000 * 60 * 60 * 24)
+      );
+      return sum + Math.max(0, days);
+    }, 0) / (receivables.filter((b) => b.dueDate && b.status !== BillStatus.SETTLED).length || 1);
+
+  const payablesAvgDays = payables
+    .filter((b) => b.dueDate && b.status !== BillStatus.SETTLED)
+    .reduce((sum, b) => {
+      const days = Math.floor(
+        (now.getTime() - (b.dueDate || b.billDate).getTime()) / (1000 * 60 * 60 * 24)
+      );
+      return sum + Math.max(0, days);
+    }, 0) / (payables.filter((b) => b.dueDate && b.status !== BillStatus.SETTLED).length || 1);
+
+  return {
+    receivables: {
+      total: Number(receivablesTotal),
+      outstanding: Number(receivablesOutstanding),
+      settled: Number(receivablesSettled),
+      count: receivables.length,
+      collectionRate: receivablesCollectionRate,
+      averageCollectionDays: Math.round(receivablesAvgDays),
+    },
+    payables: {
+      total: Number(payablesTotal),
+      outstanding: Number(payablesOutstanding),
+      settled: Number(payablesSettled),
+      count: payables.length,
+      paymentRate: payablesPaymentRate,
+      averagePaymentDays: Math.round(payablesAvgDays),
+    },
+    netPosition: Number(receivablesOutstanding) - Number(payablesOutstanding),
+  };
+};
+

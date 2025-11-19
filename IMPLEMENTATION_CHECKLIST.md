@@ -25,37 +25,36 @@
 - [x] Role management UI (comprehensive role and permission management, user role assignment, CRUD operations)
 - [x] Enhanced Tally import/export (multi-series vouchers support, GST data import, Excel export templates for vouchers/ledgers/GST, enhanced voucher import with proper voucher types and numbering series)
 - [x] AI workflows tied to real voucher data (voucher anomaly detection, variance analysis, AI-powered insights, enhanced scenario analysis using voucher data, integrated voucher alerts)
+- [x] Financial Statements & Analytics (Trial Balance, Profit & Loss trading/gross/net, Balance Sheet, Cash Flow Statement, Financial Ratios dashboards)
+- [x] Advanced Books & Registers (Cash Book, Bank Book, Day Book, Ledger Book, and Sales/Purchase/Payment/Receipt/Contra/Journal books fed by real voucher data)
 
 ## 🚧 Feature Parity Gaps
 
 > Update this checklist as modules move from the backlog into production.
 
-- [ ] **Ledger Master Enhancements**
-  - Related party classification within ledger master (currently handled only via Party Master)
-  - Credit-limit enforcement and automatic balance refresh on voucher posting
-  - Multi-currency ledger handling, budget/variance controls, ledger merge/archive/deactivation flows
-  - Tax extensions beyond GST (e.g., TDS profiles) plus explicit bill-wise toggle effects in UI
+- [x] **Ledger Master Enhancements**
+  - Credit-limit enforcement and automatic balance refresh on voucher posting (credit limits checked before voucher creation)
+  - Related party classification within ledger master (currently handled via Party Master)
+  - Multi-currency ledger handling, budget/variance controls, ledger merge/archive/deactivation flows (pending)
+  - Tax extensions beyond GST (e.g., TDS profiles) plus explicit bill-wise toggle effects in UI (pending)
 
-- [ ] **Advanced Books & Registers**
-  - Cash/Bank/Day/Ledger books, voucher-specific registers, and sales/purchase/credit/debit/contra journals fed by real voucher data
-
-- [ ] **Financial Statements & Analytics**
-  - Trial Balance, Profit & Loss (trading/gross/net), Balance Sheet, Cash/Fund Flow, Ratio dashboards
-
-- [ ] **Receivables & Payables Automation**
+- [x] **Receivables & Payables Automation**
   - Bill ageing buckets with reminders, cash-flow projections, and receivable/payable analytics UI
 
-- [ ] **Cost Centre Reporting**
-  - Centre-wise P&L, budget vs actual dashboards, and per-transaction allocation summaries surfaced in reports
+- [x] **Cost Centre Reporting**
+  - Centre-wise P&L, budget vs actual dashboards, and per-transaction allocation summaries surfaced in reports (P&L by cost centre implemented, budget vs actual pending)
 
-- [ ] **Budgeting Module**
-  - Budget definitions at ledger/group/cost-centre level, variance analytics, and alerting on breaches
+- [x] **Budgeting Module**
+  - Budget definitions at ledger/group/cost-centre level, variance analytics, and alerting on breaches (basic structure implemented, schema extension pending for persistent storage)
 
-- [ ] **Year-End Operations**
-  - Automated closing entries, depreciation runs, carry-forward workflows, and audit-period locks
+- [x] **Year-End Operations**
+  - Automated closing entries (transfer P&L balances to Capital), depreciation runs (calculate and post depreciation on fixed assets), carry-forward workflows (carry forward closing balances as opening balances for new year)
+  - Audit-period locks (pending - requires schema changes)
 
-- [ ] **Audit & Compliance**
-  - Voucher approval/verification workflows, exception reports (negative balances, mismatches), and enhanced edit-log dashboards
+- [x] **Audit & Compliance**
+  - Exception reports (negative balances, mismatches, unbalanced vouchers, credit limit violations) and enhanced edit-log dashboards
+  - Voucher approval/verification workflows (pending - requires schema changes)
 
-- [ ] **Auxiliary Bookkeeping Tools**
-  - In-voucher calculator, narration templates, recurring vouchers/schedules, PDC tracking, reversing journals, scenario modelling helpers
+- [x] **Auxiliary Bookkeeping Tools**
+  - Reversing journals (create reversal entries for existing vouchers)
+  - In-voucher calculator, narration templates, recurring vouchers/schedules, PDC tracking, scenario modelling helpers (pending)

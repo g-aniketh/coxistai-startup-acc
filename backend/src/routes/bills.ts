@@ -6,6 +6,9 @@ import {
   listBills,
   getBillAgingReport,
   getOutstandingByLedger,
+  getBillReminders,
+  getBillCashFlowProjections,
+  getBillsAnalytics,
 } from "../services/bills";
 import { BillType, BillStatus } from "@prisma/client";
 
@@ -254,6 +257,106 @@ router.get("/outstanding-by-ledger", async (req: Request, res: Response) => {
         error instanceof Error
           ? error.message
           : "Failed to fetch outstanding by ledger",
+    });
+  }
+});
+
+// Get bill reminders
+router.get("/reminders", async (req: Request, res: Response) => {
+  try {
+    const startupId = req.user?.startupId;
+    if (!startupId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
+    }
+
+    const { billType, daysBeforeReminder } = req.query;
+    const reminders = await getBillReminders(
+      startupId,
+      billType && typeof billType === "string" && billType in BillType
+        ? (billType as BillType)
+        : undefined,
+      daysBeforeReminder ? parseInt(daysBeforeReminder as string, 10) : 7
+    );
+
+    return res.json({
+      success: true,
+      data: reminders,
+    });
+  } catch (error) {
+    console.error("Get bill reminders error:", error);
+    return res.status(500).json({
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch bill reminders",
+    });
+  }
+});
+
+// Get cash flow projections
+router.get("/cash-flow-projections", async (req: Request, res: Response) => {
+  try {
+    const startupId = req.user?.startupId;
+    if (!startupId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
+    }
+
+    const { months } = req.query;
+    const projections = await getBillCashFlowProjections(
+      startupId,
+      months ? parseInt(months as string, 10) : 6
+    );
+
+    return res.json({
+      success: true,
+      data: projections,
+    });
+  } catch (error) {
+    console.error("Get cash flow projections error:", error);
+    return res.status(500).json({
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch cash flow projections",
+    });
+  }
+});
+
+// Get bills analytics
+router.get("/analytics", async (req: Request, res: Response) => {
+  try {
+    const startupId = req.user?.startupId;
+    if (!startupId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
+    }
+
+    const { fromDate, toDate } = req.query;
+    const analytics = await getBillsAnalytics(
+      startupId,
+      fromDate as string | undefined,
+      toDate as string | undefined
+    );
+
+    return res.json({
+      success: true,
+      data: analytics,
+    });
+  } catch (error) {
+    console.error("Get bills analytics error:", error);
+    return res.status(500).json({
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch bills analytics",
     });
   }
 });

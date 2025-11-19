@@ -51,7 +51,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-type TabType = "categories" | "centers" | "interest" | "party-interest";
+type TabType = "categories" | "centers" | "interest" | "party-interest" | "cost-centre-reporting";
 type CategoryTreeNode = CostCategory & { children?: CategoryTreeNode[] };
 
 const createEmptyPartyForm = (): PartyInput => ({
@@ -922,6 +922,172 @@ export default function CostManagementPage() {
     );
   };
 
+  const renderCostCentreReportingTab = () => {
+    const [reportLoading, setReportLoading] = useState(false);
+    const [reportData, setReportData] = useState<any>(null);
+    const [selectedCostCentre, setSelectedCostCentre] = useState<string>('');
+    const [fromDate, setFromDate] = useState(new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0]);
+    const [toDate, setToDate] = useState(new Date().toISOString().split('T')[0]);
+
+    const loadReport = async () => {
+      setReportLoading(true);
+      try {
+        const response = await apiClient.bookkeeping.getCostCentrePL({
+          costCentreId: selectedCostCentre || undefined,
+          fromDate,
+          toDate,
+        });
+        if (response.success) {
+          setReportData(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to load cost centre report:', error);
+        toast.error('Failed to load cost centre report');
+      } finally {
+        setReportLoading(false);
+      }
+    };
+
+    const formatCurrency = (value: number) => {
+      return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        minimumFractionDigits: 2,
+      }).format(value || 0);
+    };
+
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex gap-4 mb-6">
+              <div className="flex-1">
+                <Label>Cost Centre (Optional)</Label>
+                <select
+                  value={selectedCostCentre}
+                  onChange={(e) => setSelectedCostCentre(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm mt-1"
+                >
+                  <option value="">All Cost Centres</option>
+                  {centers.map((center) => (
+                    <option key={center.id} value={center.id}>
+                      {center.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label>From Date</Label>
+                <Input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>To Date</Label>
+                <Input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div className="flex items-end">
+                <Button onClick={loadReport} disabled={reportLoading}>
+                  Generate Report
+                </Button>
+              </div>
+            </div>
+
+            {reportLoading ? (
+              <div className="text-center py-12">Loading...</div>
+            ) : reportData ? (
+              <div className="space-y-6">
+                {reportData.summary && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="text-sm text-muted-foreground">Total Sales</div>
+                        <div className="text-2xl font-semibold text-green-600">
+                          {formatCurrency(reportData.summary.totalSales)}
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="text-sm text-muted-foreground">Total Expense</div>
+                        <div className="text-2xl font-semibold text-red-600">
+                          {formatCurrency(reportData.summary.totalDirectExpense + reportData.summary.totalIndirectExpense)}
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="text-sm text-muted-foreground">Gross Profit</div>
+                        <div className="text-2xl font-semibold text-[#607c47]">
+                          {formatCurrency(reportData.summary.totalGrossProfit)}
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="text-sm text-muted-foreground">Net Profit</div>
+                        <div className={`text-2xl font-semibold ${reportData.summary.totalNetProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {formatCurrency(reportData.summary.totalNetProfit)}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {reportData.centres && reportData.centres.length > 0 && (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Cost Centre</TableHead>
+                        <TableHead className="text-right">Sales</TableHead>
+                        <TableHead className="text-right">Purchase</TableHead>
+                        <TableHead className="text-right">Direct Income</TableHead>
+                        <TableHead className="text-right">Indirect Income</TableHead>
+                        <TableHead className="text-right">Direct Expense</TableHead>
+                        <TableHead className="text-right">Indirect Expense</TableHead>
+                        <TableHead className="text-right">Gross Profit</TableHead>
+                        <TableHead className="text-right">Net Profit</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {reportData.centres.map((centre: any, idx: number) => (
+                        <TableRow key={idx}>
+                          <TableCell className="font-medium">{centre.costCentreName}</TableCell>
+                          <TableCell className="text-right text-green-600">{formatCurrency(centre.sales)}</TableCell>
+                          <TableCell className="text-right text-red-600">{formatCurrency(centre.purchase)}</TableCell>
+                          <TableCell className="text-right text-green-600">{formatCurrency(centre.directIncome)}</TableCell>
+                          <TableCell className="text-right text-green-600">{formatCurrency(centre.indirectIncome)}</TableCell>
+                          <TableCell className="text-right text-red-600">{formatCurrency(centre.directExpense)}</TableCell>
+                          <TableCell className="text-right text-red-600">{formatCurrency(centre.indirectExpense)}</TableCell>
+                          <TableCell className="text-right font-semibold text-[#607c47]">{formatCurrency(centre.grossProfit)}</TableCell>
+                          <TableCell className={`text-right font-semibold ${centre.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {formatCurrency(centre.netProfit)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                Select date range and click "Generate Report" to view cost centre P&L
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
   const renderPartyInterestTab = () => {
     const canAssignInterest =
       parties.length > 0 && interestProfiles.length > 0;
@@ -1109,6 +1275,7 @@ export default function CostManagementPage() {
               {activeTab === "centers" && renderCentersTab()}
               {activeTab === "interest" && renderInterestTab()}
               {activeTab === "party-interest" && renderPartyInterestTab()}
+              {activeTab === "cost-centre-reporting" && renderCostCentreReportingTab()}
             </CardContent>
           </Card>
 

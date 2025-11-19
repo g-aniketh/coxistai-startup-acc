@@ -7,7 +7,7 @@ import {
   createVoucherNumberingSeries,
   getNextVoucherNumber,
 } from '../services/voucherTypes';
-import { createVoucher, listVouchers } from '../services/vouchers';
+import { createVoucher, listVouchers, createReversingJournal } from '../services/vouchers';
 import { VoucherCategory, VoucherEntryType, VoucherNumberingBehavior, VoucherNumberingMethod, VoucherBillReferenceType } from '@prisma/client';
 
 const router = Router();
@@ -221,6 +221,38 @@ router.post('/types/:voucherTypeId/next-number', async (req: Request, res: Respo
     return res.status(400).json({
       success: false,
       message: error instanceof Error ? error.message : 'Failed to generate voucher number',
+    });
+  }
+});
+
+// Create reversing journal
+router.post('/:voucherId/reverse', async (req: Request, res: Response) => {
+  try {
+    const startupId = req.user?.startupId;
+    if (!startupId) {
+      return res.status(400).json({ success: false, message: 'Startup context is required' });
+    }
+
+    const { voucherId } = req.params;
+    const { reversalDate, narration } = req.body;
+
+    const result = await createReversingJournal(
+      startupId,
+      voucherId,
+      reversalDate,
+      narration
+    );
+
+    return res.status(201).json({
+      success: true,
+      data: result,
+      message: 'Reversing journal created successfully',
+    });
+  } catch (error) {
+    console.error('Create reversing journal error:', error);
+    return res.status(400).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to create reversing journal',
     });
   }
 });

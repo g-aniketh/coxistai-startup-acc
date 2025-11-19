@@ -770,6 +770,205 @@ This document provides a step-by-step workflow to test all implemented features 
 - [x] AI Scenarios - What-if scenario analysis
 - [x] AI Forecasting - Financial forecasting (3/6/12 months)
 
+✅ **Financial Statements & Analytics**
+
+- [x] Trial Balance - View trial balance report (Bookkeeping → Trial Balance tab)
+- [x] Profit & Loss - View P&L statement with trading and P&L accounts (Bookkeeping → Profit & Loss tab)
+- [x] Balance Sheet - View balance sheet with assets, liabilities, and capital (Bookkeeping → Balance Sheet tab)
+- [x] Cash Flow - View cash flow statement with operating, investing, and financing activities (Bookkeeping → Cash Flow tab)
+- [x] Financial Ratios - View liquidity, profitability, efficiency, and leverage ratios (Bookkeeping → Financial Ratios tab)
+
+✅ **Advanced Books & Registers**
+
+- [x] Cash Book - View all cash transactions with running balance (via API: `/bookkeeping/cash-book`)
+- [x] Bank Book - View all bank transactions for a specific bank ledger (via API: `/bookkeeping/bank-book`)
+- [x] Day Book - View all vouchers for a specific day (via API: `/bookkeeping/day-book`)
+- [x] Ledger Book - View all entries for a specific ledger with running balance (via API: `/bookkeeping/ledger-book`)
+- [x] Journals - View vouchers by type (Sales, Purchase, Payment, Receipt, Contra, Journal) (via API: `/bookkeeping/journals`)
+
+---
+
+## Phase 14: Financial Statements & Reports
+
+### Step 47: Trial Balance
+
+1. Navigate to **Bookkeeping** (`/bookkeeping`)
+2. Click on the **Trial Balance** tab
+3. **View Trial Balance**:
+   - Select a date using the date picker (defaults to today)
+   - Click **Refresh** to generate the report
+   - Review all ledger balances with debit and credit columns
+   - Verify the total debit equals total credit
+4. **Verify**: All ledgers with balances are listed, and totals match
+
+### Step 48: Profit & Loss Statement
+
+1. Stay in **Bookkeeping** → **Profit & Loss** tab
+2. **Generate P&L**:
+   - Select date range (From Date and To Date)
+   - Defaults to current financial year
+   - Click **Refresh** to generate
+3. **Review Report**:
+   - **Trading Account**: View direct incomes and direct expenses
+   - **Gross Profit**: Verify calculation (Total Incomes - Total Expenses)
+   - **Profit & Loss Account**: View indirect incomes and indirect expenses
+   - **Net Profit/Loss**: Verify calculation
+4. **Verify**: All income and expense ledgers are categorized correctly
+
+### Step 49: Balance Sheet
+
+1. Stay in **Bookkeeping** → **Balance Sheet** tab
+2. **Generate Balance Sheet**:
+   - Select a date using the date picker (defaults to today)
+   - Click **Refresh** to generate
+3. **Review Report**:
+   - **Liabilities & Capital**: View all liabilities and capital accounts
+   - **Assets**: View all asset accounts
+   - Verify totals match (Assets = Liabilities + Capital)
+4. **Verify**: All asset, liability, and capital ledgers are properly categorized
+
+### Step 50: Cash Flow Statement
+
+1. Stay in **Bookkeeping** → **Cash Flow** tab
+2. **Generate Cash Flow**:
+   - Select date range (From Date and To Date)
+   - Click **Refresh** to generate
+3. **Review Report**:
+   - **Opening Balance**: Starting cash balance
+   - **Operating Activities**: Cash flows from operations
+   - **Investing Activities**: Cash flows from investments
+   - **Financing Activities**: Cash flows from financing
+   - **Net Cash Flow**: Total cash flow for the period
+   - **Closing Balance**: Ending cash balance
+4. **Verify**: Cash flows are properly categorized and closing balance = opening + net cash flow
+
+### Step 51: Financial Ratios
+
+1. Stay in **Bookkeeping** → **Financial Ratios** tab
+2. **View Ratios**:
+   - Select a date using the date picker (defaults to today)
+   - Click **Refresh** to generate
+3. **Review Ratios**:
+   - **Liquidity Ratios**: Current Ratio, Quick Ratio
+   - **Profitability Ratios**: Gross Profit Margin, Net Profit Margin, Return on Assets
+   - **Efficiency Ratios**: Asset Turnover, Inventory Turnover
+   - **Leverage Ratios**: Debt to Equity, Debt Ratio
+4. **Verify**: All ratios are calculated correctly based on balance sheet and P&L data
+
+## Phase 15: Receivables & Payables Automation
+
+### Step 51: Bill Reminders
+
+1. Navigate to **Bills** (`/bills`)
+2. Switch between **Receivables** and **Payables** tabs
+3. **Verify Reminders Section**:
+   - The Bill Reminders card should appear if there are bills approaching due date or overdue
+   - Reminders show:
+     - Bill number
+     - Overdue status with color coding (red for overdue, orange for urgent, yellow for warning)
+     - Days overdue or days until due
+     - Ledger name and outstanding amount
+     - Due date
+   - Test with bills that:
+     - Are overdue (>0 days past due date)
+     - Are due within 3 days (URGENT)
+     - Are due within 7 days (WARNING)
+
+### Step 52: Cash Flow Projections
+
+1. In the **Bills** page, scroll to the **Cash Flow Projections** section
+2. **Verify Projections**:
+   - 6-month projection table showing:
+     - Month (formatted as "MMM yyyy")
+     - Receivables Expected (green)
+     - Payables Expected (red)
+     - Net Cash Flow (green if positive, red if negative)
+   - Projections are based on outstanding bills and their due dates
+   - Each month shows expected receivables and payables based on bill due dates
+
+### Step 53: Receivables & Payables Analytics
+
+1. In the **Bills** page, scroll to the **Analytics** section
+2. **Verify Receivables Analytics Card**:
+   - Total receivables amount
+   - Outstanding receivables (amber)
+   - Settled receivables (green)
+   - Collection rate (percentage)
+   - Average collection days
+3. **Verify Payables Analytics Card**:
+   - Total payables amount
+   - Outstanding payables (amber)
+   - Settled payables (green)
+   - Payment rate (percentage)
+   - Average payment days
+4. **Verify** that analytics reflect real bill data from the database
+
+---
+
+## Phase 16: Advanced Books & Registers
+
+### Step 54: Cash Book
+
+1. Navigate to **Bookkeeping** (`/bookkeeping`)
+2. Use API endpoint or UI (if implemented) to view Cash Book:
+   - GET `/api/v1/bookkeeping/cash-book?fromDate=YYYY-MM-DD&toDate=YYYY-MM-DD`
+   - Or access via UI tab if available
+3. **Review Cash Book**:
+   - Opening balance for all cash ledgers
+   - All cash transactions (debit and credit)
+   - Running balance after each transaction
+   - Closing balance
+4. **Verify**: All cash ledger entries are included and balances are correct
+
+### Step 55: Bank Book
+
+1. Use API endpoint to view Bank Book:
+   - GET `/api/v1/bookkeeping/bank-book?bankLedgerName=BankName&fromDate=YYYY-MM-DD&toDate=YYYY-MM-DD`
+   - Or access via UI tab if available
+2. **Review Bank Book**:
+   - Select a specific bank ledger (if multiple exist)
+   - Opening balance for the selected bank
+   - All transactions affecting that bank
+   - Running balance after each transaction
+   - Closing balance
+3. **Verify**: Only transactions for the selected bank are shown
+
+### Step 56: Day Book
+
+1. Use API endpoint to view Day Book:
+   - GET `/api/v1/bookkeeping/day-book?date=YYYY-MM-DD`
+   - Or access via UI tab if available
+2. **Review Day Book**:
+   - Select a specific date
+   - View all vouchers posted on that date
+   - See all entries in each voucher
+3. **Verify**: Only vouchers from the selected date are shown
+
+### Step 57: Ledger Book
+
+1. Use API endpoint to view Ledger Book:
+   - GET `/api/v1/bookkeeping/ledger-book?ledgerName=LedgerName&fromDate=YYYY-MM-DD&toDate=YYYY-MM-DD`
+   - Or access via UI tab if available
+2. **Review Ledger Book**:
+   - Select a specific ledger name
+   - Opening balance for that ledger
+   - All voucher entries affecting that ledger
+   - Running balance after each entry
+   - Closing balance
+3. **Verify**: All entries for the selected ledger are shown with correct balances
+
+### Step 58: Journals
+
+1. Use API endpoint to view Journals:
+   - GET `/api/v1/bookkeeping/journals?journalType=SALES&fromDate=YYYY-MM-DD&toDate=YYYY-MM-DD`
+   - Journal types: SALES, PURCHASE, PAYMENT, RECEIPT, CONTRA, JOURNAL
+   - Or access via UI tab if available
+2. **Review Journals**:
+   - Select a journal type
+   - View all vouchers of that type within the date range
+   - See all entries in each voucher
+3. **Verify**: Only vouchers of the selected type are shown
+
 ---
 
 ## Notes
@@ -791,5 +990,205 @@ If any step fails:
 5. Verify all required fields are filled
 
 ---
+
+## Phase 16: Ledger Master Enhancements & Credit Limit Enforcement
+
+### Step 59: Credit Limit Enforcement
+
+1. **Setup**:
+
+   - Navigate to **Bookkeeping** > **Ledgers** tab
+   - Create or edit a ledger (e.g., a customer ledger)
+   - Set a credit limit (e.g., 10,000)
+   - Save the ledger
+
+2. **Test Credit Limit**:
+
+   - Navigate to **Vouchers** (`/vouchers`)
+   - Create a new Receipt voucher with a CREDIT entry to the ledger
+   - Try to credit an amount that would exceed the limit
+   - **Expected**: The voucher creation should fail with an error message indicating credit limit exceeded
+   - Try with an amount within the limit - should succeed
+
+3. **Verify Current Balance**:
+   - The system should calculate current credit balance before allowing new transactions
+   - Credit limits are enforced automatically on voucher posting
+
+## Phase 17: Cost Centre Reporting
+
+### Step 60: Cost Centre P&L Report
+
+1. Navigate to **Cost Management** (`/cost-management`)
+2. Switch to the **Cost Centre Reporting** tab
+3. **Generate Report**:
+   - Select a cost centre (optional - leave blank for all)
+   - Select a date range (From Date and To Date)
+   - Click "Generate Report"
+4. **Verify Report**:
+   - Summary cards showing:
+     - Total Sales
+     - Total Expense (Direct + Indirect)
+     - Gross Profit
+     - Net Profit
+   - Detailed table showing each cost centre with:
+     - Sales, Purchase, Direct Income, Indirect Income
+     - Direct Expense, Indirect Expense
+     - Gross Profit, Net Profit
+   - Test with different cost centres and date ranges
+
+## Phase 18: Exception Reports & Audit Compliance
+
+### Step 61: Exception Reports
+
+1. Navigate to **Audit Log** (`/audit-log`)
+2. Switch to the **Exception Reports** tab
+3. **Generate Report**:
+   - Select an "As On Date"
+   - Click "Generate Report"
+4. **Verify Exceptions**:
+   - Summary showing total exceptions, errors, and warnings
+   - Exception types should include:
+     - **NEGATIVE_BALANCE**: Asset ledgers with credit balances, liability ledgers with debit balances
+     - **CREDIT_LIMIT_EXCEEDED**: Ledgers exceeding their credit limits
+     - **UNBALANCED_VOUCHER**: Vouchers where debit doesn't equal credit
+     - **MISSING_OPENING_BALANCE**: Ledgers with transactions but no opening balance
+   - Each exception shows:
+     - Type, Ledger/Voucher name, Description, Severity (ERROR/WARNING), Amount
+   - Test by creating scenarios that trigger exceptions
+
+### Step 62: Exception Scenarios
+
+1. **Negative Balance Test**:
+
+   - Create an asset ledger (e.g., Cash)
+   - Post a credit entry that makes balance negative
+   - Generate exception report - should show NEGATIVE_BALANCE error
+
+2. **Unbalanced Voucher Test**:
+
+   - Create a voucher where debit total ≠ credit total (if possible)
+   - Generate exception report - should show UNBALANCED_VOUCHER error
+
+3. **Credit Limit Test**:
+   - Set a credit limit on a ledger
+   - Exceed the limit through transactions
+   - Generate exception report - should show CREDIT_LIMIT_EXCEEDED error
+
+## Phase 19: Auxiliary Bookkeeping Tools
+
+### Step 63: Reversing Journals
+
+1. **Create Original Voucher**:
+
+   - Navigate to **Vouchers** (`/vouchers`)
+   - Create any voucher (e.g., Payment, Receipt, Journal)
+   - Note the voucher number
+
+2. **Create Reversing Journal**:
+
+   - Call the API endpoint: `POST /vouchers/:voucherId/reverse`
+   - Provide optional reversal date and narration
+   - **Expected**: A new reversing journal voucher is created with:
+     - Opposite entry types (DEBIT becomes CREDIT, CREDIT becomes DEBIT)
+     - Same ledger names and amounts
+     - Narration indicating it's a reversal
+     - REVERSING_JOURNAL voucher type
+
+3. **Verify Reversal**:
+   - Check that the original voucher entries are reversed
+   - Verify the reversing journal appears in the vouchers list
+   - Confirm ledger balances are adjusted correctly
+
+## Phase 20: Budgeting Module
+
+### Step 64: Budget Creation
+
+1. Navigate to **Bookkeeping** (`/bookkeeping`)
+2. Switch to the **Budgeting** tab
+3. **Create Budget**:
+   - Click "Create Budget" button
+   - Fill in the form:
+     - Budget Name (e.g., "Sales Budget 2024")
+     - Description (optional)
+     - Period Start and End dates
+     - Budget Type (Ledger, Group, or Cost Centre)
+     - Amount
+   - Click "Create Budget"
+4. **Verify Budget Created**:
+   - Budget should appear in the budgets list
+   - Budget shows type, period, and amount
+
+### Step 65: Budget Variance Analytics
+
+1. In the **Budgeting** tab, view the **Variance Analytics**:
+   - Summary cards showing:
+     - Total Budgeted
+     - Total Actual
+     - Total Variance (Actual - Budgeted)
+     - Number of Breaches
+2. **Verify Calculations**:
+   - Actual spending is calculated from voucher entries
+   - Variance is the difference between actual and budgeted
+   - Variance percentage is calculated
+
+### Step 66: Budget Breach Alerts
+
+1. **View Breaches**:
+   - The "Budget Breaches" section shows budgets that have exceeded limits
+   - Each breach shows:
+     - Budget name
+     - Budgeted amount
+     - Actual amount
+     - Variance (difference)
+     - Status (BREACH)
+2. **Test Breach**:
+   - Create a budget for a ledger
+   - Create vouchers that exceed the budget
+   - Generate breach report - should show the breach
+
+## Phase 21: Year-End Operations
+
+### Step 67: Generate Closing Entries
+
+1. Navigate to **Bookkeeping** (`/bookkeeping`)
+2. Switch to the **Year-End Operations** tab
+3. **Generate Closing Entries**:
+   - Enter Financial Year End date
+   - Add optional narration
+   - Click "Generate Closing Entries"
+4. **Verify Closing Entries**:
+   - A closing entry voucher is created
+   - All income accounts are debited (closed)
+   - All expense accounts are credited (closed)
+   - Net profit/loss is transferred to Capital Account
+   - Voucher should appear in vouchers list
+
+### Step 68: Run Depreciation
+
+1. In the **Year-End Operations** tab, go to **Depreciation Run** section
+2. **Run Depreciation**:
+   - Enter "As On Date"
+   - Enter Depreciation Rate (default: 10%)
+   - Add optional narration
+   - Click "Run Depreciation"
+3. **Verify Depreciation**:
+   - Depreciation voucher is created
+   - Asset accounts are credited (reduced)
+   - Depreciation Expense account is debited
+   - Amount calculated based on book value and rate
+   - Voucher should appear in vouchers list
+
+### Step 69: Carry Forward Balances
+
+1. In the **Year-End Operations** tab, go to **Carry Forward Balances** section
+2. **Carry Forward**:
+   - Enter "From" date (Financial Year End)
+   - Enter "To" date (New Financial Year Start)
+   - Click "Carry Forward Balances"
+3. **Verify Carry Forward**:
+   - Closing balances from old year become opening balances for new year
+   - All ledgers' opening balances are updated
+   - Success message confirms the operation
+   - Check ledger master to verify updated opening balances
 
 **Happy Testing! 🚀**

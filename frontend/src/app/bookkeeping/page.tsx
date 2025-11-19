@@ -23,7 +23,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/Badge";
-import { AlertCircle, CheckCircle2, Layers, Trash2, BookOpen, FolderTree } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -31,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AlertCircle, CheckCircle2, Layers, Trash2, BookOpen, FolderTree, Plus } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { 
   apiClient,
@@ -41,6 +41,14 @@ import {
   LedgerGroup,
 } from "@/lib/api";
 import { cn, formatCurrency } from "@/lib/utils";
+import { toast } from "react-hot-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type LedgerGroupTree = LedgerGroup & { children: LedgerGroupTree[] };
 type FeedbackState =
@@ -48,7 +56,7 @@ type FeedbackState =
   | { type: "error"; message: string }
   | null;
 
-type BookkeepingTabId = "chart" | "ledgers";
+type BookkeepingTabId = "chart" | "ledgers" | "trial-balance" | "profit-loss" | "balance-sheet" | "cash-flow" | "ratios" | "cash-book" | "bank-book" | "day-book" | "ledger-book" | "journals" | "budgeting" | "year-end";
 
 const bookkeepingTabs: Array<{
   id: BookkeepingTabId;
@@ -67,6 +75,78 @@ const bookkeepingTabs: Array<{
     label: "Ledger Master",
     description: "Create and manage individual ledgers",
     icon: BookOpen,
+  },
+  {
+    id: "trial-balance",
+    label: "Trial Balance",
+    description: "View trial balance report",
+    icon: Layers,
+  },
+  {
+    id: "profit-loss",
+    label: "Profit & Loss",
+    description: "View profit and loss statement",
+    icon: Layers,
+  },
+  {
+    id: "balance-sheet",
+    label: "Balance Sheet",
+    description: "View balance sheet report",
+    icon: Layers,
+  },
+  {
+    id: "cash-flow",
+    label: "Cash Flow",
+    description: "View cash flow statement",
+    icon: Layers,
+  },
+  {
+    id: "ratios",
+    label: "Financial Ratios",
+    description: "View financial ratios dashboard",
+    icon: Layers,
+  },
+  {
+    id: "cash-book",
+    label: "Cash Book",
+    description: "View all cash transactions",
+    icon: Layers,
+  },
+  {
+    id: "bank-book",
+    label: "Bank Book",
+    description: "View bank transactions",
+    icon: Layers,
+  },
+  {
+    id: "day-book",
+    label: "Day Book",
+    description: "View all vouchers for a day",
+    icon: Layers,
+  },
+  {
+    id: "ledger-book",
+    label: "Ledger Book",
+    description: "View ledger-wise entries",
+    icon: Layers,
+  },
+  {
+    id: "journals",
+    label: "Journals",
+    description: "View journals by type",
+    icon: Layers,
+  },
+  {
+    id: "budgeting",
+    label: "Budgeting",
+    description: "Budget definitions, variance analytics, and breach alerts",
+    icon: FolderTree,
+  },
+  {
+    id: "year-end",
+    label: "Year-End Operations",
+    description: "Closing entries, depreciation runs, and carry-forward workflows",
+    icon: FolderTree,
   },
 ];
 
@@ -1188,6 +1268,20 @@ const BookkeepingPage = () => {
                   </Card>
                 </div>
               )}
+
+              {/* Financial Statements Tabs */}
+              {activeTab === "trial-balance" && <TrialBalanceTab />}
+              {activeTab === "profit-loss" && <ProfitLossTab />}
+              {activeTab === "balance-sheet" && <BalanceSheetTab />}
+              {activeTab === "cash-flow" && <CashFlowTab />}
+              {activeTab === "ratios" && <RatiosTab />}
+              
+              {/* Books & Registers Tabs */}
+              {activeTab === "cash-book" && <CashBookTab />}
+              {activeTab === "bank-book" && <BankBookTab />}
+              {activeTab === "day-book" && <DayBookTab />}
+              {activeTab === "ledger-book" && <LedgerBookTab />}
+              {activeTab === "journals" && <JournalsTab />}
             </div>
           </div>
         </div>
@@ -1195,5 +1289,1012 @@ const BookkeepingPage = () => {
     </AuthGuard>
   );
 };
+
+// Trial Balance Tab Component
+function TrialBalanceTab() {
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<any[]>([]);
+  const [asOnDate, setAsOnDate] = useState(new Date().toISOString().split('T')[0]);
+
+  const loadTrialBalance = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.bookkeeping.getTrialBalance(asOnDate);
+      if (response.success) {
+        setData(response.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to load trial balance:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [asOnDate]);
+
+  useEffect(() => {
+    loadTrialBalance();
+  }, [loadTrialBalance]);
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Trial Balance</CardTitle>
+              <CardDescription>As on {asOnDate}</CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="date"
+                value={asOnDate}
+                onChange={(e) => setAsOnDate(e.target.value)}
+                className="w-auto"
+              />
+              <Button onClick={loadTrialBalance} disabled={loading}>
+                Refresh
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8">Loading...</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Ledger Name</TableHead>
+                  <TableHead>Group</TableHead>
+                  <TableHead className="text-right">Debit</TableHead>
+                  <TableHead className="text-right">Credit</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.map((row, idx) => (
+                  <TableRow key={idx} className={row.ledgerName === 'TOTAL' ? 'font-bold bg-gray-50' : ''}>
+                    <TableCell>{row.ledgerName}</TableCell>
+                    <TableCell>{row.groupName}</TableCell>
+                    <TableCell className="text-right">{row.debit ? formatCurrency(row.debit) : '-'}</TableCell>
+                    <TableCell className="text-right">{row.credit ? formatCurrency(row.credit) : '-'}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Profit & Loss Tab Component
+function ProfitLossTab() {
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<any>(null);
+  const [fromDate, setFromDate] = useState(new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0]);
+  const [toDate, setToDate] = useState(new Date().toISOString().split('T')[0]);
+
+  const loadPL = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.bookkeeping.getProfitAndLoss({ fromDate, toDate });
+      if (response.success) {
+        setData(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to load P&L:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [fromDate, toDate]);
+
+  useEffect(() => {
+    loadPL();
+  }, [loadPL]);
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Profit & Loss Statement</CardTitle>
+              <CardDescription>Period: {fromDate} to {toDate}</CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="w-auto" />
+              <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="w-auto" />
+              <Button onClick={loadPL} disabled={loading}>Refresh</Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8">Loading...</div>
+          ) : data ? (
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-semibold mb-2">Trading Account</h3>
+                <Table>
+                  <TableBody>
+                    {data.trading?.map((item: any, idx: number) => (
+                      <TableRow key={idx}>
+                        <TableCell>{item.name}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow className="font-bold bg-gray-50">
+                      <TableCell>Gross Profit</TableCell>
+                      <TableCell className="text-right">{formatCurrency(data.grossProfit)}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Profit & Loss Account</h3>
+                <Table>
+                  <TableBody>
+                    {data.indirectExpenses?.map((item: any, idx: number) => (
+                      <TableRow key={idx}>
+                        <TableCell>{item.name}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                      </TableRow>
+                    ))}
+                    {data.indirectIncomes?.map((item: any, idx: number) => (
+                      <TableRow key={idx}>
+                        <TableCell>{item.name}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow className="font-bold bg-gray-50">
+                      <TableCell>Net Profit / Loss</TableCell>
+                      <TableCell className="text-right">{formatCurrency(data.netProfit)}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Balance Sheet Tab Component
+function BalanceSheetTab() {
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<any>(null);
+  const [asOnDate, setAsOnDate] = useState(new Date().toISOString().split('T')[0]);
+
+  const loadBalanceSheet = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.bookkeeping.getBalanceSheet(asOnDate);
+      if (response.success) {
+        setData(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to load balance sheet:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [asOnDate]);
+
+  useEffect(() => {
+    loadBalanceSheet();
+  }, [loadBalanceSheet]);
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Balance Sheet</CardTitle>
+              <CardDescription>As on {asOnDate}</CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Input type="date" value={asOnDate} onChange={(e) => setAsOnDate(e.target.value)} className="w-auto" />
+              <Button onClick={loadBalanceSheet} disabled={loading}>Refresh</Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8">Loading...</div>
+          ) : data ? (
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <h3 className="font-semibold mb-2">Liabilities & Capital</h3>
+                <Table>
+                  <TableBody>
+                    {data.liabilities?.map((item: any, idx: number) => (
+                      <TableRow key={idx}>
+                        <TableCell>{item.name}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                      </TableRow>
+                    ))}
+                    {data.capital?.map((item: any, idx: number) => (
+                      <TableRow key={idx}>
+                        <TableCell>{item.name}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow className="font-bold bg-gray-50">
+                      <TableCell>Total Liabilities & Capital</TableCell>
+                      <TableCell className="text-right">{formatCurrency(data.totalLiabilities + (data.capital?.reduce((sum: number, c: any) => sum + c.amount, 0) || 0))}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Assets</h3>
+                <Table>
+                  <TableBody>
+                    {data.assets?.map((item: any, idx: number) => (
+                      <TableRow key={idx}>
+                        <TableCell>{item.name}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow className="font-bold bg-gray-50">
+                      <TableCell>Total Assets</TableCell>
+                      <TableCell className="text-right">{formatCurrency(data.totalAssets)}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Cash Flow Tab Component
+function CashFlowTab() {
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<any>(null);
+  const [fromDate, setFromDate] = useState(new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0]);
+  const [toDate, setToDate] = useState(new Date().toISOString().split('T')[0]);
+
+  const loadCashFlow = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.bookkeeping.getCashFlow({ fromDate, toDate });
+      if (response.success) {
+        setData(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to load cash flow:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [fromDate, toDate]);
+
+  useEffect(() => {
+    loadCashFlow();
+  }, [loadCashFlow]);
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Cash Flow Statement</CardTitle>
+              <CardDescription>Period: {fromDate} to {toDate}</CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="w-auto" />
+              <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="w-auto" />
+              <Button onClick={loadCashFlow} disabled={loading}>Refresh</Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8">Loading...</div>
+          ) : data ? (
+            <div className="space-y-6">
+              <div>
+                <p className="text-sm text-gray-600">Opening Balance: {formatCurrency(data.openingBalance)}</p>
+              </div>
+              {data.operating?.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2">Operating Activities</h3>
+                  <Table>
+                    <TableBody>
+                      {data.operating.map((item: any, idx: number) => (
+                        <TableRow key={idx}>
+                          <TableCell>{item.description}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+              {data.investing?.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2">Investing Activities</h3>
+                  <Table>
+                    <TableBody>
+                      {data.investing.map((item: any, idx: number) => (
+                        <TableRow key={idx}>
+                          <TableCell>{item.description}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+              {data.financing?.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2">Financing Activities</h3>
+                  <Table>
+                    <TableBody>
+                      {data.financing.map((item: any, idx: number) => (
+                        <TableRow key={idx}>
+                          <TableCell>{item.description}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+              <div className="pt-4 border-t">
+                <p className="text-sm">Net Cash Flow: {formatCurrency(data.netCashFlow)}</p>
+                <p className="text-sm font-semibold">Closing Balance: {formatCurrency(data.closingBalance)}</p>
+              </div>
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Financial Ratios Tab Component
+function RatiosTab() {
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<any>(null);
+  const [asOnDate, setAsOnDate] = useState(new Date().toISOString().split('T')[0]);
+
+  const loadRatios = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.bookkeeping.getFinancialRatios(asOnDate);
+      if (response.success) {
+        setData(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to load ratios:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [asOnDate]);
+
+  useEffect(() => {
+    loadRatios();
+  }, [loadRatios]);
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Financial Ratios</CardTitle>
+              <CardDescription>As on {asOnDate}</CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Input type="date" value={asOnDate} onChange={(e) => setAsOnDate(e.target.value)} className="w-auto" />
+              <Button onClick={loadRatios} disabled={loading}>Refresh</Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8">Loading...</div>
+          ) : data ? (
+            <div className="grid grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Liquidity Ratios</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span>Current Ratio</span>
+                      <span className="font-semibold">{data.liquidity?.currentRatio?.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Quick Ratio</span>
+                      <span className="font-semibold">{data.liquidity?.quickRatio?.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Profitability Ratios</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span>Gross Profit Margin (%)</span>
+                      <span className="font-semibold">{data.profitability?.grossProfitMargin?.toFixed(2)}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Net Profit Margin (%)</span>
+                      <span className="font-semibold">{data.profitability?.netProfitMargin?.toFixed(2)}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Return on Assets (%)</span>
+                      <span className="font-semibold">{data.profitability?.returnOnAssets?.toFixed(2)}%</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Efficiency Ratios</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span>Asset Turnover</span>
+                      <span className="font-semibold">{data.efficiency?.assetTurnover?.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Inventory Turnover</span>
+                      <span className="font-semibold">{data.efficiency?.inventoryTurnover?.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Leverage Ratios</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span>Debt to Equity</span>
+                      <span className="font-semibold">{data.leverage?.debtToEquity?.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Debt Ratio</span>
+                      <span className="font-semibold">{data.leverage?.debtRatio?.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function BudgetingTab() {
+  const [budgets, setBudgets] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [variance, setVariance] = useState<any>(null);
+  const [breaches, setBreaches] = useState<any[]>([]);
+  const [formOpen, setFormOpen] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    periodStart: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
+    periodEnd: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+    budgetType: "LEDGER" as "LEDGER" | "GROUP" | "COST_CENTRE",
+    ledgerId: "",
+    ledgerGroupId: "",
+    costCentreId: "",
+    amount: "",
+  });
+
+  const loadBudgets = async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.bookkeeping.listBudgets();
+      if (response.success) {
+        setBudgets(response.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to load budgets:', error);
+      toast.error('Failed to load budgets');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadVariance = async () => {
+    try {
+      const response = await apiClient.bookkeeping.getBudgetVariance();
+      if (response.success) {
+        setVariance(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to load variance:', error);
+    }
+  };
+
+  const loadBreaches = async () => {
+    try {
+      const response = await apiClient.bookkeeping.getBudgetBreaches();
+      if (response.success) {
+        setBreaches(response.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to load breaches:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadBudgets();
+    loadVariance();
+    loadBreaches();
+  }, []);
+
+  const handleCreateBudget = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await apiClient.bookkeeping.createBudget({
+        ...form,
+        amount: Number(form.amount),
+      });
+      if (response.success) {
+        toast.success('Budget created successfully');
+        setFormOpen(false);
+        setForm({
+          name: "",
+          description: "",
+          periodStart: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
+          periodEnd: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+          budgetType: "LEDGER",
+          ledgerId: "",
+          ledgerGroupId: "",
+          costCentreId: "",
+          amount: "",
+        });
+        loadBudgets();
+        loadVariance();
+        loadBreaches();
+      }
+    } catch (error) {
+      console.error('Failed to create budget:', error);
+      toast.error('Failed to create budget');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-xl font-semibold text-[#2C2C2C]">Budgeting & Variance</h2>
+          <p className="text-sm text-muted-foreground">
+            Define budgets and track variance against actuals
+          </p>
+        </div>
+        <Button onClick={() => setFormOpen(true)} className="bg-[#607c47] hover:bg-[#4a6129] text-white">
+          <Plus className="h-4 w-4 mr-2" />
+          Create Budget
+        </Button>
+      </div>
+
+      {variance && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-sm text-muted-foreground">Total Budgeted</div>
+              <div className="text-2xl font-semibold text-[#2C2C2C]">
+                {formatCurrency(variance.totalBudgeted)}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-sm text-muted-foreground">Total Actual</div>
+              <div className="text-2xl font-semibold text-[#607c47]">
+                {formatCurrency(variance.totalActual)}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-sm text-muted-foreground">Total Variance</div>
+              <div className={`text-2xl font-semibold ${variance.totalVariance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatCurrency(variance.totalVariance)}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-sm text-muted-foreground">Breaches</div>
+              <div className="text-2xl font-semibold text-red-600">
+                {variance.breaches?.length || 0}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {breaches.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-red-600">Budget Breaches</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Budget</TableHead>
+                  <TableHead className="text-right">Budgeted</TableHead>
+                  <TableHead className="text-right">Actual</TableHead>
+                  <TableHead className="text-right">Variance</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {breaches.map((breach, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell className="font-medium">{breach.budgetName}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(breach.budgetAmount)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(breach.actualAmount)}</TableCell>
+                    <TableCell className="text-right text-red-600">{formatCurrency(breach.variance)}</TableCell>
+                    <TableCell>
+                      <Badge className="bg-red-100 text-red-700">BREACH</Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Budgets</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-12">Loading...</div>
+          ) : budgets.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              No budgets defined yet. Create your first budget to get started.
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Period</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {budgets.map((budget, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell className="font-medium">{budget.name}</TableCell>
+                    <TableCell>
+                      <Badge>{budget.budgetType}</Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {new Date(budget.periodStart).toLocaleDateString()} - {new Date(budget.periodEnd).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="text-right font-semibold">
+                      {formatCurrency(budget.amount)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      <Dialog open={formOpen} onOpenChange={setFormOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create Budget</DialogTitle>
+            <DialogDescription>
+              Define a budget for ledger, group, or cost centre
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreateBudget} className="space-y-4">
+            <div>
+              <Label>Budget Name *</Label>
+              <Input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Textarea
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Period Start *</Label>
+                <Input
+                  type="date"
+                  value={form.periodStart}
+                  onChange={(e) => setForm({ ...form, periodStart: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <Label>Period End *</Label>
+                <Input
+                  type="date"
+                  value={form.periodEnd}
+                  onChange={(e) => setForm({ ...form, periodEnd: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Budget Type *</Label>
+              <select
+                value={form.budgetType}
+                onChange={(e) => setForm({ ...form, budgetType: e.target.value as any })}
+                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                required
+              >
+                <option value="LEDGER">Ledger</option>
+                <option value="GROUP">Group</option>
+                <option value="COST_CENTRE">Cost Centre</option>
+              </select>
+            </div>
+            <div>
+              <Label>Amount *</Label>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                value={form.amount}
+                onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                required
+              />
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button type="button" variant="ghost" onClick={() => setFormOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-[#607c47] hover:bg-[#4a6129] text-white">
+                Create Budget
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function YearEndTab() {
+  const [loading, setLoading] = useState(false);
+  const [closingForm, setClosingForm] = useState({
+    financialYearEnd: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+    narration: "",
+  });
+  const [depreciationForm, setDepreciationForm] = useState({
+    asOnDate: new Date().toISOString().split('T')[0],
+    depreciationRate: "10",
+    narration: "",
+  });
+  const [carryForwardForm, setCarryForwardForm] = useState({
+    fromFinancialYearEnd: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+    toFinancialYearStart: new Date(new Date().getFullYear() + 1, 0, 1).toISOString().split('T')[0],
+  });
+
+  const handleGenerateClosingEntries = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const response = await apiClient.bookkeeping.generateClosingEntries(closingForm);
+      if (response.success) {
+        toast.success(`Closing entries generated. Net Profit: ${formatCurrency(response.data.netProfit)}`);
+      } else {
+        toast.error(response.error || 'Failed to generate closing entries');
+      }
+    } catch (error) {
+      console.error('Failed to generate closing entries:', error);
+      toast.error('Failed to generate closing entries');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRunDepreciation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const response = await apiClient.bookkeeping.runDepreciation({
+        ...depreciationForm,
+        depreciationRate: Number(depreciationForm.depreciationRate),
+      });
+      if (response.success) {
+        toast.success('Depreciation run completed successfully');
+      } else {
+        toast.error(response.error || 'Failed to run depreciation');
+      }
+    } catch (error) {
+      console.error('Failed to run depreciation:', error);
+      toast.error('Failed to run depreciation');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCarryForward = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const response = await apiClient.bookkeeping.carryForwardBalances(carryForwardForm);
+      if (response.success) {
+        toast.success(response.data.message || 'Balances carried forward successfully');
+      } else {
+        toast.error(response.error || 'Failed to carry forward balances');
+      }
+    } catch (error) {
+      console.error('Failed to carry forward balances:', error);
+      toast.error('Failed to carry forward balances');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-semibold text-[#2C2C2C]">Year-End Operations</h2>
+        <p className="text-sm text-muted-foreground">
+          Generate closing entries, run depreciation, and carry forward balances
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Closing Entries</CardTitle>
+            <CardDescription>
+              Transfer P&L balances to Capital/Retained Earnings
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleGenerateClosingEntries} className="space-y-4">
+              <div>
+                <Label>Financial Year End *</Label>
+                <Input
+                  type="date"
+                  value={closingForm.financialYearEnd}
+                  onChange={(e) => setClosingForm({ ...closingForm, financialYearEnd: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <Label>Narration</Label>
+                <Textarea
+                  value={closingForm.narration}
+                  onChange={(e) => setClosingForm({ ...closingForm, narration: e.target.value })}
+                  placeholder="Year-end closing entries"
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-[#607c47] hover:bg-[#4a6129] text-white"
+              >
+                Generate Closing Entries
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Depreciation Run</CardTitle>
+            <CardDescription>
+              Calculate and post depreciation on fixed assets
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleRunDepreciation} className="space-y-4">
+              <div>
+                <Label>As On Date *</Label>
+                <Input
+                  type="date"
+                  value={depreciationForm.asOnDate}
+                  onChange={(e) => setDepreciationForm({ ...depreciationForm, asOnDate: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <Label>Depreciation Rate (%)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="100"
+                  value={depreciationForm.depreciationRate}
+                  onChange={(e) => setDepreciationForm({ ...depreciationForm, depreciationRate: e.target.value })}
+                  placeholder="10"
+                />
+              </div>
+              <div>
+                <Label>Narration</Label>
+                <Textarea
+                  value={depreciationForm.narration}
+                  onChange={(e) => setDepreciationForm({ ...depreciationForm, narration: e.target.value })}
+                  placeholder="Annual depreciation"
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-[#607c47] hover:bg-[#4a6129] text-white"
+              >
+                Run Depreciation
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Carry Forward Balances</CardTitle>
+            <CardDescription>
+              Carry forward closing balances as opening balances for new year
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleCarryForward} className="space-y-4">
+              <div>
+                <Label>From (Financial Year End) *</Label>
+                <Input
+                  type="date"
+                  value={carryForwardForm.fromFinancialYearEnd}
+                  onChange={(e) => setCarryForwardForm({ ...carryForwardForm, fromFinancialYearEnd: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <Label>To (Financial Year Start) *</Label>
+                <Input
+                  type="date"
+                  value={carryForwardForm.toFinancialYearStart}
+                  onChange={(e) => setCarryForwardForm({ ...carryForwardForm, toFinancialYearStart: e.target.value })}
+                  required
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-[#607c47] hover:bg-[#4a6129] text-white"
+              >
+                Carry Forward Balances
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
 
 export default BookkeepingPage;

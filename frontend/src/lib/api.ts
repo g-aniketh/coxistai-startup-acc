@@ -1035,6 +1035,10 @@ export interface ApiResponse<T = any> {
   message?: string;
 }
 
+export interface ApiListResponse<T = any> extends ApiResponse<T> {
+  total?: number;
+}
+
 export interface CompanyAddressInput {
   id?: string;
   label?: string;
@@ -1663,7 +1667,7 @@ export const apiClient = {
       dueDateTo?: string;
       limit?: number;
       offset?: number;
-    }): Promise<ApiResponse<Bill[]>> => {
+    }): Promise<ApiListResponse<Bill[]>> => {
       const response = await api.get("/bills", { params });
       return response.data;
     },
@@ -1696,6 +1700,29 @@ export const apiClient = {
       const response = await api.get("/bills/outstanding-by-ledger", {
         params: billType ? { billType } : undefined,
       });
+      return response.data;
+    },
+
+    getReminders: async (params?: {
+      billType?: BillType;
+      daysBeforeReminder?: number;
+    }): Promise<ApiResponse<any>> => {
+      const response = await api.get("/bills/reminders", { params });
+      return response.data;
+    },
+
+    getCashFlowProjections: async (params?: {
+      months?: number;
+    }): Promise<ApiResponse<any>> => {
+      const response = await api.get("/bills/cash-flow-projections", { params });
+      return response.data;
+    },
+
+    getAnalytics: async (params?: {
+      fromDate?: string;
+      toDate?: string;
+    }): Promise<ApiResponse<any>> => {
+      const response = await api.get("/bills/analytics", { params });
       return response.data;
     },
   },
@@ -1859,6 +1886,173 @@ export const apiClient = {
       const response = await api.delete(`/bookkeeping/ledgers/${ledgerId}`);
       return response.data;
     },
+
+    getTrialBalance: async (asOnDate?: string): Promise<ApiResponse<any>> => {
+      const response = await api.get("/bookkeeping/trial-balance", {
+        params: { asOnDate },
+      });
+      return response.data;
+    },
+
+    getProfitAndLoss: async (params?: {
+      fromDate?: string;
+      toDate?: string;
+    }): Promise<ApiResponse<any>> => {
+      const response = await api.get("/bookkeeping/profit-loss", {
+        params,
+      });
+      return response.data;
+    },
+
+    getBalanceSheet: async (asOnDate?: string): Promise<ApiResponse<any>> => {
+      const response = await api.get("/bookkeeping/balance-sheet", {
+        params: { asOnDate },
+      });
+      return response.data;
+    },
+
+    getCashFlow: async (params?: {
+      fromDate?: string;
+      toDate?: string;
+    }): Promise<ApiResponse<any>> => {
+      const response = await api.get("/bookkeeping/cash-flow", {
+        params,
+      });
+      return response.data;
+    },
+
+    getFinancialRatios: async (asOnDate?: string): Promise<ApiResponse<any>> => {
+      const response = await api.get("/bookkeeping/financial-ratios", {
+        params: { asOnDate },
+      });
+      return response.data;
+    },
+
+    getCashBook: async (params?: {
+      fromDate?: string;
+      toDate?: string;
+    }): Promise<ApiResponse<any>> => {
+      const response = await api.get("/bookkeeping/cash-book", {
+        params,
+      });
+      return response.data;
+    },
+
+    getBankBook: async (params?: {
+      bankLedgerName?: string;
+      fromDate?: string;
+      toDate?: string;
+    }): Promise<ApiResponse<any>> => {
+      const response = await api.get("/bookkeeping/bank-book", {
+        params,
+      });
+      return response.data;
+    },
+
+    getDayBook: async (date: string): Promise<ApiResponse<any>> => {
+      const response = await api.get("/bookkeeping/day-book", {
+        params: { date },
+      });
+      return response.data;
+    },
+
+    getLedgerBook: async (params?: {
+      ledgerName?: string;
+      fromDate?: string;
+      toDate?: string;
+    }): Promise<ApiResponse<any>> => {
+      const response = await api.get("/bookkeeping/ledger-book", {
+        params,
+      });
+      return response.data;
+    },
+
+    getJournals: async (params?: {
+      journalType?: 'SALES' | 'PURCHASE' | 'PAYMENT' | 'RECEIPT' | 'CONTRA' | 'JOURNAL';
+      fromDate?: string;
+      toDate?: string;
+    }): Promise<ApiResponse<any>> => {
+      const response = await api.get("/bookkeeping/journals", {
+        params,
+      });
+      return response.data;
+    },
+
+    getExceptionReports: async (params?: {
+      asOnDate?: string;
+    }): Promise<ApiResponse<any>> => {
+      const response = await api.get("/bookkeeping/exception-reports", {
+        params,
+      });
+      return response.data;
+    },
+
+    getCostCentrePL: async (params?: {
+      costCentreId?: string;
+      fromDate?: string;
+      toDate?: string;
+    }): Promise<ApiResponse<any>> => {
+      const response = await api.get("/bookkeeping/cost-centre-pl", {
+        params,
+      });
+      return response.data;
+    },
+
+    createBudget: async (data: any): Promise<ApiResponse<any>> => {
+      const response = await api.post("/bookkeeping/budgets", data);
+      return response.data;
+    },
+
+    listBudgets: async (params?: {
+      budgetType?: 'LEDGER' | 'GROUP' | 'COST_CENTRE';
+      periodStart?: string;
+      periodEnd?: string;
+    }): Promise<ApiResponse<any>> => {
+      const response = await api.get("/bookkeeping/budgets", { params });
+      return response.data;
+    },
+
+    getBudgetVariance: async (params?: {
+      budgetType?: 'LEDGER' | 'GROUP' | 'COST_CENTRE';
+      periodStart?: string;
+      periodEnd?: string;
+      includeBreaches?: boolean;
+    }): Promise<ApiResponse<any>> => {
+      const response = await api.get("/bookkeeping/budgets/variance", { params });
+      return response.data;
+    },
+
+    getBudgetBreaches: async (params?: {
+      asOnDate?: string;
+    }): Promise<ApiResponse<any>> => {
+      const response = await api.get("/bookkeeping/budgets/breaches", { params });
+      return response.data;
+    },
+
+    generateClosingEntries: async (data: {
+      financialYearEnd: string;
+      narration?: string;
+    }): Promise<ApiResponse<any>> => {
+      const response = await api.post("/bookkeeping/year-end/closing-entries", data);
+      return response.data;
+    },
+
+    runDepreciation: async (data: {
+      asOnDate: string;
+      depreciationRate?: number;
+      narration?: string;
+    }): Promise<ApiResponse<any>> => {
+      const response = await api.post("/bookkeeping/year-end/depreciation", data);
+      return response.data;
+    },
+
+    carryForwardBalances: async (data: {
+      fromFinancialYearEnd: string;
+      toFinancialYearStart: string;
+    }): Promise<ApiResponse<any>> => {
+      const response = await api.post("/bookkeeping/year-end/carry-forward", data);
+      return response.data;
+    },
   },
 
   gst: {
@@ -2007,6 +2201,14 @@ export const apiClient = {
       data: CreateVoucherRequest
     ): Promise<ApiResponse<Voucher>> => {
       const response = await api.post("/vouchers", data);
+      return response.data;
+    },
+
+    reverse: async (voucherId: string, params?: {
+      reversalDate?: string;
+      narration?: string;
+    }): Promise<ApiResponse<any>> => {
+      const response = await api.post(`/vouchers/${voucherId}/reverse`, params);
       return response.data;
     },
   },

@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
-import AuthGuard from '@/components/auth/AuthGuard';
-import MainLayout from '@/components/layout/MainLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
+import { useEffect, useMemo, useState } from "react";
+import AuthGuard from "@/components/auth/AuthGuard";
+import MainLayout from "@/components/layout/MainLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   apiClient,
   Bill,
@@ -19,20 +19,22 @@ import {
   SettleBillRequest,
   Voucher,
   VoucherEntry,
-} from '@/lib/api';
+} from "@/lib/api";
 import {
+  Bell,
   CheckCircle2,
   Clock,
-  FileSpreadsheet,
   HandCoins,
   Loader2,
   MinusCircle,
   Plus,
   RefreshCw,
+  TrendingDown,
+  TrendingUp,
   Wallet,
-} from 'lucide-react';
-import { toast } from 'react-hot-toast';
-import { format } from 'date-fns';
+} from "lucide-react";
+import { toast } from "react-hot-toast";
+import { format } from "date-fns";
 import {
   Table,
   TableBody,
@@ -40,14 +42,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/Badge";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 
 type BillFormState = {
   billNumber: string;
@@ -71,53 +74,54 @@ type SettleFormState = {
 };
 
 const BILL_TYPE_LABELS: Record<BillType, string> = {
-  RECEIVABLE: 'Receivables',
-  PAYABLE: 'Payables',
+  RECEIVABLE: "Receivables",
+  PAYABLE: "Payables",
 };
 
-const STATUS_BADGES: Record<
-  BillStatus,
-  { label: string; className: string }
-> = {
-  OPEN: { label: 'Open', className: 'bg-blue-100 text-blue-700 border-blue-200' },
-  PARTIAL: {
-    label: 'Partially Settled',
-    className: 'bg-amber-100 text-amber-700 border-amber-200',
-  },
-  SETTLED: {
-    label: 'Settled',
-    className: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  },
-  CANCELLED: {
-    label: 'Cancelled',
-    className: 'bg-gray-200 text-gray-600 border-gray-300',
-  },
-};
+const STATUS_BADGES: Record<BillStatus, { label: string; className: string }> =
+  {
+    OPEN: {
+      label: "Open",
+      className: "bg-blue-100 text-blue-700 border-blue-200",
+    },
+    PARTIAL: {
+      label: "Partially Settled",
+      className: "bg-amber-100 text-amber-700 border-amber-200",
+    },
+    SETTLED: {
+      label: "Settled",
+      className: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    },
+    CANCELLED: {
+      label: "Cancelled",
+      className: "bg-gray-200 text-gray-600 border-gray-300",
+    },
+  };
 
 const defaultBillForm = (billType: BillType): BillFormState => ({
-  billNumber: '',
-  ledgerName: '',
-  ledgerCode: '',
-  billDate: format(new Date(), 'yyyy-MM-dd'),
-  dueDate: '',
-  originalAmount: '',
-  reference: '',
-  narration: '',
-  voucherId: '',
-  voucherEntryId: '',
+  billNumber: "",
+  ledgerName: "",
+  ledgerCode: "",
+  billDate: format(new Date(), "yyyy-MM-dd"),
+  dueDate: "",
+  originalAmount: "",
+  reference: "",
+  narration: "",
+  voucherId: "",
+  voucherEntryId: "",
 });
 
 const defaultSettleForm = (bill?: Bill): SettleFormState => ({
-  voucherId: '',
-  voucherEntryId: '',
-  settlementAmount: bill ? bill.outstandingAmount.toString() : '',
-  reference: bill?.billNumber ? `Settle ${bill.billNumber}` : '',
-  remarks: '',
+  voucherId: "",
+  voucherEntryId: "",
+  settlementAmount: bill ? bill.outstandingAmount.toString() : "",
+  reference: bill?.billNumber ? `Settle ${bill.billNumber}` : "",
+  remarks: "",
 });
 
-const currencyFormatter = new Intl.NumberFormat('en-IN', {
-  style: 'currency',
-  currency: 'INR',
+const currencyFormatter = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
   minimumFractionDigits: 2,
 });
 
@@ -131,42 +135,64 @@ const getSettlementEntryOptions = (
   if (!bill) return voucher.entries;
 
   const matchingEntries = voucher.entries.filter(
-    (entry) => entry.ledgerName.toLowerCase() === bill.ledgerName.toLowerCase()
+    entry => entry.ledgerName.toLowerCase() === bill.ledgerName.toLowerCase()
   );
 
   return matchingEntries.length > 0 ? matchingEntries : voucher.entries;
 };
 
 export default function BillsPage() {
-  const [billType, setBillType] = useState<BillType>('RECEIVABLE');
+  const [billType, setBillType] = useState<BillType>("RECEIVABLE");
   const [bills, setBills] = useState<Bill[]>([]);
   const [totalBills, setTotalBills] = useState(0);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-  const [billForm, setBillForm] = useState<BillFormState>(defaultBillForm('RECEIVABLE'));
+  const [billForm, setBillForm] = useState<BillFormState>(
+    defaultBillForm("RECEIVABLE")
+  );
   const [agingReport, setAgingReport] = useState<BillAgingReport | null>(null);
-  const [ledgerSummary, setLedgerSummary] = useState<OutstandingLedgerSummary[]>([]);
+  const [ledgerSummary, setLedgerSummary] = useState<
+    OutstandingLedgerSummary[]
+  >([]);
   const [voucherOptions, setVoucherOptions] = useState<Voucher[]>([]);
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
-  const [settleForm, setSettleForm] = useState<SettleFormState>(defaultSettleForm());
+  const [settleForm, setSettleForm] = useState<SettleFormState>(
+    defaultSettleForm()
+  );
   const [settling, setSettling] = useState(false);
   const [settleDialogOpen, setSettleDialogOpen] = useState(false);
+  const [reminders, setReminders] = useState<any[]>([]);
+  const [cashFlowProjections, setCashFlowProjections] = useState<any[]>([]);
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [remindersLoading, setRemindersLoading] = useState(false);
+  const [projectionsLoading, setProjectionsLoading] = useState(false);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   const loadBills = async (type: BillType) => {
     try {
       setLoading(true);
-      const [listRes, agingRes, ledgerRes] = await Promise.all([
+      const [
+        listRes,
+        agingRes,
+        ledgerRes,
+        remindersRes,
+        projectionsRes,
+        analyticsRes,
+      ] = await Promise.all([
         apiClient.bills.list({ billType: type, limit: 50 }),
         apiClient.bills.getAgingReport(type),
         apiClient.bills.getOutstandingByLedger(type),
+        apiClient.bills.getReminders({ billType: type }),
+        apiClient.bills.getCashFlowProjections({ months: 6 }),
+        apiClient.bills.getAnalytics(),
       ]);
 
       if (listRes.success) {
         setBills(listRes.data ?? []);
         setTotalBills(listRes.total ?? listRes.data?.length ?? 0);
       } else {
-        toast.error(listRes.error || 'Failed to load bills');
+        toast.error(listRes.error || "Failed to load bills");
         setBills([]);
         setTotalBills(0);
       }
@@ -182,9 +208,21 @@ export default function BillsPage() {
       } else {
         setLedgerSummary([]);
       }
+
+      if (remindersRes.success) {
+        setReminders(remindersRes.data ?? []);
+      }
+
+      if (projectionsRes.success) {
+        setCashFlowProjections(projectionsRes.data ?? []);
+      }
+
+      if (analyticsRes.success) {
+        setAnalytics(analyticsRes.data ?? null);
+      }
     } catch (error) {
-      console.error('Load bills error:', error);
-      toast.error('Unable to load bill information');
+      console.error("Load bills error:", error);
+      toast.error("Unable to load bill information");
       setBills([]);
       setAgingReport(null);
       setLedgerSummary([]);
@@ -201,7 +239,7 @@ export default function BillsPage() {
         setVoucherOptions(response.data ?? []);
       }
     } catch (error) {
-      console.error('Load vouchers error:', error);
+      console.error("Load vouchers error:", error);
     } finally {
       setVoucherLoading(false);
     }
@@ -221,7 +259,7 @@ export default function BillsPage() {
   };
 
   const handleBillFormChange = (field: keyof BillFormState, value: string) => {
-    setBillForm((prev) => ({
+    setBillForm(prev => ({
       ...prev,
       [field]: value,
     }));
@@ -230,8 +268,12 @@ export default function BillsPage() {
   const handleCreateBill = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!billForm.billNumber.trim() || !billForm.ledgerName.trim() || !billForm.originalAmount) {
-      toast.error('Bill number, ledger name, and amount are required');
+    if (
+      !billForm.billNumber.trim() ||
+      !billForm.ledgerName.trim() ||
+      !billForm.originalAmount
+    ) {
+      toast.error("Bill number, ledger name, and amount are required");
       return;
     }
 
@@ -257,11 +299,11 @@ export default function BillsPage() {
         setBillForm(defaultBillForm(billType));
         await loadBills(billType);
       } else {
-        toast.error(response.error || 'Failed to create bill');
+        toast.error(response.error || "Failed to create bill");
       }
     } catch (error) {
-      console.error('Create bill error:', error);
-      toast.error('Unable to create bill');
+      console.error("Create bill error:", error);
+      toast.error("Unable to create bill");
     } finally {
       setCreating(false);
     }
@@ -283,7 +325,7 @@ export default function BillsPage() {
 
   const selectedVoucher = useMemo(() => {
     if (!settleForm.voucherId) return undefined;
-    return voucherOptions.find((voucher) => voucher.id === settleForm.voucherId);
+    return voucherOptions.find(voucher => voucher.id === settleForm.voucherId);
   }, [settleForm.voucherId, voucherOptions]);
 
   const settlementEntries = useMemo(
@@ -291,8 +333,11 @@ export default function BillsPage() {
     [selectedVoucher, selectedBill]
   );
 
-  const handleSettleFormChange = (field: keyof SettleFormState, value: string) => {
-    setSettleForm((prev) => ({
+  const handleSettleFormChange = (
+    field: keyof SettleFormState,
+    value: string
+  ) => {
+    setSettleForm(prev => ({
       ...prev,
       [field]: value,
     }));
@@ -300,16 +345,16 @@ export default function BillsPage() {
 
   useEffect(() => {
     if (!selectedVoucher) {
-      setSettleForm((prev) => ({ ...prev, voucherEntryId: '' }));
+      setSettleForm(prev => ({ ...prev, voucherEntryId: "" }));
       return;
     }
 
-    setSettleForm((prev) => {
+    setSettleForm(prev => {
       if (prev.voucherEntryId) return prev;
       const initialEntry = settlementEntries[0];
       return {
         ...prev,
-        voucherEntryId: initialEntry ? initialEntry.id : '',
+        voucherEntryId: initialEntry ? initialEntry.id : "",
       };
     });
   }, [selectedVoucher, settlementEntries]);
@@ -318,8 +363,12 @@ export default function BillsPage() {
     event.preventDefault();
     if (!selectedBill) return;
 
-    if (!settleForm.voucherId || !settleForm.voucherEntryId || !settleForm.settlementAmount) {
-      toast.error('Voucher, voucher entry, and settlement amount are required');
+    if (
+      !settleForm.voucherId ||
+      !settleForm.voucherEntryId ||
+      !settleForm.settlementAmount
+    ) {
+      toast.error("Voucher, voucher entry, and settlement amount are required");
       return;
     }
 
@@ -335,17 +384,17 @@ export default function BillsPage() {
 
       const response = await apiClient.bills.settle(selectedBill.id, payload);
       if (response.success) {
-        toast.success('Bill settled successfully');
+        toast.success("Bill settled successfully");
         setSettleDialogOpen(false);
         setSelectedBill(null);
         setSettleForm(defaultSettleForm());
         await loadBills(billType);
       } else {
-        toast.error(response.error || 'Failed to settle bill');
+        toast.error(response.error || "Failed to settle bill");
       }
     } catch (error) {
-      console.error('Settle bill error:', error);
-      toast.error('Unable to settle bill');
+      console.error("Settle bill error:", error);
+      toast.error("Unable to settle bill");
     } finally {
       setSettling(false);
     }
@@ -365,23 +414,24 @@ export default function BillsPage() {
                   Bill-wise Receivables & Payables
                 </h1>
                 <p className="text-sm text-[#2C2C2C]/70">
-                  Track outstanding bills, create receivables/payables, and manage settlements in-line
-                  with TallyPrime’s bill-wise features.
+                  Track outstanding bills, create receivables/payables, and
+                  manage settlements in-line with TallyPrime’s bill-wise
+                  features.
                 </p>
               </div>
             </div>
 
             <div className="flex gap-2">
-              {(Object.keys(BILL_TYPE_LABELS) as BillType[]).map((type) => (
+              {(Object.keys(BILL_TYPE_LABELS) as BillType[]).map(type => (
                 <Button
                   key={type}
                   type="button"
-                  variant={billType === type ? 'default' : 'secondary'}
+                  variant={billType === type ? "default" : "secondary"}
                   onClick={() => handleBillTypeToggle(type)}
                   className={
                     billType === type
-                      ? 'bg-[#607c47] hover:bg-[#4a6129] text-white'
-                      : 'border border-gray-300 bg-white text-[#2C2C2C]'
+                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
+                      : "border border-gray-300 bg-white text-[#2C2C2C]"
                   }
                 >
                   {BILL_TYPE_LABELS[type]}
@@ -401,7 +451,10 @@ export default function BillsPage() {
                   {formatCurrency(agingReport?.summary.totalOutstanding ?? 0)}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Across {totalBills} {billType === 'RECEIVABLE' ? 'customer invoices' : 'supplier bills'}
+                  Across {totalBills}{" "}
+                  {billType === "RECEIVABLE"
+                    ? "customer invoices"
+                    : "supplier bills"}
                 </p>
               </CardContent>
             </Card>
@@ -428,10 +481,15 @@ export default function BillsPage() {
                   <span>Overdue (60+ days)</span>
                 </div>
                 <p className="text-xl font-semibold text-[#2C2C2C]">
-                  {formatCurrency((agingBuckets?.days60.amount ?? 0) + (agingBuckets?.days90.amount ?? 0))}
+                  {formatCurrency(
+                    (agingBuckets?.days60.amount ?? 0) +
+                      (agingBuckets?.days90.amount ?? 0)
+                  )}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {((agingBuckets?.days60.count ?? 0) + (agingBuckets?.days90.count ?? 0)) || 0} aged bills
+                  {(agingBuckets?.days60.count ?? 0) +
+                    (agingBuckets?.days90.count ?? 0) || 0}{" "}
+                  aged bills
                 </p>
               </CardContent>
             </Card>
@@ -445,12 +503,13 @@ export default function BillsPage() {
                 <p className="text-xl font-semibold text-[#2C2C2C]">
                   {formatCurrency(
                     bills
-                      .filter((bill) => bill.status === 'SETTLED')
+                      .filter(bill => bill.status === "SETTLED")
                       .reduce((sum, bill) => sum + bill.originalAmount, 0)
                   )}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {bills.filter((bill) => bill.status === 'SETTLED').length} bills settled
+                  {bills.filter(bill => bill.status === "SETTLED").length} bills
+                  settled
                 </p>
               </CardContent>
             </Card>
@@ -461,9 +520,9 @@ export default function BillsPage() {
               <CardHeader className="flex flex-col gap-2">
                 <CardTitle className="text-lg">Bill Register</CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  {billType === 'RECEIVABLE'
-                    ? 'Monitor customer invoices and link them to receipts or credit notes for settlement.'
-                    : 'Track supplier bills and settle against payments or debit notes.'}
+                  {billType === "RECEIVABLE"
+                    ? "Monitor customer invoices and link them to receipts or credit notes for settlement."
+                    : "Track supplier bills and settle against payments or debit notes."}
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -473,7 +532,8 @@ export default function BillsPage() {
                   </div>
                 ) : bills.length === 0 ? (
                   <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center text-sm text-muted-foreground">
-                    No bills recorded yet. Use the form to create a new bill with bill-wise tracking like TallyPrime.
+                    No bills recorded yet. Use the form to create a new bill
+                    with bill-wise tracking like TallyPrime.
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -485,18 +545,27 @@ export default function BillsPage() {
                           <TableHead>Bill Date</TableHead>
                           <TableHead>Due Date</TableHead>
                           <TableHead className="text-right">Original</TableHead>
-                          <TableHead className="text-right">Outstanding</TableHead>
+                          <TableHead className="text-right">
+                            Outstanding
+                          </TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead />
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {bills.map((bill) => (
-                          <TableRow key={bill.id} className="hover:bg-gray-50/70">
+                        {bills.map(bill => (
+                          <TableRow
+                            key={bill.id}
+                            className="hover:bg-gray-50/70"
+                          >
                             <TableCell>
-                              <div className="font-medium text-[#2C2C2C]">{bill.billNumber}</div>
+                              <div className="font-medium text-[#2C2C2C]">
+                                {bill.billNumber}
+                              </div>
                               {bill.reference && (
-                                <div className="text-xs text-muted-foreground">{bill.reference}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {bill.reference}
+                                </div>
                               )}
                             </TableCell>
                             <TableCell>
@@ -504,14 +573,18 @@ export default function BillsPage() {
                                 {bill.ledgerName}
                               </div>
                               {bill.ledgerCode && (
-                                <div className="text-xs text-muted-foreground">{bill.ledgerCode}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {bill.ledgerCode}
+                                </div>
                               )}
                             </TableCell>
                             <TableCell className="text-sm">
-                              {format(new Date(bill.billDate), 'dd MMM yyyy')}
+                              {format(new Date(bill.billDate), "dd MMM yyyy")}
                             </TableCell>
                             <TableCell className="text-sm">
-                              {bill.dueDate ? format(new Date(bill.dueDate), 'dd MMM yyyy') : '—'}
+                              {bill.dueDate
+                                ? format(new Date(bill.dueDate), "dd MMM yyyy")
+                                : "—"}
                             </TableCell>
                             <TableCell className="text-right text-sm font-medium text-[#2C2C2C]">
                               {formatCurrency(bill.originalAmount)}
@@ -527,15 +600,17 @@ export default function BillsPage() {
                               >
                                 {STATUS_BADGES[bill.status].label}
                               </span>
-                              {bill.settlements && bill.settlements.length > 0 && (
-                                <div className="mt-1 text-xs text-muted-foreground">
-                                  {bill.settlements.length} settlement
-                                  {bill.settlements.length > 1 ? 's' : ''}
-                                </div>
-                              )}
+                              {bill.settlements &&
+                                bill.settlements.length > 0 && (
+                                  <div className="mt-1 text-xs text-muted-foreground">
+                                    {bill.settlements.length} settlement
+                                    {bill.settlements.length > 1 ? "s" : ""}
+                                  </div>
+                                )}
                             </TableCell>
                             <TableCell className="text-right">
-                              {(bill.status === 'OPEN' || bill.status === 'PARTIAL') && (
+                              {(bill.status === "OPEN" ||
+                                bill.status === "PARTIAL") && (
                                 <Button
                                   type="button"
                                   size="sm"
@@ -552,7 +627,8 @@ export default function BillsPage() {
                       </TableBody>
                     </Table>
                     <div className="text-xs text-muted-foreground">
-                      Showing up to 50 recent bills. Use filters in future iterations for deeper review.
+                      Showing up to 50 recent bills. Use filters in future
+                      iterations for deeper review.
                     </div>
                   </div>
                 )}
@@ -562,10 +638,12 @@ export default function BillsPage() {
             <Card className="rounded-2xl shadow-lg border-0 bg-white">
               <CardHeader className="flex flex-col gap-2">
                 <CardTitle className="text-lg">
-                  Create {billType === 'RECEIVABLE' ? 'Receivable' : 'Payable'} Bill
+                  Create {billType === "RECEIVABLE" ? "Receivable" : "Payable"}{" "}
+                  Bill
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Mirror TallyPrime’s bill-wise controls by capturing bill metadata, due dates, and linking to vouchers.
+                  Mirror TallyPrime’s bill-wise controls by capturing bill
+                  metadata, due dates, and linking to vouchers.
                 </p>
               </CardHeader>
               <CardContent>
@@ -574,7 +652,9 @@ export default function BillsPage() {
                     <Label>Bill Number *</Label>
                     <Input
                       value={billForm.billNumber}
-                      onChange={(event) => handleBillFormChange('billNumber', event.target.value)}
+                      onChange={event =>
+                        handleBillFormChange("billNumber", event.target.value)
+                      }
                       placeholder="INV-001"
                       required
                     />
@@ -584,8 +664,14 @@ export default function BillsPage() {
                     <Label>Ledger Name *</Label>
                     <Input
                       value={billForm.ledgerName}
-                      onChange={(event) => handleBillFormChange('ledgerName', event.target.value)}
-                      placeholder={billType === 'RECEIVABLE' ? 'Customer / Party Ledger' : 'Supplier Ledger'}
+                      onChange={event =>
+                        handleBillFormChange("ledgerName", event.target.value)
+                      }
+                      placeholder={
+                        billType === "RECEIVABLE"
+                          ? "Customer / Party Ledger"
+                          : "Supplier Ledger"
+                      }
                       required
                     />
                   </div>
@@ -596,7 +682,9 @@ export default function BillsPage() {
                       <Input
                         type="date"
                         value={billForm.billDate}
-                        onChange={(event) => handleBillFormChange('billDate', event.target.value)}
+                        onChange={event =>
+                          handleBillFormChange("billDate", event.target.value)
+                        }
                       />
                     </div>
                     <div className="space-y-2">
@@ -604,7 +692,9 @@ export default function BillsPage() {
                       <Input
                         type="date"
                         value={billForm.dueDate}
-                        onChange={(event) => handleBillFormChange('dueDate', event.target.value)}
+                        onChange={event =>
+                          handleBillFormChange("dueDate", event.target.value)
+                        }
                       />
                     </div>
                   </div>
@@ -616,7 +706,12 @@ export default function BillsPage() {
                       min="0"
                       step="0.01"
                       value={billForm.originalAmount}
-                      onChange={(event) => handleBillFormChange('originalAmount', event.target.value)}
+                      onChange={event =>
+                        handleBillFormChange(
+                          "originalAmount",
+                          event.target.value
+                        )
+                      }
                       placeholder="0.00"
                       required
                     />
@@ -626,7 +721,9 @@ export default function BillsPage() {
                     <Label>Reference</Label>
                     <Input
                       value={billForm.reference}
-                      onChange={(event) => handleBillFormChange('reference', event.target.value)}
+                      onChange={event =>
+                        handleBillFormChange("reference", event.target.value)
+                      }
                       placeholder="PO number or external reference"
                     />
                   </div>
@@ -635,7 +732,9 @@ export default function BillsPage() {
                     <Label>Narration</Label>
                     <Textarea
                       value={billForm.narration}
-                      onChange={(event) => handleBillFormChange('narration', event.target.value)}
+                      onChange={event =>
+                        handleBillFormChange("narration", event.target.value)
+                      }
                       placeholder="Optional narration"
                       rows={3}
                     />
@@ -646,47 +745,63 @@ export default function BillsPage() {
                       Link to Voucher (Optional)
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      Attach the voucher entry that originated this bill (e.g., Sales invoice for receivables).
+                      Attach the voucher entry that originated this bill (e.g.,
+                      Sales invoice for receivables).
                     </p>
                     <select
                       value={billForm.voucherId}
-                      onChange={(event) => {
+                      onChange={event => {
                         const voucherId = event.target.value;
-                        handleBillFormChange('voucherId', voucherId);
+                        handleBillFormChange("voucherId", voucherId);
                         if (!voucherId) {
-                          handleBillFormChange('voucherEntryId', '');
+                          handleBillFormChange("voucherEntryId", "");
                           return;
                         }
-                        const voucher = voucherOptions.find((item) => item.id === voucherId);
+                        const voucher = voucherOptions.find(
+                          item => item.id === voucherId
+                        );
                         const entry =
-                          voucher?.entries.find((entry) =>
-                            entry.ledgerName.toLowerCase() === billForm.ledgerName.toLowerCase()
+                          voucher?.entries.find(
+                            entry =>
+                              entry.ledgerName.toLowerCase() ===
+                              billForm.ledgerName.toLowerCase()
                           ) ?? voucher?.entries[0];
-                        handleBillFormChange('voucherEntryId', entry ? entry.id : '');
+                        handleBillFormChange(
+                          "voucherEntryId",
+                          entry ? entry.id : ""
+                        );
                       }}
                       className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
                     >
                       <option value="">Select voucher</option>
-                      {voucherOptions.map((voucher) => (
+                      {voucherOptions.map(voucher => (
                         <option key={voucher.id} value={voucher.id}>
-                          {voucher.voucherNumber} • {voucher.voucherType.name}{' '}
-                          ({format(new Date(voucher.date), 'dd MMM yyyy')})
+                          {voucher.voucherNumber} • {voucher.voucherType.name} (
+                          {format(new Date(voucher.date), "dd MMM yyyy")})
                         </option>
                       ))}
                     </select>
                     {billForm.voucherId && (
                       <select
                         value={billForm.voucherEntryId}
-                        onChange={(event) => handleBillFormChange('voucherEntryId', event.target.value)}
+                        onChange={event =>
+                          handleBillFormChange(
+                            "voucherEntryId",
+                            event.target.value
+                          )
+                        }
                         className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
                       >
                         <option value="">Select voucher entry</option>
                         {getSettlementEntryOptions(
-                          voucherOptions.find((voucher) => voucher.id === billForm.voucherId),
+                          voucherOptions.find(
+                            voucher => voucher.id === billForm.voucherId
+                          ),
                           null
-                        ).map((entry) => (
+                        ).map(entry => (
                           <option key={entry.id} value={entry.id}>
-                            {entry.ledgerName} • {entry.entryType} • {formatCurrency(entry.amount)}
+                            {entry.ledgerName} • {entry.entryType} •{" "}
+                            {formatCurrency(entry.amount)}
                           </option>
                         ))}
                       </select>
@@ -715,11 +830,261 @@ export default function BillsPage() {
             </Card>
           </div>
 
+          {/* Bill Reminders */}
+          {reminders.length > 0 && (
+            <Card className="rounded-2xl shadow-lg border-0 bg-white">
+              <CardHeader className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <Bell className="h-5 w-5 text-amber-500" />
+                  <CardTitle className="text-lg">Bill Reminders</CardTitle>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Bills approaching due date or overdue that need attention.
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {reminders.slice(0, 10).map(reminder => (
+                    <div
+                      key={reminder.id}
+                      className={`rounded-lg border p-4 ${
+                        reminder.isOverdue
+                          ? "border-red-200 bg-red-50"
+                          : reminder.reminderType === "URGENT"
+                          ? "border-orange-200 bg-orange-50"
+                          : "border-yellow-200 bg-yellow-50"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-semibold text-[#2C2C2C]">
+                              {reminder.billNumber}
+                            </span>
+                            <Badge
+                              className={
+                                reminder.isOverdue
+                                  ? "bg-red-100 text-red-700"
+                                  : reminder.reminderType === "URGENT"
+                                  ? "bg-orange-100 text-orange-700"
+                                  : "bg-yellow-100 text-yellow-700"
+                              }
+                            >
+                              {reminder.isOverdue
+                                ? `Overdue ${reminder.daysOverdue} days`
+                                : `Due in ${reminder.daysUntilDue} days`}
+                            </Badge>
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {reminder.ledgerName} •{" "}
+                            {formatCurrency(reminder.outstandingAmount)}
+                          </div>
+                          {reminder.dueDate && (
+                            <div className="text-xs text-muted-foreground mt-1">
+                              Due:{" "}
+                              {format(
+                                new Date(reminder.dueDate),
+                                "dd MMM yyyy"
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {reminders.length > 10 && (
+                    <div className="text-xs text-muted-foreground text-center">
+                      + {reminders.length - 10} more reminders
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Cash Flow Projections */}
+          {cashFlowProjections.length > 0 && (
+            <Card className="rounded-2xl shadow-lg border-0 bg-white">
+              <CardHeader className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-[#607c47]" />
+                  <CardTitle className="text-lg">
+                    Cash Flow Projections
+                  </CardTitle>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  6-month projection based on outstanding bills and their due
+                  dates.
+                </p>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Month</TableHead>
+                      <TableHead className="text-right">
+                        Receivables Expected
+                      </TableHead>
+                      <TableHead className="text-right">
+                        Payables Expected
+                      </TableHead>
+                      <TableHead className="text-right">
+                        Net Cash Flow
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {cashFlowProjections.map((projection, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell>
+                          {format(
+                            new Date(projection.month + "-01"),
+                            "MMM yyyy"
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right text-green-600">
+                          {formatCurrency(projection.receivablesExpected)}
+                        </TableCell>
+                        <TableCell className="text-right text-red-600">
+                          {formatCurrency(projection.payablesExpected)}
+                        </TableCell>
+                        <TableCell
+                          className={`text-right font-semibold ${
+                            projection.netCashFlow >= 0
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {formatCurrency(projection.netCashFlow)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Analytics */}
+          {analytics && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="rounded-2xl shadow-lg border-0 bg-white">
+                <CardHeader className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-green-500" />
+                    <CardTitle className="text-lg">
+                      Receivables Analytics
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-xs text-muted-foreground">Total</div>
+                      <div className="text-lg font-semibold text-[#2C2C2C]">
+                        {formatCurrency(analytics.receivables?.total || 0)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">
+                        Outstanding
+                      </div>
+                      <div className="text-lg font-semibold text-amber-600">
+                        {formatCurrency(
+                          analytics.receivables?.outstanding || 0
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">
+                        Settled
+                      </div>
+                      <div className="text-lg font-semibold text-green-600">
+                        {formatCurrency(analytics.receivables?.settled || 0)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">
+                        Collection Rate
+                      </div>
+                      <div className="text-lg font-semibold text-[#2C2C2C]">
+                        {analytics.receivables?.collectionRate?.toFixed(1) || 0}
+                        %
+                      </div>
+                    </div>
+                  </div>
+                  <div className="pt-3 border-t">
+                    <div className="text-xs text-muted-foreground mb-1">
+                      Average Collection Days
+                    </div>
+                    <div className="text-sm font-medium text-[#2C2C2C]">
+                      {analytics.receivables?.averageCollectionDays || 0} days
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-2xl shadow-lg border-0 bg-white">
+                <CardHeader className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <TrendingDown className="h-5 w-5 text-red-500" />
+                    <CardTitle className="text-lg">
+                      Payables Analytics
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-xs text-muted-foreground">Total</div>
+                      <div className="text-lg font-semibold text-[#2C2C2C]">
+                        {formatCurrency(analytics.payables?.total || 0)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">
+                        Outstanding
+                      </div>
+                      <div className="text-lg font-semibold text-amber-600">
+                        {formatCurrency(analytics.payables?.outstanding || 0)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">
+                        Settled
+                      </div>
+                      <div className="text-lg font-semibold text-green-600">
+                        {formatCurrency(analytics.payables?.settled || 0)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">
+                        Payment Rate
+                      </div>
+                      <div className="text-lg font-semibold text-[#2C2C2C]">
+                        {analytics.payables?.paymentRate?.toFixed(1) || 0}%
+                      </div>
+                    </div>
+                  </div>
+                  <div className="pt-3 border-t">
+                    <div className="text-xs text-muted-foreground mb-1">
+                      Average Payment Days
+                    </div>
+                    <div className="text-sm font-medium text-[#2C2C2C]">
+                      {analytics.payables?.averagePaymentDays || 0} days
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           <Card className="rounded-2xl shadow-lg border-0 bg-white">
             <CardHeader className="flex flex-col gap-2">
               <CardTitle className="text-lg">Outstanding by Ledger</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Quickly reconcile open balances by customer or supplier. Drill down into each ledger’s outstanding bills.
+                Quickly reconcile open balances by customer or supplier. Drill
+                down into each ledger&apos;s outstanding bills.
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -729,7 +1094,7 @@ export default function BillsPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {ledgerSummary.map((ledger) => (
+                  {ledgerSummary.map(ledger => (
                     <div
                       key={ledger.ledgerName}
                       className="rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-4 shadow-sm space-y-3"
@@ -740,21 +1105,29 @@ export default function BillsPage() {
                             {ledger.ledgerName}
                           </h3>
                           {ledger.ledgerCode && (
-                            <p className="text-xs text-muted-foreground">{ledger.ledgerCode}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {ledger.ledgerCode}
+                            </p>
                           )}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {ledger.billCount} bill{ledger.billCount !== 1 ? 's' : ''}
+                          {ledger.billCount} bill
+                          {ledger.billCount !== 1 ? "s" : ""}
                         </div>
                       </div>
                       <div className="text-lg font-semibold text-[#607c47]">
                         {formatCurrency(ledger.totalOutstanding)}
                       </div>
                       <div className="space-y-2">
-                        {ledger.bills.slice(0, 3).map((bill) => (
-                          <div key={bill.billNumber} className="text-xs text-[#2C2C2C]/80 flex justify-between">
+                        {ledger.bills.slice(0, 3).map(bill => (
+                          <div
+                            key={bill.billNumber}
+                            className="text-xs text-[#2C2C2C]/80 flex justify-between"
+                          >
                             <span>{bill.billNumber}</span>
-                            <span>{formatCurrency(bill.outstandingAmount)}</span>
+                            <span>
+                              {formatCurrency(bill.outstandingAmount)}
+                            </span>
                           </div>
                         ))}
                         {ledger.bills.length > 3 && (
@@ -772,7 +1145,7 @@ export default function BillsPage() {
 
           <Dialog
             open={settleDialogOpen && Boolean(selectedBill)}
-            onOpenChange={(open) => {
+            onOpenChange={open => {
               setSettleDialogOpen(open);
               if (!open) {
                 setSelectedBill(null);
@@ -784,7 +1157,8 @@ export default function BillsPage() {
               <DialogHeader>
                 <DialogTitle>Settle Bill</DialogTitle>
                 <DialogDescription>
-                  Link a payment or receipt voucher to settle this bill with precise bill references like TallyPrime.
+                  Link a payment or receipt voucher to settle this bill with
+                  precise bill references like TallyPrime.
                 </DialogDescription>
               </DialogHeader>
 
@@ -795,7 +1169,8 @@ export default function BillsPage() {
                       {selectedBill.billNumber} • {selectedBill.ledgerName}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Outstanding: {formatCurrency(selectedBill.outstandingAmount)}
+                      Outstanding:{" "}
+                      {formatCurrency(selectedBill.outstandingAmount)}
                     </div>
                   </div>
 
@@ -803,15 +1178,17 @@ export default function BillsPage() {
                     <Label>Select Voucher *</Label>
                     <select
                       value={settleForm.voucherId}
-                      onChange={(event) => handleSettleFormChange('voucherId', event.target.value)}
+                      onChange={event =>
+                        handleSettleFormChange("voucherId", event.target.value)
+                      }
                       className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
                       required
                     >
                       <option value="">Select voucher</option>
-                      {voucherOptions.map((voucher) => (
+                      {voucherOptions.map(voucher => (
                         <option key={voucher.id} value={voucher.id}>
                           {voucher.voucherNumber} • {voucher.voucherType.name} (
-                          {format(new Date(voucher.date), 'dd MMM yyyy')})
+                          {format(new Date(voucher.date), "dd MMM yyyy")})
                         </option>
                       ))}
                     </select>
@@ -827,15 +1204,21 @@ export default function BillsPage() {
                     <Label>Select Voucher Entry *</Label>
                     <select
                       value={settleForm.voucherEntryId}
-                      onChange={(event) => handleSettleFormChange('voucherEntryId', event.target.value)}
+                      onChange={event =>
+                        handleSettleFormChange(
+                          "voucherEntryId",
+                          event.target.value
+                        )
+                      }
                       className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
                       required
                       disabled={!settleForm.voucherId}
                     >
                       <option value="">Select entry</option>
-                      {settlementEntries.map((entry) => (
+                      {settlementEntries.map(entry => (
                         <option key={entry.id} value={entry.id}>
-                          {entry.ledgerName} • {entry.entryType} • {formatCurrency(entry.amount)}
+                          {entry.ledgerName} • {entry.entryType} •{" "}
+                          {formatCurrency(entry.amount)}
                         </option>
                       ))}
                     </select>
@@ -848,7 +1231,12 @@ export default function BillsPage() {
                       min="0"
                       step="0.01"
                       value={settleForm.settlementAmount}
-                      onChange={(event) => handleSettleFormChange('settlementAmount', event.target.value)}
+                      onChange={event =>
+                        handleSettleFormChange(
+                          "settlementAmount",
+                          event.target.value
+                        )
+                      }
                       placeholder="0.00"
                       required
                     />
@@ -859,7 +1247,12 @@ export default function BillsPage() {
                       <Label>Reference</Label>
                       <Input
                         value={settleForm.reference}
-                        onChange={(event) => handleSettleFormChange('reference', event.target.value)}
+                        onChange={event =>
+                          handleSettleFormChange(
+                            "reference",
+                            event.target.value
+                          )
+                        }
                         placeholder="Voucher reference"
                       />
                     </div>
@@ -867,14 +1260,20 @@ export default function BillsPage() {
                       <Label>Remarks</Label>
                       <Input
                         value={settleForm.remarks}
-                        onChange={(event) => handleSettleFormChange('remarks', event.target.value)}
+                        onChange={event =>
+                          handleSettleFormChange("remarks", event.target.value)
+                        }
                         placeholder="Optional remarks"
                       />
                     </div>
                   </div>
 
                   <div className="flex justify-end gap-3 pt-2">
-                    <Button type="button" variant="ghost" onClick={() => setSettleDialogOpen(false)}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setSettleDialogOpen(false)}
+                    >
                       Cancel
                     </Button>
                     <Button
@@ -904,4 +1303,3 @@ export default function BillsPage() {
     </AuthGuard>
   );
 }
-
