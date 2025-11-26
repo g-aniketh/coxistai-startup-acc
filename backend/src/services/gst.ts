@@ -1,4 +1,5 @@
 import { Prisma, GstLedgerMappingType, GstRegistrationType, GstTaxSupplyType } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import { prisma } from '../lib/prisma';
 
 // ---------------------------------------------------------------------------
@@ -64,7 +65,7 @@ export const createGstRegistration = async (
     throw new Error('Invalid end date');
   }
 
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: any) => {
     if (isDefault) {
       await tx.gstRegistration.updateMany({
         where: { startupId, isDefault: true },
@@ -132,7 +133,7 @@ export const updateGstRegistration = async (
     throw new Error('Invalid end date');
   }
 
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: any) => {
     if (input.isDefault) {
       await tx.gstRegistration.updateMany({
         where: { startupId, isDefault: true, NOT: { id: registrationId } },
@@ -263,10 +264,10 @@ export const createGstTaxRate = async (startupId: string, input: GstTaxRateInput
       supplyType: input.supplyType ?? 'GOODS',
       hsnOrSac: input.hsnOrSac?.trim() || null,
       description: input.description?.trim() || null,
-      cgstRate: new Prisma.Decimal(input.cgstRate ?? 0),
-      sgstRate: new Prisma.Decimal(input.sgstRate ?? 0),
-      igstRate: new Prisma.Decimal(input.igstRate ?? 0),
-      cessRate: new Prisma.Decimal(input.cessRate ?? 0),
+      cgstRate: new Decimal(input.cgstRate ?? 0),
+      sgstRate: new Decimal(input.sgstRate ?? 0),
+      igstRate: new Decimal(input.igstRate ?? 0),
+      cessRate: new Decimal(input.cessRate ?? 0),
       effectiveFrom,
       effectiveTo,
       isActive: input.isActive ?? true,
@@ -329,13 +330,13 @@ export const updateGstTaxRate = async (
           ? input.description?.trim() || null
           : taxRate.description,
       cgstRate:
-        input.cgstRate !== undefined ? new Prisma.Decimal(input.cgstRate) : taxRate.cgstRate,
+        input.cgstRate !== undefined ? new Decimal(input.cgstRate) : taxRate.cgstRate,
       sgstRate:
-        input.sgstRate !== undefined ? new Prisma.Decimal(input.sgstRate) : taxRate.sgstRate,
+        input.sgstRate !== undefined ? new Decimal(input.sgstRate) : taxRate.sgstRate,
       igstRate:
-        input.igstRate !== undefined ? new Prisma.Decimal(input.igstRate) : taxRate.igstRate,
+        input.igstRate !== undefined ? new Decimal(input.igstRate) : taxRate.igstRate,
       cessRate:
-        input.cessRate !== undefined ? new Prisma.Decimal(input.cessRate) : taxRate.cessRate,
+        input.cessRate !== undefined ? new Decimal(input.cessRate) : taxRate.cessRate,
       effectiveFrom,
       effectiveTo,
       isActive: input.isActive ?? taxRate.isActive,

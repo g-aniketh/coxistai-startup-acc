@@ -1,5 +1,5 @@
-import { Prisma, LedgerCategory, LedgerBalanceType } from '@prisma/client';
-import { prisma } from '../lib/prisma';
+import { Prisma, LedgerCategory, LedgerBalanceType } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 
 interface LedgerBalance {
   ledgerId: string;
@@ -58,7 +58,9 @@ async function calculateLedgerBalances(
 
   // Initialize balances with opening balances
   for (const ledger of ledgers) {
-    const openingBalance = ledger.openingBalance ? Number(ledger.openingBalance) : 0;
+    const openingBalance = ledger.openingBalance
+      ? Number(ledger.openingBalance)
+      : 0;
     const openingType = ledger.openingBalanceType || LedgerBalanceType.DEBIT;
 
     balances.set(ledger.id, {
@@ -66,8 +68,10 @@ async function calculateLedgerBalances(
       ledgerName: ledger.name,
       groupName: ledger.group.name,
       category: ledger.group.category,
-      openingDebit: openingType === LedgerBalanceType.DEBIT ? openingBalance : 0,
-      openingCredit: openingType === LedgerBalanceType.CREDIT ? openingBalance : 0,
+      openingDebit:
+        openingType === LedgerBalanceType.DEBIT ? openingBalance : 0,
+      openingCredit:
+        openingType === LedgerBalanceType.CREDIT ? openingBalance : 0,
       periodDebit: 0,
       periodCredit: 0,
       closingDebit: 0,
@@ -76,7 +80,7 @@ async function calculateLedgerBalances(
   }
 
   // Build date filter for voucher entries
-  const voucherFilters: Prisma.VoucherWhereInput = {
+  const voucherFilters: any = {
     startupId,
   };
   if (fromDate || toDate) {
@@ -97,14 +101,14 @@ async function calculateLedgerBalances(
   for (const voucher of vouchers) {
     for (const entry of voucher.entries) {
       // Find ledger by name (since entries store ledgerName, not ledgerId)
-      const ledger = ledgers.find(l => l.name === entry.ledgerName);
+      const ledger = ledgers.find((l: any) => l.name === entry.ledgerName);
       if (!ledger) continue;
 
       const balance = balances.get(ledger.id);
       if (!balance) continue;
 
       const amount = Number(entry.amount);
-      if (entry.entryType === 'DEBIT') {
+      if (entry.entryType === "DEBIT") {
         balance.periodDebit += amount;
       } else {
         balance.periodCredit += amount;
@@ -114,8 +118,10 @@ async function calculateLedgerBalances(
 
   // Calculate closing balances
   for (const [_, balance] of balances) {
-    const netDebit = balance.openingDebit + balance.periodDebit - balance.periodCredit;
-    const netCredit = balance.openingCredit + balance.periodCredit - balance.periodDebit;
+    const netDebit =
+      balance.openingDebit + balance.periodDebit - balance.periodCredit;
+    const netCredit =
+      balance.openingCredit + balance.periodCredit - balance.periodDebit;
 
     if (netDebit > netCredit) {
       balance.closingDebit = netDebit - netCredit;
@@ -162,9 +168,9 @@ export async function getTrialBalance(
 
   // Add totals row
   trialBalance.push({
-    ledgerName: 'TOTAL',
-    groupName: '',
-    category: '' as LedgerCategory,
+    ledgerName: "TOTAL",
+    groupName: "",
+    category: "" as LedgerCategory,
     debit: totalDebit,
     credit: totalCredit,
   });
@@ -353,8 +359,11 @@ export async function getBalanceSheet(
   // Add P&L balance to capital
   if (netProfit !== 0) {
     capital.push({
-      name: netProfit > 0 ? 'Profit & Loss Account' : 'Profit & Loss Account (Loss)',
-      category: 'OTHER' as LedgerCategory,
+      name:
+        netProfit > 0
+          ? "Profit & Loss Account"
+          : "Profit & Loss Account (Loss)",
+      category: "OTHER" as LedgerCategory,
       amount: Math.abs(netProfit),
     });
     totalCapital += netProfit;
@@ -366,7 +375,6 @@ export async function getBalanceSheet(
     capital,
     totalAssets,
     totalLiabilities,
-    totalCapital,
     netWorth: totalAssets - totalLiabilities - totalCapital,
   };
 }
@@ -412,13 +420,16 @@ export async function getCashFlow(
 
   // Get opening balances
   for (const ledger of cashLedgers) {
-    const openingBal = ledger.openingBalance ? Number(ledger.openingBalance) : 0;
+    const openingBal = ledger.openingBalance
+      ? Number(ledger.openingBalance)
+      : 0;
     const openingType = ledger.openingBalanceType || LedgerBalanceType.DEBIT;
-    openingBalance += openingType === LedgerBalanceType.DEBIT ? openingBal : -openingBal;
+    openingBalance +=
+      openingType === LedgerBalanceType.DEBIT ? openingBal : -openingBal;
   }
 
   // Get vouchers affecting cash/bank
-  const voucherFilters: Prisma.VoucherWhereInput = {
+  const voucherFilters: any = {
     startupId,
     date: {},
   };
@@ -435,27 +446,34 @@ export async function getCashFlow(
 
   for (const voucher of vouchers) {
     for (const entry of voucher.entries) {
-      const ledger = cashLedgers.find(l => l.name === entry.ledgerName);
+      const ledger = cashLedgers.find((l: any) => l.name === entry.ledgerName);
       if (!ledger) continue;
 
       const amount = Number(entry.amount);
-      const isDebit = entry.entryType === 'DEBIT';
+      const isDebit = entry.entryType === "DEBIT";
       const cashFlowAmount = isDebit ? amount : -amount;
       netCashFlow += cashFlowAmount;
 
       // Categorize based on voucher type and other entry
-      const otherEntry = voucher.entries.find(e => e.ledgerName !== entry.ledgerName);
-      const category = categorizeCashFlow(voucher.voucherType.category, otherEntry);
+      const otherEntry = voucher.entries.find(
+        (e: any) => e.ledgerName !== entry.ledgerName
+      );
+      const category = categorizeCashFlow(
+        voucher.voucherType.category,
+        otherEntry
+      );
 
       const item: CashFlowItem = {
-        category: category as 'Operating' | 'Investing' | 'Financing',
-        description: `${voucher.voucherType.name} - ${otherEntry?.ledgerName || 'N/A'}`,
+        category: category as "Operating" | "Investing" | "Financing",
+        description: `${voucher.voucherType.name} - ${
+          otherEntry?.ledgerName || "N/A"
+        }`,
         amount: cashFlowAmount,
       };
 
-      if (category === 'Operating') {
+      if (category === "Operating") {
         operating.push(item);
-      } else if (category === 'Investing') {
+      } else if (category === "Investing") {
         investing.push(item);
       } else {
         financing.push(item);
@@ -475,24 +493,36 @@ export async function getCashFlow(
   };
 }
 
-function categorizeCashFlow(voucherCategory: string, otherEntry?: any): 'Operating' | 'Investing' | 'Financing' {
+function categorizeCashFlow(
+  voucherCategory: string,
+  otherEntry?: any
+): "Operating" | "Investing" | "Financing" {
   // Simplified categorization - can be enhanced
-  if (voucherCategory === 'SALES' || voucherCategory === 'PURCHASE' || voucherCategory === 'PAYMENT' || voucherCategory === 'RECEIPT') {
-    return 'Operating';
+  if (
+    voucherCategory === "SALES" ||
+    voucherCategory === "PURCHASE" ||
+    voucherCategory === "PAYMENT" ||
+    voucherCategory === "RECEIPT"
+  ) {
+    return "Operating";
   }
-  if (voucherCategory === 'JOURNAL') {
+  if (voucherCategory === "JOURNAL") {
     // Check if it's related to investments or fixed assets
-    if (otherEntry?.ledgerName?.toLowerCase().includes('investment') || 
-        otherEntry?.ledgerName?.toLowerCase().includes('asset')) {
-      return 'Investing';
+    if (
+      otherEntry?.ledgerName?.toLowerCase().includes("investment") ||
+      otherEntry?.ledgerName?.toLowerCase().includes("asset")
+    ) {
+      return "Investing";
     }
-    if (otherEntry?.ledgerName?.toLowerCase().includes('loan') ||
-        otherEntry?.ledgerName?.toLowerCase().includes('capital')) {
-      return 'Financing';
+    if (
+      otherEntry?.ledgerName?.toLowerCase().includes("loan") ||
+      otherEntry?.ledgerName?.toLowerCase().includes("capital")
+    ) {
+      return "Financing";
     }
-    return 'Operating';
+    return "Operating";
   }
-  return 'Operating';
+  return "Operating";
 }
 
 /**
@@ -525,33 +555,50 @@ export async function getFinancialRatios(
 
   // Calculate current assets and current liabilities
   const currentAssets = balanceSheet.assets
-    .filter(a => ['CURRENT_ASSET', 'SUNDRY_DEBTOR', 'BANK_ACCOUNT', 'CASH', 'STOCK'].includes(a.category))
+    .filter(a =>
+      [
+        "CURRENT_ASSET",
+        "SUNDRY_DEBTOR",
+        "BANK_ACCOUNT",
+        "CASH",
+        "STOCK",
+      ].includes(a.category)
+    )
     .reduce((sum, a) => sum + a.amount, 0);
 
   const currentLiabilities = balanceSheet.liabilities
-    .filter(l => l.category === 'CURRENT_LIABILITY' || l.category === 'SUNDRY_CREDITOR')
+    .filter(
+      l =>
+        l.category === "CURRENT_LIABILITY" || l.category === "SUNDRY_CREDITOR"
+    )
     .reduce((sum, l) => sum + l.amount, 0);
 
   const inventory = balanceSheet.assets
-    .filter(a => a.category === 'STOCK')
+    .filter(a => a.category === "STOCK")
     .reduce((sum, a) => sum + a.amount, 0);
 
   const quickAssets = currentAssets - inventory;
 
-  const totalEquity = balanceSheet.capital.reduce((sum, c) => sum + c.amount, 0);
+  const totalEquity = balanceSheet.capital.reduce(
+    (sum, c) => sum + c.amount,
+    0
+  );
   const totalDebt = balanceSheet.liabilities
-    .filter(l => l.category === 'LOAN')
+    .filter(l => l.category === "LOAN")
     .reduce((sum, l) => sum + l.amount, 0);
   const totalAssets = balanceSheet.totalAssets;
 
   return {
     liquidity: {
-      currentRatio: currentLiabilities > 0 ? currentAssets / currentLiabilities : 0,
+      currentRatio:
+        currentLiabilities > 0 ? currentAssets / currentLiabilities : 0,
       quickRatio: currentLiabilities > 0 ? quickAssets / currentLiabilities : 0,
     },
     profitability: {
-      grossProfitMargin: pl.totalIncome > 0 ? (pl.grossProfit / pl.totalIncome) * 100 : 0,
-      netProfitMargin: pl.totalIncome > 0 ? (pl.netProfit / pl.totalIncome) * 100 : 0,
+      grossProfitMargin:
+        pl.totalIncome > 0 ? (pl.grossProfit / pl.totalIncome) * 100 : 0,
+      netProfitMargin:
+        pl.totalIncome > 0 ? (pl.netProfit / pl.totalIncome) * 100 : 0,
       returnOnAssets: totalAssets > 0 ? (pl.netProfit / totalAssets) * 100 : 0,
     },
     efficiency: {
@@ -612,13 +659,16 @@ export async function getCashBook(
 
   // Get opening balances
   for (const ledger of cashLedgers) {
-    const openingBal = ledger.openingBalance ? Number(ledger.openingBalance) : 0;
+    const openingBal = ledger.openingBalance
+      ? Number(ledger.openingBalance)
+      : 0;
     const openingType = ledger.openingBalanceType || LedgerBalanceType.DEBIT;
-    openingBalance += openingType === LedgerBalanceType.DEBIT ? openingBal : -openingBal;
+    openingBalance +=
+      openingType === LedgerBalanceType.DEBIT ? openingBal : -openingBal;
   }
 
   // Get vouchers affecting cash
-  const voucherFilters: Prisma.VoucherWhereInput = {
+  const voucherFilters: any = {
     startupId,
     date: {},
   };
@@ -631,28 +681,28 @@ export async function getCashBook(
       entries: true,
       voucherType: true,
     },
-    orderBy: { date: 'asc' },
+    orderBy: { date: "asc" },
   });
 
   let runningBalance = openingBalance;
 
   for (const voucher of vouchers) {
     for (const entry of voucher.entries) {
-      const ledger = cashLedgers.find(l => l.name === entry.ledgerName);
+      const ledger = cashLedgers.find((l: any) => l.name === entry.ledgerName);
       if (!ledger) continue;
 
       const amount = Number(entry.amount);
-      const isDebit = entry.entryType === 'DEBIT';
+      const isDebit = entry.entryType === "DEBIT";
       const debit = isDebit ? amount : 0;
       const credit = !isDebit ? amount : 0;
 
       runningBalance += debit - credit;
 
       entries.push({
-        date: voucher.date.toISOString().split('T')[0],
+        date: voucher.date.toISOString().split("T")[0],
         voucherNumber: voucher.voucherNumber,
         voucherType: voucher.voucherType.name,
-        narration: voucher.narration || entry.narration,
+        narration: voucher.narration || entry.narration || undefined,
         debit,
         credit,
         balance: runningBalance,
@@ -704,20 +754,24 @@ export async function getBankBook(
   });
 
   if (bankLedgerName) {
-    bankLedgers = bankLedgers.filter(l => l.name === bankLedgerName);
+    bankLedgers = bankLedgers.filter((l: any) => l.name === bankLedgerName);
   }
 
   if (bankLedgers.length === 0) {
-    throw new Error('No bank ledgers found');
+    throw new Error("No bank ledgers found");
   }
 
   const selectedBank = bankLedgers[0];
   let openingBalance = 0;
 
   // Get opening balance for selected bank
-  const openingBal = selectedBank.openingBalance ? Number(selectedBank.openingBalance) : 0;
-  const openingType = selectedBank.openingBalanceType || LedgerBalanceType.DEBIT;
-  openingBalance = openingType === LedgerBalanceType.DEBIT ? openingBal : -openingBal;
+  const openingBal = selectedBank.openingBalance
+    ? Number(selectedBank.openingBalance)
+    : 0;
+  const openingType =
+    selectedBank.openingBalanceType || LedgerBalanceType.DEBIT;
+  openingBalance =
+    openingType === LedgerBalanceType.DEBIT ? openingBal : -openingBal;
 
   const entries: Array<{
     date: string;
@@ -730,7 +784,7 @@ export async function getBankBook(
   }> = [];
 
   // Get vouchers affecting this bank
-  const voucherFilters: Prisma.VoucherWhereInput = {
+  const voucherFilters: any = {
     startupId,
     date: {},
   };
@@ -743,7 +797,7 @@ export async function getBankBook(
       entries: true,
       voucherType: true,
     },
-    orderBy: { date: 'asc' },
+    orderBy: { date: "asc" },
   });
 
   let runningBalance = openingBalance;
@@ -753,17 +807,17 @@ export async function getBankBook(
       if (entry.ledgerName !== selectedBank.name) continue;
 
       const amount = Number(entry.amount);
-      const isDebit = entry.entryType === 'DEBIT';
+      const isDebit = entry.entryType === "DEBIT";
       const debit = isDebit ? amount : 0;
       const credit = !isDebit ? amount : 0;
 
       runningBalance += debit - credit;
 
       entries.push({
-        date: voucher.date.toISOString().split('T')[0],
+        date: voucher.date.toISOString().split("T")[0],
         voucherNumber: voucher.voucherNumber,
         voucherType: voucher.voucherType.name,
-        narration: voucher.narration || entry.narration,
+        narration: voucher.narration || entry.narration || undefined,
         debit,
         credit,
         balance: runningBalance,
@@ -814,16 +868,16 @@ export async function getDayBook(
       entries: true,
       voucherType: true,
     },
-    orderBy: { date: 'asc' },
+    orderBy: { date: "asc" },
   });
 
   return {
     date,
-    vouchers: vouchers.map(v => ({
+    vouchers: vouchers.map((v: any) => ({
       voucherNumber: v.voucherNumber,
       voucherType: v.voucherType.name,
       narration: v.narration,
-      entries: v.entries.map(e => ({
+      entries: v.entries.map((e: any) => ({
         ledgerName: e.ledgerName,
         entryType: e.entryType,
         amount: Number(e.amount),
@@ -867,15 +921,17 @@ export async function getLedgerBook(
   });
 
   if (!ledger) {
-    throw new Error('Ledger not found');
+    throw new Error("Ledger not found");
   }
 
-  const openingBalance = ledger.openingBalance ? Number(ledger.openingBalance) : 0;
+  const openingBalance = ledger.openingBalance
+    ? Number(ledger.openingBalance)
+    : 0;
   const openingType = ledger.openingBalanceType || LedgerBalanceType.DEBIT;
   let runningBalance = openingBalance;
 
   // Get voucher entries for this ledger
-  const voucherFilters: Prisma.VoucherWhereInput = {
+  const voucherFilters: any = {
     startupId,
     date: {},
   };
@@ -888,7 +944,7 @@ export async function getLedgerBook(
       entries: true,
       voucherType: true,
     },
-    orderBy: { date: 'asc' },
+    orderBy: { date: "asc" },
   });
 
   const entries: Array<{
@@ -906,7 +962,7 @@ export async function getLedgerBook(
       if (entry.ledgerName !== ledgerName) continue;
 
       const amount = Number(entry.amount);
-      const isDebit = entry.entryType === 'DEBIT';
+      const isDebit = entry.entryType === "DEBIT";
 
       // Update running balance based on debit/credit
       if (openingType === LedgerBalanceType.DEBIT) {
@@ -916,10 +972,10 @@ export async function getLedgerBook(
       }
 
       entries.push({
-        date: voucher.date.toISOString().split('T')[0],
+        date: voucher.date.toISOString().split("T")[0],
         voucherNumber: voucher.voucherNumber,
         voucherType: voucher.voucherType.name,
-        narration: voucher.narration || entry.narration,
+        narration: voucher.narration || entry.narration || undefined,
         entryType: entry.entryType,
         amount,
         balance: runningBalance,
@@ -941,7 +997,13 @@ export async function getLedgerBook(
  */
 export async function getJournals(
   startupId: string,
-  journalType: 'SALES' | 'PURCHASE' | 'PAYMENT' | 'RECEIPT' | 'CONTRA' | 'JOURNAL',
+  journalType:
+    | "SALES"
+    | "PURCHASE"
+    | "PAYMENT"
+    | "RECEIPT"
+    | "CONTRA"
+    | "JOURNAL",
   fromDate?: string,
   toDate?: string
 ): Promise<{
@@ -960,7 +1022,7 @@ export async function getJournals(
   const from = fromDate ? new Date(fromDate) : undefined;
   const to = toDate ? new Date(toDate) : new Date();
 
-  const voucherFilters: Prisma.VoucherWhereInput = {
+  const voucherFilters: any = {
     startupId,
     voucherType: {
       category: journalType as any,
@@ -976,16 +1038,16 @@ export async function getJournals(
       entries: true,
       voucherType: true,
     },
-    orderBy: { date: 'asc' },
+    orderBy: { date: "asc" },
   });
 
   return {
     journalType,
-    vouchers: vouchers.map(v => ({
-      date: v.date.toISOString().split('T')[0],
+    vouchers: vouchers.map((v: any) => ({
+      date: v.date.toISOString().split("T")[0],
       voucherNumber: v.voucherNumber,
       narration: v.narration,
-      entries: v.entries.map(e => ({
+      entries: v.entries.map((e: any) => ({
         ledgerName: e.ledgerName,
         entryType: e.entryType,
         amount: Number(e.amount),
@@ -993,4 +1055,3 @@ export async function getJournals(
     })),
   };
 }
-

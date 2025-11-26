@@ -149,7 +149,7 @@ export const simulateSale = async (startupId: string, data: SimulateSaleData) =>
   const totalPrice = Number(product.price) * Number(quantitySold);
 
   // Use a transaction to ensure atomicity
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx: any) => {
     // Create transaction (CREDIT for income)
     const transaction = await tx.transaction.create({
       data: {

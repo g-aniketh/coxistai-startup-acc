@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { Decimal } from "@prisma/client/runtime/library";
 import { prisma } from "../lib/prisma";
 
 // ------------------------------
@@ -451,7 +452,7 @@ export const createInterestProfile = async (
     throw new Error("Interest profile name is required");
   }
 
-  const numericRate = new Prisma.Decimal(rate ?? 0);
+  const numericRate = new Decimal(rate ?? 0);
   if (numericRate.lt(0)) {
     throw new Error("Interest rate cannot be negative");
   }
@@ -466,9 +467,7 @@ export const createInterestProfile = async (
       compoundingFrequency: compoundingFrequency ?? "NONE",
       gracePeriodDays: gracePeriodDays ?? 0,
       calculateFromDueDate: calculateFromDueDate ?? true,
-      penalRate: penalRate
-        ? new Prisma.Decimal(penalRate)
-        : new Prisma.Decimal(0),
+      penalRate: penalRate ? new Decimal(penalRate) : new Decimal(0),
       penalGraceDays: penalGraceDays ?? 0,
     },
   });
@@ -505,7 +504,7 @@ export const updateInterestProfile = async (
   }
 
   if (input.rate !== undefined) {
-    const numericRate = new Prisma.Decimal(input.rate);
+    const numericRate = new Decimal(input.rate);
     if (numericRate.lt(0)) {
       throw new Error("Interest rate cannot be negative");
     }
@@ -532,9 +531,7 @@ export const updateInterestProfile = async (
       throw new Error("Penal rate cannot be negative");
     }
     data.penalRate =
-      input.penalRate !== null
-        ? new Prisma.Decimal(input.penalRate)
-        : new Prisma.Decimal(0);
+      input.penalRate !== null ? new Decimal(input.penalRate) : new Decimal(0);
   }
 
   if (input.penalGraceDays !== undefined) {
@@ -623,7 +620,7 @@ export const assignInterestProfileToParty = async (
       interestProfileId,
       overrideRate:
         overrideRate !== undefined && overrideRate !== null
-          ? new Prisma.Decimal(overrideRate)
+          ? new Decimal(overrideRate)
           : null,
       effectiveFrom: effectiveFrom ? new Date(effectiveFrom) : null,
       effectiveTo: effectiveTo ? new Date(effectiveTo) : null,
@@ -634,7 +631,7 @@ export const assignInterestProfileToParty = async (
       interestProfileId,
       overrideRate:
         overrideRate !== undefined && overrideRate !== null
-          ? new Prisma.Decimal(overrideRate)
+          ? new Decimal(overrideRate)
           : null,
       effectiveFrom: effectiveFrom ? new Date(effectiveFrom) : null,
       effectiveTo: effectiveTo ? new Date(effectiveTo) : null,

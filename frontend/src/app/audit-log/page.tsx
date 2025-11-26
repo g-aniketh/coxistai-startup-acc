@@ -16,7 +16,7 @@ import {
   AuditEntityType,
 } from "@/lib/api";
 import { toast } from "react-hot-toast";
-import { FileText, Filter, User } from "lucide-react";
+import { FileText, Filter, User, AlertTriangle } from "lucide-react";
 import {
   Table,
   TableBody,

@@ -218,7 +218,7 @@ export const createVoucher = async (
   }
 
   const voucher = await prisma.$transaction(
-    async tx => {
+    async (tx: any) => {
       const voucherType = await tx.voucherType.findFirst({
         where: { id: payload.voucherTypeId, startupId },
         include: { numberingSeries: true },
@@ -330,7 +330,7 @@ export const createVoucher = async (
     }
   );
 
-  const simplifiedEntries = voucher.entries.map(entry => ({
+  const simplifiedEntries = voucher.entries.map((entry: any) => ({
     ledgerName: entry.ledgerName,
     entryType: entry.entryType,
     amount: entry.amount,
@@ -469,7 +469,7 @@ export const createReversingJournal = async (
   }
 
   // Build reversing entries (opposite entry types)
-  const reversingEntries = originalVoucher.entries.map(entry => ({
+  const reversingEntries = originalVoucher.entries.map((entry: any) => ({
     ledgerName: entry.ledgerName,
     ledgerCode: entry.ledgerCode || undefined,
     entryType:

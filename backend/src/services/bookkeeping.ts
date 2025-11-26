@@ -4,6 +4,7 @@ import {
   InterestComputation,
   LedgerBalanceType,
 } from "@prisma/client";
+import { Decimal } from '@prisma/client/runtime/library';
 import { prisma } from "../lib/prisma";
 
 type ChartGroupDefinition = {
@@ -296,36 +297,36 @@ export const createLedger = async (startupId: string, input: LedgerInput) => {
       defaultCreditPeriodDays: input.defaultCreditPeriodDays ?? null,
       creditLimit:
         input.creditLimit !== undefined && input.creditLimit !== null
-          ? new Prisma.Decimal(input.creditLimit)
+          ? new Decimal(input.creditLimit)
           : undefined,
       interestComputation: (input.interestComputation ??
         "NONE") as InterestComputation,
       interestRate:
         input.interestRate !== undefined && input.interestRate !== null
-          ? new Prisma.Decimal(input.interestRate)
+          ? new Decimal(input.interestRate)
           : undefined,
       penalRate:
         input.penalRate !== undefined && input.penalRate !== null
-          ? new Prisma.Decimal(input.penalRate)
+          ? new Decimal(input.penalRate)
           : undefined,
       interestGraceDays: input.interestGraceDays ?? null,
       panNumber: input.panNumber,
       gstNumber: input.gstNumber,
       mailingAddress: input.mailingAddress
-        ? (input.mailingAddress as Prisma.InputJsonValue)
+        ? (input.mailingAddress as any)
         : undefined,
       bankDetails: input.bankDetails
-        ? (input.bankDetails as Prisma.InputJsonValue)
+        ? (input.bankDetails as any)
         : undefined,
       costCenterApplicable: Boolean(input.costCenterApplicable),
       openingBalance:
         input.openingBalance !== undefined && input.openingBalance !== null
-          ? new Prisma.Decimal(input.openingBalance)
+          ? new Decimal(input.openingBalance)
           : undefined,
       openingBalanceType: (input.openingBalanceType ??
         "DEBIT") as LedgerBalanceType,
       metadata: input.metadata
-        ? (input.metadata as Prisma.InputJsonValue)
+        ? (input.metadata as any)
         : undefined,
     },
   });
@@ -359,38 +360,38 @@ export const updateLedger = async (
       defaultCreditPeriodDays: input.defaultCreditPeriodDays ?? undefined,
       creditLimit:
         input.creditLimit !== undefined && input.creditLimit !== null
-          ? new Prisma.Decimal(input.creditLimit)
+          ? new Decimal(input.creditLimit)
           : undefined,
       interestComputation: input.interestComputation
         ? (input.interestComputation as InterestComputation)
         : undefined,
       interestRate:
         input.interestRate !== undefined && input.interestRate !== null
-          ? new Prisma.Decimal(input.interestRate)
+          ? new Decimal(input.interestRate)
           : undefined,
       penalRate:
         input.penalRate !== undefined && input.penalRate !== null
-          ? new Prisma.Decimal(input.penalRate)
+          ? new Decimal(input.penalRate)
           : undefined,
       interestGraceDays: input.interestGraceDays ?? undefined,
       panNumber: input.panNumber ?? undefined,
       gstNumber: input.gstNumber ?? undefined,
       mailingAddress: input.mailingAddress
-        ? (input.mailingAddress as Prisma.InputJsonValue)
+        ? (input.mailingAddress as any)
         : undefined,
       bankDetails: input.bankDetails
-        ? (input.bankDetails as Prisma.InputJsonValue)
+        ? (input.bankDetails as any)
         : undefined,
       costCenterApplicable: input.costCenterApplicable ?? undefined,
       openingBalance:
         input.openingBalance !== undefined && input.openingBalance !== null
-          ? new Prisma.Decimal(input.openingBalance)
+          ? new Decimal(input.openingBalance)
           : undefined,
       openingBalanceType: input.openingBalanceType
         ? (input.openingBalanceType as LedgerBalanceType)
         : undefined,
       metadata: input.metadata
-        ? (input.metadata as Prisma.InputJsonValue)
+        ? (input.metadata as any)
         : undefined,
     },
   });

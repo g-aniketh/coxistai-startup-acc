@@ -14,7 +14,7 @@ export async function exportVouchersToExcel(
     numberingSeriesId?: string;
   }
 ) {
-  const where: Prisma.VoucherWhereInput = {
+  const where: any = {
     startupId,
   };
 
@@ -55,7 +55,7 @@ export async function exportVouchersToExcel(
   const workbook = XLSX.utils.book_new();
 
   // Vouchers sheet
-  const vouchersData = vouchers.map((v) => ({
+  const vouchersData = vouchers.map((v: any) => ({
     'Voucher Number': v.voucherNumber,
     'Voucher Type': v.voucherType.name,
     'Numbering Series': v.numberingSeries?.name || '',
@@ -103,7 +103,7 @@ export async function exportLedgersToExcel(startupId: string) {
 
   const workbook = XLSX.utils.book_new();
 
-  const partiesData = parties.map((p) => ({
+  const partiesData = parties.map((p: any) => ({
     Name: p.name,
     Type: p.type,
     Email: p.email || '',
@@ -142,7 +142,7 @@ export async function exportGstDataToExcel(startupId: string) {
   const workbook = XLSX.utils.book_new();
 
   // GST Registrations sheet
-  const registrationsData = registrations.map((r) => ({
+  const registrationsData = registrations.map((r: any) => ({
     GSTIN: r.gstin,
     'Legal Name': r.legalName || '',
     'Trade Name': r.tradeName || '',
@@ -159,7 +159,7 @@ export async function exportGstDataToExcel(startupId: string) {
   XLSX.utils.book_append_sheet(workbook, registrationsSheet, 'GST Registrations');
 
   // Tax Rates sheet
-  const taxRatesData = taxRates.map((tr) => ({
+  const taxRatesData = taxRates.map((tr: any) => ({
     'Supply Type': tr.supplyType,
     'HSN/SAC': tr.hsnOrSac || '',
     Description: tr.description || '',
@@ -176,7 +176,7 @@ export async function exportGstDataToExcel(startupId: string) {
   XLSX.utils.book_append_sheet(workbook, taxRatesSheet, 'Tax Rates');
 
   // Ledger Mappings sheet
-  const mappingsData = ledgerMappings.map((lm) => ({
+  const mappingsData = ledgerMappings.map((lm: any) => ({
     'Mapping Type': lm.mappingType,
     'Ledger Name': lm.ledgerName,
     'Ledger Code': lm.ledgerCode || '',

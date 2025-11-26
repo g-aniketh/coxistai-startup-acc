@@ -1,4 +1,4 @@
-import { Prisma, LedgerCategory, LedgerBalanceType, VoucherCategory, VoucherNumberingMethod } from '@prisma/client';
+import { Prisma, LedgerCategory, LedgerBalanceType, VoucherCategory, VoucherNumberingMethod, VoucherEntryType } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { createVoucher } from './vouchers';
 
@@ -88,7 +88,7 @@ export async function generateClosingEntries(
   let totalExpense = 0;
 
   for (const [ledgerName, balance] of closingBalances) {
-    const ledger = incomeExpenseLedgers.find(l => l.name === ledgerName);
+    const ledger = incomeExpenseLedgers.find((l: any) => l.name === ledgerName);
     if (!ledger) continue;
 
     const category = ledger.group.category;
@@ -151,7 +151,7 @@ export async function generateClosingEntries(
 
   // Close all income/expense accounts
   for (const [ledgerName, balance] of closingBalances) {
-    const ledger = incomeExpenseLedgers.find(l => l.name === ledgerName);
+    const ledger = incomeExpenseLedgers.find((l: any) => l.name === ledgerName);
     if (!ledger) continue;
 
     const category = ledger.group.category;
@@ -162,7 +162,7 @@ export async function generateClosingEntries(
       if (balance.type === 'CREDIT') {
         closingEntries.push({
           ledgerName: ledger.name,
-          entryType: 'DEBIT' as const,
+          entryType: VoucherEntryType.DEBIT,
           amount: balance.amount,
           narration: `Closing entry - ${input.narration || 'Year end'}`,
         });
@@ -172,7 +172,7 @@ export async function generateClosingEntries(
       if (balance.type === 'DEBIT') {
         closingEntries.push({
           ledgerName: ledger.name,
-          entryType: 'CREDIT' as const,
+          entryType: VoucherEntryType.CREDIT,
           amount: balance.amount,
           narration: `Closing entry - ${input.narration || 'Year end'}`,
         });
@@ -184,7 +184,7 @@ export async function generateClosingEntries(
   if (netProfit !== 0) {
     closingEntries.push({
       ledgerName: capitalLedger.name,
-      entryType: netProfit > 0 ? 'CREDIT' : 'DEBIT' as const,
+      entryType: netProfit > 0 ? VoucherEntryType.CREDIT : VoucherEntryType.DEBIT,
       amount: Math.abs(netProfit),
       narration: `Net ${netProfit > 0 ? 'Profit' : 'Loss'} transferred - ${input.narration || 'Year end'}`,
     });
@@ -226,7 +226,6 @@ export async function generateClosingEntries(
   return {
     voucher: closingVoucher,
     entries: closingEntries,
-    netProfit,
   };
 }
 
@@ -254,7 +253,7 @@ export async function runDepreciation(
   const assetLedgers = await prisma.ledger.findMany({
     where: {
       startupId,
-      groupId: { in: assetGroups.map(g => g.id) },
+      groupId: { in: assetGroups.map((g: any) => g.id) },
     },
     include: { group: true },
   });

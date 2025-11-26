@@ -3,6 +3,7 @@
 
 import { prisma } from '../lib/prisma';
 import { Prisma } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 
 export class AnalyticsService {
   static async getMetrics(startupId: string, periodStart: Date, periodEnd: Date) {
@@ -23,29 +24,29 @@ export class AnalyticsService {
 
       // Calculate basic metrics
       const totalRevenue = transactions
-        .filter(t => t.amount > 0)
-        .reduce((sum, t) => sum + t.amount, 0);
+        .filter((t: any) => t.amount > 0)
+        .reduce((sum: number, t: any) => sum + t.amount, 0);
 
       const totalExpenses = Math.abs(transactions
-        .filter(t => t.amount < 0)
-        .reduce((sum, t) => sum + t.amount, 0));
+        .filter((t: any) => t.amount < 0)
+        .reduce((sum: number, t: any) => sum + t.amount, 0));
 
       const netIncome = totalRevenue - totalExpenses;
 
       return {
         success: true,
         data: {
-          totalRevenue: new Prisma.Decimal(totalRevenue),
-          totalExpenses: new Prisma.Decimal(totalExpenses),
-          netIncome: new Prisma.Decimal(netIncome),
+          totalRevenue: new Decimal(totalRevenue),
+          totalExpenses: new Decimal(totalExpenses),
+          netIncome: new Decimal(netIncome),
           transactionCount: transactions.length,
           // Stub values for unimplemented features
-          stripeRevenue: new Prisma.Decimal(0),
+          stripeRevenue: new Decimal(0),
           activeCustomers: 0,
           newCustomers: 0,
           churnedCustomers: 0,
-          mrr: new Prisma.Decimal(0),
-          arr: new Prisma.Decimal(0),
+          mrr: new Decimal(0),
+          arr: new Decimal(0),
         },
       };
     } catch (error) {
@@ -64,18 +65,18 @@ export class AnalyticsService {
       });
 
       const totalBalance = accounts.reduce(
-        (sum, acc) => sum.add(acc.balance),
-        new Prisma.Decimal(0)
+        (sum: Decimal, acc: any) => sum.add(acc.balance),
+        new Decimal(0)
       );
 
       return {
         success: true,
         data: {
           totalBalance,
-          accounts: accounts.map(acc => ({
+          accounts: accounts.map((acc: any) => ({
             id: acc.id,
             name: acc.accountName,
-            balance: new Prisma.Decimal(acc.balance),
+            balance: new Decimal(acc.balance),
           })),
         },
       };
@@ -211,12 +212,12 @@ export class AnalyticsService {
         where: { startupId },
       });
 
-      const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
+      const totalBalance = accounts.reduce((sum: number, acc: any) => sum + acc.balance, 0);
 
       return {
         success: true,
         data: {
-          totalBalance: new Prisma.Decimal(totalBalance),
+          totalBalance: new Decimal(totalBalance),
           accountCount: accounts.length,
           alertCount: alerts.length,
           recentAlerts: alerts,
@@ -237,9 +238,9 @@ export class AnalyticsService {
       return {
         success: true,
         data: {
-          totalRevenue: new Prisma.Decimal(0),
-          stripeRevenue: new Prisma.Decimal(0),
-          otherRevenue: new Prisma.Decimal(0),
+          totalRevenue: new Decimal(0),
+          stripeRevenue: new Decimal(0),
+          otherRevenue: new Decimal(0),
           breakdown: [],
         },
       };

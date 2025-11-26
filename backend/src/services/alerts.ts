@@ -1,5 +1,6 @@
 import { prisma } from "../lib/prisma";
 import { Prisma } from "@prisma/client";
+import { Decimal } from "@prisma/client/runtime/library";
 import OpenAI from "openai";
 import { analyzeVoucherAnomalies, VoucherAlert } from "./voucherAI";
 
@@ -139,7 +140,7 @@ export class AlertsService {
         title: "Runway Alert",
         message,
         currentValue: metrics.runway,
-        thresholdValue: new Prisma.Decimal(6),
+        thresholdValue: new Decimal(6),
         recommendations,
       },
     });
@@ -187,8 +188,8 @@ export class AlertsService {
           message: `Burn rate increased by ${burnChange.toFixed(
             1
           )}% to $${currentBurn.toLocaleString()}/month.`,
-          currentValue: new Prisma.Decimal(currentBurn),
-          thresholdValue: new Prisma.Decimal(previousBurn),
+          currentValue: new Decimal(currentBurn),
+          thresholdValue: new Decimal(previousBurn),
           recommendations,
         },
       });
@@ -203,8 +204,8 @@ export class AlertsService {
           message: `Great news! Burn rate decreased by ${Math.abs(
             burnChange
           ).toFixed(1)}% to $${currentBurn.toLocaleString()}/month.`,
-          currentValue: new Prisma.Decimal(currentBurn),
-          thresholdValue: new Prisma.Decimal(previousBurn),
+          currentValue: new Decimal(currentBurn),
+          thresholdValue: new Decimal(previousBurn),
           recommendations: [],
         },
       });
@@ -236,8 +237,8 @@ export class AlertsService {
           message: `Cash balance is critically low at $${cashBalance.toLocaleString()}. Only ${monthsOfCash.toFixed(
             1
           )} months remaining at current burn.`,
-          currentValue: new Prisma.Decimal(cashBalance),
-          thresholdValue: new Prisma.Decimal(burnRate * 3),
+          currentValue: new Decimal(cashBalance),
+          thresholdValue: new Decimal(burnRate * 3),
           recommendations,
         },
       });
@@ -270,8 +271,8 @@ export class AlertsService {
           message: `Customer churn rate at ${churnRate.toFixed(1)}%. Lost ${
             metrics.churnedCustomers
           } customers this period.`,
-          currentValue: new Prisma.Decimal(churnRate),
-          thresholdValue: new Prisma.Decimal(5),
+          currentValue: new Decimal(churnRate),
+          thresholdValue: new Decimal(5),
           recommendations,
         },
       });
@@ -294,11 +295,15 @@ export class AlertsService {
 
     // Calculate average revenue and expenses
     const avgRevenue =
-      history.reduce((sum, m) => sum + m.totalRevenue.toNumber(), 0) /
-      history.length;
+      history.reduce(
+        (sum: number, m: any) => sum + m.totalRevenue.toNumber(),
+        0
+      ) / history.length;
     const avgExpenses =
-      history.reduce((sum, m) => sum + m.totalExpenses.toNumber(), 0) /
-      history.length;
+      history.reduce(
+        (sum: number, m: any) => sum + m.totalExpenses.toNumber(),
+        0
+      ) / history.length;
 
     const currentRevenue = metrics.totalRevenue.toNumber();
     const currentExpenses = metrics.totalExpenses.toNumber();
@@ -337,10 +342,8 @@ export class AlertsService {
           message: `Unusual patterns detected: ${message.join(
             "; "
           )}. Review your finances to ensure everything is correct.`,
-          currentValue: new Prisma.Decimal(
-            revenueDeviation + expensesDeviation
-          ),
-          thresholdValue: new Prisma.Decimal(30),
+          currentValue: new Decimal(revenueDeviation + expensesDeviation),
+          thresholdValue: new Decimal(30),
           recommendations: [],
         },
       });
@@ -601,9 +604,9 @@ Respond in JSON format:
 
     return {
       total: alerts.length,
-      critical: alerts.filter(a => a.severity === "critical").length,
-      warning: alerts.filter(a => a.severity === "warning").length,
-      info: alerts.filter(a => a.severity === "info").length,
+      critical: alerts.filter((a: any) => a.severity === "critical").length,
+      warning: alerts.filter((a: any) => a.severity === "warning").length,
+      info: alerts.filter((a: any) => a.severity === "info").length,
     };
   }
 }

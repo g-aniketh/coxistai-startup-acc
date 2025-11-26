@@ -23,7 +23,7 @@ export const listRoles = async (startupId?: string) => {
     orderBy: { name: 'asc' },
   });
 
-  return roles.map(({ users, ...rest }) => ({
+  return roles.map(({ users, ...rest }: any) => ({
     ...rest,
     _count: {
       users: users.length,
@@ -127,7 +127,7 @@ export const updateRole = async (
     }
   }
 
-  const updateData: Prisma.RoleUpdateInput = {};
+  const updateData: any = {};
 
   if (name !== undefined) {
     updateData.name = name;

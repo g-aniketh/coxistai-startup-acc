@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { prisma } from '../lib/prisma';
 import { Prisma } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 
 // Initialize OpenAI only if API key is provided
 let openai: OpenAI | null = null;
@@ -49,7 +50,7 @@ export class AICFOService {
       }
 
       // Prepare data for AI
-      const historicalData = history.map((m) => ({
+      const historicalData = history.map((m: any) => ({
         month: m.periodStart.toISOString().slice(0, 7),
         revenue: m.totalRevenue.toNumber(),
         expenses: m.totalExpenses.toNumber(),
@@ -134,13 +135,13 @@ Respond in JSON format:
           description: `AI-generated ${months}-month financial forecast`,
           scenarioType: 'forecast',
           inputParameters: { months, baseDate: new Date() },
-          projectedRevenue: new Prisma.Decimal(totalProjectedRevenue),
-          projectedExpenses: new Prisma.Decimal(totalProjectedExpenses),
-          projectedCashflow: new Prisma.Decimal(totalProjectedRevenue - totalProjectedExpenses),
+          projectedRevenue: new Decimal(totalProjectedRevenue),
+          projectedExpenses: new Decimal(totalProjectedExpenses),
+          projectedCashflow: new Decimal(totalProjectedRevenue - totalProjectedExpenses),
           projectedRunway: lastForecastMonth?.cashBalance > 0 
-            ? new Prisma.Decimal(lastForecastMonth.cashBalance / (totalProjectedExpenses / months))
-            : new Prisma.Decimal(0),
-          confidence: new Prisma.Decimal(response.confidence || 0.8),
+            ? new Decimal(lastForecastMonth.cashBalance / (totalProjectedExpenses / months))
+            : new Decimal(0),
+          confidence: new Decimal(response.confidence || 0.8),
           insights: response.insights || [],
           recommendations: response.recommendations || [],
           risks: response.risks || [],
@@ -319,11 +320,11 @@ Respond in JSON format:
           description: `What-if analysis: ${scenarioName}`,
           scenarioType: 'what_if',
           inputParameters: inputs as any,
-          projectedRevenue: new Prisma.Decimal(projectedRevenue * timeHorizon),
-          projectedExpenses: new Prisma.Decimal(projectedExpenses * timeHorizon),
-          projectedCashflow: new Prisma.Decimal((projectedRevenue - projectedExpenses) * timeHorizon),
-          projectedRunway: new Prisma.Decimal(projectedRunway),
-          confidence: new Prisma.Decimal(aiResponse.confidence || 0.8),
+          projectedRevenue: new Decimal(projectedRevenue * timeHorizon),
+          projectedExpenses: new Decimal(projectedExpenses * timeHorizon),
+          projectedCashflow: new Decimal((projectedRevenue - projectedExpenses) * timeHorizon),
+          projectedRunway: new Decimal(projectedRunway),
+          confidence: new Decimal(aiResponse.confidence || 0.8),
           insights: aiResponse.insights || [],
           recommendations: aiResponse.recommendations || [],
           risks: aiResponse.risks || [],
@@ -380,12 +381,12 @@ Respond in JSON format:
 
       // Calculate period totals
       const totalRevenue = metrics.reduce(
-        (sum, m) => sum.add(m.totalRevenue),
-        new Prisma.Decimal(0)
+        (sum: Decimal, m: any) => sum.add(m.totalRevenue),
+        new Decimal(0)
       );
       const totalExpenses = metrics.reduce(
-        (sum, m) => sum.add(m.totalExpenses),
-        new Prisma.Decimal(0)
+        (sum: Decimal, m: any) => sum.add(m.totalExpenses),
+        new Decimal(0)
       );
 
       const revenueGrowth = firstMetrics.totalRevenue.gt(0)
@@ -393,7 +394,7 @@ Respond in JSON format:
             .sub(firstMetrics.totalRevenue)
             .div(firstMetrics.totalRevenue)
             .mul(100)
-        : new Prisma.Decimal(0);
+        : new Decimal(0);
 
       // Get recent scenarios/insights
       const scenarios = await prisma.aIScenario.findMany({
@@ -529,7 +530,7 @@ Current Metrics:
 Historical Trend (last ${history.length} months):
 ${history
   .map(
-    (m) =>
+    (m: any) =>
       `${m.periodStart.toISOString().slice(0, 7)}: Revenue $${m.totalRevenue.toNumber().toLocaleString()}, Expenses $${m.totalExpenses.toNumber().toLocaleString()}`
   )
   .join('\n')}

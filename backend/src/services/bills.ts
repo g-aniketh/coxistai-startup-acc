@@ -1,5 +1,6 @@
-import { Prisma, BillType, BillStatus } from '@prisma/client';
-import { prisma } from '../lib/prisma';
+import { Prisma, BillType, BillStatus } from "@prisma/client";
+import { Decimal } from "@prisma/client/runtime/library";
+import { prisma } from "../lib/prisma";
 
 export interface CreateBillInput {
   billType: BillType;
@@ -28,7 +29,19 @@ export interface SettleBillInput {
  * Create a new bill (receivable or payable)
  */
 export const createBill = async (startupId: string, input: CreateBillInput) => {
-  const { billType, billNumber, ledgerName, ledgerCode, billDate, dueDate, originalAmount, reference, narration, voucherId, voucherEntryId } = input;
+  const {
+    billType,
+    billNumber,
+    ledgerName,
+    ledgerCode,
+    billDate,
+    dueDate,
+    originalAmount,
+    reference,
+    narration,
+    voucherId,
+    voucherEntryId,
+  } = input;
 
   // Check if bill number already exists
   const existingBill = await prisma.bill.findUnique({
@@ -50,7 +63,7 @@ export const createBill = async (startupId: string, input: CreateBillInput) => {
       where: { id: voucherId, startupId },
     });
     if (!voucher) {
-      throw new Error('Voucher not found or does not belong to your startup');
+      throw new Error("Voucher not found or does not belong to your startup");
     }
   }
 
@@ -60,7 +73,9 @@ export const createBill = async (startupId: string, input: CreateBillInput) => {
       include: { voucher: true },
     });
     if (!entry || entry.voucher.startupId !== startupId) {
-      throw new Error('Voucher entry not found or does not belong to your startup');
+      throw new Error(
+        "Voucher entry not found or does not belong to your startup"
+      );
     }
   }
 
@@ -68,16 +83,16 @@ export const createBill = async (startupId: string, input: CreateBillInput) => {
   const dueDateValue = dueDate ? new Date(dueDate) : null;
 
   if (Number.isNaN(billDateValue.getTime())) {
-    throw new Error('Invalid bill date');
+    throw new Error("Invalid bill date");
   }
 
   if (dueDateValue && Number.isNaN(dueDateValue.getTime())) {
-    throw new Error('Invalid due date');
+    throw new Error("Invalid due date");
   }
 
-  const amount = new Prisma.Decimal(originalAmount);
+  const amount = new Decimal(originalAmount);
   if (amount.lte(0)) {
-    throw new Error('Bill amount must be greater than zero');
+    throw new Error("Bill amount must be greater than zero");
   }
 
   const bill = await prisma.bill.create({
@@ -90,7 +105,7 @@ export const createBill = async (startupId: string, input: CreateBillInput) => {
       billDate: billDateValue,
       dueDate: dueDateValue,
       originalAmount: amount,
-      settledAmount: new Prisma.Decimal(0),
+      settledAmount: new Decimal(0),
       outstandingAmount: amount, // Initially equals originalAmount
       status: BillStatus.OPEN,
       reference: reference?.trim() || null,
@@ -115,7 +130,7 @@ export const createBill = async (startupId: string, input: CreateBillInput) => {
           voucherEntry: true,
         },
         orderBy: {
-          settlementDate: 'desc',
+          settlementDate: "desc",
         },
       },
     },
@@ -128,24 +143,31 @@ export const createBill = async (startupId: string, input: CreateBillInput) => {
  * Settle a bill against a voucher entry (Payment/Receipt)
  */
 export const settleBill = async (startupId: string, input: SettleBillInput) => {
-  const { billId, voucherId, voucherEntryId, settlementAmount, reference, remarks } = input;
+  const {
+    billId,
+    voucherId,
+    voucherEntryId,
+    settlementAmount,
+    reference,
+    remarks,
+  } = input;
 
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: any) => {
     // Verify bill exists and belongs to startup
     const bill = await tx.bill.findFirst({
       where: { id: billId, startupId },
     });
 
     if (!bill) {
-      throw new Error('Bill not found or does not belong to your startup');
+      throw new Error("Bill not found or does not belong to your startup");
     }
 
     if (bill.status === BillStatus.SETTLED) {
-      throw new Error('Bill is already fully settled');
+      throw new Error("Bill is already fully settled");
     }
 
     if (bill.status === BillStatus.CANCELLED) {
-      throw new Error('Cannot settle a cancelled bill');
+      throw new Error("Cannot settle a cancelled bill");
     }
 
     // Verify voucher and entry exist and belong to startup
@@ -155,21 +177,21 @@ export const settleBill = async (startupId: string, input: SettleBillInput) => {
     });
 
     if (!voucher) {
-      throw new Error('Voucher not found or does not belong to your startup');
+      throw new Error("Voucher not found or does not belong to your startup");
     }
 
-    const entry = voucher.entries.find((e) => e.id === voucherEntryId);
+    const entry = voucher.entries.find((e: any) => e.id === voucherEntryId);
     if (!entry) {
-      throw new Error('Voucher entry not found');
+      throw new Error("Voucher entry not found");
     }
 
     // Validate settlement amount
-    const settlementAmountDecimal = new Prisma.Decimal(settlementAmount);
+    const settlementAmountDecimal = new Decimal(settlementAmount);
     if (settlementAmountDecimal.lte(0)) {
-      throw new Error('Settlement amount must be greater than zero');
+      throw new Error("Settlement amount must be greater than zero");
     }
 
-    const currentOutstanding = new Prisma.Decimal(bill.outstandingAmount);
+    const currentOutstanding = new Decimal(bill.outstandingAmount);
     if (settlementAmountDecimal.gt(currentOutstanding)) {
       throw new Error(
         `Settlement amount (${settlementAmount}) exceeds outstanding amount (${bill.outstandingAmount})`
@@ -191,13 +213,20 @@ export const settleBill = async (startupId: string, input: SettleBillInput) => {
     });
 
     // Update bill status and amounts
-    const newSettledAmount = new Prisma.Decimal(bill.settledAmount).plus(settlementAmountDecimal);
-    const newOutstandingAmount = new Prisma.Decimal(bill.originalAmount).minus(newSettledAmount);
+    const newSettledAmount = new Decimal(bill.settledAmount).plus(
+      settlementAmountDecimal
+    );
+    const newOutstandingAmount = new Decimal(bill.originalAmount).minus(
+      newSettledAmount
+    );
 
     let newStatus: BillStatus = bill.status;
     if (newOutstandingAmount.lte(0)) {
       newStatus = BillStatus.SETTLED;
-    } else if (newSettledAmount.gt(0) && newSettledAmount.lt(bill.originalAmount)) {
+    } else if (
+      newSettledAmount.gt(0) &&
+      newSettledAmount.lt(bill.originalAmount)
+    ) {
       newStatus = BillStatus.PARTIAL;
     }
 
@@ -205,7 +234,9 @@ export const settleBill = async (startupId: string, input: SettleBillInput) => {
       where: { id: bill.id },
       data: {
         settledAmount: newSettledAmount,
-        outstandingAmount: newOutstandingAmount.gt(0) ? newOutstandingAmount : new Prisma.Decimal(0),
+        outstandingAmount: newOutstandingAmount.gt(0)
+          ? newOutstandingAmount
+          : new Decimal(0),
         status: newStatus,
       },
       include: {
@@ -225,7 +256,7 @@ export const settleBill = async (startupId: string, input: SettleBillInput) => {
             voucherEntry: true,
           },
           orderBy: {
-            settlementDate: 'desc',
+            settlementDate: "desc",
           },
         },
       },
@@ -265,7 +296,7 @@ export const listBills = async (
   }
 
   if (filters?.ledgerName) {
-    where.ledgerName = { contains: filters.ledgerName, mode: 'insensitive' };
+    where.ledgerName = { contains: filters.ledgerName, mode: "insensitive" };
   }
 
   if (filters?.fromDate || filters?.toDate) {
@@ -311,11 +342,11 @@ export const listBills = async (
             voucherEntry: true,
           },
           orderBy: {
-            settlementDate: 'desc',
+            settlementDate: "desc",
           },
         },
       },
-      orderBy: { billDate: 'desc' },
+      orderBy: { billDate: "desc" },
       take: limit,
       skip: offset,
     }),
@@ -346,7 +377,7 @@ export const getBillAgingReport = async (
     where,
     include: {
       settlements: {
-        orderBy: { settlementDate: 'desc' },
+        orderBy: { settlementDate: "desc" },
         take: 1, // Get latest settlement for reference
       },
     },
@@ -354,32 +385,44 @@ export const getBillAgingReport = async (
 
   const now = new Date();
   const agingBuckets = {
-    current: { count: 0, amount: new Prisma.Decimal(0) }, // Not overdue
-    days30: { count: 0, amount: new Prisma.Decimal(0) }, // 1-30 days overdue
-    days60: { count: 0, amount: new Prisma.Decimal(0) }, // 31-60 days overdue
-    days90: { count: 0, amount: new Prisma.Decimal(0) }, // 61-90 days overdue
-    over90: { count: 0, amount: new Prisma.Decimal(0) }, // Over 90 days overdue
+    current: { count: 0, amount: new Decimal(0) }, // Not overdue
+    days30: { count: 0, amount: new Decimal(0) }, // 1-30 days overdue
+    days60: { count: 0, amount: new Decimal(0) }, // 31-60 days overdue
+    days90: { count: 0, amount: new Decimal(0) }, // 61-90 days overdue
+    over90: { count: 0, amount: new Decimal(0) }, // Over 90 days overdue
   };
 
   for (const bill of bills) {
     const dueDate = bill.dueDate || bill.billDate;
-    const daysOverdue = Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+    const daysOverdue = Math.floor(
+      (now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
 
     if (daysOverdue <= 0) {
       agingBuckets.current.count++;
-      agingBuckets.current.amount = agingBuckets.current.amount.plus(bill.outstandingAmount);
+      agingBuckets.current.amount = agingBuckets.current.amount.plus(
+        bill.outstandingAmount
+      );
     } else if (daysOverdue <= 30) {
       agingBuckets.days30.count++;
-      agingBuckets.days30.amount = agingBuckets.days30.amount.plus(bill.outstandingAmount);
+      agingBuckets.days30.amount = agingBuckets.days30.amount.plus(
+        bill.outstandingAmount
+      );
     } else if (daysOverdue <= 60) {
       agingBuckets.days60.count++;
-      agingBuckets.days60.amount = agingBuckets.days60.amount.plus(bill.outstandingAmount);
+      agingBuckets.days60.amount = agingBuckets.days60.amount.plus(
+        bill.outstandingAmount
+      );
     } else if (daysOverdue <= 90) {
       agingBuckets.days90.count++;
-      agingBuckets.days90.amount = agingBuckets.days90.amount.plus(bill.outstandingAmount);
+      agingBuckets.days90.amount = agingBuckets.days90.amount.plus(
+        bill.outstandingAmount
+      );
     } else {
       agingBuckets.over90.count++;
-      agingBuckets.over90.amount = agingBuckets.over90.amount.plus(bill.outstandingAmount);
+      agingBuckets.over90.amount = agingBuckets.over90.amount.plus(
+        bill.outstandingAmount
+      );
     }
   }
 
@@ -387,8 +430,8 @@ export const getBillAgingReport = async (
     summary: {
       totalBills: bills.length,
       totalOutstanding: bills.reduce(
-        (sum, bill) => sum.plus(bill.outstandingAmount),
-        new Prisma.Decimal(0)
+        (sum: Decimal, bill: any) => sum.plus(bill.outstandingAmount),
+        new Decimal(0)
       ),
     },
     aging: {
@@ -413,7 +456,7 @@ export const getBillAgingReport = async (
         amount: Number(agingBuckets.over90.amount),
       },
     },
-    bills: bills.map((bill) => ({
+    bills: bills.map((bill: any) => ({
       id: bill.id,
       billNumber: bill.billNumber,
       billType: bill.billType,
@@ -424,7 +467,8 @@ export const getBillAgingReport = async (
       outstandingAmount: Number(bill.outstandingAmount),
       status: bill.status,
       daysOverdue: Math.floor(
-        (now.getTime() - (bill.dueDate || bill.billDate).getTime()) / (1000 * 60 * 60 * 24)
+        (now.getTime() - (bill.dueDate || bill.billDate).getTime()) /
+          (1000 * 60 * 60 * 24)
       ),
     })),
   };
@@ -449,7 +493,7 @@ export const getOutstandingByLedger = async (
 
   const bills = await prisma.bill.findMany({
     where,
-    orderBy: [{ ledgerName: 'asc' }, { billDate: 'asc' }],
+    orderBy: [{ ledgerName: "asc" }, { billDate: "asc" }],
   });
 
   // Group by ledger name
@@ -459,12 +503,12 @@ export const getOutstandingByLedger = async (
       ledgerName: string;
       ledgerCode: string | null;
       billCount: number;
-      totalOutstanding: Prisma.Decimal;
+      totalOutstanding: Decimal;
       bills: Array<{
         billNumber: string;
         billDate: Date;
         dueDate: Date | null;
-        outstandingAmount: Prisma.Decimal;
+        outstandingAmount: Decimal;
       }>;
     }
   >();
@@ -476,14 +520,16 @@ export const getOutstandingByLedger = async (
         ledgerName: bill.ledgerName,
         ledgerCode: bill.ledgerCode,
         billCount: 0,
-        totalOutstanding: new Prisma.Decimal(0),
+        totalOutstanding: new Decimal(0),
         bills: [],
       });
     }
 
     const ledger = ledgerMap.get(key)!;
     ledger.billCount++;
-    ledger.totalOutstanding = ledger.totalOutstanding.plus(bill.outstandingAmount);
+    ledger.totalOutstanding = ledger.totalOutstanding.plus(
+      bill.outstandingAmount
+    );
     ledger.bills.push({
       billNumber: bill.billNumber,
       billDate: bill.billDate,
@@ -492,12 +538,12 @@ export const getOutstandingByLedger = async (
     });
   }
 
-  return Array.from(ledgerMap.values()).map((ledger) => ({
+  return Array.from(ledgerMap.values()).map(ledger => ({
     ledgerName: ledger.ledgerName,
     ledgerCode: ledger.ledgerCode,
     billCount: ledger.billCount,
     totalOutstanding: Number(ledger.totalOutstanding),
-    bills: ledger.bills.map((bill) => ({
+    bills: ledger.bills.map(bill => ({
       billNumber: bill.billNumber,
       billDate: bill.billDate,
       dueDate: bill.dueDate,
@@ -526,23 +572,34 @@ export const getBillReminders = async (
 
   const bills = await prisma.bill.findMany({
     where,
-    orderBy: { dueDate: 'asc' },
+    orderBy: { dueDate: "asc" },
   });
 
   const now = new Date();
   const reminders = bills
-    .filter((bill) => {
+    .filter((bill: any) => {
       const dueDate = bill.dueDate || bill.billDate;
-      const daysUntilDue = Math.floor((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      const daysOverdue = Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+      const daysUntilDue = Math.floor(
+        (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      const daysOverdue = Math.floor(
+        (now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
 
       // Include if overdue or within reminder window
-      return daysOverdue > 0 || (daysUntilDue >= 0 && daysUntilDue <= daysBeforeReminder);
+      return (
+        daysOverdue > 0 ||
+        (daysUntilDue >= 0 && daysUntilDue <= daysBeforeReminder)
+      );
     })
-    .map((bill) => {
+    .map((bill: any) => {
       const dueDate = bill.dueDate || bill.billDate;
-      const daysUntilDue = Math.floor((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      const daysOverdue = Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+      const daysUntilDue = Math.floor(
+        (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      const daysOverdue = Math.floor(
+        (now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
 
       return {
         id: bill.id,
@@ -554,7 +611,12 @@ export const getBillReminders = async (
         daysUntilDue,
         daysOverdue: daysOverdue > 0 ? daysOverdue : 0,
         isOverdue: daysOverdue > 0,
-        reminderType: daysOverdue > 0 ? 'OVERDUE' : daysUntilDue <= 3 ? 'URGENT' : 'WARNING',
+        reminderType:
+          daysOverdue > 0
+            ? "OVERDUE"
+            : daysUntilDue <= 3
+            ? "URGENT"
+            : "WARNING",
       };
     });
 
@@ -590,7 +652,7 @@ export const getBillCashFlowProjections = async (
       status: { in: [BillStatus.OPEN, BillStatus.PARTIAL] },
       outstandingAmount: { gt: 0 },
     },
-    orderBy: { dueDate: 'asc' },
+    orderBy: { dueDate: "asc" },
   });
 
   // Group by month
@@ -598,29 +660,35 @@ export const getBillCashFlowProjections = async (
     const monthDate = new Date(now.getFullYear(), now.getMonth() + i, 1);
     const nextMonth = new Date(now.getFullYear(), now.getMonth() + i + 1, 1);
 
-    const monthBills = bills.filter((bill) => {
+    const monthBills = bills.filter(bill => {
       const dueDate = bill.dueDate || bill.billDate;
       return dueDate >= monthDate && dueDate < nextMonth;
     });
 
     const receivablesExpected = monthBills
-      .filter((b) => b.billType === BillType.RECEIVABLE)
-      .reduce((sum, b) => sum.plus(b.outstandingAmount), new Prisma.Decimal(0));
+      .filter((b: any) => b.billType === BillType.RECEIVABLE)
+      .reduce(
+        (sum: Decimal, b: any) => sum.plus(b.outstandingAmount),
+        new Decimal(0)
+      );
 
     const payablesExpected = monthBills
-      .filter((b) => b.billType === BillType.PAYABLE)
-      .reduce((sum, b) => sum.plus(b.outstandingAmount), new Prisma.Decimal(0));
+      .filter((b: any) => b.billType === BillType.PAYABLE)
+      .reduce(
+        (sum: Decimal, b: any) => sum.plus(b.outstandingAmount),
+        new Decimal(0)
+      );
 
     projections.push({
       month: monthDate.toISOString().slice(0, 7), // YYYY-MM
       receivablesExpected: Number(receivablesExpected),
       payablesExpected: Number(payablesExpected),
       netCashFlow: Number(receivablesExpected) - Number(payablesExpected),
-      bills: monthBills.map((bill) => ({
+      bills: monthBills.map(bill => ({
         billNumber: bill.billNumber,
         ledgerName: bill.ledgerName,
         amount: Number(bill.outstandingAmount),
-        dueDate: (bill.dueDate || bill.billDate).toISOString().split('T')[0],
+        dueDate: (bill.dueDate || bill.billDate).toISOString().split("T")[0],
         billType: bill.billType,
       })),
     });
@@ -652,60 +720,75 @@ export const getBillsAnalytics = async (
   });
 
   // Receivables analytics
-  const receivables = bills.filter((b) => b.billType === BillType.RECEIVABLE);
+  const receivables = bills.filter(
+    (b: any) => b.billType === BillType.RECEIVABLE
+  );
   const receivablesTotal = receivables.reduce(
-    (sum, b) => sum.plus(b.originalAmount),
-    new Prisma.Decimal(0)
+    (sum: Decimal, b: any) => sum.plus(b.originalAmount),
+    new Decimal(0)
   );
   const receivablesOutstanding = receivables
-    .filter((b) => b.status !== BillStatus.SETTLED)
-    .reduce((sum, b) => sum.plus(b.outstandingAmount), new Prisma.Decimal(0));
+    .filter((b: any) => b.status !== BillStatus.SETTLED)
+    .reduce((sum, b) => sum.plus(b.outstandingAmount), new Decimal(0));
   const receivablesSettled = receivables
-    .filter((b) => b.status === BillStatus.SETTLED)
-    .reduce((sum, b) => sum.plus(b.settledAmount), new Prisma.Decimal(0));
+    .filter((b: any) => b.status === BillStatus.SETTLED)
+    .reduce(
+      (sum: Decimal, b: any) => sum.plus(b.settledAmount),
+      new Decimal(0)
+    );
 
   // Payables analytics
-  const payables = bills.filter((b) => b.billType === BillType.PAYABLE);
+  const payables = bills.filter((b: any) => b.billType === BillType.PAYABLE);
   const payablesTotal = payables.reduce(
-    (sum, b) => sum.plus(b.originalAmount),
-    new Prisma.Decimal(0)
+    (sum: Decimal, b: any) => sum.plus(b.originalAmount),
+    new Decimal(0)
   );
   const payablesOutstanding = payables
-    .filter((b) => b.status !== BillStatus.SETTLED)
-    .reduce((sum, b) => sum.plus(b.outstandingAmount), new Prisma.Decimal(0));
+    .filter((b: any) => b.status !== BillStatus.SETTLED)
+    .reduce((sum, b) => sum.plus(b.outstandingAmount), new Decimal(0));
   const payablesSettled = payables
-    .filter((b) => b.status === BillStatus.SETTLED)
-    .reduce((sum, b) => sum.plus(b.settledAmount), new Prisma.Decimal(0));
+    .filter((b: any) => b.status === BillStatus.SETTLED)
+    .reduce(
+      (sum: Decimal, b: any) => sum.plus(b.settledAmount),
+      new Decimal(0)
+    );
 
   // Calculate collection/payment rates
-  const receivablesCollectionRate =
-    receivablesTotal.gt(0)
-      ? Number(receivablesSettled.div(receivablesTotal).times(100))
-      : 0;
-  const payablesPaymentRate =
-    payablesTotal.gt(0)
-      ? Number(payablesSettled.div(payablesTotal).times(100))
-      : 0;
+  const receivablesCollectionRate = receivablesTotal.gt(0)
+    ? Number(receivablesSettled.div(receivablesTotal).times(100))
+    : 0;
+  const payablesPaymentRate = payablesTotal.gt(0)
+    ? Number(payablesSettled.div(payablesTotal).times(100))
+    : 0;
 
   // Average collection/payment period
   const now = new Date();
-  const receivablesAvgDays = receivables
-    .filter((b) => b.dueDate && b.status !== BillStatus.SETTLED)
-    .reduce((sum, b) => {
-      const days = Math.floor(
-        (now.getTime() - (b.dueDate || b.billDate).getTime()) / (1000 * 60 * 60 * 24)
-      );
-      return sum + Math.max(0, days);
-    }, 0) / (receivables.filter((b) => b.dueDate && b.status !== BillStatus.SETTLED).length || 1);
+  const receivablesAvgDays =
+    receivables
+      .filter(b => b.dueDate && b.status !== BillStatus.SETTLED)
+      .reduce((sum: number, b: any) => {
+        const days = Math.floor(
+          (now.getTime() - (b.dueDate || b.billDate).getTime()) /
+            (1000 * 60 * 60 * 24)
+        );
+        return sum + Math.max(0, days);
+      }, 0) /
+    (receivables.filter(
+      (b: any) => b.dueDate && b.status !== BillStatus.SETTLED
+    ).length || 1);
 
-  const payablesAvgDays = payables
-    .filter((b) => b.dueDate && b.status !== BillStatus.SETTLED)
-    .reduce((sum, b) => {
-      const days = Math.floor(
-        (now.getTime() - (b.dueDate || b.billDate).getTime()) / (1000 * 60 * 60 * 24)
-      );
-      return sum + Math.max(0, days);
-    }, 0) / (payables.filter((b) => b.dueDate && b.status !== BillStatus.SETTLED).length || 1);
+  const payablesAvgDays =
+    payables
+      .filter(b => b.dueDate && b.status !== BillStatus.SETTLED)
+      .reduce((sum: number, b: any) => {
+        const days = Math.floor(
+          (now.getTime() - (b.dueDate || b.billDate).getTime()) /
+            (1000 * 60 * 60 * 24)
+        );
+        return sum + Math.max(0, days);
+      }, 0) /
+    (payables.filter((b: any) => b.dueDate && b.status !== BillStatus.SETTLED)
+      .length || 1);
 
   return {
     receivables: {
@@ -727,4 +810,3 @@ export const getBillsAnalytics = async (
     netPosition: Number(receivablesOutstanding) - Number(payablesOutstanding),
   };
 };
-

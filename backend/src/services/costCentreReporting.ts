@@ -37,7 +37,7 @@ export async function getCostCentrePL(
   });
 
   // Get voucher entries with cost centre allocation
-  const entryFilters: Prisma.VoucherEntryWhereInput = {
+  const entryFilters: any = {
     voucher: {
       startupId,
       date: {},
