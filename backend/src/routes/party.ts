@@ -21,7 +21,8 @@ router.get("/", async (req: AuthRequest, res: Response) => {
     console.error("List parties error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to fetch parties",
+      message:
+        error instanceof Error ? error.message : "Failed to fetch parties",
     });
   }
 });
@@ -38,15 +39,19 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     const party = await createParty(startupId, req.body);
     return res
       .status(201)
-      .json({ success: true, data: party, message: "Party created successfully" });
+      .json({
+        success: true,
+        data: party,
+        message: "Party created successfully",
+      });
   } catch (error) {
     console.error("Create party error:", error);
     return res.status(400).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to create party",
+      message:
+        error instanceof Error ? error.message : "Failed to create party",
     });
   }
 });
 
 export default router;
-

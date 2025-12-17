@@ -1,5 +1,5 @@
-import { Prisma, LedgerCategory } from '@prisma/client';
-import { prisma } from '../lib/prisma';
+import { Prisma, LedgerCategory } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 
 /**
  * Get cost centre-wise P&L report
@@ -109,7 +109,7 @@ export async function getCostCentrePL(
 
     const category = ledger.group.category;
 
-    if (entry.entryType === 'CREDIT') {
+    if (entry.entryType === "CREDIT") {
       if (category === LedgerCategory.SALES) {
         data.sales += amount;
       } else if (category === LedgerCategory.DIRECT_INCOME) {
@@ -128,35 +128,47 @@ export async function getCostCentrePL(
     }
   }
 
-  const centres = Array.from(centreData.values()).map(centre => ({
+  const centres = Array.from(centreData.values()).map((centre) => ({
     ...centre,
     grossProfit: centre.sales - centre.purchase,
-    netProfit: centre.directIncome + centre.indirectIncome - centre.directExpense - centre.indirectExpense,
+    netProfit:
+      centre.directIncome +
+      centre.indirectIncome -
+      centre.directExpense -
+      centre.indirectExpense,
     totalIncome: centre.sales + centre.directIncome + centre.indirectIncome,
-    totalExpense: centre.purchase + centre.directExpense + centre.indirectExpense,
+    totalExpense:
+      centre.purchase + centre.directExpense + centre.indirectExpense,
   }));
 
   return {
-    costCentre: costCentre ? {
-      id: costCentre.id,
-      name: costCentre.name,
-      category: costCentre.category.name,
-    } : null,
+    costCentre: costCentre
+      ? {
+          id: costCentre.id,
+          name: costCentre.name,
+          category: costCentre.category.name,
+        }
+      : null,
     period: {
-      fromDate: from?.toISOString().split('T')[0],
-      toDate: to.toISOString().split('T')[0],
+      fromDate: from?.toISOString().split("T")[0],
+      toDate: to.toISOString().split("T")[0],
     },
     centres,
     summary: {
       totalSales: centres.reduce((sum, c) => sum + c.sales, 0),
       totalPurchase: centres.reduce((sum, c) => sum + c.purchase, 0),
       totalDirectIncome: centres.reduce((sum, c) => sum + c.directIncome, 0),
-      totalIndirectIncome: centres.reduce((sum, c) => sum + c.indirectIncome, 0),
+      totalIndirectIncome: centres.reduce(
+        (sum, c) => sum + c.indirectIncome,
+        0
+      ),
       totalDirectExpense: centres.reduce((sum, c) => sum + c.directExpense, 0),
-      totalIndirectExpense: centres.reduce((sum, c) => sum + c.indirectExpense, 0),
+      totalIndirectExpense: centres.reduce(
+        (sum, c) => sum + c.indirectExpense,
+        0
+      ),
       totalGrossProfit: centres.reduce((sum, c) => sum + c.grossProfit, 0),
       totalNetProfit: centres.reduce((sum, c) => sum + c.netProfit, 0),
     },
   };
 }
-

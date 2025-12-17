@@ -1,15 +1,18 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useAuthStore } from '@/store/auth';
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuthStore } from "@/store/auth";
 
 interface AuthGuardProps {
   children: React.ReactNode;
   requireAuth?: boolean;
 }
 
-export default function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
+export default function AuthGuard({
+  children,
+  requireAuth = true,
+}: AuthGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
@@ -21,7 +24,7 @@ export default function AuthGuard({ children, requireAuth = true }: AuthGuardPro
       if (requireAuth) {
         const authSuccess = await checkAuth();
         if (!authSuccess) {
-          router.push('/login');
+          router.push("/login");
           return;
         }
       }
@@ -34,8 +37,8 @@ export default function AuthGuard({ children, requireAuth = true }: AuthGuardPro
   // Handle redirects for authenticated users on auth pages
   useEffect(() => {
     if (!requireAuth && isAuthenticated && !isLoading && !isChecking) {
-      if (pathname === '/login' || pathname === '/register') {
-        router.push('/dashboard');
+      if (pathname === "/login" || pathname === "/register") {
+        router.push("/dashboard");
       }
     }
   }, [requireAuth, isAuthenticated, isLoading, isChecking, pathname, router]);
@@ -43,7 +46,7 @@ export default function AuthGuard({ children, requireAuth = true }: AuthGuardPro
   // Handle redirects for unauthenticated users on protected routes
   useEffect(() => {
     if (requireAuth && !isAuthenticated && !isLoading && !isChecking) {
-      router.push('/login');
+      router.push("/login");
     }
   }, [requireAuth, isAuthenticated, isLoading, isChecking, router]);
 
@@ -64,7 +67,11 @@ export default function AuthGuard({ children, requireAuth = true }: AuthGuardPro
     return null;
   }
 
-  if (!requireAuth && isAuthenticated && (pathname === '/login' || pathname === '/register')) {
+  if (
+    !requireAuth &&
+    isAuthenticated &&
+    (pathname === "/login" || pathname === "/register")
+  ) {
     return null;
   }
 

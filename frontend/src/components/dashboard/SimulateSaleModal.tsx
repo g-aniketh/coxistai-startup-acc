@@ -1,24 +1,37 @@
-'use client';
+"use client";
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { apiClient, BankAccount, Product } from '@/lib/api';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import toast from 'react-hot-toast';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { apiClient, BankAccount, Product } from "@/lib/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import toast from "react-hot-toast";
 
 // Zod validation schema
 const saleSchema = z.object({
-  productId: z.string().min(1, 'Please select a product'),
-  quantitySold: z.number()
-    .int('Quantity must be a whole number')
-    .positive('Quantity must be greater than 0')
-    .max(10000, 'Quantity is too large'),
-  accountId: z.string().min(1, 'Please select an account'),
+  productId: z.string().min(1, "Please select a product"),
+  quantitySold: z
+    .number()
+    .int("Quantity must be a whole number")
+    .positive("Quantity must be greater than 0")
+    .max(10000, "Quantity is too large"),
+  accountId: z.string().min(1, "Please select an account"),
 });
 
 type SaleFormData = z.infer<typeof saleSchema>;
@@ -31,12 +44,12 @@ interface SimulateSaleModalProps {
   products: Product[];
 }
 
-export default function SimulateSaleModal({ 
-  isOpen, 
-  onClose, 
-  onSuccess, 
+export default function SimulateSaleModal({
+  isOpen,
+  onClose,
+  onSuccess,
   accounts,
-  products 
+  products,
 }: SimulateSaleModalProps) {
   const {
     register,
@@ -49,24 +62,25 @@ export default function SimulateSaleModal({
   } = useForm<SaleFormData>({
     resolver: zodResolver(saleSchema),
     defaultValues: {
-      productId: '',
+      productId: "",
       quantitySold: 1,
-      accountId: '',
+      accountId: "",
     },
   });
 
-  const selectedProductId = watch('productId');
-  const selectedAccountId = watch('accountId');
-  const quantitySold = watch('quantitySold');
+  const selectedProductId = watch("productId");
+  const selectedAccountId = watch("accountId");
+  const quantitySold = watch("quantitySold");
 
-  const selectedProduct = products.find(p => p.id === selectedProductId);
-  const totalPrice = selectedProduct && quantitySold ? selectedProduct.price * quantitySold : 0;
+  const selectedProduct = products.find((p) => p.id === selectedProductId);
+  const totalPrice =
+    selectedProduct && quantitySold ? selectedProduct.price * quantitySold : 0;
 
   const onSubmit = async (data: SaleFormData) => {
     // Additional validation: check stock availability
     if (selectedProduct && data.quantitySold > selectedProduct.quantity) {
-      setError('quantitySold', {
-        message: `Only ${selectedProduct.quantity} units available in stock`
+      setError("quantitySold", {
+        message: `Only ${selectedProduct.quantity} units available in stock`,
       });
       return;
     }
@@ -85,10 +99,10 @@ export default function SimulateSaleModal({
         onSuccess();
         onClose();
       } else {
-        toast.error(response.message || 'Failed to simulate sale');
+        toast.error(response.message || "Failed to simulate sale");
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to simulate sale');
+      toast.error(error.response?.data?.message || "Failed to simulate sale");
     }
   };
 
@@ -103,7 +117,8 @@ export default function SimulateSaleModal({
         <DialogHeader>
           <DialogTitle>Simulate Product Sale</DialogTitle>
           <DialogDescription>
-            Simulate a customer purchase. This will update inventory and create a revenue transaction.
+            Simulate a customer purchase. This will update inventory and create
+            a revenue transaction.
           </DialogDescription>
         </DialogHeader>
 
@@ -113,7 +128,9 @@ export default function SimulateSaleModal({
             <Label htmlFor="product">Product *</Label>
             <Select
               value={selectedProductId}
-              onValueChange={(value) => setValue('productId', value, { shouldValidate: true })}
+              onValueChange={(value) =>
+                setValue("productId", value, { shouldValidate: true })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select product" />
@@ -121,7 +138,8 @@ export default function SimulateSaleModal({
               <SelectContent>
                 {products.map((product) => (
                   <SelectItem key={product.id} value={product.id}>
-                    {product.name} - ${product.price} (Stock: {product.quantity})
+                    {product.name} - ${product.price} (Stock: {product.quantity}
+                    )
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -131,7 +149,8 @@ export default function SimulateSaleModal({
             )}
             {selectedProduct && (
               <p className="text-xs text-muted-foreground">
-                Available stock: {selectedProduct.quantity} units at ${selectedProduct.price}/unit
+                Available stock: {selectedProduct.quantity} units at $
+                {selectedProduct.price}/unit
               </p>
             )}
           </div>
@@ -144,11 +163,13 @@ export default function SimulateSaleModal({
               type="number"
               min="1"
               placeholder="5"
-              {...register('quantitySold', { valueAsNumber: true })}
-              className={errors.quantitySold ? 'border-red-500' : ''}
+              {...register("quantitySold", { valueAsNumber: true })}
+              className={errors.quantitySold ? "border-red-500" : ""}
             />
             {errors.quantitySold && (
-              <p className="text-sm text-red-500">{errors.quantitySold.message}</p>
+              <p className="text-sm text-red-500">
+                {errors.quantitySold.message}
+              </p>
             )}
             {selectedProduct && quantitySold > 0 && (
               <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
@@ -167,7 +188,9 @@ export default function SimulateSaleModal({
             <Label htmlFor="account">Deposit to Account *</Label>
             <Select
               value={selectedAccountId}
-              onValueChange={(value) => setValue('accountId', value, { shouldValidate: true })}
+              onValueChange={(value) =>
+                setValue("accountId", value, { shouldValidate: true })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select account" />
@@ -187,10 +210,10 @@ export default function SimulateSaleModal({
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-2 pt-4">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={handleClose} 
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
               disabled={isSubmitting}
             >
               Cancel
@@ -202,7 +225,7 @@ export default function SimulateSaleModal({
                   Processing...
                 </>
               ) : (
-                'Simulate Sale'
+                "Simulate Sale"
               )}
             </Button>
           </div>

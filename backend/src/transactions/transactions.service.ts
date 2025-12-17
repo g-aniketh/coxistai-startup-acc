@@ -1,4 +1,4 @@
-import { PrismaClient, TransactionType } from '@prisma/client';
+import { PrismaClient, TransactionType } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -9,19 +9,24 @@ interface CreateTransactionData {
   accountId: string;
 }
 
-export const createTransaction = async (startupId: string, data: CreateTransactionData) => {
+export const createTransaction = async (
+  startupId: string,
+  data: CreateTransactionData
+) => {
   const { amount, type, description, accountId } = data;
 
   // Verify account belongs to this startup
   const account = await prisma.mockBankAccount.findFirst({
     where: {
       id: accountId,
-      startupId
-    }
+      startupId,
+    },
   });
 
   if (!account) {
-    throw new Error('Bank account not found or does not belong to your startup');
+    throw new Error(
+      "Bank account not found or does not belong to your startup"
+    );
   }
 
   // Create transaction
@@ -32,17 +37,17 @@ export const createTransaction = async (startupId: string, data: CreateTransacti
       description,
       startupId,
       accountId,
-      date: new Date()
-    }
+      date: new Date(),
+    },
   });
 
   // Update account balance atomically (CREDIT increases, DEBIT decreases)
-  const balanceChange = type === 'CREDIT' ? Number(amount) : -Number(amount);
+  const balanceChange = type === "CREDIT" ? Number(amount) : -Number(amount);
   await prisma.mockBankAccount.update({
     where: { id: accountId },
     data: {
-      balance: { increment: balanceChange }
-    }
+      balance: { increment: balanceChange },
+    },
   });
 
   return transaction;
@@ -86,67 +91,75 @@ export const getTransactions = async (
         account: {
           select: {
             id: true,
-            accountName: true
-          }
-        }
+            accountName: true,
+          },
+        },
       },
-      orderBy: { date: 'desc' },
+      orderBy: { date: "desc" },
       take: filters?.limit || 50,
-      skip: filters?.offset || 0
+      skip: filters?.offset || 0,
     }),
-    prisma.transaction.count({ where })
+    prisma.transaction.count({ where }),
   ]);
 
   return { transactions, total };
 };
 
-export const getTransactionById = async (startupId: string, transactionId: string) => {
+export const getTransactionById = async (
+  startupId: string,
+  transactionId: string
+) => {
   const transaction = await prisma.transaction.findFirst({
     where: {
       id: transactionId,
-      startupId
+      startupId,
     },
     include: {
-      account: true
-    }
+      account: true,
+    },
   });
 
   if (!transaction) {
-    throw new Error('Transaction not found');
+    throw new Error("Transaction not found");
   }
 
   return transaction;
 };
 
-export const deleteTransaction = async (startupId: string, transactionId: string) => {
+export const deleteTransaction = async (
+  startupId: string,
+  transactionId: string
+) => {
   const transaction = await prisma.transaction.findFirst({
     where: {
       id: transactionId,
-      startupId
+      startupId,
     },
     include: {
-      account: true
-    }
+      account: true,
+    },
   });
 
   if (!transaction) {
-    throw new Error('Transaction not found');
+    throw new Error("Transaction not found");
   }
 
   // Reverse the balance change atomically
-  const balanceChange = transaction.type === 'CREDIT' ? -Number(transaction.amount) : Number(transaction.amount);
+  const balanceChange =
+    transaction.type === "CREDIT"
+      ? -Number(transaction.amount)
+      : Number(transaction.amount);
   await prisma.mockBankAccount.update({
     where: { id: transaction.accountId },
     data: {
-      balance: { increment: balanceChange }
-    }
+      balance: { increment: balanceChange },
+    },
   });
 
   // Delete transaction
   await prisma.transaction.delete({
-    where: { id: transactionId }
+    where: { id: transactionId },
   });
 
   return { success: true };
 };
-

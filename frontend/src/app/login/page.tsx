@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useAuthStore } from '@/store/auth';
-import AuthGuard from '@/components/auth/AuthGuard';
-import { Eye, EyeOff } from 'lucide-react';
-import GradientText from '@/components/GradientText';
-import Aurora from '@/components/Aurora';
-import { Input } from '@/components/ui/input';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useAuthStore } from "@/store/auth";
+import AuthGuard from "@/components/auth/AuthGuard";
+import { Eye, EyeOff } from "lucide-react";
+import GradientText from "@/components/GradientText";
+import Aurora from "@/components/Aurora";
+import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
   const router = useRouter();
   const { login, isLoading, error, clearError } = useAuthStore();
 
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,7 +22,7 @@ export default function LoginPage() {
     clearError();
     const success = await login(formData.email, formData.password);
     if (success) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   };
 
@@ -34,7 +34,7 @@ export default function LoginPage() {
     <AuthGuard requireAuth={false}>
       <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
         <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <Aurora colorStops={['#6366f1', '#8b5cf6', '#6366f1']} />
+          <Aurora colorStops={["#6366f1", "#8b5cf6", "#6366f1"]} />
         </div>
         <div className="w-full max-w-md relative z-10 space-y-8">
           <div className="text-center">
@@ -82,7 +82,7 @@ export default function LoginPage() {
                     <Input
                       id="password"
                       name="password"
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       required
                       className="pr-10"
                       placeholder="••••••••"
@@ -109,12 +109,12 @@ export default function LoginPage() {
                 disabled={isLoading}
                 className="w-full bg-blue-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? 'Signing in...' : 'Sign In'}
+                {isLoading ? "Signing in..." : "Sign In"}
               </button>
             </form>
           </div>
           <p className="text-center text-sm text-muted-foreground">
-            Don't have an account?{' '}
+            Don't have an account?{" "}
             <Link
               href="/register"
               className="font-medium text-primary hover:text-primary/80"

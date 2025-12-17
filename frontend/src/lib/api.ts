@@ -1234,22 +1234,22 @@ const api: AxiosInstance = axios.create({
 
 // Request interceptor to add auth token
 api.interceptors.request.use(
-  config => {
+  (config) => {
     const token = localStorage.getItem("authToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  error => {
+  (error) => {
     return Promise.reject(error);
   }
 );
 
 // Response interceptor for error handling
 api.interceptors.response.use(
-  response => response,
-  error => {
+  (response) => response,
+  (error) => {
     if (error.response?.status === 401) {
       // Token expired or invalid
       localStorage.removeItem("authToken");
@@ -1714,7 +1714,9 @@ export const apiClient = {
     getCashFlowProjections: async (params?: {
       months?: number;
     }): Promise<ApiResponse<any>> => {
-      const response = await api.get("/bills/cash-flow-projections", { params });
+      const response = await api.get("/bills/cash-flow-projections", {
+        params,
+      });
       return response.data;
     },
 
@@ -1921,7 +1923,9 @@ export const apiClient = {
       return response.data;
     },
 
-    getFinancialRatios: async (asOnDate?: string): Promise<ApiResponse<any>> => {
+    getFinancialRatios: async (
+      asOnDate?: string
+    ): Promise<ApiResponse<any>> => {
       const response = await api.get("/bookkeeping/financial-ratios", {
         params: { asOnDate },
       });
@@ -1968,7 +1972,13 @@ export const apiClient = {
     },
 
     getJournals: async (params?: {
-      journalType?: 'SALES' | 'PURCHASE' | 'PAYMENT' | 'RECEIPT' | 'CONTRA' | 'JOURNAL';
+      journalType?:
+        | "SALES"
+        | "PURCHASE"
+        | "PAYMENT"
+        | "RECEIPT"
+        | "CONTRA"
+        | "JOURNAL";
       fromDate?: string;
       toDate?: string;
     }): Promise<ApiResponse<any>> => {
@@ -2004,7 +2014,7 @@ export const apiClient = {
     },
 
     listBudgets: async (params?: {
-      budgetType?: 'LEDGER' | 'GROUP' | 'COST_CENTRE';
+      budgetType?: "LEDGER" | "GROUP" | "COST_CENTRE";
       periodStart?: string;
       periodEnd?: string;
     }): Promise<ApiResponse<any>> => {
@@ -2013,19 +2023,23 @@ export const apiClient = {
     },
 
     getBudgetVariance: async (params?: {
-      budgetType?: 'LEDGER' | 'GROUP' | 'COST_CENTRE';
+      budgetType?: "LEDGER" | "GROUP" | "COST_CENTRE";
       periodStart?: string;
       periodEnd?: string;
       includeBreaches?: boolean;
     }): Promise<ApiResponse<any>> => {
-      const response = await api.get("/bookkeeping/budgets/variance", { params });
+      const response = await api.get("/bookkeeping/budgets/variance", {
+        params,
+      });
       return response.data;
     },
 
     getBudgetBreaches: async (params?: {
       asOnDate?: string;
     }): Promise<ApiResponse<any>> => {
-      const response = await api.get("/bookkeeping/budgets/breaches", { params });
+      const response = await api.get("/bookkeeping/budgets/breaches", {
+        params,
+      });
       return response.data;
     },
 
@@ -2033,7 +2047,10 @@ export const apiClient = {
       financialYearEnd: string;
       narration?: string;
     }): Promise<ApiResponse<any>> => {
-      const response = await api.post("/bookkeeping/year-end/closing-entries", data);
+      const response = await api.post(
+        "/bookkeeping/year-end/closing-entries",
+        data
+      );
       return response.data;
     },
 
@@ -2042,7 +2059,10 @@ export const apiClient = {
       depreciationRate?: number;
       narration?: string;
     }): Promise<ApiResponse<any>> => {
-      const response = await api.post("/bookkeeping/year-end/depreciation", data);
+      const response = await api.post(
+        "/bookkeeping/year-end/depreciation",
+        data
+      );
       return response.data;
     },
 
@@ -2050,7 +2070,10 @@ export const apiClient = {
       fromFinancialYearEnd: string;
       toFinancialYearStart: string;
     }): Promise<ApiResponse<any>> => {
-      const response = await api.post("/bookkeeping/year-end/carry-forward", data);
+      const response = await api.post(
+        "/bookkeeping/year-end/carry-forward",
+        data
+      );
       return response.data;
     },
   },
@@ -2204,10 +2227,13 @@ export const apiClient = {
       return response.data;
     },
 
-    reverse: async (voucherId: string, params?: {
-      reversalDate?: string;
-      narration?: string;
-    }): Promise<ApiResponse<any>> => {
+    reverse: async (
+      voucherId: string,
+      params?: {
+        reversalDate?: string;
+        narration?: string;
+      }
+    ): Promise<ApiResponse<any>> => {
       const response = await api.post(`/vouchers/${voucherId}/reverse`, params);
       return response.data;
     },

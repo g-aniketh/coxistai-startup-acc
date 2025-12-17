@@ -1,15 +1,18 @@
-import { Request, Response } from 'express';
-import * as authService from './auth.service';
+import { Request, Response } from "express";
+import * as authService from "./auth.service";
 
-export const signupController = async (req: Request, res: Response): Promise<void> => {
+export const signupController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { email, password, startupName, firstName, lastName } = req.body;
 
     // Validate required fields
     if (!email || !password || !startupName) {
-      res.status(400).json({ 
+      res.status(400).json({
         success: false,
-        message: 'Email, password, and startup name are required' 
+        message: "Email, password, and startup name are required",
       });
       return;
     }
@@ -17,18 +20,18 @@ export const signupController = async (req: Request, res: Response): Promise<voi
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      res.status(400).json({ 
+      res.status(400).json({
         success: false,
-        message: 'Invalid email format' 
+        message: "Invalid email format",
       });
       return;
     }
 
     // Validate password strength
     if (password.length < 8) {
-      res.status(400).json({ 
+      res.status(400).json({
         success: false,
-        message: 'Password must be at least 8 characters long' 
+        message: "Password must be at least 8 characters long",
       });
       return;
     }
@@ -38,73 +41,81 @@ export const signupController = async (req: Request, res: Response): Promise<voi
       password,
       startupName,
       firstName,
-      lastName
+      lastName,
     });
 
-    res.status(201).json({ 
+    res.status(201).json({
       success: true,
       data: {
         token,
-        user
+        user,
       },
-      message: 'Signup successful! Welcome to CoXist AI.'
+      message: "Signup successful! Welcome to CoXist AI.",
     });
   } catch (error) {
-    console.error('Signup error:', error);
-    
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
-    if (errorMessage.includes('already exists')) {
-      res.status(409).json({ 
+    console.error("Signup error:", error);
+
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
+    if (errorMessage.includes("already exists")) {
+      res.status(409).json({
         success: false,
-        message: errorMessage 
+        message: errorMessage,
       });
       return;
     }
 
-    res.status(400).json({ 
+    res.status(400).json({
       success: false,
-      message: errorMessage 
+      message: errorMessage,
     });
   }
 };
 
-export const loginController = async (req: Request, res: Response): Promise<void> => {
+export const loginController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { email, password } = req.body;
 
     // Validate required fields
     if (!email || !password) {
-      res.status(400).json({ 
+      res.status(400).json({
         success: false,
-        message: 'Email and password are required' 
+        message: "Email and password are required",
       });
       return;
     }
 
     const { token, user } = await authService.login({ email, password });
 
-    res.status(200).json({ 
+    res.status(200).json({
       success: true,
       data: {
         token,
-        user
+        user,
       },
-      message: 'Login successful!'
+      message: "Login successful!",
     });
   } catch (error) {
-    console.error('Login error:', error);
-    
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
-    res.status(401).json({ 
+    console.error("Login error:", error);
+
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
+    res.status(401).json({
       success: false,
-      message: errorMessage 
+      message: errorMessage,
     });
   }
 };
 
-export const createTeamMemberController = async (req: Request, res: Response): Promise<void> => {
+export const createTeamMemberController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     // @ts-ignore - user is added by authenticateToken middleware
     const adminUserId = req.user?.userId;
@@ -114,7 +125,7 @@ export const createTeamMemberController = async (req: Request, res: Response): P
     if (!adminUserId || !startupId) {
       res.status(401).json({
         success: false,
-        message: 'Unauthorized'
+        message: "Unauthorized",
       });
       return;
     }
@@ -125,57 +136,67 @@ export const createTeamMemberController = async (req: Request, res: Response): P
     if (!email || !password || !roleName) {
       res.status(400).json({
         success: false,
-        message: 'Email, password, and role are required'
+        message: "Email, password, and role are required",
       });
       return;
     }
 
     // Validate role
-    const validRoles = ['Accountant', 'CTO', 'Sales Lead', 'Operations Manager'];
+    const validRoles = [
+      "Accountant",
+      "CTO",
+      "Sales Lead",
+      "Operations Manager",
+    ];
     if (!validRoles.includes(roleName)) {
       res.status(400).json({
         success: false,
-        message: `Invalid role. Must be one of: ${validRoles.join(', ')}`
+        message: `Invalid role. Must be one of: ${validRoles.join(", ")}`,
       });
       return;
     }
 
-    const newUser = await authService.createTeamMember(
-      adminUserId,
-      startupId,
-      { email, password, firstName, lastName, roleName }
-    );
+    const newUser = await authService.createTeamMember(adminUserId, startupId, {
+      email,
+      password,
+      firstName,
+      lastName,
+      roleName,
+    });
 
     res.status(201).json({
       success: true,
       data: newUser,
-      message: 'Team member created successfully'
+      message: "Team member created successfully",
     });
   } catch (error) {
-    console.error('Create team member error:', error);
-    
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
-    if (errorMessage.includes('Unauthorized') || errorMessage.includes('permission')) {
+    console.error("Create team member error:", error);
+
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
+    if (
+      errorMessage.includes("Unauthorized") ||
+      errorMessage.includes("permission")
+    ) {
       res.status(403).json({
         success: false,
-        message: errorMessage
+        message: errorMessage,
       });
       return;
     }
 
-    if (errorMessage.includes('already exists')) {
+    if (errorMessage.includes("already exists")) {
       res.status(409).json({
         success: false,
-        message: errorMessage
+        message: errorMessage,
       });
       return;
     }
 
     res.status(400).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
-

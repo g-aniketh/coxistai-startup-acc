@@ -1,8 +1,11 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middleware/auth';
-import * as inventoryService from './inventory.service';
+import { Response } from "express";
+import { AuthRequest } from "../middleware/auth";
+import * as inventoryService from "./inventory.service";
 
-export const createProductController = async (req: AuthRequest, res: Response): Promise<void> => {
+export const createProductController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { startupId } = req.user!;
     const { name, quantity, price } = req.body;
@@ -11,23 +14,23 @@ export const createProductController = async (req: AuthRequest, res: Response): 
     if (!name || quantity === undefined || price === undefined) {
       res.status(400).json({
         success: false,
-        message: 'Name, quantity, and price are required'
+        message: "Name, quantity, and price are required",
       });
       return;
     }
 
-    if (typeof quantity !== 'number' || quantity < 0) {
+    if (typeof quantity !== "number" || quantity < 0) {
       res.status(400).json({
         success: false,
-        message: 'Quantity must be a non-negative number'
+        message: "Quantity must be a non-negative number",
       });
       return;
     }
 
-    if (typeof price !== 'number' || price <= 0) {
+    if (typeof price !== "number" || price <= 0) {
       res.status(400).json({
         success: false,
-        message: 'Price must be a positive number'
+        message: "Price must be a positive number",
       });
       return;
     }
@@ -35,26 +38,30 @@ export const createProductController = async (req: AuthRequest, res: Response): 
     const product = await inventoryService.createProduct(startupId, {
       name,
       quantity,
-      price
+      price,
     });
 
     res.status(201).json({
       success: true,
       data: product,
-      message: 'Product created successfully'
+      message: "Product created successfully",
     });
   } catch (error) {
-    console.error('Create product error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
+    console.error("Create product error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
     res.status(400).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
 
-export const getProductsController = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getProductsController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { startupId } = req.user!;
 
@@ -62,20 +69,24 @@ export const getProductsController = async (req: AuthRequest, res: Response): Pr
 
     res.json({
       success: true,
-      data: products
+      data: products,
     });
   } catch (error) {
-    console.error('Get products error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
+    console.error("Get products error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
     res.status(500).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
 
-export const getProductByIdController = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getProductByIdController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { startupId } = req.user!;
     const { productId } = req.params;
@@ -84,20 +95,24 @@ export const getProductByIdController = async (req: AuthRequest, res: Response):
 
     res.json({
       success: true,
-      data: product
+      data: product,
     });
   } catch (error) {
-    console.error('Get product error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
+    console.error("Get product error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
     res.status(404).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
 
-export const updateProductController = async (req: AuthRequest, res: Response): Promise<void> => {
+export const updateProductController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { startupId } = req.user!;
     const { productId } = req.params;
@@ -106,45 +121,53 @@ export const updateProductController = async (req: AuthRequest, res: Response): 
     const updateData: any = {};
     if (name !== undefined) updateData.name = name;
     if (quantity !== undefined) {
-      if (typeof quantity !== 'number' || quantity < 0) {
+      if (typeof quantity !== "number" || quantity < 0) {
         res.status(400).json({
           success: false,
-          message: 'Quantity must be a non-negative number'
+          message: "Quantity must be a non-negative number",
         });
         return;
       }
       updateData.quantity = quantity;
     }
     if (price !== undefined) {
-      if (typeof price !== 'number' || price <= 0) {
+      if (typeof price !== "number" || price <= 0) {
         res.status(400).json({
           success: false,
-          message: 'Price must be a positive number'
+          message: "Price must be a positive number",
         });
         return;
       }
       updateData.price = price;
     }
 
-    const product = await inventoryService.updateProduct(startupId, productId, updateData);
+    const product = await inventoryService.updateProduct(
+      startupId,
+      productId,
+      updateData
+    );
 
     res.json({
       success: true,
       data: product,
-      message: 'Product updated successfully'
+      message: "Product updated successfully",
     });
   } catch (error) {
-    console.error('Update product error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
+    console.error("Update product error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
     res.status(400).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
 
-export const deleteProductController = async (req: AuthRequest, res: Response): Promise<void> => {
+export const deleteProductController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { startupId } = req.user!;
     const { productId } = req.params;
@@ -153,20 +176,24 @@ export const deleteProductController = async (req: AuthRequest, res: Response): 
 
     res.json({
       success: true,
-      message: 'Product deleted successfully'
+      message: "Product deleted successfully",
     });
   } catch (error) {
-    console.error('Delete product error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
+    console.error("Delete product error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
     res.status(400).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
 
-export const simulateSaleController = async (req: AuthRequest, res: Response): Promise<void> => {
+export const simulateSaleController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { startupId } = req.user!;
     const { productId, quantitySold, accountId } = req.body;
@@ -175,15 +202,15 @@ export const simulateSaleController = async (req: AuthRequest, res: Response): P
     if (!productId || !quantitySold || !accountId) {
       res.status(400).json({
         success: false,
-        message: 'ProductId, quantitySold, and accountId are required'
+        message: "ProductId, quantitySold, and accountId are required",
       });
       return;
     }
 
-    if (typeof quantitySold !== 'number' || quantitySold <= 0) {
+    if (typeof quantitySold !== "number" || quantitySold <= 0) {
       res.status(400).json({
         success: false,
-        message: 'QuantitySold must be a positive number'
+        message: "QuantitySold must be a positive number",
       });
       return;
     }
@@ -191,26 +218,30 @@ export const simulateSaleController = async (req: AuthRequest, res: Response): P
     const result = await inventoryService.simulateSale(startupId, {
       productId,
       quantitySold,
-      accountId
+      accountId,
     });
 
     res.status(201).json({
       success: true,
       data: result,
-      message: 'Sale simulated successfully'
+      message: "Sale simulated successfully",
     });
   } catch (error) {
-    console.error('Simulate sale error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
+    console.error("Simulate sale error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
     res.status(400).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
 
-export const getSalesController = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getSalesController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { startupId } = req.user!;
     const { limit } = req.query;
@@ -221,16 +252,16 @@ export const getSalesController = async (req: AuthRequest, res: Response): Promi
 
     res.json({
       success: true,
-      data: sales
+      data: sales,
     });
   } catch (error) {
-    console.error('Get sales error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
+    console.error("Get sales error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
     res.status(500).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
-

@@ -288,7 +288,7 @@ export const createVoucher = async (
           createdById: payload.createdById || null,
           totalAmount,
           entries: {
-            create: payload.entries.map(entry => ({
+            create: payload.entries.map((entry) => ({
               ledgerName: entry.ledgerName.trim(),
               ledgerCode: entry.ledgerCode?.trim() || null,
               entryType: entry.entryType,
@@ -299,7 +299,7 @@ export const createVoucher = async (
               billReferences:
                 entry.billReferences && entry.billReferences.length > 0
                   ? {
-                      create: entry.billReferences.map(bill => ({
+                      create: entry.billReferences.map((bill) => ({
                         reference: bill.reference.trim(),
                         amount: bill.amount,
                         referenceType: bill.referenceType ?? "AGAINST",
@@ -357,7 +357,7 @@ export const createVoucher = async (
     },
   };
 
-  createAuditLog(auditPayload).catch(err => {
+  createAuditLog(auditPayload).catch((err) => {
     console.warn("Failed to write audit log for voucher", voucher.id, err);
   });
 

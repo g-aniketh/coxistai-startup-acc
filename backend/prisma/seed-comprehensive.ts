@@ -43,10 +43,10 @@ async function main() {
   ];
 
   const createdPermissions = await Promise.all(
-    permissions.map(p => prisma.permission.create({ data: p }))
+    permissions.map((p) => prisma.permission.create({ data: p }))
   );
   const permissionMap = new Map(
-    createdPermissions.map(p => [`${p.action}-${p.subject}`, p])
+    createdPermissions.map((p) => [`${p.action}-${p.subject}`, p])
   );
   console.log("✓ Created permissions");
 
@@ -138,14 +138,14 @@ async function main() {
           name,
           permissions: {
             connect: perms
-              .map(pKey => ({ id: permissionMap.get(pKey)?.id }))
-              .filter(p => p.id),
+              .map((pKey) => ({ id: permissionMap.get(pKey)?.id }))
+              .filter((p) => p.id),
           },
         },
       })
     )
   );
-  const roleMap = new Map(createdRoles.map(r => [r.name, r]));
+  const roleMap = new Map(createdRoles.map((r) => [r.name, r]));
   console.log("✓ Created roles and assigned permissions");
 
   // 4. Create 5 demo startups for comprehensive demo
@@ -193,7 +193,9 @@ async function main() {
   ]);
   console.log("✓ Created 5 demo startups");
 
-  await Promise.all(startups.map(startup => bootstrapLedgerStructure(startup.id)));
+  await Promise.all(
+    startups.map((startup) => bootstrapLedgerStructure(startup.id))
+  );
   console.log("✓ Bootstrapped chart of accounts and default ledgers");
 
   // 4b. Create company profiles for each startup
@@ -356,7 +358,7 @@ async function main() {
   };
 
   await Promise.all(
-    startups.map(startup =>
+    startups.map((startup) =>
       prisma.companyFiscalConfig.create({
         data: {
           startupId: startup.id,
@@ -374,14 +376,16 @@ async function main() {
   console.log("✓ Seeded fiscal configuration for all startups");
 
   await Promise.all(
-    startups.map(startup =>
+    startups.map((startup) =>
       prisma.companySecuritySetting.create({
         data: {
           startupId: startup.id,
           tallyVaultEnabled: false,
           tallyVaultPasswordHash: null,
           tallyVaultPasswordHint: null,
-          userAccessControlEnabled: !["starter", "starter_earlybird"].includes(startup.subscriptionPlan),
+          userAccessControlEnabled: !["starter", "starter_earlybird"].includes(
+            startup.subscriptionPlan
+          ),
           multiFactorRequired: startup.subscriptionPlan === "enterprise",
         },
       })
@@ -390,7 +394,7 @@ async function main() {
   console.log("✓ Seeded security configuration for all startups");
 
   await Promise.all(
-    startups.map(startup =>
+    startups.map((startup) =>
       prisma.companyCurrencySetting.create({
         data: {
           startupId: startup.id,
@@ -410,7 +414,7 @@ async function main() {
   console.log("✓ Seeded currency configuration for all startups");
 
   await Promise.all(
-    startups.map(startup =>
+    startups.map((startup) =>
       prisma.companyFeatureToggle.create({
         data: {
           startupId: startup.id,
@@ -421,7 +425,9 @@ async function main() {
           enableAIInsights: true,
           enableScenarioPlanning: true,
           enableAutomations: startup.subscriptionPlan === "enterprise",
-          enableVendorManagement: !["starter", "starter_earlybird"].includes(startup.subscriptionPlan),
+          enableVendorManagement: !["starter", "starter_earlybird"].includes(
+            startup.subscriptionPlan
+          ),
           enableBillingAndInvoicing: true,
         },
       })
@@ -499,7 +505,7 @@ async function main() {
         roleName: "Admin",
         startupId: startups[0].id,
       },
-    ].map(async userData => {
+    ].map(async (userData) => {
       const user = await prisma.user.create({
         data: {
           email: userData.email,
@@ -554,7 +560,7 @@ async function main() {
         roleName: "Admin",
         startupId: startups[4].id,
       },
-    ].map(async userData => {
+    ].map(async (userData) => {
       const user = await prisma.user.create({
         data: {
           email: userData.email,
@@ -714,7 +720,7 @@ async function main() {
 
     // Create all transactions for this startup with proper number conversion
     await prisma.transaction.createMany({
-      data: transactions.map(t => ({
+      data: transactions.map((t) => ({
         ...t,
         startupId: startup.id,
         amount: Number(t.amount),
@@ -1023,7 +1029,7 @@ async function main() {
 }
 
 main()
-  .catch(e => {
+  .catch((e) => {
     console.error("❌ Seed error:", e);
     // @ts-ignore - process is available in Node.js environment
     process.exit(1);

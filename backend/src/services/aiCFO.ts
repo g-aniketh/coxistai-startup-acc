@@ -1,7 +1,7 @@
-import OpenAI from 'openai';
-import { prisma } from '../lib/prisma';
-import { Prisma } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
+import OpenAI from "openai";
+import { prisma } from "../lib/prisma";
+import { Prisma } from "@prisma/client";
+import { Decimal } from "@prisma/client/runtime/library";
 
 // Initialize OpenAI only if API key is provided
 let openai: OpenAI | null = null;
@@ -11,11 +11,13 @@ if (process.env.OPENAI_API_KEY) {
       apiKey: process.env.OPENAI_API_KEY,
     });
   } catch (error) {
-    console.warn('Failed to initialize OpenAI service:', error);
+    console.warn("Failed to initialize OpenAI service:", error);
     openai = null;
   }
 } else {
-  console.warn('OPENAI_API_KEY not provided. AI functionality will be disabled.');
+  console.warn(
+    "OPENAI_API_KEY not provided. AI functionality will be disabled."
+  );
 }
 
 export interface ScenarioInput {
@@ -34,19 +36,21 @@ export class AICFOService {
    */
   static async generateForecast(startupId: string, months: number = 12) {
     if (!openai) {
-      throw new Error('OpenAI service is not available. Please check your API key configuration.');
+      throw new Error(
+        "OpenAI service is not available. Please check your API key configuration."
+      );
     }
 
     try {
       // Get historical data
       const history = await prisma.cashflowMetric.findMany({
         where: { startupId },
-        orderBy: { periodStart: 'asc' },
+        orderBy: { periodStart: "asc" },
         take: 12,
       });
 
       if (history.length === 0) {
-        throw new Error('Insufficient historical data for forecasting');
+        throw new Error("Insufficient historical data for forecasting");
       }
 
       // Prepare data for AI
@@ -102,19 +106,22 @@ Respond in JSON format:
 }`;
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: "gpt-4o-mini",
         messages: [
           {
-            role: 'system',
-            content: 'You are an expert CFO providing financial forecasts and strategic advice to startups. Always respond in valid JSON format.',
+            role: "system",
+            content:
+              "You are an expert CFO providing financial forecasts and strategic advice to startups. Always respond in valid JSON format.",
           },
-          { role: 'user', content: prompt },
+          { role: "user", content: prompt },
         ],
         temperature: 0.7,
-        response_format: { type: 'json_object' },
+        response_format: { type: "json_object" },
       });
 
-      const response = JSON.parse(completion.choices[0].message.content || '{}');
+      const response = JSON.parse(
+        completion.choices[0].message.content || "{}"
+      );
 
       // Calculate summary metrics from forecast
       const lastForecastMonth = response.forecast[response.forecast.length - 1];
@@ -133,14 +140,20 @@ Respond in JSON format:
           startupId,
           name: `${months}-Month Forecast`,
           description: `AI-generated ${months}-month financial forecast`,
-          scenarioType: 'forecast',
+          scenarioType: "forecast",
           inputParameters: { months, baseDate: new Date() },
           projectedRevenue: new Decimal(totalProjectedRevenue),
           projectedExpenses: new Decimal(totalProjectedExpenses),
-          projectedCashflow: new Decimal(totalProjectedRevenue - totalProjectedExpenses),
-          projectedRunway: lastForecastMonth?.cashBalance > 0 
-            ? new Decimal(lastForecastMonth.cashBalance / (totalProjectedExpenses / months))
-            : new Decimal(0),
+          projectedCashflow: new Decimal(
+            totalProjectedRevenue - totalProjectedExpenses
+          ),
+          projectedRunway:
+            lastForecastMonth?.cashBalance > 0
+              ? new Decimal(
+                  lastForecastMonth.cashBalance /
+                    (totalProjectedExpenses / months)
+                )
+              : new Decimal(0),
           confidence: new Decimal(response.confidence || 0.8),
           insights: response.insights || [],
           recommendations: response.recommendations || [],
@@ -158,7 +171,7 @@ Respond in JSON format:
         confidence: response.confidence,
       };
     } catch (error: any) {
-      console.error('Error generating forecast:', error);
+      console.error("Error generating forecast:", error);
       throw new Error(`Failed to generate forecast: ${error.message}`);
     }
   }
@@ -166,22 +179,28 @@ Respond in JSON format:
   /**
    * Run "What If" scenario analysis with voucher data
    */
-  static async runScenario(startupId: string, scenarioName: string, inputs: ScenarioInput) {
+  static async runScenario(
+    startupId: string,
+    scenarioName: string,
+    inputs: ScenarioInput
+  ) {
     if (!openai) {
-      throw new Error('OpenAI service is not available. Please check your API key configuration.');
+      throw new Error(
+        "OpenAI service is not available. Please check your API key configuration."
+      );
     }
 
     try {
       // Get current metrics
       const latestMetrics = await prisma.cashflowMetric.findFirst({
         where: { startupId },
-        orderBy: { periodEnd: 'desc' },
+        orderBy: { periodEnd: "desc" },
       });
 
       // Get voucher data for more accurate analysis
       const ninetyDaysAgo = new Date();
       ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-      
+
       const vouchers = await prisma.voucher.findMany({
         where: {
           startupId,
@@ -196,25 +215,35 @@ Respond in JSON format:
       let currentRevenue = latestMetrics?.totalRevenue.toNumber() || 0;
       let currentExpenses = latestMetrics?.totalExpenses.toNumber() || 0;
       let currentCashBalance = latestMetrics?.cashBalance.toNumber() || 0;
-      
+
       if (vouchers.length > 0) {
         // Calculate revenue from sales/receipt vouchers
         const salesVouchers = vouchers.filter(
-          (v) => v.voucherType.category === 'SALES' || v.voucherType.category === 'RECEIPT'
+          (v) =>
+            v.voucherType.category === "SALES" ||
+            v.voucherType.category === "RECEIPT"
         );
-        const revenueFromVouchers = salesVouchers.reduce((sum, v) => sum + v.totalAmount.toNumber(), 0);
+        const revenueFromVouchers = salesVouchers.reduce(
+          (sum, v) => sum + v.totalAmount.toNumber(),
+          0
+        );
         if (revenueFromVouchers > 0) currentRevenue = revenueFromVouchers;
-        
+
         // Calculate expenses from purchase/payment vouchers
         const expenseVouchers = vouchers.filter(
-          (v) => v.voucherType.category === 'PURCHASE' || v.voucherType.category === 'PAYMENT'
+          (v) =>
+            v.voucherType.category === "PURCHASE" ||
+            v.voucherType.category === "PAYMENT"
         );
-        const expensesFromVouchers = expenseVouchers.reduce((sum, v) => sum + v.totalAmount.toNumber(), 0);
+        const expensesFromVouchers = expenseVouchers.reduce(
+          (sum, v) => sum + v.totalAmount.toNumber(),
+          0
+        );
         if (expensesFromVouchers > 0) currentExpenses = expensesFromVouchers;
       }
 
       if (!latestMetrics && vouchers.length === 0) {
-        throw new Error('No historical data available');
+        throw new Error("No historical data available");
       }
 
       // Calculate scenario impacts
@@ -243,17 +272,25 @@ Respond in JSON format:
 
       // Project over time horizon
       const monthlyBurnRate = projectedExpenses - projectedRevenue;
-      const finalCashBalance = projectedCashBalance - monthlyBurnRate * timeHorizon;
-      const projectedRunway = monthlyBurnRate > 0 ? projectedCashBalance / monthlyBurnRate : 999;
+      const finalCashBalance =
+        projectedCashBalance - monthlyBurnRate * timeHorizon;
+      const projectedRunway =
+        monthlyBurnRate > 0 ? projectedCashBalance / monthlyBurnRate : 999;
 
       // Create AI analysis prompt
-      const voucherStats = vouchers.length > 0 ? {
-        totalVouchers: vouchers.length,
-        byType: vouchers.reduce((acc, v) => {
-          acc[v.voucherType.name] = (acc[v.voucherType.name] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>),
-      } : null;
+      const voucherStats =
+        vouchers.length > 0
+          ? {
+              totalVouchers: vouchers.length,
+              byType: vouchers.reduce(
+                (acc, v) => {
+                  acc[v.voucherType.name] = (acc[v.voucherType.name] || 0) + 1;
+                  return acc;
+                },
+                {} as Record<string, number>
+              ),
+            }
+          : null;
 
       const prompt = `You are an expert CFO analyzing a "What If" scenario for a startup.
 
@@ -261,17 +298,23 @@ Current Situation:
 - Monthly Revenue: $${currentRevenue.toLocaleString()}
 - Monthly Expenses: $${currentExpenses.toLocaleString()}
 - Cash Balance: $${currentCashBalance.toLocaleString()}
-- Current Runway: ${latestMetrics ? latestMetrics.runway.toNumber().toFixed(1) : 'N/A'} months
-${voucherStats ? `- Recent Voucher Activity (last 90 days): ${voucherStats.totalVouchers} vouchers` : ''}
-${voucherStats ? `- Vouchers by Type: ${Object.entries(voucherStats.byType).map(([type, count]) => `${type}: ${count}`).join(', ')}` : ''}
+- Current Runway: ${latestMetrics ? latestMetrics.runway.toNumber().toFixed(1) : "N/A"} months
+${voucherStats ? `- Recent Voucher Activity (last 90 days): ${voucherStats.totalVouchers} vouchers` : ""}
+${
+  voucherStats
+    ? `- Vouchers by Type: ${Object.entries(voucherStats.byType)
+        .map(([type, count]) => `${type}: ${count}`)
+        .join(", ")}`
+    : ""
+}
 
 Proposed Scenario: "${scenarioName}"
 Changes:
-${inputs.revenueChange ? `- Revenue Change: ${inputs.revenueChange > 0 ? '+' : ''}${inputs.revenueChange}%` : ''}
-${inputs.expenseChange ? `- Expense Change: ${inputs.expenseChange > 0 ? '+' : ''}${inputs.expenseChange}%` : ''}
-${inputs.newHires ? `- New Hires: ${inputs.newHires} @ $${inputs.averageSalary?.toLocaleString()}/month each` : ''}
-${inputs.additionalFunding ? `- Additional Funding: $${inputs.additionalFunding.toLocaleString()}` : ''}
-${inputs.customAssumptions ? `- Custom Assumptions: ${inputs.customAssumptions}` : ''}
+${inputs.revenueChange ? `- Revenue Change: ${inputs.revenueChange > 0 ? "+" : ""}${inputs.revenueChange}%` : ""}
+${inputs.expenseChange ? `- Expense Change: ${inputs.expenseChange > 0 ? "+" : ""}${inputs.expenseChange}%` : ""}
+${inputs.newHires ? `- New Hires: ${inputs.newHires} @ $${inputs.averageSalary?.toLocaleString()}/month each` : ""}
+${inputs.additionalFunding ? `- Additional Funding: $${inputs.additionalFunding.toLocaleString()}` : ""}
+${inputs.customAssumptions ? `- Custom Assumptions: ${inputs.customAssumptions}` : ""}
 
 Projected Results:
 - New Monthly Revenue: $${projectedRevenue.toLocaleString()}
@@ -298,19 +341,22 @@ Respond in JSON format:
 }`;
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: "gpt-4o-mini",
         messages: [
           {
-            role: 'system',
-            content: 'You are an expert CFO providing strategic scenario analysis. Always respond in valid JSON format.',
+            role: "system",
+            content:
+              "You are an expert CFO providing strategic scenario analysis. Always respond in valid JSON format.",
           },
-          { role: 'user', content: prompt },
+          { role: "user", content: prompt },
         ],
         temperature: 0.7,
-        response_format: { type: 'json_object' },
+        response_format: { type: "json_object" },
       });
 
-      const aiResponse = JSON.parse(completion.choices[0].message.content || '{}');
+      const aiResponse = JSON.parse(
+        completion.choices[0].message.content || "{}"
+      );
 
       // Store scenario
       const scenario = await prisma.aIScenario.create({
@@ -318,11 +364,13 @@ Respond in JSON format:
           startupId,
           name: scenarioName,
           description: `What-if analysis: ${scenarioName}`,
-          scenarioType: 'what_if',
+          scenarioType: "what_if",
           inputParameters: inputs as any,
           projectedRevenue: new Decimal(projectedRevenue * timeHorizon),
           projectedExpenses: new Decimal(projectedExpenses * timeHorizon),
-          projectedCashflow: new Decimal((projectedRevenue - projectedExpenses) * timeHorizon),
+          projectedCashflow: new Decimal(
+            (projectedRevenue - projectedExpenses) * timeHorizon
+          ),
           projectedRunway: new Decimal(projectedRunway),
           confidence: new Decimal(aiResponse.confidence || 0.8),
           insights: aiResponse.insights || [],
@@ -348,7 +396,7 @@ Respond in JSON format:
         confidence: aiResponse.confidence,
       };
     } catch (error: any) {
-      console.error('Error running scenario:', error);
+      console.error("Error running scenario:", error);
       throw new Error(`Failed to run scenario: ${error.message}`);
     }
   }
@@ -356,9 +404,15 @@ Respond in JSON format:
   /**
    * Generate investor update using AI
    */
-  static async generateInvestorUpdate(startupId: string, periodStart: Date, periodEnd: Date) {
+  static async generateInvestorUpdate(
+    startupId: string,
+    periodStart: Date,
+    periodEnd: Date
+  ) {
     if (!openai) {
-      throw new Error('OpenAI service is not available. Please check your API key configuration.');
+      throw new Error(
+        "OpenAI service is not available. Please check your API key configuration."
+      );
     }
 
     try {
@@ -369,11 +423,11 @@ Respond in JSON format:
           periodStart: { gte: periodStart },
           periodEnd: { lte: periodEnd },
         },
-        orderBy: { periodStart: 'asc' },
+        orderBy: { periodStart: "asc" },
       });
 
       if (metrics.length === 0) {
-        throw new Error('No data available for the selected period');
+        throw new Error("No data available for the selected period");
       }
 
       const latestMetrics = metrics[metrics.length - 1];
@@ -399,7 +453,7 @@ Respond in JSON format:
       // Get recent scenarios/insights
       const scenarios = await prisma.aIScenario.findMany({
         where: { startupId },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         take: 3,
       });
 
@@ -445,25 +499,28 @@ Respond in JSON format:
 }`;
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: "gpt-4o-mini",
         messages: [
           {
-            role: 'system',
-            content: 'You are an expert at writing investor updates. Be concise, data-driven, and strategic. Always respond in valid JSON format.',
+            role: "system",
+            content:
+              "You are an expert at writing investor updates. Be concise, data-driven, and strategic. Always respond in valid JSON format.",
           },
-          { role: 'user', content: prompt },
+          { role: "user", content: prompt },
         ],
         temperature: 0.7,
-        response_format: { type: 'json_object' },
+        response_format: { type: "json_object" },
       });
 
-      const aiResponse = JSON.parse(completion.choices[0].message.content || '{}');
+      const aiResponse = JSON.parse(
+        completion.choices[0].message.content || "{}"
+      );
 
       // Store investor update
       const update = await prisma.investorUpdate.create({
         data: {
           startupId,
-          title: `Investor Update: ${periodStart.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`,
+          title: `Investor Update: ${periodStart.toLocaleDateString("en-US", { month: "short", year: "numeric" })}`,
           periodStart,
           periodEnd,
           metrics: {
@@ -487,7 +544,7 @@ Respond in JSON format:
 
       return update;
     } catch (error: any) {
-      console.error('Error generating investor update:', error);
+      console.error("Error generating investor update:", error);
       throw new Error(`Failed to generate investor update: ${error.message}`);
     }
   }
@@ -497,22 +554,24 @@ Respond in JSON format:
    */
   static async getInsights(startupId: string) {
     if (!openai) {
-      throw new Error('OpenAI service is not available. Please check your API key configuration.');
+      throw new Error(
+        "OpenAI service is not available. Please check your API key configuration."
+      );
     }
 
     try {
       const latestMetrics = await prisma.cashflowMetric.findFirst({
         where: { startupId },
-        orderBy: { periodEnd: 'desc' },
+        orderBy: { periodEnd: "desc" },
       });
 
       if (!latestMetrics) {
-        throw new Error('No metrics available');
+        throw new Error("No metrics available");
       }
 
       const history = await prisma.cashflowMetric.findMany({
         where: { startupId },
-        orderBy: { periodStart: 'asc' },
+        orderBy: { periodStart: "asc" },
         take: 6,
       });
 
@@ -533,7 +592,7 @@ ${history
     (m: any) =>
       `${m.periodStart.toISOString().slice(0, 7)}: Revenue $${m.totalRevenue.toNumber().toLocaleString()}, Expenses $${m.totalExpenses.toNumber().toLocaleString()}`
   )
-  .join('\n')}
+  .join("\n")}
 
 Provide:
 1. Overall health assessment (1-2 sentences)
@@ -551,23 +610,26 @@ Respond in JSON format:
 }`;
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: "gpt-4o-mini",
         messages: [
           {
-            role: 'system',
-            content: 'You are an expert CFO providing financial insights. Always respond in valid JSON format.',
+            role: "system",
+            content:
+              "You are an expert CFO providing financial insights. Always respond in valid JSON format.",
           },
-          { role: 'user', content: prompt },
+          { role: "user", content: prompt },
         ],
         temperature: 0.7,
-        response_format: { type: 'json_object' },
+        response_format: { type: "json_object" },
       });
 
-      const response = JSON.parse(completion.choices[0].message.content || '{}');
+      const response = JSON.parse(
+        completion.choices[0].message.content || "{}"
+      );
 
       return response;
     } catch (error: any) {
-      console.error('Error getting insights:', error);
+      console.error("Error getting insights:", error);
       throw new Error(`Failed to get insights: ${error.message}`);
     }
   }
@@ -578,7 +640,7 @@ Respond in JSON format:
   static async getScenarios(startupId: string) {
     return await prisma.aIScenario.findMany({
       where: { startupId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -588,7 +650,7 @@ Respond in JSON format:
   static async getInvestorUpdates(startupId: string) {
     return await prisma.investorUpdate.findMany({
       where: { startupId },
-      orderBy: { periodEnd: 'desc' },
+      orderBy: { periodEnd: "desc" },
     });
   }
 
@@ -610,24 +672,27 @@ Respond in JSON format:
    */
   static async chat(startupId: string, userMessage: string): Promise<string> {
     if (!openai) {
-      throw new Error('OpenAI service is not available. Please check your API key configuration.');
+      throw new Error(
+        "OpenAI service is not available. Please check your API key configuration."
+      );
     }
 
     try {
       // Get dashboard summary for context
-      const { getDashboardSummary } = await import('../dashboard/dashboard.service');
+      const { getDashboardSummary } =
+        await import("../dashboard/dashboard.service");
       const summary = await getDashboardSummary(startupId);
 
       // Format financial context
       const financialContext = `
 CURRENT FINANCIAL STATE:
-- Total Cash Balance: ₹${summary.financial.totalBalance.toLocaleString('en-IN')}
-- Monthly Revenue: ₹${summary.financial.monthlyRevenue.toLocaleString('en-IN')}
-- Monthly Burn Rate: ₹${summary.financial.monthlyBurn.toLocaleString('en-IN')}
-- Net Cash Flow: ₹${summary.financial.netCashflow.toLocaleString('en-IN')}
-- Runway: ${summary.financial.runwayMonths ? `${summary.financial.runwayMonths.toFixed(1)} months` : 'Infinite'}
-- Total Income (last 3 months): ₹${summary.financial.income.toLocaleString('en-IN')}
-- Total Expenses (last 3 months): ₹${summary.financial.expenses.toLocaleString('en-IN')}
+- Total Cash Balance: ₹${summary.financial.totalBalance.toLocaleString("en-IN")}
+- Monthly Revenue: ₹${summary.financial.monthlyRevenue.toLocaleString("en-IN")}
+- Monthly Burn Rate: ₹${summary.financial.monthlyBurn.toLocaleString("en-IN")}
+- Net Cash Flow: ₹${summary.financial.netCashflow.toLocaleString("en-IN")}
+- Runway: ${summary.financial.runwayMonths ? `${summary.financial.runwayMonths.toFixed(1)} months` : "Infinite"}
+- Total Income (last 3 months): ₹${summary.financial.income.toLocaleString("en-IN")}
+- Total Expenses (last 3 months): ₹${summary.financial.expenses.toLocaleString("en-IN")}
       `.trim();
 
       // Create AI prompt
@@ -650,20 +715,22 @@ USER'S QUESTION: ${userMessage}
 Please provide a helpful, specific answer based on their actual financial data. Be conversational and natural.`;
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: "gpt-4o",
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
         ],
         temperature: 0.7,
         max_tokens: 500,
       });
 
-      return completion.choices[0].message.content || "I'm sorry, I couldn't generate a response. Please try again.";
+      return (
+        completion.choices[0].message.content ||
+        "I'm sorry, I couldn't generate a response. Please try again."
+      );
     } catch (error: any) {
-      console.error('Error in AI chat:', error);
-      throw new Error(error.message || 'Failed to generate chat response');
+      console.error("Error in AI chat:", error);
+      throw new Error(error.message || "Failed to generate chat response");
     }
   }
 }
-

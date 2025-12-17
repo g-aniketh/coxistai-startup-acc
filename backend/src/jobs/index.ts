@@ -1,6 +1,6 @@
-import cron from 'node-cron';
-import { PrismaClient } from '@prisma/client';
-import { AlertsService } from '../services/alerts';
+import cron from "node-cron";
+import { PrismaClient } from "@prisma/client";
+import { AlertsService } from "../services/alerts";
 
 const prisma = new PrismaClient();
 
@@ -15,13 +15,13 @@ const prisma = new PrismaClient();
  * It iterates through all active startups and generates financial alerts
  * based on their latest metrics.
  */
-const dailyFinancialCheck = cron.schedule('0 0 * * *', async () => {
-  console.log('Running daily financial health check...');
-  
+const dailyFinancialCheck = cron.schedule("0 0 * * *", async () => {
+  console.log("Running daily financial health check...");
+
   try {
     const startups = await prisma.startup.findMany({
       where: {
-        subscriptionStatus: 'active',
+        subscriptionStatus: "active",
       },
     });
 
@@ -30,15 +30,20 @@ const dailyFinancialCheck = cron.schedule('0 0 * * *', async () => {
     for (const startup of startups) {
       try {
         await AlertsService.generateAlerts(startup.id);
-        console.log(`Successfully generated alerts for startup: ${startup.name} (${startup.id})`);
+        console.log(
+          `Successfully generated alerts for startup: ${startup.name} (${startup.id})`
+        );
       } catch (error) {
-        console.error(`Failed to generate alerts for startup: ${startup.name} (${startup.id})`, error);
+        console.error(
+          `Failed to generate alerts for startup: ${startup.name} (${startup.id})`,
+          error
+        );
       }
     }
 
-    console.log('✅ Daily financial health check completed.');
+    console.log("✅ Daily financial health check completed.");
   } catch (error) {
-    console.error('❌ Error during daily financial health check:', error);
+    console.error("❌ Error during daily financial health check:", error);
   }
 });
 
@@ -47,6 +52,6 @@ const dailyFinancialCheck = cron.schedule('0 0 * * *', async () => {
 // ============================================================================
 
 export const startJobs = () => {
-  console.log('🚀 Starting cron jobs...');
+  console.log("🚀 Starting cron jobs...");
   dailyFinancialCheck.start();
 };

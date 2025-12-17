@@ -1,6 +1,13 @@
-import { Prisma, LedgerCategory, LedgerBalanceType, VoucherCategory, VoucherNumberingMethod, VoucherEntryType } from '@prisma/client';
-import { prisma } from '../lib/prisma';
-import { createVoucher } from './vouchers';
+import {
+  Prisma,
+  LedgerCategory,
+  LedgerBalanceType,
+  VoucherCategory,
+  VoucherNumberingMethod,
+  VoucherEntryType,
+} from "@prisma/client";
+import { prisma } from "../lib/prisma";
+import { createVoucher } from "./vouchers";
 
 export interface ClosingEntryInput {
   financialYearEnd: string; // ISO date string
@@ -44,7 +51,10 @@ export async function generateClosingEntries(
   });
 
   // Calculate closing balances for each ledger
-  const closingBalances = new Map<string, { amount: number; type: 'DEBIT' | 'CREDIT' }>();
+  const closingBalances = new Map<
+    string,
+    { amount: number; type: "DEBIT" | "CREDIT" }
+  >();
 
   for (const ledger of incomeExpenseLedgers) {
     const openingBalance = Number(ledger.openingBalance || 0);
@@ -64,11 +74,13 @@ export async function generateClosingEntries(
       },
     });
 
-    let debitTotal = openingType === LedgerBalanceType.DEBIT ? openingBalance : 0;
-    let creditTotal = openingType === LedgerBalanceType.CREDIT ? openingBalance : 0;
+    let debitTotal =
+      openingType === LedgerBalanceType.DEBIT ? openingBalance : 0;
+    let creditTotal =
+      openingType === LedgerBalanceType.CREDIT ? openingBalance : 0;
 
     for (const entry of entries) {
-      if (entry.entryType === 'DEBIT') {
+      if (entry.entryType === "DEBIT") {
         debitTotal += Number(entry.amount);
       } else {
         creditTotal += Number(entry.amount);
@@ -76,7 +88,7 @@ export async function generateClosingEntries(
     }
 
     const balance = Math.abs(debitTotal - creditTotal);
-    const balanceType = debitTotal >= creditTotal ? 'DEBIT' : 'CREDIT';
+    const balanceType = debitTotal >= creditTotal ? "DEBIT" : "CREDIT";
 
     if (balance > 0) {
       closingBalances.set(ledger.name, { amount: balance, type: balanceType });
@@ -92,16 +104,19 @@ export async function generateClosingEntries(
     if (!ledger) continue;
 
     const category = ledger.group.category;
-    if (category === LedgerCategory.DIRECT_INCOME || category === LedgerCategory.INDIRECT_INCOME) {
+    if (
+      category === LedgerCategory.DIRECT_INCOME ||
+      category === LedgerCategory.INDIRECT_INCOME
+    ) {
       // Incomes are credits
-      if (balance.type === 'CREDIT') {
+      if (balance.type === "CREDIT") {
         totalIncome += balance.amount;
       } else {
         totalExpense += balance.amount;
       }
     } else {
       // Expenses are debits
-      if (balance.type === 'DEBIT') {
+      if (balance.type === "DEBIT") {
         totalExpense += balance.amount;
       } else {
         totalIncome += balance.amount;
@@ -115,7 +130,7 @@ export async function generateClosingEntries(
   let capitalLedger = await prisma.ledger.findFirst({
     where: {
       startupId,
-      name: { contains: 'Capital', mode: 'insensitive' },
+      name: { contains: "Capital", mode: "insensitive" },
       group: {
         category: LedgerCategory.CAPITAL,
       },
@@ -132,14 +147,16 @@ export async function generateClosingEntries(
     });
 
     if (!capitalGroup) {
-      throw new Error('Capital account group not found. Please create it first.');
+      throw new Error(
+        "Capital account group not found. Please create it first."
+      );
     }
 
     capitalLedger = await prisma.ledger.create({
       data: {
         startupId,
         groupId: capitalGroup.id,
-        name: 'Capital Account',
+        name: "Capital Account",
         openingBalance: 0,
         openingBalanceType: LedgerBalanceType.CREDIT,
       },
@@ -155,26 +172,28 @@ export async function generateClosingEntries(
     if (!ledger) continue;
 
     const category = ledger.group.category;
-    const isIncome = category === LedgerCategory.DIRECT_INCOME || category === LedgerCategory.INDIRECT_INCOME;
+    const isIncome =
+      category === LedgerCategory.DIRECT_INCOME ||
+      category === LedgerCategory.INDIRECT_INCOME;
 
     if (isIncome) {
       // Income accounts: debit to close (opposite of balance)
-      if (balance.type === 'CREDIT') {
+      if (balance.type === "CREDIT") {
         closingEntries.push({
           ledgerName: ledger.name,
           entryType: VoucherEntryType.DEBIT,
           amount: balance.amount,
-          narration: `Closing entry - ${input.narration || 'Year end'}`,
+          narration: `Closing entry - ${input.narration || "Year end"}`,
         });
       }
     } else {
       // Expense accounts: credit to close (opposite of balance)
-      if (balance.type === 'DEBIT') {
+      if (balance.type === "DEBIT") {
         closingEntries.push({
           ledgerName: ledger.name,
           entryType: VoucherEntryType.CREDIT,
           amount: balance.amount,
-          narration: `Closing entry - ${input.narration || 'Year end'}`,
+          narration: `Closing entry - ${input.narration || "Year end"}`,
         });
       }
     }
@@ -184,14 +203,15 @@ export async function generateClosingEntries(
   if (netProfit !== 0) {
     closingEntries.push({
       ledgerName: capitalLedger.name,
-      entryType: netProfit > 0 ? VoucherEntryType.CREDIT : VoucherEntryType.DEBIT,
+      entryType:
+        netProfit > 0 ? VoucherEntryType.CREDIT : VoucherEntryType.DEBIT,
       amount: Math.abs(netProfit),
-      narration: `Net ${netProfit > 0 ? 'Profit' : 'Loss'} transferred - ${input.narration || 'Year end'}`,
+      narration: `Net ${netProfit > 0 ? "Profit" : "Loss"} transferred - ${input.narration || "Year end"}`,
     });
   }
 
   if (closingEntries.length === 0) {
-    throw new Error('No closing entries to generate');
+    throw new Error("No closing entries to generate");
   }
 
   // Find or create Closing Entry voucher type
@@ -199,7 +219,7 @@ export async function generateClosingEntries(
     where: {
       startupId,
       category: VoucherCategory.JOURNAL,
-      name: { contains: 'Closing', mode: 'insensitive' },
+      name: { contains: "Closing", mode: "insensitive" },
     },
   });
 
@@ -207,7 +227,7 @@ export async function generateClosingEntries(
     closingType = await prisma.voucherType.create({
       data: {
         startupId,
-        name: 'Closing Entry',
+        name: "Closing Entry",
         category: VoucherCategory.JOURNAL,
         numberingMethod: VoucherNumberingMethod.AUTOMATIC,
       },
@@ -217,8 +237,10 @@ export async function generateClosingEntries(
   // Create closing voucher
   const closingVoucher = await createVoucher(startupId, {
     voucherTypeId: closingType.id,
-    date: yearEndDate.toISOString().split('T')[0],
-    narration: input.narration || `Year-end closing entries for ${yearEndDate.getFullYear()}`,
+    date: yearEndDate.toISOString().split("T")[0],
+    narration:
+      input.narration ||
+      `Year-end closing entries for ${yearEndDate.getFullYear()}`,
     entries: closingEntries,
     createdById: input.createdById,
   });
@@ -247,7 +269,7 @@ export async function runDepreciation(
   });
 
   if (assetGroups.length === 0) {
-    throw new Error('No asset groups found for depreciation');
+    throw new Error("No asset groups found for depreciation");
   }
 
   const assetLedgers = await prisma.ledger.findMany({
@@ -263,7 +285,7 @@ export async function runDepreciation(
 
   for (const ledger of assetLedgers) {
     const openingBalance = Number(ledger.openingBalance || 0);
-    
+
     // Calculate current book value
     const entries = await prisma.voucherEntry.findMany({
       where: {
@@ -281,7 +303,7 @@ export async function runDepreciation(
 
     let bookValue = openingBalance;
     for (const entry of entries) {
-      if (entry.entryType === 'DEBIT') {
+      if (entry.entryType === "DEBIT") {
         bookValue += Number(entry.amount);
       } else {
         bookValue -= Number(entry.amount);
@@ -293,23 +315,23 @@ export async function runDepreciation(
 
       // Debit Depreciation Expense, Credit Asset
       depreciationEntries.push({
-        ledgerName: 'Depreciation Expense', // Should exist or be created
-        entryType: 'DEBIT' as const,
+        ledgerName: "Depreciation Expense", // Should exist or be created
+        entryType: "DEBIT" as const,
         amount: depreciationAmount,
-        narration: `Depreciation on ${ledger.name} - ${input.narration || 'Annual depreciation'}`,
+        narration: `Depreciation on ${ledger.name} - ${input.narration || "Annual depreciation"}`,
       });
 
       depreciationEntries.push({
         ledgerName: ledger.name,
-        entryType: 'CREDIT' as const,
+        entryType: "CREDIT" as const,
         amount: depreciationAmount,
-        narration: `Depreciation on ${ledger.name} - ${input.narration || 'Annual depreciation'}`,
+        narration: `Depreciation on ${ledger.name} - ${input.narration || "Annual depreciation"}`,
       });
     }
   }
 
   if (depreciationEntries.length === 0) {
-    throw new Error('No depreciation entries to generate');
+    throw new Error("No depreciation entries to generate");
   }
 
   // Find or create Depreciation voucher type
@@ -317,7 +339,7 @@ export async function runDepreciation(
     where: {
       startupId,
       category: VoucherCategory.JOURNAL,
-      name: { contains: 'Depreciation', mode: 'insensitive' },
+      name: { contains: "Depreciation", mode: "insensitive" },
     },
   });
 
@@ -325,7 +347,7 @@ export async function runDepreciation(
     depType = await prisma.voucherType.create({
       data: {
         startupId,
-        name: 'Depreciation Entry',
+        name: "Depreciation Entry",
         category: VoucherCategory.JOURNAL,
         numberingMethod: VoucherNumberingMethod.AUTOMATIC,
       },
@@ -335,8 +357,10 @@ export async function runDepreciation(
   // Create depreciation voucher
   const depVoucher = await createVoucher(startupId, {
     voucherTypeId: depType.id,
-    date: asOnDate.toISOString().split('T')[0],
-    narration: input.narration || `Depreciation run as on ${asOnDate.toISOString().split('T')[0]}`,
+    date: asOnDate.toISOString().split("T")[0],
+    narration:
+      input.narration ||
+      `Depreciation run as on ${asOnDate.toISOString().split("T")[0]}`,
     entries: depreciationEntries,
   });
 
@@ -382,11 +406,13 @@ export async function carryForwardBalances(
       },
     });
 
-    let debitTotal = openingType === LedgerBalanceType.DEBIT ? openingBalance : 0;
-    let creditTotal = openingType === LedgerBalanceType.CREDIT ? openingBalance : 0;
+    let debitTotal =
+      openingType === LedgerBalanceType.DEBIT ? openingBalance : 0;
+    let creditTotal =
+      openingType === LedgerBalanceType.CREDIT ? openingBalance : 0;
 
     for (const entry of entries) {
-      if (entry.entryType === 'DEBIT') {
+      if (entry.entryType === "DEBIT") {
         debitTotal += Number(entry.amount);
       } else {
         creditTotal += Number(entry.amount);
@@ -394,7 +420,10 @@ export async function carryForwardBalances(
     }
 
     const closingBalance = Math.abs(debitTotal - creditTotal);
-    const closingType = debitTotal >= creditTotal ? LedgerBalanceType.DEBIT : LedgerBalanceType.CREDIT;
+    const closingType =
+      debitTotal >= creditTotal
+        ? LedgerBalanceType.DEBIT
+        : LedgerBalanceType.CREDIT;
 
     // Update opening balance for new year
     await prisma.ledger.update({
@@ -408,7 +437,6 @@ export async function carryForwardBalances(
 
   return {
     success: true,
-    message: `Opening balances carried forward from ${yearEndDate.toISOString().split('T')[0]} to ${yearStartDate.toISOString().split('T')[0]}`,
+    message: `Opening balances carried forward from ${yearEndDate.toISOString().split("T")[0]} to ${yearStartDate.toISOString().split("T")[0]}`,
   };
 }
-

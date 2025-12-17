@@ -26,12 +26,13 @@ export const createParty = async (startupId: string, data: PartyInput) => {
 
   const partyType =
     ALLOWED_PARTY_TYPES.find(
-      option => option.toLowerCase() === (data.type || "").toLowerCase()
+      (option) => option.toLowerCase() === (data.type || "").toLowerCase()
     ) || "Customer";
 
   const normalizedBalanceType =
     ALLOWED_BALANCE_TYPES.find(
-      option => option.toLowerCase() === (data.balanceType || "").toLowerCase()
+      (option) =>
+        option.toLowerCase() === (data.balanceType || "").toLowerCase()
     ) || "Debit";
 
   const existing = await prisma.partyMaster.findFirst({
@@ -57,4 +58,3 @@ export const createParty = async (startupId: string, data: PartyInput) => {
     },
   });
 };
-

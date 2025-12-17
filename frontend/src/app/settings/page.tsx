@@ -46,8 +46,10 @@ import PlaidLink from "@/components/ui/PlaidLink";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 
-interface AddressForm
-  extends Omit<CompanyAddressInput, "isPrimary" | "isBilling" | "isShipping"> {
+interface AddressForm extends Omit<
+  CompanyAddressInput,
+  "isPrimary" | "isBilling" | "isShipping"
+> {
   isPrimary?: boolean;
   isBilling?: boolean;
   isShipping?: boolean;
@@ -101,7 +103,7 @@ const mapProfileToForm = (
     mobile: profile.mobile || "",
     email: profile.email || "",
     website: profile.website || "",
-    addresses: (profile.addresses || []).map(address => ({
+    addresses: (profile.addresses || []).map((address) => ({
       id: address.id,
       label: address.label || "",
       line1: address.line1 || "",
@@ -252,7 +254,8 @@ const subscriptionPlanCatalog: Record<
     subLabel: "$50/mo value: locked-in for early adopters",
     priceSummary: "$0 during showcase",
     seatSummary: "Includes 1 admin + up to 5 role-based collaborators",
-    description: "Full Starter pack capabilities at no cost until public launch.",
+    description:
+      "Full Starter pack capabilities at no cost until public launch.",
     features: [
       "Accounting, inventory & cost centers",
       "GST/statutory workflows",
@@ -536,7 +539,7 @@ export default function SettingsPage() {
           string,
           { name: string; prefix: string; suffix: string }
         > = {};
-        items.forEach(type => {
+        items.forEach((type) => {
           draftMap[type.id] = { name: "", prefix: "", suffix: "" };
         });
         setSeriesDrafts(draftMap);
@@ -572,7 +575,7 @@ export default function SettingsPage() {
       string,
       { name: string; prefix: string; suffix: string }
     > = {};
-    items.forEach(type => {
+    items.forEach((type) => {
       drafts[type.id] = { name: "", prefix: "", suffix: "" };
     });
     setSeriesDrafts(drafts);
@@ -604,8 +607,8 @@ export default function SettingsPage() {
     field: K,
     value: VoucherType[K]
   ) => {
-    setVoucherTypes(prev =>
-      prev.map(type =>
+    setVoucherTypes((prev) =>
+      prev.map((type) =>
         type.id === voucherTypeId
           ? ({
               ...type,
@@ -617,7 +620,7 @@ export default function SettingsPage() {
   };
 
   const handleVoucherTypeSave = async (voucherTypeId: string) => {
-    const voucherType = voucherTypes.find(type => type.id === voucherTypeId);
+    const voucherType = voucherTypes.find((type) => type.id === voucherTypeId);
     if (!voucherType) return;
 
     const payload: VoucherTypeUpdateInput = {
@@ -631,7 +634,7 @@ export default function SettingsPage() {
       nextNumber: voucherType.nextNumber,
     };
 
-    setVoucherSaving(prev => ({ ...prev, [voucherTypeId]: true }));
+    setVoucherSaving((prev) => ({ ...prev, [voucherTypeId]: true }));
     try {
       const response = await apiClient.vouchers.updateType(
         voucherTypeId,
@@ -647,7 +650,7 @@ export default function SettingsPage() {
       console.error("Save voucher type error:", error);
       toast.error("Unable to update voucher type");
     } finally {
-      setVoucherSaving(prev => ({ ...prev, [voucherTypeId]: false }));
+      setVoucherSaving((prev) => ({ ...prev, [voucherTypeId]: false }));
     }
   };
 
@@ -655,7 +658,7 @@ export default function SettingsPage() {
     voucherTypeId: string,
     numberingSeriesId?: string
   ) => {
-    setVoucherSaving(prev => ({ ...prev, [voucherTypeId]: true }));
+    setVoucherSaving((prev) => ({ ...prev, [voucherTypeId]: true }));
     try {
       const response = await apiClient.vouchers.generateNextNumber(
         voucherTypeId,
@@ -671,7 +674,7 @@ export default function SettingsPage() {
       console.error("Generate voucher number error:", error);
       toast.error("Unable to generate voucher number");
     } finally {
-      setVoucherSaving(prev => ({ ...prev, [voucherTypeId]: false }));
+      setVoucherSaving((prev) => ({ ...prev, [voucherTypeId]: false }));
     }
   };
 
@@ -679,7 +682,7 @@ export default function SettingsPage() {
     field: K,
     value: (typeof newVoucherType)[K]
   ) => {
-    setNewVoucherType(prev => ({ ...prev, [field]: value }));
+    setNewVoucherType((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleCreateVoucherType = async (
@@ -737,7 +740,7 @@ export default function SettingsPage() {
     field: "name" | "prefix" | "suffix",
     value: string
   ) => {
-    setSeriesDrafts(prev => ({
+    setSeriesDrafts((prev) => ({
       ...prev,
       [voucherTypeId]: {
         ...(prev[voucherTypeId] ?? { name: "", prefix: "", suffix: "" }),
@@ -753,7 +756,7 @@ export default function SettingsPage() {
       return;
     }
 
-    setVoucherSaving(prev => ({ ...prev, [voucherTypeId]: true }));
+    setVoucherSaving((prev) => ({ ...prev, [voucherTypeId]: true }));
     try {
       const response = await apiClient.vouchers.createSeries(voucherTypeId, {
         name: draft.name.trim(),
@@ -768,7 +771,7 @@ export default function SettingsPage() {
 
       toast.success("Numbering series created");
       await refreshVoucherTypes();
-      setSeriesDrafts(prev => ({
+      setSeriesDrafts((prev) => ({
         ...prev,
         [voucherTypeId]: { name: "", prefix: "", suffix: "" },
       }));
@@ -776,7 +779,7 @@ export default function SettingsPage() {
       console.error("Create numbering series error:", error);
       toast.error("Unable to create numbering series");
     } finally {
-      setVoucherSaving(prev => ({ ...prev, [voucherTypeId]: false }));
+      setVoucherSaving((prev) => ({ ...prev, [voucherTypeId]: false }));
     }
   };
 
@@ -787,14 +790,14 @@ export default function SettingsPage() {
 
   const handleDisconnectBank = async (plaidItemId: string) => {
     toast.success("Bank account disconnected.");
-    setPlaidItems(plaidItems.filter(item => item.id !== plaidItemId));
+    setPlaidItems(plaidItems.filter((item) => item.id !== plaidItemId));
   };
 
   const handleProfileFieldChange = (
     field: keyof CompanyProfileInput,
     value: string
   ) => {
-    setProfileForm(prev => (prev ? { ...prev, [field]: value } : prev));
+    setProfileForm((prev) => (prev ? { ...prev, [field]: value } : prev));
   };
 
   const handleAddressChange = (
@@ -802,7 +805,7 @@ export default function SettingsPage() {
     field: keyof AddressForm,
     value: string | boolean
   ) => {
-    setProfileForm(prev => {
+    setProfileForm((prev) => {
       if (!prev) return prev;
       const addresses = prev.addresses ? [...prev.addresses] : [];
       const current = addresses[index] || { ...emptyAddress };
@@ -812,7 +815,7 @@ export default function SettingsPage() {
   };
 
   const handleAddAddress = () => {
-    setProfileForm(prev => {
+    setProfileForm((prev) => {
       if (!prev) return prev;
       const addresses = prev.addresses ? [...prev.addresses] : [];
       addresses.push({ ...emptyAddress, isPrimary: addresses.length === 0 });
@@ -821,11 +824,11 @@ export default function SettingsPage() {
   };
 
   const handleRemoveAddress = (index: number) => {
-    setProfileForm(prev => {
+    setProfileForm((prev) => {
       if (!prev) return prev;
       const addresses = prev.addresses ? [...prev.addresses] : [];
       addresses.splice(index, 1);
-      if (addresses.length > 0 && !addresses.some(addr => addr.isPrimary)) {
+      if (addresses.length > 0 && !addresses.some((addr) => addr.isPrimary)) {
         addresses[0].isPrimary = true;
       }
       return { ...prev, addresses };
@@ -836,7 +839,7 @@ export default function SettingsPage() {
     index: number,
     field: "isPrimary" | "isBilling" | "isShipping"
   ) => {
-    setProfileForm(prev => {
+    setProfileForm((prev) => {
       if (!prev) return prev;
       const addresses = prev.addresses ? [...prev.addresses] : [];
       const current = addresses[index] || { ...emptyAddress };
@@ -867,7 +870,7 @@ export default function SettingsPage() {
       setProfileSaving(true);
       const payload: CompanyProfileInput = {
         ...profileForm,
-        addresses: (profileForm.addresses || []).map(address => ({
+        addresses: (profileForm.addresses || []).map((address) => ({
           id: address.id,
           label: address.label?.trim() || undefined,
           line1: address.line1,
@@ -912,7 +915,7 @@ export default function SettingsPage() {
     field: keyof FiscalForm,
     value: string | boolean
   ) => {
-    setFiscalForm(prev => {
+    setFiscalForm((prev) => {
       if (!prev) return prev;
       if (field === "allowBackdatedEntries") {
         const allow = Boolean(value);
@@ -989,7 +992,7 @@ export default function SettingsPage() {
     field: K,
     value: SecurityForm[K]
   ) => {
-    setSecurityForm(prev => (prev ? { ...prev, [field]: value } : prev));
+    setSecurityForm((prev) => (prev ? { ...prev, [field]: value } : prev));
   };
 
   const handleSecuritySubmit = async (
@@ -1109,7 +1112,7 @@ export default function SettingsPage() {
     field: K,
     value: CurrencyForm[K]
   ) => {
-    setCurrencyForm(prev => (prev ? { ...prev, [field]: value } : prev));
+    setCurrencyForm((prev) => (prev ? { ...prev, [field]: value } : prev));
   };
 
   const handleCurrencySubmit = async (
@@ -1166,7 +1169,7 @@ export default function SettingsPage() {
 
       const updatedConfig = response.data;
       setCurrencyForm(mapCurrencyToForm(updatedConfig));
-      setProfileForm(prev =>
+      setProfileForm((prev) =>
         prev ? { ...prev, baseCurrency: updatedConfig.baseCurrencyCode } : prev
       );
 
@@ -1205,7 +1208,7 @@ export default function SettingsPage() {
     field: K,
     value: FeatureToggleForm[K]
   ) => {
-    setFeatureForm(prev => (prev ? { ...prev, [field]: value } : prev));
+    setFeatureForm((prev) => (prev ? { ...prev, [field]: value } : prev));
   };
 
   const handleFeatureSubmit = async (
@@ -1299,7 +1302,7 @@ export default function SettingsPage() {
       title: "Connections",
       content: (
         <div className="space-y-4">
-          {plaidItems.map(item => (
+          {plaidItems.map((item) => (
             <div
               key={item.id}
               className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
@@ -1333,9 +1336,10 @@ export default function SettingsPage() {
     },
   ];
 
-  const activeTabMeta = settingsTabs.find(tab => tab.id === activeTab);
+  const activeTabMeta = settingsTabs.find((tab) => tab.id === activeTab);
   const activePlanCode = user?.startup?.subscriptionPlan ?? "starter_earlybird";
-  const activePlan = subscriptionPlanCatalog[activePlanCode] ?? subscriptionPlanCatalog.starter;
+  const activePlan =
+    subscriptionPlanCatalog[activePlanCode] ?? subscriptionPlanCatalog.starter;
   const subscriptionStatus = user?.startup?.subscriptionStatus ?? "active";
 
   return (
@@ -1356,7 +1360,7 @@ export default function SettingsPage() {
 
           <div className="mt-4">
             <div className="flex flex-wrap gap-2 border-b border-gray-200">
-              {settingsTabs.map(tab => (
+              {settingsTabs.map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
@@ -1379,7 +1383,7 @@ export default function SettingsPage() {
 
           {activeTab === "general" && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {sections.map(section => (
+              {sections.map((section) => (
                 <Card
                   key={section.title}
                   className="rounded-2xl shadow-lg border-0 bg-white"
@@ -1422,7 +1426,7 @@ export default function SettingsPage() {
                           id="displayName"
                           required
                           value={profileForm.displayName}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleProfileFieldChange(
                               "displayName",
                               event.target.value
@@ -1436,7 +1440,7 @@ export default function SettingsPage() {
                           id="legalName"
                           placeholder="Registered legal entity name"
                           value={profileForm.legalName}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleProfileFieldChange(
                               "legalName",
                               event.target.value
@@ -1450,7 +1454,7 @@ export default function SettingsPage() {
                           id="mailingName"
                           placeholder="Name printed on invoices and reports"
                           value={profileForm.mailingName}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleProfileFieldChange(
                               "mailingName",
                               event.target.value
@@ -1466,7 +1470,7 @@ export default function SettingsPage() {
                         <Input
                           id="country"
                           value={profileForm.country || ""}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleProfileFieldChange(
                               "country",
                               event.target.value
@@ -1480,7 +1484,7 @@ export default function SettingsPage() {
                         <Input
                           id="state"
                           value={profileForm.state || ""}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleProfileFieldChange(
                               "state",
                               event.target.value
@@ -1494,7 +1498,7 @@ export default function SettingsPage() {
                         <Input
                           id="city"
                           value={profileForm.city || ""}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleProfileFieldChange("city", event.target.value)
                           }
                           placeholder="Bengaluru"
@@ -1505,7 +1509,7 @@ export default function SettingsPage() {
                         <Input
                           id="postalCode"
                           value={profileForm.postalCode || ""}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleProfileFieldChange(
                               "postalCode",
                               event.target.value
@@ -1522,7 +1526,7 @@ export default function SettingsPage() {
                         <Input
                           id="phone"
                           value={profileForm.phone || ""}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleProfileFieldChange(
                               "phone",
                               event.target.value
@@ -1536,7 +1540,7 @@ export default function SettingsPage() {
                         <Input
                           id="mobile"
                           value={profileForm.mobile || ""}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleProfileFieldChange(
                               "mobile",
                               event.target.value
@@ -1551,7 +1555,7 @@ export default function SettingsPage() {
                           id="email"
                           type="email"
                           value={profileForm.email || ""}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleProfileFieldChange(
                               "email",
                               event.target.value
@@ -1565,7 +1569,7 @@ export default function SettingsPage() {
                         <Input
                           id="website"
                           value={profileForm.website || ""}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleProfileFieldChange(
                               "website",
                               event.target.value
@@ -1626,7 +1630,7 @@ export default function SettingsPage() {
                                   <Input
                                     id={`address-label-${index}`}
                                     value={address.label || ""}
-                                    onChange={event =>
+                                    onChange={(event) =>
                                       handleAddressChange(
                                         index,
                                         "label",
@@ -1644,7 +1648,7 @@ export default function SettingsPage() {
                                     id={`address-line1-${index}`}
                                     required
                                     value={address.line1}
-                                    onChange={event =>
+                                    onChange={(event) =>
                                       handleAddressChange(
                                         index,
                                         "line1",
@@ -1662,7 +1666,7 @@ export default function SettingsPage() {
                                   <Input
                                     id={`address-line2-${index}`}
                                     value={address.line2 || ""}
-                                    onChange={event =>
+                                    onChange={(event) =>
                                       handleAddressChange(
                                         index,
                                         "line2",
@@ -1679,7 +1683,7 @@ export default function SettingsPage() {
                                   <Input
                                     id={`address-city-${index}`}
                                     value={address.city || ""}
-                                    onChange={event =>
+                                    onChange={(event) =>
                                       handleAddressChange(
                                         index,
                                         "city",
@@ -1695,7 +1699,7 @@ export default function SettingsPage() {
                                   <Input
                                     id={`address-state-${index}`}
                                     value={address.state || ""}
-                                    onChange={event =>
+                                    onChange={(event) =>
                                       handleAddressChange(
                                         index,
                                         "state",
@@ -1711,7 +1715,7 @@ export default function SettingsPage() {
                                   <Input
                                     id={`address-country-${index}`}
                                     value={address.country || ""}
-                                    onChange={event =>
+                                    onChange={(event) =>
                                       handleAddressChange(
                                         index,
                                         "country",
@@ -1727,7 +1731,7 @@ export default function SettingsPage() {
                                   <Input
                                     id={`address-postal-${index}`}
                                     value={address.postalCode || ""}
-                                    onChange={event =>
+                                    onChange={(event) =>
                                       handleAddressChange(
                                         index,
                                         "postalCode",
@@ -1842,7 +1846,7 @@ export default function SettingsPage() {
                           type="date"
                           required
                           value={fiscalForm.financialYearStart}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleFiscalFieldChange(
                               "financialYearStart",
                               event.target.value
@@ -1859,7 +1863,7 @@ export default function SettingsPage() {
                           type="date"
                           required
                           value={fiscalForm.booksStart}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleFiscalFieldChange(
                               "booksStart",
                               event.target.value
@@ -1878,7 +1882,7 @@ export default function SettingsPage() {
                           <input
                             type="checkbox"
                             checked={fiscalForm.allowBackdatedEntries}
-                            onChange={event =>
+                            onChange={(event) =>
                               handleFiscalFieldChange(
                                 "allowBackdatedEntries",
                                 event.target.checked
@@ -1896,16 +1900,17 @@ export default function SettingsPage() {
                               id="backdatedFrom"
                               type="date"
                               value={fiscalForm.backdatedFrom || ""}
-                              onChange={event =>
+                              onChange={(event) =>
                                 handleFiscalFieldChange(
                                   "backdatedFrom",
                                   event.target.value
                                 )
                               }
                             />
-                          <p className="text-xs text-muted-foreground">
-                            This controls the earliest date allowed for vouchers within the current books.
-                          </p>
+                            <p className="text-xs text-muted-foreground">
+                              This controls the earliest date allowed for
+                              vouchers within the current books.
+                            </p>
                           </div>
                         )}
                       </div>
@@ -1919,7 +1924,7 @@ export default function SettingsPage() {
                         <input
                           type="checkbox"
                           checked={fiscalForm.enableEditLog}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleFiscalFieldChange(
                               "enableEditLog",
                               event.target.checked
@@ -1929,7 +1934,8 @@ export default function SettingsPage() {
                         Enable Edit Log (audit trail for vouchers & masters)
                       </label>
                       <p className="text-xs text-muted-foreground">
-                        Provides an audit-compliant edit log for vouchers and masters.
+                        Provides an audit-compliant edit log for vouchers and
+                        masters.
                       </p>
                     </div>
 
@@ -1972,8 +1978,8 @@ export default function SettingsPage() {
                   Controls
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Configure vault encryption and granular user access
-                  policies for your company.
+                  Configure vault encryption and granular user access policies
+                  for your company.
                 </p>
               </CardHeader>
               <CardContent>
@@ -1992,7 +1998,7 @@ export default function SettingsPage() {
                         <input
                           type="checkbox"
                           checked={securityForm.tallyVaultEnabled}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleSecurityFieldChange(
                               "tallyVaultEnabled",
                               event.target.checked
@@ -2011,7 +2017,7 @@ export default function SettingsPage() {
                             <Input
                               id="tallyVaultHint"
                               value={securityForm.tallyVaultPasswordHint}
-                              onChange={event =>
+                              onChange={(event) =>
                                 handleSecurityFieldChange(
                                   "tallyVaultPasswordHint",
                                   event.target.value
@@ -2028,7 +2034,7 @@ export default function SettingsPage() {
                               id="tallyVaultCurrentPassword"
                               type="password"
                               value={securityForm.currentPassword}
-                              onChange={event =>
+                              onChange={(event) =>
                                 handleSecurityFieldChange(
                                   "currentPassword",
                                   event.target.value
@@ -2051,7 +2057,7 @@ export default function SettingsPage() {
                               id="tallyVaultNewPassword"
                               type="password"
                               value={securityForm.newPassword}
-                              onChange={event =>
+                              onChange={(event) =>
                                 handleSecurityFieldChange(
                                   "newPassword",
                                   event.target.value
@@ -2068,7 +2074,7 @@ export default function SettingsPage() {
                               id="tallyVaultConfirmPassword"
                               type="password"
                               value={securityForm.confirmNewPassword}
-                              onChange={event =>
+                              onChange={(event) =>
                                 handleSecurityFieldChange(
                                   "confirmNewPassword",
                                   event.target.value
@@ -2091,15 +2097,14 @@ export default function SettingsPage() {
                           </p>
                           {securityForm.initialTallyVaultEnabled && (
                             <div className="space-y-2 md:max-w-sm">
-                            <Label htmlFor="tallyVaultDisablePassword">
-                                Current Vault Password (required to
-                                disable)
+                              <Label htmlFor="tallyVaultDisablePassword">
+                                Current Vault Password (required to disable)
                               </Label>
                               <Input
                                 id="tallyVaultDisablePassword"
                                 type="password"
                                 value={securityForm.currentPassword}
-                                onChange={event =>
+                                onChange={(event) =>
                                   handleSecurityFieldChange(
                                     "currentPassword",
                                     event.target.value
@@ -2121,7 +2126,7 @@ export default function SettingsPage() {
                         <input
                           type="checkbox"
                           checked={securityForm.userAccessControlEnabled}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleSecurityFieldChange(
                               "userAccessControlEnabled",
                               event.target.checked
@@ -2134,7 +2139,7 @@ export default function SettingsPage() {
                         <input
                           type="checkbox"
                           checked={securityForm.multiFactorRequired}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleSecurityFieldChange(
                               "multiFactorRequired",
                               event.target.checked
@@ -2144,8 +2149,9 @@ export default function SettingsPage() {
                         Enforce multi-factor authentication for privileged roles
                       </label>
                       <p className="text-xs text-muted-foreground">
-                        Toggle granular access policies similar to advanced ERP user controls. MFA can be
-                        rolled out gradually across roles.
+                        Toggle granular access policies similar to advanced ERP
+                        user controls. MFA can be rolled out gradually across
+                        roles.
                       </p>
                     </div>
 
@@ -2208,7 +2214,7 @@ export default function SettingsPage() {
                         <Input
                           id="currencyCode"
                           value={currencyForm.baseCurrencyCode}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleCurrencyFieldChange(
                               "baseCurrencyCode",
                               event.target.value.toUpperCase()
@@ -2226,7 +2232,7 @@ export default function SettingsPage() {
                         <Input
                           id="currencySymbol"
                           value={currencyForm.baseCurrencySymbol}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleCurrencyFieldChange(
                               "baseCurrencySymbol",
                               event.target.value
@@ -2242,7 +2248,7 @@ export default function SettingsPage() {
                         <Input
                           id="currencyName"
                           value={currencyForm.baseCurrencyFormalName}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleCurrencyFieldChange(
                               "baseCurrencyFormalName",
                               event.target.value
@@ -2262,7 +2268,7 @@ export default function SettingsPage() {
                           min={0}
                           max={6}
                           value={currencyForm.decimalPlaces}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleCurrencyFieldChange(
                               "decimalPlaces",
                               Number(event.target.value)
@@ -2277,7 +2283,7 @@ export default function SettingsPage() {
                         <Input
                           id="decimalSeparator"
                           value={currencyForm.decimalSeparator}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleCurrencyFieldChange(
                               "decimalSeparator",
                               event.target.value.slice(0, 1)
@@ -2294,7 +2300,7 @@ export default function SettingsPage() {
                         <Input
                           id="thousandSeparator"
                           value={currencyForm.thousandSeparator}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleCurrencyFieldChange(
                               "thousandSeparator",
                               event.target.value.slice(0, 1)
@@ -2314,7 +2320,7 @@ export default function SettingsPage() {
                         <input
                           type="checkbox"
                           checked={currencyForm.symbolOnRight}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleCurrencyFieldChange(
                               "symbolOnRight",
                               event.target.checked
@@ -2327,7 +2333,7 @@ export default function SettingsPage() {
                         <input
                           type="checkbox"
                           checked={currencyForm.spaceBetweenAmountAndSymbol}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleCurrencyFieldChange(
                               "spaceBetweenAmountAndSymbol",
                               event.target.checked
@@ -2340,7 +2346,7 @@ export default function SettingsPage() {
                         <input
                           type="checkbox"
                           checked={currencyForm.showAmountInMillions}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleCurrencyFieldChange(
                               "showAmountInMillions",
                               event.target.checked
@@ -2395,8 +2401,8 @@ export default function SettingsPage() {
                   & Numbering
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
-                Configure standard voucher types, numbering sequences, and
-                prefixes to mirror your existing accounting setup.
+                  Configure standard voucher types, numbering sequences, and
+                  prefixes to mirror your existing accounting setup.
                 </p>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -2414,7 +2420,7 @@ export default function SettingsPage() {
                     <Input
                       id="voucherTypeName"
                       value={newVoucherType.name}
-                      onChange={event =>
+                      onChange={(event) =>
                         handleNewVoucherTypeChange("name", event.target.value)
                       }
                       placeholder="e.g., Payment"
@@ -2426,7 +2432,7 @@ export default function SettingsPage() {
                     <select
                       id="voucherTypeCategory"
                       value={newVoucherType.category}
-                      onChange={event =>
+                      onChange={(event) =>
                         handleNewVoucherTypeChange(
                           "category",
                           event.target.value as VoucherCategory
@@ -2434,7 +2440,7 @@ export default function SettingsPage() {
                       }
                       className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
                     >
-                      {voucherCategoryOptions.map(option => (
+                      {voucherCategoryOptions.map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>
@@ -2448,7 +2454,7 @@ export default function SettingsPage() {
                     <Input
                       id="voucherTypeAbbreviation"
                       value={newVoucherType.abbreviation}
-                      onChange={event =>
+                      onChange={(event) =>
                         handleNewVoucherTypeChange(
                           "abbreviation",
                           event.target.value
@@ -2464,7 +2470,7 @@ export default function SettingsPage() {
                     <select
                       id="voucherTypeNumberingMethod"
                       value={newVoucherType.numberingMethod}
-                      onChange={event =>
+                      onChange={(event) =>
                         handleNewVoucherTypeChange(
                           "numberingMethod",
                           event.target.value as VoucherNumberingMethod
@@ -2472,7 +2478,7 @@ export default function SettingsPage() {
                       }
                       className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
                     >
-                      {numberingMethodOptions.map(option => (
+                      {numberingMethodOptions.map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>
@@ -2486,7 +2492,7 @@ export default function SettingsPage() {
                     <select
                       id="voucherTypeNumberingBehavior"
                       value={newVoucherType.numberingBehavior}
-                      onChange={event =>
+                      onChange={(event) =>
                         handleNewVoucherTypeChange(
                           "numberingBehavior",
                           event.target.value as VoucherNumberingBehavior
@@ -2494,7 +2500,7 @@ export default function SettingsPage() {
                       }
                       className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
                     >
-                      {numberingBehaviorOptions.map(option => (
+                      {numberingBehaviorOptions.map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>
@@ -2506,7 +2512,7 @@ export default function SettingsPage() {
                     <Input
                       id="voucherTypePrefix"
                       value={newVoucherType.prefix}
-                      onChange={event =>
+                      onChange={(event) =>
                         handleNewVoucherTypeChange("prefix", event.target.value)
                       }
                       placeholder="e.g., PMT/"
@@ -2517,7 +2523,7 @@ export default function SettingsPage() {
                     <Input
                       id="voucherTypeSuffix"
                       value={newVoucherType.suffix}
-                      onChange={event =>
+                      onChange={(event) =>
                         handleNewVoucherTypeChange("suffix", event.target.value)
                       }
                       placeholder="Optional suffix"
@@ -2528,7 +2534,7 @@ export default function SettingsPage() {
                       <input
                         type="checkbox"
                         checked={newVoucherType.allowManualOverride}
-                        onChange={event =>
+                        onChange={(event) =>
                           handleNewVoucherTypeChange(
                             "allowManualOverride",
                             event.target.checked
@@ -2541,7 +2547,7 @@ export default function SettingsPage() {
                       <input
                         type="checkbox"
                         checked={newVoucherType.allowDuplicateNumbers}
-                        onChange={event =>
+                        onChange={(event) =>
                           handleNewVoucherTypeChange(
                             "allowDuplicateNumbers",
                             event.target.checked
@@ -2573,7 +2579,7 @@ export default function SettingsPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {voucherTypes.map(voucherType => {
+                    {voucherTypes.map((voucherType) => {
                       const seriesDraft = seriesDrafts[voucherType.id] ?? {
                         name: "",
                         prefix: "",
@@ -2592,7 +2598,7 @@ export default function SettingsPage() {
                               </h4>
                               <p className="text-xs text-muted-foreground">
                                 {voucherCategoryOptions.find(
-                                  option =>
+                                  (option) =>
                                     option.value === voucherType.category
                                 )?.label ?? voucherType.category}{" "}
                                 • Next Number: {voucherType.nextNumber}
@@ -2602,14 +2608,14 @@ export default function SettingsPage() {
                               <span className="px-2 py-1 rounded bg-white border border-gray-200">
                                 Method:{" "}
                                 {numberingMethodOptions.find(
-                                  option =>
+                                  (option) =>
                                     option.value === voucherType.numberingMethod
                                 )?.label ?? voucherType.numberingMethod}
                               </span>
                               <span className="px-2 py-1 rounded bg-white border border-gray-200">
                                 Behaviour:{" "}
                                 {numberingBehaviorOptions.find(
-                                  option =>
+                                  (option) =>
                                     option.value ===
                                     voucherType.numberingBehavior
                                 )?.label ?? voucherType.numberingBehavior}
@@ -2637,7 +2643,7 @@ export default function SettingsPage() {
                               <Input
                                 id={`voucher-prefix-${voucherType.id}`}
                                 value={voucherType.prefix ?? ""}
-                                onChange={event =>
+                                onChange={(event) =>
                                   handleVoucherTypeFieldChange(
                                     voucherType.id,
                                     "prefix",
@@ -2655,7 +2661,7 @@ export default function SettingsPage() {
                               <Input
                                 id={`voucher-suffix-${voucherType.id}`}
                                 value={voucherType.suffix ?? ""}
-                                onChange={event =>
+                                onChange={(event) =>
                                   handleVoucherTypeFieldChange(
                                     voucherType.id,
                                     "suffix",
@@ -2673,7 +2679,7 @@ export default function SettingsPage() {
                                 type="number"
                                 min={1}
                                 value={voucherType.nextNumber}
-                                onChange={event =>
+                                onChange={(event) =>
                                   handleVoucherTypeFieldChange(
                                     voucherType.id,
                                     "nextNumber",
@@ -2689,7 +2695,7 @@ export default function SettingsPage() {
                               <input
                                 type="checkbox"
                                 checked={voucherType.allowManualOverride}
-                                onChange={event =>
+                                onChange={(event) =>
                                   handleVoucherTypeFieldChange(
                                     voucherType.id,
                                     "allowManualOverride",
@@ -2703,7 +2709,7 @@ export default function SettingsPage() {
                               <input
                                 type="checkbox"
                                 checked={voucherType.allowDuplicateNumbers}
-                                onChange={event =>
+                                onChange={(event) =>
                                   handleVoucherTypeFieldChange(
                                     voucherType.id,
                                     "allowDuplicateNumbers",
@@ -2748,7 +2754,7 @@ export default function SettingsPage() {
                               </p>
                             ) : (
                               <ul className="space-y-2 text-xs text-[#2C2C2C]">
-                                {voucherType.numberingSeries.map(series => (
+                                {voucherType.numberingSeries.map((series) => (
                                   <li
                                     key={series.id}
                                     className="flex items-center justify-between rounded border border-gray-200 px-3 py-2"
@@ -2793,7 +2799,7 @@ export default function SettingsPage() {
                                 <Input
                                   id={`series-name-${voucherType.id}`}
                                   value={seriesDraft.name}
-                                  onChange={event =>
+                                  onChange={(event) =>
                                     handleSeriesDraftChange(
                                       voucherType.id,
                                       "name",
@@ -2812,7 +2818,7 @@ export default function SettingsPage() {
                                 <Input
                                   id={`series-prefix-${voucherType.id}`}
                                   value={seriesDraft.prefix}
-                                  onChange={event =>
+                                  onChange={(event) =>
                                     handleSeriesDraftChange(
                                       voucherType.id,
                                       "prefix",
@@ -2831,7 +2837,7 @@ export default function SettingsPage() {
                                 <Input
                                   id={`series-suffix-${voucherType.id}`}
                                   value={seriesDraft.suffix}
-                                  onChange={event =>
+                                  onChange={(event) =>
                                     handleSeriesDraftChange(
                                       voucherType.id,
                                       "suffix",
@@ -2865,313 +2871,328 @@ export default function SettingsPage() {
             </Card>
           )}
 
-        {activeTab === "billing" && (
-          <div className="space-y-6">
-            <Card className="rounded-2xl shadow-lg border-0 bg-white">
-              <CardHeader className="flex flex-col gap-2">
-                <CardTitle className="flex items-center gap-2 text-lg font-bold text-[#2C2C2C]">
-                  <Building2 className="h-5 w-5 text-[#2C2C2C]" /> Subscription
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Track the plan assigned to this workspace. Early adopters keep their pricing when billing goes live.
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                  <div className="space-y-1">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                      Current Plan
-                    </p>
-                    <div className="flex items-center flex-wrap gap-2">
-                      <h3 className="text-2xl font-bold text-[#2C2C2C]">{activePlan.label}</h3>
-                      {activePlan.isEarlybird && (
-                        <Badge className="bg-amber-100 text-amber-900 border border-amber-300">
-                          Earlybird
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-[#2C2C2C]/80">{activePlan.subLabel}</p>
-                  </div>
-                  <div className="text-left md:text-right space-y-1">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                      Status
-                    </p>
-                    <p className="text-base font-semibold text-[#2C2C2C] capitalize">
-                      {subscriptionStatus}
-                    </p>
-                    <p className="text-sm text-[#2C2C2C]/70">{activePlan.priceSummary}</p>
-                  </div>
-                </div>
-                <p className="text-sm text-[#2C2C2C]">{activePlan.description}</p>
-                <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-[#2C2C2C] font-medium">
-                  {activePlan.seatSummary}
-                </div>
-                <div className="grid gap-3 md:grid-cols-2">
-                  {activePlan.features.map(feature => (
-                    <div key={feature} className="flex items-center gap-2 text-sm text-[#2C2C2C]">
-                      <Check className="h-4 w-4 text-[#607c47]" />
-                      <span>{feature}</span>
-                    </div>
-                  ))}
-                </div>
-                {activePlan.isEarlybird && (
-                  <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                    Earlybird access remains free until public launch. We&apos;ll notify you before switching to the paid Startup plan so you can confirm the upgrade.
-                  </div>
-                )}
-                <div className="flex flex-wrap gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled
-                    className="opacity-80 cursor-not-allowed"
-                  >
-                    Manage Plan (Coming Soon)
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-2xl shadow-lg border-0 bg-white">
-              <CardHeader className="flex flex-col gap-2">
-                <CardTitle className="flex items-center gap-2 text-lg font-bold text-[#2C2C2C]">
-                  <Shield className="h-5 w-5 text-[#2C2C2C]" /> Feature Access
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Enable or disable major modules for this company. Disabled
-                  modules will be hidden across the product.
-                </p>
-              </CardHeader>
-              <CardContent>
-                {featureLoading || !featureForm ? (
-                  <div className="flex items-center justify-center py-8 text-muted-foreground">
-                    <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading
-                    feature configuration...
-                  </div>
-                ) : (
-                  <form className="space-y-6" onSubmit={handleFeatureSubmit}>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
-                        <input
-                          type="checkbox"
-                          checked={featureForm.enableAccounting}
-                          onChange={event =>
-                            handleFeatureFieldChange(
-                              "enableAccounting",
-                              event.target.checked
-                            )
-                          }
-                        />
-                        <span>
-                          <span className="font-semibold text-[#2C2C2C]">
-                            Accounting & Ledgers
-                          </span>
-                          <p className="text-xs text-muted-foreground">
-                            Core ledger management, vouchers, and financial
-                            statements.
-                          </p>
-                        </span>
-                      </label>
-                      <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
-                        <input
-                          type="checkbox"
-                          checked={featureForm.enableInventory}
-                          onChange={event =>
-                            handleFeatureFieldChange(
-                              "enableInventory",
-                              event.target.checked
-                            )
-                          }
-                        />
-                        <span>
-                          <span className="font-semibold text-[#2C2C2C]">
-                            Inventory & Stock
-                          </span>
-                          <p className="text-xs text-muted-foreground">
-                            Stock items, batches, pricing, and warehouse
-                            reporting.
-                          </p>
-                        </span>
-                      </label>
-                      <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
-                        <input
-                          type="checkbox"
-                          checked={featureForm.enableTaxation}
-                          onChange={event =>
-                            handleFeatureFieldChange(
-                              "enableTaxation",
-                              event.target.checked
-                            )
-                          }
-                        />
-                        <span>
-                          <span className="font-semibold text-[#2C2C2C]">
-                            Tax & Compliance
-                          </span>
-                          <p className="text-xs text-muted-foreground">
-                            GST, TDS/TCS modules, filings, and statutory
-                            reports.
-                          </p>
-                        </span>
-                      </label>
-                      <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
-                        <input
-                          type="checkbox"
-                          checked={featureForm.enablePayroll}
-                          onChange={event =>
-                            handleFeatureFieldChange(
-                              "enablePayroll",
-                              event.target.checked
-                            )
-                          }
-                        />
-                        <span>
-                          <span className="font-semibold text-[#2C2C2C]">
-                            Payroll & HR
-                          </span>
-                          <p className="text-xs text-muted-foreground">
-                            Employee payroll processing and statutory
-                            deductions.
-                          </p>
-                        </span>
-                      </label>
-                      <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
-                        <input
-                          type="checkbox"
-                          checked={featureForm.enableAIInsights}
-                          onChange={event =>
-                            handleFeatureFieldChange(
-                              "enableAIInsights",
-                              event.target.checked
-                            )
-                          }
-                        />
-                        <span>
-                          <span className="font-semibold text-[#2C2C2C]">
-                            AI Insights
-                          </span>
-                          <p className="text-xs text-muted-foreground">
-                            Automated anomaly detection, alerts, and AI
-                            recommendations.
-                          </p>
-                        </span>
-                      </label>
-                      <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
-                        <input
-                          type="checkbox"
-                          checked={featureForm.enableScenarioPlanning}
-                          onChange={event =>
-                            handleFeatureFieldChange(
-                              "enableScenarioPlanning",
-                              event.target.checked
-                            )
-                          }
-                        />
-                        <span>
-                          <span className="font-semibold text-[#2C2C2C]">
-                            Scenario Planning
-                          </span>
-                          <p className="text-xs text-muted-foreground">
-                            What-if analysis, runway simulations, and
-                            forecasting sandbox.
-                          </p>
-                        </span>
-                      </label>
-                      <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
-                        <input
-                          type="checkbox"
-                          checked={featureForm.enableAutomations}
-                          onChange={event =>
-                            handleFeatureFieldChange(
-                              "enableAutomations",
-                              event.target.checked
-                            )
-                          }
-                        />
-                        <span>
-                          <span className="font-semibold text-[#2C2C2C]">
-                            Automations
-                          </span>
-                          <p className="text-xs text-muted-foreground">
-                            Background reconciliations, smart reminders, and
-                            workflows.
-                          </p>
-                        </span>
-                      </label>
-                      <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
-                        <input
-                          type="checkbox"
-                          checked={featureForm.enableVendorManagement}
-                          onChange={event =>
-                            handleFeatureFieldChange(
-                              "enableVendorManagement",
-                              event.target.checked
-                            )
-                          }
-                        />
-                        <span>
-                          <span className="font-semibold text-[#2C2C2C]">
-                            Vendor Management
-                          </span>
-                          <p className="text-xs text-muted-foreground">
-                            Procurement workflows, vendor portals, and purchase
-                            approvals.
-                          </p>
-                        </span>
-                      </label>
-                      <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
-                        <input
-                          type="checkbox"
-                          checked={featureForm.enableBillingAndInvoicing}
-                          onChange={event =>
-                            handleFeatureFieldChange(
-                              "enableBillingAndInvoicing",
-                              event.target.checked
-                            )
-                          }
-                        />
-                        <span>
-                          <span className="font-semibold text-[#2C2C2C]">
-                            Billing & Invoicing
-                          </span>
-                          <p className="text-xs text-muted-foreground">
-                            Sales invoices, collections, reminders, and payment
-                            reconciliation.
-                          </p>
-                        </span>
-                      </label>
-                    </div>
-
-                    <div className="flex items-center justify-end gap-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className={resetButtonClass}
-                        onClick={loadCompanyData}
-                        disabled={featureLoading || featureSaving}
-                      >
-                        Reset
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={featureSaving}
-                        className="bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      >
-                        {featureSaving ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />{" "}
-                            Saving...
-                          </>
-                        ) : (
-                          "Save Feature Settings"
+          {activeTab === "billing" && (
+            <div className="space-y-6">
+              <Card className="rounded-2xl shadow-lg border-0 bg-white">
+                <CardHeader className="flex flex-col gap-2">
+                  <CardTitle className="flex items-center gap-2 text-lg font-bold text-[#2C2C2C]">
+                    <Building2 className="h-5 w-5 text-[#2C2C2C]" />{" "}
+                    Subscription
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Track the plan assigned to this workspace. Early adopters
+                    keep their pricing when billing goes live.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div className="space-y-1">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Current Plan
+                      </p>
+                      <div className="flex items-center flex-wrap gap-2">
+                        <h3 className="text-2xl font-bold text-[#2C2C2C]">
+                          {activePlan.label}
+                        </h3>
+                        {activePlan.isEarlybird && (
+                          <Badge className="bg-amber-100 text-amber-900 border border-amber-300">
+                            Earlybird
+                          </Badge>
                         )}
-                      </Button>
+                      </div>
+                      <p className="text-sm text-[#2C2C2C]/80">
+                        {activePlan.subLabel}
+                      </p>
                     </div>
-                  </form>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                    <div className="text-left md:text-right space-y-1">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Status
+                      </p>
+                      <p className="text-base font-semibold text-[#2C2C2C] capitalize">
+                        {subscriptionStatus}
+                      </p>
+                      <p className="text-sm text-[#2C2C2C]/70">
+                        {activePlan.priceSummary}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-[#2C2C2C]">
+                    {activePlan.description}
+                  </p>
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-[#2C2C2C] font-medium">
+                    {activePlan.seatSummary}
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {activePlan.features.map((feature) => (
+                      <div
+                        key={feature}
+                        className="flex items-center gap-2 text-sm text-[#2C2C2C]"
+                      >
+                        <Check className="h-4 w-4 text-[#607c47]" />
+                        <span>{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {activePlan.isEarlybird && (
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                      Earlybird access remains free until public launch.
+                      We&apos;ll notify you before switching to the paid Startup
+                      plan so you can confirm the upgrade.
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled
+                      className="opacity-80 cursor-not-allowed"
+                    >
+                      Manage Plan (Coming Soon)
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-2xl shadow-lg border-0 bg-white">
+                <CardHeader className="flex flex-col gap-2">
+                  <CardTitle className="flex items-center gap-2 text-lg font-bold text-[#2C2C2C]">
+                    <Shield className="h-5 w-5 text-[#2C2C2C]" /> Feature Access
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Enable or disable major modules for this company. Disabled
+                    modules will be hidden across the product.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  {featureLoading || !featureForm ? (
+                    <div className="flex items-center justify-center py-8 text-muted-foreground">
+                      <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading
+                      feature configuration...
+                    </div>
+                  ) : (
+                    <form className="space-y-6" onSubmit={handleFeatureSubmit}>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
+                          <input
+                            type="checkbox"
+                            checked={featureForm.enableAccounting}
+                            onChange={(event) =>
+                              handleFeatureFieldChange(
+                                "enableAccounting",
+                                event.target.checked
+                              )
+                            }
+                          />
+                          <span>
+                            <span className="font-semibold text-[#2C2C2C]">
+                              Accounting & Ledgers
+                            </span>
+                            <p className="text-xs text-muted-foreground">
+                              Core ledger management, vouchers, and financial
+                              statements.
+                            </p>
+                          </span>
+                        </label>
+                        <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
+                          <input
+                            type="checkbox"
+                            checked={featureForm.enableInventory}
+                            onChange={(event) =>
+                              handleFeatureFieldChange(
+                                "enableInventory",
+                                event.target.checked
+                              )
+                            }
+                          />
+                          <span>
+                            <span className="font-semibold text-[#2C2C2C]">
+                              Inventory & Stock
+                            </span>
+                            <p className="text-xs text-muted-foreground">
+                              Stock items, batches, pricing, and warehouse
+                              reporting.
+                            </p>
+                          </span>
+                        </label>
+                        <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
+                          <input
+                            type="checkbox"
+                            checked={featureForm.enableTaxation}
+                            onChange={(event) =>
+                              handleFeatureFieldChange(
+                                "enableTaxation",
+                                event.target.checked
+                              )
+                            }
+                          />
+                          <span>
+                            <span className="font-semibold text-[#2C2C2C]">
+                              Tax & Compliance
+                            </span>
+                            <p className="text-xs text-muted-foreground">
+                              GST, TDS/TCS modules, filings, and statutory
+                              reports.
+                            </p>
+                          </span>
+                        </label>
+                        <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
+                          <input
+                            type="checkbox"
+                            checked={featureForm.enablePayroll}
+                            onChange={(event) =>
+                              handleFeatureFieldChange(
+                                "enablePayroll",
+                                event.target.checked
+                              )
+                            }
+                          />
+                          <span>
+                            <span className="font-semibold text-[#2C2C2C]">
+                              Payroll & HR
+                            </span>
+                            <p className="text-xs text-muted-foreground">
+                              Employee payroll processing and statutory
+                              deductions.
+                            </p>
+                          </span>
+                        </label>
+                        <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
+                          <input
+                            type="checkbox"
+                            checked={featureForm.enableAIInsights}
+                            onChange={(event) =>
+                              handleFeatureFieldChange(
+                                "enableAIInsights",
+                                event.target.checked
+                              )
+                            }
+                          />
+                          <span>
+                            <span className="font-semibold text-[#2C2C2C]">
+                              AI Insights
+                            </span>
+                            <p className="text-xs text-muted-foreground">
+                              Automated anomaly detection, alerts, and AI
+                              recommendations.
+                            </p>
+                          </span>
+                        </label>
+                        <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
+                          <input
+                            type="checkbox"
+                            checked={featureForm.enableScenarioPlanning}
+                            onChange={(event) =>
+                              handleFeatureFieldChange(
+                                "enableScenarioPlanning",
+                                event.target.checked
+                              )
+                            }
+                          />
+                          <span>
+                            <span className="font-semibold text-[#2C2C2C]">
+                              Scenario Planning
+                            </span>
+                            <p className="text-xs text-muted-foreground">
+                              What-if analysis, runway simulations, and
+                              forecasting sandbox.
+                            </p>
+                          </span>
+                        </label>
+                        <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
+                          <input
+                            type="checkbox"
+                            checked={featureForm.enableAutomations}
+                            onChange={(event) =>
+                              handleFeatureFieldChange(
+                                "enableAutomations",
+                                event.target.checked
+                              )
+                            }
+                          />
+                          <span>
+                            <span className="font-semibold text-[#2C2C2C]">
+                              Automations
+                            </span>
+                            <p className="text-xs text-muted-foreground">
+                              Background reconciliations, smart reminders, and
+                              workflows.
+                            </p>
+                          </span>
+                        </label>
+                        <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
+                          <input
+                            type="checkbox"
+                            checked={featureForm.enableVendorManagement}
+                            onChange={(event) =>
+                              handleFeatureFieldChange(
+                                "enableVendorManagement",
+                                event.target.checked
+                              )
+                            }
+                          />
+                          <span>
+                            <span className="font-semibold text-[#2C2C2C]">
+                              Vendor Management
+                            </span>
+                            <p className="text-xs text-muted-foreground">
+                              Procurement workflows, vendor portals, and
+                              purchase approvals.
+                            </p>
+                          </span>
+                        </label>
+                        <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 bg-gray-50 text-sm text-[#2C2C2C]">
+                          <input
+                            type="checkbox"
+                            checked={featureForm.enableBillingAndInvoicing}
+                            onChange={(event) =>
+                              handleFeatureFieldChange(
+                                "enableBillingAndInvoicing",
+                                event.target.checked
+                              )
+                            }
+                          />
+                          <span>
+                            <span className="font-semibold text-[#2C2C2C]">
+                              Billing & Invoicing
+                            </span>
+                            <p className="text-xs text-muted-foreground">
+                              Sales invoices, collections, reminders, and
+                              payment reconciliation.
+                            </p>
+                          </span>
+                        </label>
+                      </div>
+
+                      <div className="flex items-center justify-end gap-3">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className={resetButtonClass}
+                          onClick={loadCompanyData}
+                          disabled={featureLoading || featureSaving}
+                        >
+                          Reset
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={featureSaving}
+                          className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                        >
+                          {featureSaving ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />{" "}
+                              Saving...
+                            </>
+                          ) : (
+                            "Save Feature Settings"
+                          )}
+                        </Button>
+                      </div>
+                    </form>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           )}
         </div>
       </MainLayout>

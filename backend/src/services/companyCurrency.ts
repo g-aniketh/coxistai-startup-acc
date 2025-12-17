@@ -1,4 +1,4 @@
-import { prisma } from '../lib/prisma';
+import { prisma } from "../lib/prisma";
 
 export interface CompanyCurrencyInput {
   baseCurrencyCode?: string;
@@ -32,19 +32,36 @@ export const upsertCompanyCurrency = async (
   });
 
   const payload = {
-    baseCurrencyCode: (input.baseCurrencyCode || existing?.baseCurrencyCode || 'INR').toUpperCase(),
-    baseCurrencySymbol: input.baseCurrencySymbol?.trim() || existing?.baseCurrencySymbol || '₹',
-    baseCurrencyFormalName: input.baseCurrencyFormalName?.trim() || existing?.baseCurrencyFormalName || 'Indian Rupee',
+    baseCurrencyCode: (
+      input.baseCurrencyCode ||
+      existing?.baseCurrencyCode ||
+      "INR"
+    ).toUpperCase(),
+    baseCurrencySymbol:
+      input.baseCurrencySymbol?.trim() || existing?.baseCurrencySymbol || "₹",
+    baseCurrencyFormalName:
+      input.baseCurrencyFormalName?.trim() ||
+      existing?.baseCurrencyFormalName ||
+      "Indian Rupee",
     decimalPlaces:
-      typeof input.decimalPlaces === 'number'
+      typeof input.decimalPlaces === "number"
         ? Math.max(0, Math.min(6, Math.floor(input.decimalPlaces)))
-        : existing?.decimalPlaces ?? 2,
-    decimalSeparator: sanitizeSeparator(input.decimalSeparator ?? existing?.decimalSeparator ?? '.', '.'),
-    thousandSeparator: sanitizeSeparator(input.thousandSeparator ?? existing?.thousandSeparator ?? ',', ','),
+        : (existing?.decimalPlaces ?? 2),
+    decimalSeparator: sanitizeSeparator(
+      input.decimalSeparator ?? existing?.decimalSeparator ?? ".",
+      "."
+    ),
+    thousandSeparator: sanitizeSeparator(
+      input.thousandSeparator ?? existing?.thousandSeparator ?? ",",
+      ","
+    ),
     symbolOnRight: input.symbolOnRight ?? existing?.symbolOnRight ?? false,
     spaceBetweenAmountAndSymbol:
-      input.spaceBetweenAmountAndSymbol ?? existing?.spaceBetweenAmountAndSymbol ?? false,
-    showAmountInMillions: input.showAmountInMillions ?? existing?.showAmountInMillions ?? false,
+      input.spaceBetweenAmountAndSymbol ??
+      existing?.spaceBetweenAmountAndSymbol ??
+      false,
+    showAmountInMillions:
+      input.showAmountInMillions ?? existing?.showAmountInMillions ?? false,
   };
 
   if (!existing) {

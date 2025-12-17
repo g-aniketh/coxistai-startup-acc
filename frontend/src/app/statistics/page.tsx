@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import MainLayout from '@/components/layout/MainLayout';
-import AuthGuard from '@/components/auth/AuthGuard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { 
-  BarChart2, 
-  Calendar, 
-  TrendingDown, 
+import MainLayout from "@/components/layout/MainLayout";
+import AuthGuard from "@/components/auth/AuthGuard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  BarChart2,
+  Calendar,
+  TrendingDown,
   TrendingUp,
   DollarSign,
   Users,
@@ -16,8 +16,20 @@ import {
   Download,
   Filter,
   RefreshCw,
-} from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineChart, Line, PieChart, Pie } from 'recharts';
+} from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+} from "recharts";
 import {
   Select,
   SelectContent,
@@ -27,35 +39,63 @@ import {
 } from "@/components/ui/select";
 
 const kpiData = [
-  { title: "Runway", value: "8.2 months", icon: Calendar, color: "text-blue-500", bgColor: "bg-blue-50", change: "+0.3 mo" },
-  { title: "Burn Rate", value: "$35,000", icon: TrendingDown, color: "text-red-500", bgColor: "bg-red-50", change: "-8.6%" },
-  { title: "ARR", value: "$542,400", icon: TrendingUp, color: "text-green-500", bgColor: "bg-green-50", change: "+15.2%" },
-  { title: "Customers", value: "342", icon: Users, color: "text-purple-500", bgColor: "bg-purple-50", change: "+12.5%" },
+  {
+    title: "Runway",
+    value: "8.2 months",
+    icon: Calendar,
+    color: "text-blue-500",
+    bgColor: "bg-blue-50",
+    change: "+0.3 mo",
+  },
+  {
+    title: "Burn Rate",
+    value: "$35,000",
+    icon: TrendingDown,
+    color: "text-red-500",
+    bgColor: "bg-red-50",
+    change: "-8.6%",
+  },
+  {
+    title: "ARR",
+    value: "$542,400",
+    icon: TrendingUp,
+    color: "text-green-500",
+    bgColor: "bg-green-50",
+    change: "+15.2%",
+  },
+  {
+    title: "Customers",
+    value: "342",
+    icon: Users,
+    color: "text-purple-500",
+    bgColor: "bg-purple-50",
+    change: "+12.5%",
+  },
 ];
 
 const cashFlowData = [
-  { name: 'Jan', income: 45000, expenses: 32000, net: 13000 },
-  { name: 'Feb', income: 48000, expenses: 35000, net: 13000 },
-  { name: 'Mar', income: 52000, expenses: 38000, net: 14000 },
-  { name: 'Apr', income: 46000, expenses: 34000, net: 12000 },
-  { name: 'May', income: 51000, expenses: 36000, net: 15000 },
-  { name: 'Jun', income: 55000, expenses: 35000, net: 20000 },
+  { name: "Jan", income: 45000, expenses: 32000, net: 13000 },
+  { name: "Feb", income: 48000, expenses: 35000, net: 13000 },
+  { name: "Mar", income: 52000, expenses: 38000, net: 14000 },
+  { name: "Apr", income: 46000, expenses: 34000, net: 12000 },
+  { name: "May", income: 51000, expenses: 36000, net: 15000 },
+  { name: "Jun", income: 55000, expenses: 35000, net: 20000 },
 ];
 
 const revenueData = [
-  { name: 'Q1 2023', revenue: 120000, customers: 180 },
-  { name: 'Q2 2023', revenue: 145000, customers: 220 },
-  { name: 'Q3 2023', revenue: 168000, customers: 260 },
-  { name: 'Q4 2023', revenue: 195000, customers: 300 },
-  { name: 'Q1 2024', revenue: 225000, customers: 342 },
+  { name: "Q1 2023", revenue: 120000, customers: 180 },
+  { name: "Q2 2023", revenue: 145000, customers: 220 },
+  { name: "Q3 2023", revenue: 168000, customers: 260 },
+  { name: "Q4 2023", revenue: 195000, customers: 300 },
+  { name: "Q1 2024", revenue: 225000, customers: 342 },
 ];
 
 const expenseBreakdown = [
-  { name: 'Payroll', value: 210000, color: '#607c47' },
-  { name: 'Marketing', value: 45000, color: '#F6D97A' },
-  { name: 'SaaS', value: 18000, color: '#B7B3E6' },
-  { name: 'Operations', value: 32000, color: '#FFB3BA' },
-  { name: 'Other', value: 15000, color: '#C9E0B0' },
+  { name: "Payroll", value: 210000, color: "#607c47" },
+  { name: "Marketing", value: 45000, color: "#F6D97A" },
+  { name: "SaaS", value: 18000, color: "#B7B3E6" },
+  { name: "Operations", value: 32000, color: "#FFB3BA" },
+  { name: "Other", value: 15000, color: "#C9E0B0" },
 ];
 
 export default function StatisticsPage() {
@@ -69,7 +109,9 @@ export default function StatisticsPage() {
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">Statistics</h1>
+                  <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">
+                    Statistics
+                  </h1>
                   <p className="text-sm text-[#2C2C2C]/70">
                     Deep dive into your financial health and forecast the future
                   </p>
@@ -77,7 +119,10 @@ export default function StatisticsPage() {
                 <div className="flex gap-3">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input placeholder="Search metrics..." className="pl-10 bg-white rounded-lg" />
+                    <Input
+                      placeholder="Search metrics..."
+                      className="pl-10 bg-white rounded-lg"
+                    />
                   </div>
                   <Button className="flex items-center gap-2 bg-[#607c47] hover:bg-[#4a6129] text-white">
                     <Download className="h-4 w-4" />
@@ -94,8 +139,13 @@ export default function StatisticsPage() {
                       <BarChart2 className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-blue-900">Advanced Analytics</h3>
-                      <p className="text-sm text-blue-700">Real-time financial insights • Predictive modeling • Trend analysis</p>
+                      <h3 className="font-semibold text-blue-900">
+                        Advanced Analytics
+                      </h3>
+                      <p className="text-sm text-blue-700">
+                        Real-time financial insights • Predictive modeling •
+                        Trend analysis
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-blue-600">
@@ -108,16 +158,25 @@ export default function StatisticsPage() {
               {/* Key Metrics */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {kpiData.map((kpi, index) => (
-                  <Card key={index} className="bg-white rounded-xl border-0 shadow-lg">
+                  <Card
+                    key={index}
+                    className="bg-white rounded-xl border-0 shadow-lg"
+                  >
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
                         <div className={`p-2 rounded-lg ${kpi.bgColor}`}>
                           <kpi.icon className={`h-5 w-5 ${kpi.color}`} />
                         </div>
                         <div className="flex-1">
-                          <div className="text-sm text-gray-600">{kpi.title}</div>
-                          <div className="text-lg font-bold text-[#2C2C2C]">{kpi.value}</div>
-                          <div className={`text-xs ${kpi.color}`}>{kpi.change}</div>
+                          <div className="text-sm text-gray-600">
+                            {kpi.title}
+                          </div>
+                          <div className="text-lg font-bold text-[#2C2C2C]">
+                            {kpi.value}
+                          </div>
+                          <div className={`text-xs ${kpi.color}`}>
+                            {kpi.change}
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -139,21 +198,44 @@ export default function StatisticsPage() {
                     <div className="h-80">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={cashFlowData}>
-                          <XAxis dataKey="name" stroke="#6b7280" tick={{ fill: '#6b7280', fontSize: 12 }} />
-                          <YAxis stroke="#6b7280" tick={{ fill: '#6b7280', fontSize: 12 }} tickFormatter={(value) => `$${(value/1000)}k`} />
-                          <Tooltip 
+                          <XAxis
+                            dataKey="name"
+                            stroke="#6b7280"
+                            tick={{ fill: "#6b7280", fontSize: 12 }}
+                          />
+                          <YAxis
+                            stroke="#6b7280"
+                            tick={{ fill: "#6b7280", fontSize: 12 }}
+                            tickFormatter={(value) => `$${value / 1000}k`}
+                          />
+                          <Tooltip
                             contentStyle={{
-                              backgroundColor: '#ffffff',
-                              border: '1px solid #e5e7eb',
-                              borderRadius: '0.75rem',
+                              backgroundColor: "#ffffff",
+                              border: "1px solid #e5e7eb",
+                              borderRadius: "0.75rem",
                             }}
                             formatter={(value, name) => [
-                              new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value as number),
-                              name === 'income' ? 'Income' : name === 'expenses' ? 'Expenses' : 'Net'
+                              new Intl.NumberFormat("en-IN", {
+                                style: "currency",
+                                currency: "INR",
+                              }).format(value as number),
+                              name === "income"
+                                ? "Income"
+                                : name === "expenses"
+                                  ? "Expenses"
+                                  : "Net",
                             ]}
                           />
-                          <Bar dataKey="income" fill="#607c47" radius={[4, 4, 0, 0]} />
-                          <Bar dataKey="expenses" fill="#FFB3BA" radius={[4, 4, 0, 0]} />
+                          <Bar
+                            dataKey="income"
+                            fill="#607c47"
+                            radius={[4, 4, 0, 0]}
+                          />
+                          <Bar
+                            dataKey="expenses"
+                            fill="#FFB3BA"
+                            radius={[4, 4, 0, 0]}
+                          />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -172,28 +254,44 @@ export default function StatisticsPage() {
                     <div className="h-80">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={revenueData}>
-                          <XAxis dataKey="name" stroke="#6b7280" tick={{ fill: '#6b7280', fontSize: 12 }} />
-                          <YAxis stroke="#6b7280" tick={{ fill: '#6b7280', fontSize: 12 }} tickFormatter={(value) => `$${(value/1000)}k`} />
-                          <Tooltip 
+                          <XAxis
+                            dataKey="name"
+                            stroke="#6b7280"
+                            tick={{ fill: "#6b7280", fontSize: 12 }}
+                          />
+                          <YAxis
+                            stroke="#6b7280"
+                            tick={{ fill: "#6b7280", fontSize: 12 }}
+                            tickFormatter={(value) => `$${value / 1000}k`}
+                          />
+                          <Tooltip
                             contentStyle={{
-                              backgroundColor: '#ffffff',
-                              border: '1px solid #e5e7eb',
-                              borderRadius: '0.75rem',
+                              backgroundColor: "#ffffff",
+                              border: "1px solid #e5e7eb",
+                              borderRadius: "0.75rem",
                             }}
                             formatter={(value, name) => [
-                              name === 'revenue' ? 
-                                new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value as number) :
-                                value,
-                              name === 'revenue' ? 'Revenue' : 'Customers'
+                              name === "revenue"
+                                ? new Intl.NumberFormat("en-IN", {
+                                    style: "currency",
+                                    currency: "INR",
+                                  }).format(value as number)
+                                : value,
+                              name === "revenue" ? "Revenue" : "Customers",
                             ]}
                           />
-                          <Line 
-                            type="monotone" 
-                            dataKey="revenue" 
-                            stroke="#607c47" 
+                          <Line
+                            type="monotone"
+                            dataKey="revenue"
+                            stroke="#607c47"
                             strokeWidth={3}
-                            dot={{ fill: '#607c47', strokeWidth: 2, r: 4 }}
-                            activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2, fill: '#607c47' }}
+                            dot={{ fill: "#607c47", strokeWidth: 2, r: 4 }}
+                            activeDot={{
+                              r: 6,
+                              stroke: "#fff",
+                              strokeWidth: 2,
+                              fill: "#607c47",
+                            }}
                           />
                         </LineChart>
                       </ResponsiveContainer>
@@ -221,7 +319,11 @@ export default function StatisticsPage() {
                           <SelectItem value="yearly">Yearly</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Button variant="outline" size="sm" className="border-gray-300 text-[#2C2C2C]">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-gray-300 text-[#2C2C2C]"
+                      >
                         <RefreshCw className="h-4 w-4" />
                       </Button>
                     </div>
@@ -246,15 +348,18 @@ export default function StatisticsPage() {
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
                           </Pie>
-                          <Tooltip 
+                          <Tooltip
                             contentStyle={{
-                              backgroundColor: '#ffffff',
-                              border: '1px solid #e5e7eb',
-                              borderRadius: '0.75rem',
+                              backgroundColor: "#ffffff",
+                              border: "1px solid #e5e7eb",
+                              borderRadius: "0.75rem",
                             }}
                             formatter={(value) => [
-                              new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value as number),
-                              'Amount'
+                              new Intl.NumberFormat("en-IN", {
+                                style: "currency",
+                                currency: "INR",
+                              }).format(value as number),
+                              "Amount",
                             ]}
                           />
                         </PieChart>
@@ -264,20 +369,36 @@ export default function StatisticsPage() {
                     {/* Expense List */}
                     <div className="space-y-4">
                       {expenseBreakdown.map((expense, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                        >
                           <div className="flex items-center gap-3">
-                            <div 
-                              className="w-4 h-4 rounded-full" 
+                            <div
+                              className="w-4 h-4 rounded-full"
                               style={{ backgroundColor: expense.color }}
                             />
-                            <span className="font-medium text-[#2C2C2C]">{expense.name}</span>
+                            <span className="font-medium text-[#2C2C2C]">
+                              {expense.name}
+                            </span>
                           </div>
                           <div className="text-right">
                             <div className="font-semibold text-[#2C2C2C]">
-                              {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(expense.value)}
+                              {new Intl.NumberFormat("en-IN", {
+                                style: "currency",
+                                currency: "INR",
+                              }).format(expense.value)}
                             </div>
                             <div className="text-xs text-gray-500">
-                              {((expense.value / expenseBreakdown.reduce((sum, e) => sum + e.value, 0)) * 100).toFixed(1)}%
+                              {(
+                                (expense.value /
+                                  expenseBreakdown.reduce(
+                                    (sum, e) => sum + e.value,
+                                    0
+                                  )) *
+                                100
+                              ).toFixed(1)}
+                              %
                             </div>
                           </div>
                         </div>
@@ -296,12 +417,20 @@ export default function StatisticsPage() {
                         <TrendingUp className="h-5 w-5 text-green-600" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-green-900">Growth Rate</h3>
-                        <p className="text-sm text-green-700">Quarter over quarter</p>
+                        <h3 className="font-semibold text-green-900">
+                          Growth Rate
+                        </h3>
+                        <p className="text-sm text-green-700">
+                          Quarter over quarter
+                        </p>
                       </div>
                     </div>
-                    <div className="text-3xl font-bold text-green-900 mb-2">+23.5%</div>
-                    <div className="text-sm text-green-600">Above industry average</div>
+                    <div className="text-3xl font-bold text-green-900 mb-2">
+                      +23.5%
+                    </div>
+                    <div className="text-sm text-green-600">
+                      Above industry average
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -312,12 +441,20 @@ export default function StatisticsPage() {
                         <Users className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-blue-900">Customer Health</h3>
-                        <p className="text-sm text-blue-700">Churn & retention</p>
+                        <h3 className="font-semibold text-blue-900">
+                          Customer Health
+                        </h3>
+                        <p className="text-sm text-blue-700">
+                          Churn & retention
+                        </p>
                       </div>
                     </div>
-                    <div className="text-3xl font-bold text-blue-900 mb-2">2.1%</div>
-                    <div className="text-sm text-blue-600">Monthly churn rate</div>
+                    <div className="text-3xl font-bold text-blue-900 mb-2">
+                      2.1%
+                    </div>
+                    <div className="text-sm text-blue-600">
+                      Monthly churn rate
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -328,11 +465,15 @@ export default function StatisticsPage() {
                         <DollarSign className="h-5 w-5 text-purple-600" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-purple-900">Unit Economics</h3>
+                        <h3 className="font-semibold text-purple-900">
+                          Unit Economics
+                        </h3>
                         <p className="text-sm text-purple-700">CAC vs LTV</p>
                       </div>
                     </div>
-                    <div className="text-3xl font-bold text-purple-900 mb-2">4.2x</div>
+                    <div className="text-3xl font-bold text-purple-900 mb-2">
+                      4.2x
+                    </div>
                     <div className="text-sm text-purple-600">LTV/CAC ratio</div>
                   </CardContent>
                 </Card>

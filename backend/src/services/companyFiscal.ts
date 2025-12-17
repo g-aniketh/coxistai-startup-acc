@@ -1,4 +1,4 @@
-import { prisma } from '../lib/prisma';
+import { prisma } from "../lib/prisma";
 
 export interface CompanyFiscalInput {
   financialYearStart: string;
@@ -18,7 +18,9 @@ const parseDate = (value: string, field: string): Date => {
     throw new Error(`Invalid date provided for ${field}`);
   }
 
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+  );
 };
 
 export const getCompanyFiscal = async (startupId: string) => {
@@ -27,12 +29,20 @@ export const getCompanyFiscal = async (startupId: string) => {
   });
 };
 
-export const upsertCompanyFiscal = async (startupId: string, input: CompanyFiscalInput) => {
-  const financialYearStart = parseDate(input.financialYearStart, 'Financial year beginning');
-  const booksStart = parseDate(input.booksStart, 'Books beginning from');
+export const upsertCompanyFiscal = async (
+  startupId: string,
+  input: CompanyFiscalInput
+) => {
+  const financialYearStart = parseDate(
+    input.financialYearStart,
+    "Financial year beginning"
+  );
+  const booksStart = parseDate(input.booksStart, "Books beginning from");
 
   if (booksStart < financialYearStart) {
-    throw new Error('Books start date cannot be earlier than the financial year start');
+    throw new Error(
+      "Books start date cannot be earlier than the financial year start"
+    );
   }
 
   const allowBackdatedEntries = input.allowBackdatedEntries ?? true;
@@ -40,14 +50,18 @@ export const upsertCompanyFiscal = async (startupId: string, input: CompanyFisca
 
   if (allowBackdatedEntries) {
     const backdatedSource = input.backdatedFrom ?? input.financialYearStart;
-    backdatedFromDate = parseDate(backdatedSource, 'Back-dated entries start');
+    backdatedFromDate = parseDate(backdatedSource, "Back-dated entries start");
 
     if (backdatedFromDate < financialYearStart) {
-      throw new Error('Back-dated entries start cannot be earlier than the financial year start');
+      throw new Error(
+        "Back-dated entries start cannot be earlier than the financial year start"
+      );
     }
 
     if (backdatedFromDate > booksStart) {
-      throw new Error('Back-dated entries start cannot be later than the books start date');
+      throw new Error(
+        "Back-dated entries start cannot be later than the books start date"
+      );
     }
   }
 

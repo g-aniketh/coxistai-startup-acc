@@ -88,22 +88,18 @@ router.post(
 
       // Validate required fields
       if (!importData.ledgers || !Array.isArray(importData.ledgers)) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "Invalid import data: ledgers array required",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "Invalid import data: ledgers array required",
+        });
       }
 
       if (importData.errors && importData.errors.length > 0) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "Cannot import data with errors",
-            errors: importData.errors,
-          });
+        return res.status(400).json({
+          success: false,
+          message: "Cannot import data with errors",
+          errors: importData.errors,
+        });
       }
 
       // Get user's startup

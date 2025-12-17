@@ -1,20 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { apiClient, TeamMember } from '@/lib/api';
-import MainLayout from '@/components/layout/MainLayout';
-import AuthGuard from '@/components/auth/AuthGuard';
-import { 
-  Mail, 
-  UserCircle,
-  Building,
-  Plus,
-  Search
-} from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/Badge';
+import { useState, useEffect } from "react";
+import { apiClient, TeamMember } from "@/lib/api";
+import MainLayout from "@/components/layout/MainLayout";
+import AuthGuard from "@/components/auth/AuthGuard";
+import { Mail, UserCircle, Building, Plus, Search } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/Badge";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<TeamMember[]>([]);
@@ -28,10 +22,10 @@ export default function UsersPage() {
         if (response.success && response.data) {
           setUsers(response.data);
         } else {
-          setError(response.error || 'Failed to fetch users');
+          setError(response.error || "Failed to fetch users");
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
         setLoading(false);
       }
@@ -47,7 +41,9 @@ export default function UsersPage() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">Users</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">
+                Users
+              </h1>
               <p className="text-sm text-[#2C2C2C]/70 mt-1">
                 Manage all users in your organization.
               </p>
@@ -55,7 +51,10 @@ export default function UsersPage() {
             <div className="flex gap-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input placeholder="Search users..." className="pl-10 bg-white rounded-lg" />
+                <Input
+                  placeholder="Search users..."
+                  className="pl-10 bg-white rounded-lg"
+                />
               </div>
               <Button className="flex items-center gap-2 bg-[#607c47] hover:bg-[#4a6129] text-white">
                 <Plus className="h-4 w-4" />
@@ -93,14 +92,18 @@ export default function UsersPage() {
                               </p>
                             </div>
                             <div className="flex items-center gap-4 mt-2">
-                              <Badge variant="outline" className="capitalize border-blue-200 text-blue-700 bg-blue-50">
-                                {user.roles.join(', ')}
+                              <Badge
+                                variant="outline"
+                                className="capitalize border-blue-200 text-blue-700 bg-blue-50"
+                              >
+                                {user.roles.join(", ")}
                               </Badge>
                             </div>
                           </div>
                           {user.createdAt && (
                             <div className="text-xs text-gray-500">
-                              Joined {new Date(user.createdAt).toLocaleDateString()}
+                              Joined{" "}
+                              {new Date(user.createdAt).toLocaleDateString()}
                             </div>
                           )}
                         </div>
@@ -111,7 +114,9 @@ export default function UsersPage() {
               ) : (
                 <div className="p-6 text-center">
                   <UserCircle className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No users</h3>
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">
+                    No users
+                  </h3>
                   <p className="mt-1 text-sm text-gray-500">
                     No users found in the system.
                   </p>
@@ -124,4 +129,3 @@ export default function UsersPage() {
     </AuthGuard>
   );
 }
-

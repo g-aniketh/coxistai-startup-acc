@@ -1,7 +1,7 @@
-import { Router, Request, Response } from 'express';
-import type { Router as IRouter } from 'express';
-import { AICFOService } from '../services/aiCFO';
-import { authenticateToken } from '../middleware/auth';
+import { Router, Request, Response } from "express";
+import type { Router as IRouter } from "express";
+import { AICFOService } from "../services/aiCFO";
+import { authenticateToken } from "../middleware/auth";
 
 const router: IRouter = Router();
 
@@ -13,7 +13,7 @@ router.use(authenticateToken);
  * @desc    Generate AI-powered forecast
  * @access  Private
  */
-router.post('/forecast', async (req: Request, res: Response) => {
+router.post("/forecast", async (req: Request, res: Response) => {
   try {
     const tenantId = (req as any).user.tenantId;
     const { months = 12 } = req.body;
@@ -23,13 +23,13 @@ router.post('/forecast', async (req: Request, res: Response) => {
     res.json({
       success: true,
       data: forecast,
-      message: 'Forecast generated successfully',
+      message: "Forecast generated successfully",
     });
   } catch (error: any) {
-    console.error('Error generating forecast:', error);
+    console.error("Error generating forecast:", error);
     res.status(400).json({
       success: false,
-      message: error.message || 'Failed to generate forecast',
+      message: error.message || "Failed to generate forecast",
     });
   }
 });
@@ -39,7 +39,7 @@ router.post('/forecast', async (req: Request, res: Response) => {
  * @desc    Run "What If" scenario analysis
  * @access  Private
  */
-router.post('/scenario', async (req: Request, res: Response): Promise<void> => {
+router.post("/scenario", async (req: Request, res: Response): Promise<void> => {
   try {
     const tenantId = (req as any).user.tenantId;
     const { name, inputs } = req.body;
@@ -47,7 +47,7 @@ router.post('/scenario', async (req: Request, res: Response): Promise<void> => {
     if (!name || !inputs) {
       res.status(400).json({
         success: false,
-        message: 'Scenario name and inputs are required',
+        message: "Scenario name and inputs are required",
       });
       return;
     }
@@ -57,13 +57,13 @@ router.post('/scenario', async (req: Request, res: Response): Promise<void> => {
     res.json({
       success: true,
       data: result,
-      message: 'Scenario analysis completed',
+      message: "Scenario analysis completed",
     });
   } catch (error: any) {
-    console.error('Error running scenario:', error);
+    console.error("Error running scenario:", error);
     res.status(400).json({
       success: false,
-      message: error.message || 'Failed to run scenario',
+      message: error.message || "Failed to run scenario",
     });
   }
 });
@@ -73,7 +73,7 @@ router.post('/scenario', async (req: Request, res: Response): Promise<void> => {
  * @desc    Get all scenarios
  * @access  Private
  */
-router.get('/scenarios', async (req: Request, res: Response) => {
+router.get("/scenarios", async (req: Request, res: Response) => {
   try {
     const tenantId = (req as any).user.tenantId;
 
@@ -84,10 +84,10 @@ router.get('/scenarios', async (req: Request, res: Response) => {
       data: scenarios,
     });
   } catch (error: any) {
-    console.error('Error fetching scenarios:', error);
+    console.error("Error fetching scenarios:", error);
     res.status(400).json({
       success: false,
-      message: error.message || 'Failed to fetch scenarios',
+      message: error.message || "Failed to fetch scenarios",
     });
   }
 });
@@ -97,7 +97,7 @@ router.get('/scenarios', async (req: Request, res: Response) => {
  * @desc    Get AI-powered insights for current financial state
  * @access  Private
  */
-router.get('/insights', async (req: Request, res: Response) => {
+router.get("/insights", async (req: Request, res: Response) => {
   try {
     const tenantId = (req as any).user.tenantId;
 
@@ -108,10 +108,10 @@ router.get('/insights', async (req: Request, res: Response) => {
       data: insights,
     });
   } catch (error: any) {
-    console.error('Error getting insights:', error);
+    console.error("Error getting insights:", error);
     res.status(400).json({
       success: false,
-      message: error.message || 'Failed to get insights',
+      message: error.message || "Failed to get insights",
     });
   }
 });
@@ -121,45 +121,48 @@ router.get('/insights', async (req: Request, res: Response) => {
  * @desc    Generate investor update
  * @access  Private
  */
-router.post('/investor-update', async (req: Request, res: Response): Promise<void> => {
-  try {
-    const tenantId = (req as any).user.tenantId;
-    const { periodStart, periodEnd } = req.body;
+router.post(
+  "/investor-update",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const tenantId = (req as any).user.tenantId;
+      const { periodStart, periodEnd } = req.body;
 
-    if (!periodStart || !periodEnd) {
+      if (!periodStart || !periodEnd) {
+        res.status(400).json({
+          success: false,
+          message: "Period start and end dates are required",
+        });
+        return;
+      }
+
+      const update = await AICFOService.generateInvestorUpdate(
+        tenantId,
+        new Date(periodStart),
+        new Date(periodEnd)
+      );
+
+      res.json({
+        success: true,
+        data: update,
+        message: "Investor update generated successfully",
+      });
+    } catch (error: any) {
+      console.error("Error generating investor update:", error);
       res.status(400).json({
         success: false,
-        message: 'Period start and end dates are required',
+        message: error.message || "Failed to generate investor update",
       });
-      return;
     }
-
-    const update = await AICFOService.generateInvestorUpdate(
-      tenantId,
-      new Date(periodStart),
-      new Date(periodEnd)
-    );
-
-    res.json({
-      success: true,
-      data: update,
-      message: 'Investor update generated successfully',
-    });
-  } catch (error: any) {
-    console.error('Error generating investor update:', error);
-    res.status(400).json({
-      success: false,
-      message: error.message || 'Failed to generate investor update',
-    });
   }
-});
+);
 
 /**
  * @route   GET /api/v1/ai-cfo/investor-updates
  * @desc    Get all investor updates
  * @access  Private
  */
-router.get('/investor-updates', async (req: Request, res: Response) => {
+router.get("/investor-updates", async (req: Request, res: Response) => {
   try {
     const tenantId = (req as any).user.tenantId;
 
@@ -170,10 +173,10 @@ router.get('/investor-updates', async (req: Request, res: Response) => {
       data: updates,
     });
   } catch (error: any) {
-    console.error('Error fetching investor updates:', error);
+    console.error("Error fetching investor updates:", error);
     res.status(400).json({
       success: false,
-      message: error.message || 'Failed to fetch investor updates',
+      message: error.message || "Failed to fetch investor updates",
     });
   }
 });
@@ -183,32 +186,35 @@ router.get('/investor-updates', async (req: Request, res: Response) => {
  * @desc    Publish investor update
  * @access  Private
  */
-router.put('/investor-update/:id/publish', async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
+router.put(
+  "/investor-update/:id/publish",
+  async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
 
-    const update = await AICFOService.publishInvestorUpdate(id);
+      const update = await AICFOService.publishInvestorUpdate(id);
 
-    res.json({
-      success: true,
-      data: update,
-      message: 'Investor update published successfully',
-    });
-  } catch (error: any) {
-    console.error('Error publishing investor update:', error);
-    res.status(400).json({
-      success: false,
-      message: error.message || 'Failed to publish investor update',
-    });
+      res.json({
+        success: true,
+        data: update,
+        message: "Investor update published successfully",
+      });
+    } catch (error: any) {
+      console.error("Error publishing investor update:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Failed to publish investor update",
+      });
+    }
   }
-});
+);
 
 /**
  * @route   POST /api/v1/ai-cfo/chat
  * @desc    Chat with AI CFO using financial context
  * @access  Private
  */
-router.post('/chat', async (req: Request, res: Response): Promise<void> => {
+router.post("/chat", async (req: Request, res: Response): Promise<void> => {
   try {
     const startupId = (req as any).user.startupId;
     const { message } = req.body;
@@ -216,7 +222,7 @@ router.post('/chat', async (req: Request, res: Response): Promise<void> => {
     if (!message) {
       res.status(400).json({
         success: false,
-        message: 'Message is required',
+        message: "Message is required",
       });
       return;
     }
@@ -226,16 +232,15 @@ router.post('/chat', async (req: Request, res: Response): Promise<void> => {
     res.json({
       success: true,
       data: { response },
-      message: 'Chat response generated successfully',
+      message: "Chat response generated successfully",
     });
   } catch (error: any) {
-    console.error('Error in chat:', error);
+    console.error("Error in chat:", error);
     res.status(400).json({
       success: false,
-      message: error.message || 'Failed to generate chat response',
+      message: error.message || "Failed to generate chat response",
     });
   }
 });
 
 export default router;
-

@@ -30,9 +30,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertCircle, CheckCircle2, Layers, Trash2, BookOpen, FolderTree, Plus } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Layers,
+  Trash2,
+  BookOpen,
+  FolderTree,
+  Plus,
+} from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
+import {
   apiClient,
   InterestComputationCode,
   Ledger,
@@ -56,7 +64,21 @@ type FeedbackState =
   | { type: "error"; message: string }
   | null;
 
-type BookkeepingTabId = "chart" | "ledgers" | "trial-balance" | "profit-loss" | "balance-sheet" | "cash-flow" | "ratios" | "cash-book" | "bank-book" | "day-book" | "ledger-book" | "journals" | "budgeting" | "year-end";
+type BookkeepingTabId =
+  | "chart"
+  | "ledgers"
+  | "trial-balance"
+  | "profit-loss"
+  | "balance-sheet"
+  | "cash-flow"
+  | "ratios"
+  | "cash-book"
+  | "bank-book"
+  | "day-book"
+  | "ledger-book"
+  | "journals"
+  | "budgeting"
+  | "year-end";
 
 const bookkeepingTabs: Array<{
   id: BookkeepingTabId;
@@ -145,7 +167,8 @@ const bookkeepingTabs: Array<{
   {
     id: "year-end",
     label: "Year-End Operations",
-    description: "Closing entries, depreciation runs, and carry-forward workflows",
+    description:
+      "Closing entries, depreciation runs, and carry-forward workflows",
     icon: FolderTree,
   },
 ];
@@ -280,12 +303,12 @@ const BookkeepingPage = () => {
 
   const groupTree = useMemo<LedgerGroupTree[]>(() => {
     const map = new Map<string, LedgerGroupTree>();
-    ledgerGroups.forEach(group => {
+    ledgerGroups.forEach((group) => {
       map.set(group.id, { ...group, children: [] });
     });
 
     const roots: LedgerGroupTree[] = [];
-    map.forEach(node => {
+    map.forEach((node) => {
       if (node.parentId && map.has(node.parentId)) {
         map.get(node.parentId)?.children.push(node);
       } else {
@@ -303,7 +326,7 @@ const BookkeepingPage = () => {
       nodes
         .slice()
         .sort((a, b) => a.name.localeCompare(b.name))
-        .forEach(node => {
+        .forEach((node) => {
           options.push({
             id: node.id,
             label: `${"— ".repeat(depth)}${node.name}`,
@@ -320,7 +343,7 @@ const BookkeepingPage = () => {
 
   useEffect(() => {
     if (!ledgerForm.groupId && flattenedGroups.length > 0) {
-      setLedgerForm(prev => ({ ...prev, groupId: flattenedGroups[0].id }));
+      setLedgerForm((prev) => ({ ...prev, groupId: flattenedGroups[0].id }));
     }
   }, [flattenedGroups, ledgerForm.groupId]);
 
@@ -550,7 +573,7 @@ const BookkeepingPage = () => {
           </div>
           <p className="text-sm text-gray-600 mt-1">
             {ledgerCategoryOptions.find(
-              option => option.value === node.category
+              (option) => option.value === node.category
             )?.label ?? node.category}
           </p>
         </div>
@@ -567,7 +590,7 @@ const BookkeepingPage = () => {
       </div>
       {node.children?.length ? (
         <div className="ml-6 border-l-2 border-dashed border-gray-300 pl-6">
-          {node.children.map(child => renderGroupNode(child))}
+          {node.children.map((child) => renderGroupNode(child))}
         </div>
       ) : null}
     </div>
@@ -599,7 +622,7 @@ const BookkeepingPage = () => {
     </div>
   ) : null;
 
-  const activeTabMeta = bookkeepingTabs.find(tab => tab.id === activeTab);
+  const activeTabMeta = bookkeepingTabs.find((tab) => tab.id === activeTab);
 
   return (
     <AuthGuard requireAuth={true}>
@@ -616,14 +639,16 @@ const BookkeepingPage = () => {
                   Ledger Master Control Room
                 </h1>
                 <p className="text-sm text-gray-600">
-                  Manage your chart of accounts, ledger groups, and individual ledgers with complete metadata, tax settings, and opening balances.
+                  Manage your chart of accounts, ledger groups, and individual
+                  ledgers with complete metadata, tax settings, and opening
+                  balances.
                 </p>
               </div>
 
               {/* Tabs */}
               <div className="border-b border-gray-200">
                 <div className="flex gap-1">
-                  {bookkeepingTabs.map(tab => {
+                  {bookkeepingTabs.map((tab) => {
                     const Icon = tab.icon;
                     return (
                       <button
@@ -670,8 +695,11 @@ const BookkeepingPage = () => {
                           <Label>Group Name *</Label>
                           <Input
                             value={groupForm.name}
-                            onChange={e =>
-                              setGroupForm(prev => ({ ...prev, name: e.target.value }))
+                            onChange={(e) =>
+                              setGroupForm((prev) => ({
+                                ...prev,
+                                name: e.target.value,
+                              }))
                             }
                             placeholder="e.g., Sundry Debtors"
                           />
@@ -680,8 +708,8 @@ const BookkeepingPage = () => {
                           <Label>Category *</Label>
                           <Select
                             value={groupForm.category}
-                            onValueChange={value =>
-                              setGroupForm(prev => ({
+                            onValueChange={(value) =>
+                              setGroupForm((prev) => ({
                                 ...prev,
                                 category: value as LedgerCategoryCode,
                               }))
@@ -691,8 +719,11 @@ const BookkeepingPage = () => {
                               <SelectValue placeholder="Select category" />
                             </SelectTrigger>
                             <SelectContent>
-                              {ledgerCategoryOptions.map(option => (
-                                <SelectItem key={option.value} value={option.value}>
+                              {ledgerCategoryOptions.map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
                                   {option.label}
                                 </SelectItem>
                               ))}
@@ -703,8 +734,8 @@ const BookkeepingPage = () => {
                           <Label>Parent Group</Label>
                           <Select
                             value={groupForm.parentId || "root"}
-                            onValueChange={value =>
-                              setGroupForm(prev => ({
+                            onValueChange={(value) =>
+                              setGroupForm((prev) => ({
                                 ...prev,
                                 parentId: value === "root" ? "" : value,
                               }))
@@ -715,7 +746,7 @@ const BookkeepingPage = () => {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="root">Root Level</SelectItem>
-                              {flattenedGroups.map(group => (
+                              {flattenedGroups.map((group) => (
                                 <SelectItem key={group.id} value={group.id}>
                                   {group.label}
                                 </SelectItem>
@@ -727,8 +758,11 @@ const BookkeepingPage = () => {
                           <Label>Code</Label>
                           <Input
                             value={groupForm.code}
-                            onChange={e =>
-                              setGroupForm(prev => ({ ...prev, code: e.target.value }))
+                            onChange={(e) =>
+                              setGroupForm((prev) => ({
+                                ...prev,
+                                code: e.target.value,
+                              }))
                             }
                             placeholder="Optional code"
                           />
@@ -737,8 +771,8 @@ const BookkeepingPage = () => {
                           <Label>Description</Label>
                           <Textarea
                             value={groupForm.description}
-                            onChange={e =>
-                              setGroupForm(prev => ({
+                            onChange={(e) =>
+                              setGroupForm((prev) => ({
                                 ...prev,
                                 description: e.target.value,
                               }))
@@ -780,10 +814,13 @@ const BookkeepingPage = () => {
                           <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-gray-500 bg-gray-50">
                             <FolderTree className="h-12 w-12 mx-auto mb-3 text-gray-400" />
                             <p className="font-medium">No groups yet</p>
-                            <p className="text-xs mt-1">Use the form to start building your chart of accounts</p>
+                            <p className="text-xs mt-1">
+                              Use the form to start building your chart of
+                              accounts
+                            </p>
                           </div>
                         ) : (
-                          groupTree.map(node => renderGroupNode(node))
+                          groupTree.map((node) => renderGroupNode(node))
                         )}
                       </CardContent>
                     </Card>
@@ -800,7 +837,8 @@ const BookkeepingPage = () => {
                         Create Ledger
                       </CardTitle>
                       <CardDescription>
-                        Capture canonical ledger metadata, taxation, and opening balances
+                        Capture canonical ledger metadata, taxation, and opening
+                        balances
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -809,8 +847,11 @@ const BookkeepingPage = () => {
                           <Label>Ledger Name *</Label>
                           <Input
                             value={ledgerForm.name}
-                            onChange={e =>
-                              setLedgerForm(prev => ({ ...prev, name: e.target.value }))
+                            onChange={(e) =>
+                              setLedgerForm((prev) => ({
+                                ...prev,
+                                name: e.target.value,
+                              }))
                             }
                             placeholder="e.g., ACME Supplies"
                           />
@@ -819,8 +860,8 @@ const BookkeepingPage = () => {
                           <Label>Under Group *</Label>
                           <Select
                             value={ledgerForm.groupId || "none"}
-                            onValueChange={value =>
-                              setLedgerForm(prev => ({
+                            onValueChange={(value) =>
+                              setLedgerForm((prev) => ({
                                 ...prev,
                                 groupId: value === "none" ? "" : value,
                               }))
@@ -835,7 +876,7 @@ const BookkeepingPage = () => {
                                   Create a group first
                                 </SelectItem>
                               ) : (
-                                flattenedGroups.map(group => (
+                                flattenedGroups.map((group) => (
                                   <SelectItem key={group.id} value={group.id}>
                                     {group.label}
                                   </SelectItem>
@@ -850,8 +891,8 @@ const BookkeepingPage = () => {
                             <Input
                               type="number"
                               value={ledgerForm.openingBalance}
-                              onChange={e =>
-                                setLedgerForm(prev => ({
+                              onChange={(e) =>
+                                setLedgerForm((prev) => ({
                                   ...prev,
                                   openingBalance: e.target.value,
                                 }))
@@ -863,10 +904,11 @@ const BookkeepingPage = () => {
                             <Label>Balance Type</Label>
                             <Select
                               value={ledgerForm.openingBalanceType}
-                              onValueChange={value =>
-                                setLedgerForm(prev => ({
+                              onValueChange={(value) =>
+                                setLedgerForm((prev) => ({
                                   ...prev,
-                                  openingBalanceType: value as LedgerBalanceTypeCode,
+                                  openingBalanceType:
+                                    value as LedgerBalanceTypeCode,
                                 }))
                               }
                             >
@@ -874,8 +916,11 @@ const BookkeepingPage = () => {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                {openingSideOptions.map(option => (
-                                  <SelectItem key={option.value} value={option.value}>
+                                {openingSideOptions.map((option) => (
+                                  <SelectItem
+                                    key={option.value}
+                                    value={option.value}
+                                  >
                                     {option.label}
                                   </SelectItem>
                                 ))}
@@ -889,8 +934,8 @@ const BookkeepingPage = () => {
                             <Input
                               type="number"
                               value={ledgerForm.defaultCreditPeriodDays}
-                              onChange={e =>
-                                setLedgerForm(prev => ({
+                              onChange={(e) =>
+                                setLedgerForm((prev) => ({
                                   ...prev,
                                   defaultCreditPeriodDays: e.target.value,
                                 }))
@@ -903,8 +948,8 @@ const BookkeepingPage = () => {
                             <Input
                               type="number"
                               value={ledgerForm.creditLimit}
-                              onChange={e =>
-                                setLedgerForm(prev => ({
+                              onChange={(e) =>
+                                setLedgerForm((prev) => ({
                                   ...prev,
                                   creditLimit: e.target.value,
                                 }))
@@ -918,10 +963,11 @@ const BookkeepingPage = () => {
                             <Label>Interest Method</Label>
                             <Select
                               value={ledgerForm.interestComputation}
-                              onValueChange={value =>
-                                setLedgerForm(prev => ({
+                              onValueChange={(value) =>
+                                setLedgerForm((prev) => ({
                                   ...prev,
-                                  interestComputation: value as InterestComputationCode,
+                                  interestComputation:
+                                    value as InterestComputationCode,
                                 }))
                               }
                             >
@@ -929,8 +975,11 @@ const BookkeepingPage = () => {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                {interestOptions.map(option => (
-                                  <SelectItem key={option.value} value={option.value}>
+                                {interestOptions.map((option) => (
+                                  <SelectItem
+                                    key={option.value}
+                                    value={option.value}
+                                  >
                                     {option.label}
                                   </SelectItem>
                                 ))}
@@ -942,8 +991,8 @@ const BookkeepingPage = () => {
                             <Input
                               type="number"
                               value={ledgerForm.interestRate}
-                              onChange={e =>
-                                setLedgerForm(prev => ({
+                              onChange={(e) =>
+                                setLedgerForm((prev) => ({
                                   ...prev,
                                   interestRate: e.target.value,
                                 }))
@@ -955,8 +1004,8 @@ const BookkeepingPage = () => {
                         <div className="flex items-center gap-3">
                           <Checkbox
                             checked={ledgerForm.maintainBillByBill}
-                            onCheckedChange={checked =>
-                              setLedgerForm(prev => ({
+                            onCheckedChange={(checked) =>
+                              setLedgerForm((prev) => ({
                                 ...prev,
                                 maintainBillByBill: Boolean(checked),
                               }))
@@ -972,8 +1021,8 @@ const BookkeepingPage = () => {
                         <div className="flex items-center gap-3">
                           <Checkbox
                             checked={ledgerForm.inventoryAffectsStock}
-                            onCheckedChange={checked =>
-                              setLedgerForm(prev => ({
+                            onCheckedChange={(checked) =>
+                              setLedgerForm((prev) => ({
                                 ...prev,
                                 inventoryAffectsStock: Boolean(checked),
                               }))
@@ -993,8 +1042,8 @@ const BookkeepingPage = () => {
                           <Label>GST Number</Label>
                           <Input
                             value={ledgerForm.gstNumber}
-                            onChange={e =>
-                              setLedgerForm(prev => ({
+                            onChange={(e) =>
+                              setLedgerForm((prev) => ({
                                 ...prev,
                                 gstNumber: e.target.value,
                               }))
@@ -1006,8 +1055,8 @@ const BookkeepingPage = () => {
                           <Label>PAN / Tax Number</Label>
                           <Input
                             value={ledgerForm.taxNumber}
-                            onChange={e =>
-                              setLedgerForm(prev => ({
+                            onChange={(e) =>
+                              setLedgerForm((prev) => ({
                                 ...prev,
                                 taxNumber: e.target.value,
                               }))
@@ -1019,8 +1068,8 @@ const BookkeepingPage = () => {
                           <Label>Mailing Address</Label>
                           <Textarea
                             value={ledgerForm.addressLine1}
-                            onChange={e =>
-                              setLedgerForm(prev => ({
+                            onChange={(e) =>
+                              setLedgerForm((prev) => ({
                                 ...prev,
                                 addressLine1: e.target.value,
                               }))
@@ -1031,15 +1080,21 @@ const BookkeepingPage = () => {
                           <div className="grid grid-cols-2 gap-2">
                             <Input
                               value={ledgerForm.city}
-                              onChange={e =>
-                                setLedgerForm(prev => ({ ...prev, city: e.target.value }))
+                              onChange={(e) =>
+                                setLedgerForm((prev) => ({
+                                  ...prev,
+                                  city: e.target.value,
+                                }))
                               }
                               placeholder="City"
                             />
                             <Input
                               value={ledgerForm.state}
-                              onChange={e =>
-                                setLedgerForm(prev => ({ ...prev, state: e.target.value }))
+                              onChange={(e) =>
+                                setLedgerForm((prev) => ({
+                                  ...prev,
+                                  state: e.target.value,
+                                }))
                               }
                               placeholder="State"
                             />
@@ -1047,8 +1102,8 @@ const BookkeepingPage = () => {
                           <div className="grid grid-cols-2 gap-2">
                             <Input
                               value={ledgerForm.postalCode}
-                              onChange={e =>
-                                setLedgerForm(prev => ({
+                              onChange={(e) =>
+                                setLedgerForm((prev) => ({
                                   ...prev,
                                   postalCode: e.target.value,
                                 }))
@@ -1057,8 +1112,8 @@ const BookkeepingPage = () => {
                             />
                             <Input
                               value={ledgerForm.country}
-                              onChange={e =>
-                                setLedgerForm(prev => ({
+                              onChange={(e) =>
+                                setLedgerForm((prev) => ({
                                   ...prev,
                                   country: e.target.value,
                                 }))
@@ -1072,8 +1127,8 @@ const BookkeepingPage = () => {
                           <Label>Bank Details</Label>
                           <Input
                             value={ledgerForm.bankName}
-                            onChange={e =>
-                              setLedgerForm(prev => ({
+                            onChange={(e) =>
+                              setLedgerForm((prev) => ({
                                 ...prev,
                                 bankName: e.target.value,
                               }))
@@ -1082,8 +1137,8 @@ const BookkeepingPage = () => {
                           />
                           <Input
                             value={ledgerForm.branch}
-                            onChange={e =>
-                              setLedgerForm(prev => ({
+                            onChange={(e) =>
+                              setLedgerForm((prev) => ({
                                 ...prev,
                                 branch: e.target.value,
                               }))
@@ -1093,8 +1148,8 @@ const BookkeepingPage = () => {
                           <div className="grid grid-cols-2 gap-2">
                             <Input
                               value={ledgerForm.accountName}
-                              onChange={e =>
-                                setLedgerForm(prev => ({
+                              onChange={(e) =>
+                                setLedgerForm((prev) => ({
                                   ...prev,
                                   accountName: e.target.value,
                                 }))
@@ -1103,8 +1158,8 @@ const BookkeepingPage = () => {
                             />
                             <Input
                               value={ledgerForm.accountNumber}
-                              onChange={e =>
-                                setLedgerForm(prev => ({
+                              onChange={(e) =>
+                                setLedgerForm((prev) => ({
                                   ...prev,
                                   accountNumber: e.target.value,
                                 }))
@@ -1114,8 +1169,11 @@ const BookkeepingPage = () => {
                           </div>
                           <Input
                             value={ledgerForm.ifsc}
-                            onChange={e =>
-                              setLedgerForm(prev => ({ ...prev, ifsc: e.target.value }))
+                            onChange={(e) =>
+                              setLedgerForm((prev) => ({
+                                ...prev,
+                                ifsc: e.target.value,
+                              }))
                             }
                             placeholder="IFSC / SWIFT"
                           />
@@ -1124,8 +1182,8 @@ const BookkeepingPage = () => {
                         <div className="flex items-center gap-3">
                           <Checkbox
                             checked={ledgerForm.costCenterApplicable}
-                            onCheckedChange={checked =>
-                              setLedgerForm(prev => ({
+                            onCheckedChange={(checked) =>
+                              setLedgerForm((prev) => ({
                                 ...prev,
                                 costCenterApplicable: Boolean(checked),
                               }))
@@ -1142,7 +1200,9 @@ const BookkeepingPage = () => {
                         <div className="flex gap-2 pt-2">
                           <Button
                             onClick={handleCreateLedger}
-                            disabled={ledgerSaving || flattenedGroups.length === 0}
+                            disabled={
+                              ledgerSaving || flattenedGroups.length === 0
+                            }
                             className="flex-1 bg-[#607c47] hover:bg-[#4a6129] text-white"
                           >
                             {ledgerSaving ? "Saving..." : "Create Ledger"}
@@ -1172,26 +1232,46 @@ const BookkeepingPage = () => {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="text-[#2C2C2C]">Name</TableHead>
-                            <TableHead className="text-[#2C2C2C]">Group</TableHead>
-                            <TableHead className="text-[#2C2C2C]">Opening</TableHead>
-                            <TableHead className="text-[#2C2C2C]">Interest</TableHead>
-                            <TableHead className="text-[#2C2C2C]">Flags</TableHead>
-                            <TableHead className="w-16 text-[#2C2C2C]">Actions</TableHead>
+                            <TableHead className="text-[#2C2C2C]">
+                              Name
+                            </TableHead>
+                            <TableHead className="text-[#2C2C2C]">
+                              Group
+                            </TableHead>
+                            <TableHead className="text-[#2C2C2C]">
+                              Opening
+                            </TableHead>
+                            <TableHead className="text-[#2C2C2C]">
+                              Interest
+                            </TableHead>
+                            <TableHead className="text-[#2C2C2C]">
+                              Flags
+                            </TableHead>
+                            <TableHead className="w-16 text-[#2C2C2C]">
+                              Actions
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {ledgers.length === 0 && !ledgersLoading ? (
                             <TableRow>
-                              <TableCell colSpan={6} className="text-center text-sm text-gray-500 py-8">
+                              <TableCell
+                                colSpan={6}
+                                className="text-center text-sm text-gray-500 py-8"
+                              >
                                 <BookOpen className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                                 <p className="font-medium">No ledgers yet</p>
-                                <p className="text-xs mt-1">Use the form above to add one</p>
+                                <p className="text-xs mt-1">
+                                  Use the form above to add one
+                                </p>
                               </TableCell>
                             </TableRow>
                           ) : (
-                            ledgers.map(ledger => (
-                              <TableRow key={ledger.id} className="hover:bg-gray-50">
+                            ledgers.map((ledger) => (
+                              <TableRow
+                                key={ledger.id}
+                                className="hover:bg-gray-50"
+                              >
                                 <TableCell>
                                   <div className="font-semibold text-[#2C2C2C]">
                                     {ledger.name}
@@ -1211,11 +1291,15 @@ const BookkeepingPage = () => {
                                   <div className="text-sm font-medium text-[#2C2C2C]">
                                     {ledger.openingBalance !== null &&
                                     ledger.openingBalance !== undefined
-                                      ? formatCurrency(Number(ledger.openingBalance))
+                                      ? formatCurrency(
+                                          Number(ledger.openingBalance)
+                                        )
                                       : "₹0.00"}
                                   </div>
                                   <div className="text-xs text-gray-500">
-                                    {ledger.openingBalanceType === "DEBIT" ? "Dr" : "Cr"}
+                                    {ledger.openingBalanceType === "DEBIT"
+                                      ? "Dr"
+                                      : "Cr"}
                                   </div>
                                 </TableCell>
                                 <TableCell>
@@ -1253,7 +1337,9 @@ const BookkeepingPage = () => {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    onClick={() => handleDeleteLedger(ledger.id)}
+                                    onClick={() =>
+                                      handleDeleteLedger(ledger.id)
+                                    }
                                     className="text-red-500 hover:text-red-600 hover:bg-red-50"
                                   >
                                     <Trash2 className="h-4 w-4" />
@@ -1275,7 +1361,7 @@ const BookkeepingPage = () => {
               {activeTab === "balance-sheet" && <BalanceSheetTab />}
               {activeTab === "cash-flow" && <CashFlowTab />}
               {activeTab === "ratios" && <RatiosTab />}
-              
+
               {/* Books & Registers Tabs */}
               {activeTab === "cash-book" && <CashBookTab />}
               {activeTab === "bank-book" && <BankBookTab />}
@@ -1294,7 +1380,9 @@ const BookkeepingPage = () => {
 function TrialBalanceTab() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any[]>([]);
-  const [asOnDate, setAsOnDate] = useState(new Date().toISOString().split('T')[0]);
+  const [asOnDate, setAsOnDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
 
   const loadTrialBalance = useCallback(async () => {
     setLoading(true);
@@ -1304,7 +1392,7 @@ function TrialBalanceTab() {
         setData(response.data || []);
       }
     } catch (error) {
-      console.error('Failed to load trial balance:', error);
+      console.error("Failed to load trial balance:", error);
     } finally {
       setLoading(false);
     }
@@ -1351,11 +1439,20 @@ function TrialBalanceTab() {
               </TableHeader>
               <TableBody>
                 {data.map((row, idx) => (
-                  <TableRow key={idx} className={row.ledgerName === 'TOTAL' ? 'font-bold bg-gray-50' : ''}>
+                  <TableRow
+                    key={idx}
+                    className={
+                      row.ledgerName === "TOTAL" ? "font-bold bg-gray-50" : ""
+                    }
+                  >
                     <TableCell>{row.ledgerName}</TableCell>
                     <TableCell>{row.groupName}</TableCell>
-                    <TableCell className="text-right">{row.debit ? formatCurrency(row.debit) : '-'}</TableCell>
-                    <TableCell className="text-right">{row.credit ? formatCurrency(row.credit) : '-'}</TableCell>
+                    <TableCell className="text-right">
+                      {row.debit ? formatCurrency(row.debit) : "-"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {row.credit ? formatCurrency(row.credit) : "-"}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -1371,18 +1468,23 @@ function TrialBalanceTab() {
 function ProfitLossTab() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
-  const [fromDate, setFromDate] = useState(new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0]);
-  const [toDate, setToDate] = useState(new Date().toISOString().split('T')[0]);
+  const [fromDate, setFromDate] = useState(
+    new Date(new Date().getFullYear(), 0, 1).toISOString().split("T")[0]
+  );
+  const [toDate, setToDate] = useState(new Date().toISOString().split("T")[0]);
 
   const loadPL = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await apiClient.bookkeeping.getProfitAndLoss({ fromDate, toDate });
+      const response = await apiClient.bookkeeping.getProfitAndLoss({
+        fromDate,
+        toDate,
+      });
       if (response.success) {
         setData(response.data);
       }
     } catch (error) {
-      console.error('Failed to load P&L:', error);
+      console.error("Failed to load P&L:", error);
     } finally {
       setLoading(false);
     }
@@ -1399,12 +1501,26 @@ function ProfitLossTab() {
           <div className="flex justify-between items-center">
             <div>
               <CardTitle>Profit & Loss Statement</CardTitle>
-              <CardDescription>Period: {fromDate} to {toDate}</CardDescription>
+              <CardDescription>
+                Period: {fromDate} to {toDate}
+              </CardDescription>
             </div>
             <div className="flex gap-2">
-              <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="w-auto" />
-              <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="w-auto" />
-              <Button onClick={loadPL} disabled={loading}>Refresh</Button>
+              <Input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="w-auto"
+              />
+              <Input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                className="w-auto"
+              />
+              <Button onClick={loadPL} disabled={loading}>
+                Refresh
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -1420,12 +1536,16 @@ function ProfitLossTab() {
                     {data.trading?.map((item: any, idx: number) => (
                       <TableRow key={idx}>
                         <TableCell>{item.name}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(item.amount)}
+                        </TableCell>
                       </TableRow>
                     ))}
                     <TableRow className="font-bold bg-gray-50">
                       <TableCell>Gross Profit</TableCell>
-                      <TableCell className="text-right">{formatCurrency(data.grossProfit)}</TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(data.grossProfit)}
+                      </TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
@@ -1437,18 +1557,24 @@ function ProfitLossTab() {
                     {data.indirectExpenses?.map((item: any, idx: number) => (
                       <TableRow key={idx}>
                         <TableCell>{item.name}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(item.amount)}
+                        </TableCell>
                       </TableRow>
                     ))}
                     {data.indirectIncomes?.map((item: any, idx: number) => (
                       <TableRow key={idx}>
                         <TableCell>{item.name}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(item.amount)}
+                        </TableCell>
                       </TableRow>
                     ))}
                     <TableRow className="font-bold bg-gray-50">
                       <TableCell>Net Profit / Loss</TableCell>
-                      <TableCell className="text-right">{formatCurrency(data.netProfit)}</TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(data.netProfit)}
+                      </TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
@@ -1465,7 +1591,9 @@ function ProfitLossTab() {
 function BalanceSheetTab() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
-  const [asOnDate, setAsOnDate] = useState(new Date().toISOString().split('T')[0]);
+  const [asOnDate, setAsOnDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
 
   const loadBalanceSheet = useCallback(async () => {
     setLoading(true);
@@ -1475,7 +1603,7 @@ function BalanceSheetTab() {
         setData(response.data);
       }
     } catch (error) {
-      console.error('Failed to load balance sheet:', error);
+      console.error("Failed to load balance sheet:", error);
     } finally {
       setLoading(false);
     }
@@ -1495,8 +1623,15 @@ function BalanceSheetTab() {
               <CardDescription>As on {asOnDate}</CardDescription>
             </div>
             <div className="flex gap-2">
-              <Input type="date" value={asOnDate} onChange={(e) => setAsOnDate(e.target.value)} className="w-auto" />
-              <Button onClick={loadBalanceSheet} disabled={loading}>Refresh</Button>
+              <Input
+                type="date"
+                value={asOnDate}
+                onChange={(e) => setAsOnDate(e.target.value)}
+                className="w-auto"
+              />
+              <Button onClick={loadBalanceSheet} disabled={loading}>
+                Refresh
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -1512,18 +1647,30 @@ function BalanceSheetTab() {
                     {data.liabilities?.map((item: any, idx: number) => (
                       <TableRow key={idx}>
                         <TableCell>{item.name}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(item.amount)}
+                        </TableCell>
                       </TableRow>
                     ))}
                     {data.capital?.map((item: any, idx: number) => (
                       <TableRow key={idx}>
                         <TableCell>{item.name}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(item.amount)}
+                        </TableCell>
                       </TableRow>
                     ))}
                     <TableRow className="font-bold bg-gray-50">
                       <TableCell>Total Liabilities & Capital</TableCell>
-                      <TableCell className="text-right">{formatCurrency(data.totalLiabilities + (data.capital?.reduce((sum: number, c: any) => sum + c.amount, 0) || 0))}</TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(
+                          data.totalLiabilities +
+                            (data.capital?.reduce(
+                              (sum: number, c: any) => sum + c.amount,
+                              0
+                            ) || 0)
+                        )}
+                      </TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
@@ -1535,12 +1682,16 @@ function BalanceSheetTab() {
                     {data.assets?.map((item: any, idx: number) => (
                       <TableRow key={idx}>
                         <TableCell>{item.name}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(item.amount)}
+                        </TableCell>
                       </TableRow>
                     ))}
                     <TableRow className="font-bold bg-gray-50">
                       <TableCell>Total Assets</TableCell>
-                      <TableCell className="text-right">{formatCurrency(data.totalAssets)}</TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(data.totalAssets)}
+                      </TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
@@ -1557,18 +1708,23 @@ function BalanceSheetTab() {
 function CashFlowTab() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
-  const [fromDate, setFromDate] = useState(new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0]);
-  const [toDate, setToDate] = useState(new Date().toISOString().split('T')[0]);
+  const [fromDate, setFromDate] = useState(
+    new Date(new Date().getFullYear(), 0, 1).toISOString().split("T")[0]
+  );
+  const [toDate, setToDate] = useState(new Date().toISOString().split("T")[0]);
 
   const loadCashFlow = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await apiClient.bookkeeping.getCashFlow({ fromDate, toDate });
+      const response = await apiClient.bookkeeping.getCashFlow({
+        fromDate,
+        toDate,
+      });
       if (response.success) {
         setData(response.data);
       }
     } catch (error) {
-      console.error('Failed to load cash flow:', error);
+      console.error("Failed to load cash flow:", error);
     } finally {
       setLoading(false);
     }
@@ -1585,12 +1741,26 @@ function CashFlowTab() {
           <div className="flex justify-between items-center">
             <div>
               <CardTitle>Cash Flow Statement</CardTitle>
-              <CardDescription>Period: {fromDate} to {toDate}</CardDescription>
+              <CardDescription>
+                Period: {fromDate} to {toDate}
+              </CardDescription>
             </div>
             <div className="flex gap-2">
-              <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="w-auto" />
-              <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="w-auto" />
-              <Button onClick={loadCashFlow} disabled={loading}>Refresh</Button>
+              <Input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="w-auto"
+              />
+              <Input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                className="w-auto"
+              />
+              <Button onClick={loadCashFlow} disabled={loading}>
+                Refresh
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -1600,7 +1770,9 @@ function CashFlowTab() {
           ) : data ? (
             <div className="space-y-6">
               <div>
-                <p className="text-sm text-gray-600">Opening Balance: {formatCurrency(data.openingBalance)}</p>
+                <p className="text-sm text-gray-600">
+                  Opening Balance: {formatCurrency(data.openingBalance)}
+                </p>
               </div>
               {data.operating?.length > 0 && (
                 <div>
@@ -1610,7 +1782,9 @@ function CashFlowTab() {
                       {data.operating.map((item: any, idx: number) => (
                         <TableRow key={idx}>
                           <TableCell>{item.description}</TableCell>
-                          <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                          <TableCell className="text-right">
+                            {formatCurrency(item.amount)}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -1625,7 +1799,9 @@ function CashFlowTab() {
                       {data.investing.map((item: any, idx: number) => (
                         <TableRow key={idx}>
                           <TableCell>{item.description}</TableCell>
-                          <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                          <TableCell className="text-right">
+                            {formatCurrency(item.amount)}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -1640,7 +1816,9 @@ function CashFlowTab() {
                       {data.financing.map((item: any, idx: number) => (
                         <TableRow key={idx}>
                           <TableCell>{item.description}</TableCell>
-                          <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                          <TableCell className="text-right">
+                            {formatCurrency(item.amount)}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -1648,8 +1826,12 @@ function CashFlowTab() {
                 </div>
               )}
               <div className="pt-4 border-t">
-                <p className="text-sm">Net Cash Flow: {formatCurrency(data.netCashFlow)}</p>
-                <p className="text-sm font-semibold">Closing Balance: {formatCurrency(data.closingBalance)}</p>
+                <p className="text-sm">
+                  Net Cash Flow: {formatCurrency(data.netCashFlow)}
+                </p>
+                <p className="text-sm font-semibold">
+                  Closing Balance: {formatCurrency(data.closingBalance)}
+                </p>
               </div>
             </div>
           ) : null}
@@ -1663,7 +1845,9 @@ function CashFlowTab() {
 function RatiosTab() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
-  const [asOnDate, setAsOnDate] = useState(new Date().toISOString().split('T')[0]);
+  const [asOnDate, setAsOnDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
 
   const loadRatios = useCallback(async () => {
     setLoading(true);
@@ -1673,7 +1857,7 @@ function RatiosTab() {
         setData(response.data);
       }
     } catch (error) {
-      console.error('Failed to load ratios:', error);
+      console.error("Failed to load ratios:", error);
     } finally {
       setLoading(false);
     }
@@ -1693,8 +1877,15 @@ function RatiosTab() {
               <CardDescription>As on {asOnDate}</CardDescription>
             </div>
             <div className="flex gap-2">
-              <Input type="date" value={asOnDate} onChange={(e) => setAsOnDate(e.target.value)} className="w-auto" />
-              <Button onClick={loadRatios} disabled={loading}>Refresh</Button>
+              <Input
+                type="date"
+                value={asOnDate}
+                onChange={(e) => setAsOnDate(e.target.value)}
+                className="w-auto"
+              />
+              <Button onClick={loadRatios} disabled={loading}>
+                Refresh
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -1711,11 +1902,15 @@ function RatiosTab() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span>Current Ratio</span>
-                      <span className="font-semibold">{data.liquidity?.currentRatio?.toFixed(2)}</span>
+                      <span className="font-semibold">
+                        {data.liquidity?.currentRatio?.toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Quick Ratio</span>
-                      <span className="font-semibold">{data.liquidity?.quickRatio?.toFixed(2)}</span>
+                      <span className="font-semibold">
+                        {data.liquidity?.quickRatio?.toFixed(2)}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -1728,15 +1923,21 @@ function RatiosTab() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span>Gross Profit Margin (%)</span>
-                      <span className="font-semibold">{data.profitability?.grossProfitMargin?.toFixed(2)}%</span>
+                      <span className="font-semibold">
+                        {data.profitability?.grossProfitMargin?.toFixed(2)}%
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Net Profit Margin (%)</span>
-                      <span className="font-semibold">{data.profitability?.netProfitMargin?.toFixed(2)}%</span>
+                      <span className="font-semibold">
+                        {data.profitability?.netProfitMargin?.toFixed(2)}%
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Return on Assets (%)</span>
-                      <span className="font-semibold">{data.profitability?.returnOnAssets?.toFixed(2)}%</span>
+                      <span className="font-semibold">
+                        {data.profitability?.returnOnAssets?.toFixed(2)}%
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -1749,11 +1950,15 @@ function RatiosTab() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span>Asset Turnover</span>
-                      <span className="font-semibold">{data.efficiency?.assetTurnover?.toFixed(2)}</span>
+                      <span className="font-semibold">
+                        {data.efficiency?.assetTurnover?.toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Inventory Turnover</span>
-                      <span className="font-semibold">{data.efficiency?.inventoryTurnover?.toFixed(2)}</span>
+                      <span className="font-semibold">
+                        {data.efficiency?.inventoryTurnover?.toFixed(2)}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -1766,11 +1971,15 @@ function RatiosTab() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span>Debt to Equity</span>
-                      <span className="font-semibold">{data.leverage?.debtToEquity?.toFixed(2)}</span>
+                      <span className="font-semibold">
+                        {data.leverage?.debtToEquity?.toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Debt Ratio</span>
-                      <span className="font-semibold">{data.leverage?.debtRatio?.toFixed(2)}</span>
+                      <span className="font-semibold">
+                        {data.leverage?.debtRatio?.toFixed(2)}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -1792,8 +2001,12 @@ function BudgetingTab() {
   const [form, setForm] = useState({
     name: "",
     description: "",
-    periodStart: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
-    periodEnd: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+    periodStart: new Date(new Date().getFullYear(), 0, 1)
+      .toISOString()
+      .split("T")[0],
+    periodEnd: new Date(new Date().getFullYear(), 11, 31)
+      .toISOString()
+      .split("T")[0],
     budgetType: "LEDGER" as "LEDGER" | "GROUP" | "COST_CENTRE",
     ledgerId: "",
     ledgerGroupId: "",
@@ -1809,8 +2022,8 @@ function BudgetingTab() {
         setBudgets(response.data || []);
       }
     } catch (error) {
-      console.error('Failed to load budgets:', error);
-      toast.error('Failed to load budgets');
+      console.error("Failed to load budgets:", error);
+      toast.error("Failed to load budgets");
     } finally {
       setLoading(false);
     }
@@ -1823,7 +2036,7 @@ function BudgetingTab() {
         setVariance(response.data);
       }
     } catch (error) {
-      console.error('Failed to load variance:', error);
+      console.error("Failed to load variance:", error);
     }
   };
 
@@ -1834,7 +2047,7 @@ function BudgetingTab() {
         setBreaches(response.data || []);
       }
     } catch (error) {
-      console.error('Failed to load breaches:', error);
+      console.error("Failed to load breaches:", error);
     }
   };
 
@@ -1852,13 +2065,17 @@ function BudgetingTab() {
         amount: Number(form.amount),
       });
       if (response.success) {
-        toast.success('Budget created successfully');
+        toast.success("Budget created successfully");
         setFormOpen(false);
         setForm({
           name: "",
           description: "",
-          periodStart: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
-          periodEnd: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+          periodStart: new Date(new Date().getFullYear(), 0, 1)
+            .toISOString()
+            .split("T")[0],
+          periodEnd: new Date(new Date().getFullYear(), 11, 31)
+            .toISOString()
+            .split("T")[0],
           budgetType: "LEDGER",
           ledgerId: "",
           ledgerGroupId: "",
@@ -1870,8 +2087,8 @@ function BudgetingTab() {
         loadBreaches();
       }
     } catch (error) {
-      console.error('Failed to create budget:', error);
-      toast.error('Failed to create budget');
+      console.error("Failed to create budget:", error);
+      toast.error("Failed to create budget");
     }
   };
 
@@ -1879,12 +2096,17 @@ function BudgetingTab() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-semibold text-[#2C2C2C]">Budgeting & Variance</h2>
+          <h2 className="text-xl font-semibold text-[#2C2C2C]">
+            Budgeting & Variance
+          </h2>
           <p className="text-sm text-muted-foreground">
             Define budgets and track variance against actuals
           </p>
         </div>
-        <Button onClick={() => setFormOpen(true)} className="bg-[#607c47] hover:bg-[#4a6129] text-white">
+        <Button
+          onClick={() => setFormOpen(true)}
+          className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Create Budget
         </Button>
@@ -1894,7 +2116,9 @@ function BudgetingTab() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="pt-6">
-              <div className="text-sm text-muted-foreground">Total Budgeted</div>
+              <div className="text-sm text-muted-foreground">
+                Total Budgeted
+              </div>
               <div className="text-2xl font-semibold text-[#2C2C2C]">
                 {formatCurrency(variance.totalBudgeted)}
               </div>
@@ -1910,8 +2134,12 @@ function BudgetingTab() {
           </Card>
           <Card>
             <CardContent className="pt-6">
-              <div className="text-sm text-muted-foreground">Total Variance</div>
-              <div className={`text-2xl font-semibold ${variance.totalVariance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <div className="text-sm text-muted-foreground">
+                Total Variance
+              </div>
+              <div
+                className={`text-2xl font-semibold ${variance.totalVariance >= 0 ? "text-green-600" : "text-red-600"}`}
+              >
                 {formatCurrency(variance.totalVariance)}
               </div>
             </CardContent>
@@ -1946,10 +2174,18 @@ function BudgetingTab() {
               <TableBody>
                 {breaches.map((breach, idx) => (
                   <TableRow key={idx}>
-                    <TableCell className="font-medium">{breach.budgetName}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(breach.budgetAmount)}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(breach.actualAmount)}</TableCell>
-                    <TableCell className="text-right text-red-600">{formatCurrency(breach.variance)}</TableCell>
+                    <TableCell className="font-medium">
+                      {breach.budgetName}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(breach.budgetAmount)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(breach.actualAmount)}
+                    </TableCell>
+                    <TableCell className="text-right text-red-600">
+                      {formatCurrency(breach.variance)}
+                    </TableCell>
                     <TableCell>
                       <Badge className="bg-red-100 text-red-700">BREACH</Badge>
                     </TableCell>
@@ -1990,7 +2226,8 @@ function BudgetingTab() {
                       <Badge>{budget.budgetType}</Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(budget.periodStart).toLocaleDateString()} - {new Date(budget.periodEnd).toLocaleDateString()}
+                      {new Date(budget.periodStart).toLocaleDateString()} -{" "}
+                      {new Date(budget.periodEnd).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="text-right font-semibold">
                       {formatCurrency(budget.amount)}
@@ -2024,7 +2261,9 @@ function BudgetingTab() {
               <Label>Description</Label>
               <Textarea
                 value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -2033,7 +2272,9 @@ function BudgetingTab() {
                 <Input
                   type="date"
                   value={form.periodStart}
-                  onChange={(e) => setForm({ ...form, periodStart: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, periodStart: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -2042,7 +2283,9 @@ function BudgetingTab() {
                 <Input
                   type="date"
                   value={form.periodEnd}
-                  onChange={(e) => setForm({ ...form, periodEnd: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, periodEnd: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -2051,7 +2294,9 @@ function BudgetingTab() {
               <Label>Budget Type *</Label>
               <select
                 value={form.budgetType}
-                onChange={(e) => setForm({ ...form, budgetType: e.target.value as any })}
+                onChange={(e) =>
+                  setForm({ ...form, budgetType: e.target.value as any })
+                }
                 className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
                 required
               >
@@ -2072,10 +2317,17 @@ function BudgetingTab() {
               />
             </div>
             <div className="flex justify-end gap-3">
-              <Button type="button" variant="ghost" onClick={() => setFormOpen(false)}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setFormOpen(false)}
+              >
                 Cancel
               </Button>
-              <Button type="submit" className="bg-[#607c47] hover:bg-[#4a6129] text-white">
+              <Button
+                type="submit"
+                className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+              >
                 Create Budget
               </Button>
             </div>
@@ -2089,32 +2341,41 @@ function BudgetingTab() {
 function YearEndTab() {
   const [loading, setLoading] = useState(false);
   const [closingForm, setClosingForm] = useState({
-    financialYearEnd: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+    financialYearEnd: new Date(new Date().getFullYear(), 11, 31)
+      .toISOString()
+      .split("T")[0],
     narration: "",
   });
   const [depreciationForm, setDepreciationForm] = useState({
-    asOnDate: new Date().toISOString().split('T')[0],
+    asOnDate: new Date().toISOString().split("T")[0],
     depreciationRate: "10",
     narration: "",
   });
   const [carryForwardForm, setCarryForwardForm] = useState({
-    fromFinancialYearEnd: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
-    toFinancialYearStart: new Date(new Date().getFullYear() + 1, 0, 1).toISOString().split('T')[0],
+    fromFinancialYearEnd: new Date(new Date().getFullYear(), 11, 31)
+      .toISOString()
+      .split("T")[0],
+    toFinancialYearStart: new Date(new Date().getFullYear() + 1, 0, 1)
+      .toISOString()
+      .split("T")[0],
   });
 
   const handleGenerateClosingEntries = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await apiClient.bookkeeping.generateClosingEntries(closingForm);
+      const response =
+        await apiClient.bookkeeping.generateClosingEntries(closingForm);
       if (response.success) {
-        toast.success(`Closing entries generated. Net Profit: ${formatCurrency(response.data.netProfit)}`);
+        toast.success(
+          `Closing entries generated. Net Profit: ${formatCurrency(response.data.netProfit)}`
+        );
       } else {
-        toast.error(response.error || 'Failed to generate closing entries');
+        toast.error(response.error || "Failed to generate closing entries");
       }
     } catch (error) {
-      console.error('Failed to generate closing entries:', error);
-      toast.error('Failed to generate closing entries');
+      console.error("Failed to generate closing entries:", error);
+      toast.error("Failed to generate closing entries");
     } finally {
       setLoading(false);
     }
@@ -2129,13 +2390,13 @@ function YearEndTab() {
         depreciationRate: Number(depreciationForm.depreciationRate),
       });
       if (response.success) {
-        toast.success('Depreciation run completed successfully');
+        toast.success("Depreciation run completed successfully");
       } else {
-        toast.error(response.error || 'Failed to run depreciation');
+        toast.error(response.error || "Failed to run depreciation");
       }
     } catch (error) {
-      console.error('Failed to run depreciation:', error);
-      toast.error('Failed to run depreciation');
+      console.error("Failed to run depreciation:", error);
+      toast.error("Failed to run depreciation");
     } finally {
       setLoading(false);
     }
@@ -2145,15 +2406,18 @@ function YearEndTab() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await apiClient.bookkeeping.carryForwardBalances(carryForwardForm);
+      const response =
+        await apiClient.bookkeeping.carryForwardBalances(carryForwardForm);
       if (response.success) {
-        toast.success(response.data.message || 'Balances carried forward successfully');
+        toast.success(
+          response.data.message || "Balances carried forward successfully"
+        );
       } else {
-        toast.error(response.error || 'Failed to carry forward balances');
+        toast.error(response.error || "Failed to carry forward balances");
       }
     } catch (error) {
-      console.error('Failed to carry forward balances:', error);
-      toast.error('Failed to carry forward balances');
+      console.error("Failed to carry forward balances:", error);
+      toast.error("Failed to carry forward balances");
     } finally {
       setLoading(false);
     }
@@ -2162,7 +2426,9 @@ function YearEndTab() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-[#2C2C2C]">Year-End Operations</h2>
+        <h2 className="text-xl font-semibold text-[#2C2C2C]">
+          Year-End Operations
+        </h2>
         <p className="text-sm text-muted-foreground">
           Generate closing entries, run depreciation, and carry forward balances
         </p>
@@ -2183,7 +2449,12 @@ function YearEndTab() {
                 <Input
                   type="date"
                   value={closingForm.financialYearEnd}
-                  onChange={(e) => setClosingForm({ ...closingForm, financialYearEnd: e.target.value })}
+                  onChange={(e) =>
+                    setClosingForm({
+                      ...closingForm,
+                      financialYearEnd: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
@@ -2191,7 +2462,12 @@ function YearEndTab() {
                 <Label>Narration</Label>
                 <Textarea
                   value={closingForm.narration}
-                  onChange={(e) => setClosingForm({ ...closingForm, narration: e.target.value })}
+                  onChange={(e) =>
+                    setClosingForm({
+                      ...closingForm,
+                      narration: e.target.value,
+                    })
+                  }
                   placeholder="Year-end closing entries"
                 />
               </div>
@@ -2220,7 +2496,12 @@ function YearEndTab() {
                 <Input
                   type="date"
                   value={depreciationForm.asOnDate}
-                  onChange={(e) => setDepreciationForm({ ...depreciationForm, asOnDate: e.target.value })}
+                  onChange={(e) =>
+                    setDepreciationForm({
+                      ...depreciationForm,
+                      asOnDate: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
@@ -2232,7 +2513,12 @@ function YearEndTab() {
                   min="0"
                   max="100"
                   value={depreciationForm.depreciationRate}
-                  onChange={(e) => setDepreciationForm({ ...depreciationForm, depreciationRate: e.target.value })}
+                  onChange={(e) =>
+                    setDepreciationForm({
+                      ...depreciationForm,
+                      depreciationRate: e.target.value,
+                    })
+                  }
                   placeholder="10"
                 />
               </div>
@@ -2240,7 +2526,12 @@ function YearEndTab() {
                 <Label>Narration</Label>
                 <Textarea
                   value={depreciationForm.narration}
-                  onChange={(e) => setDepreciationForm({ ...depreciationForm, narration: e.target.value })}
+                  onChange={(e) =>
+                    setDepreciationForm({
+                      ...depreciationForm,
+                      narration: e.target.value,
+                    })
+                  }
                   placeholder="Annual depreciation"
                 />
               </div>
@@ -2269,7 +2560,12 @@ function YearEndTab() {
                 <Input
                   type="date"
                   value={carryForwardForm.fromFinancialYearEnd}
-                  onChange={(e) => setCarryForwardForm({ ...carryForwardForm, fromFinancialYearEnd: e.target.value })}
+                  onChange={(e) =>
+                    setCarryForwardForm({
+                      ...carryForwardForm,
+                      fromFinancialYearEnd: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
@@ -2278,7 +2574,12 @@ function YearEndTab() {
                 <Input
                   type="date"
                   value={carryForwardForm.toFinancialYearStart}
-                  onChange={(e) => setCarryForwardForm({ ...carryForwardForm, toFinancialYearStart: e.target.value })}
+                  onChange={(e) =>
+                    setCarryForwardForm({
+                      ...carryForwardForm,
+                      toFinancialYearStart: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>

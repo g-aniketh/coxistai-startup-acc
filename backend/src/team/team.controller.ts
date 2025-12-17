@@ -1,8 +1,11 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middleware/auth';
-import * as teamService from './team.service';
+import { Response } from "express";
+import { AuthRequest } from "../middleware/auth";
+import * as teamService from "./team.service";
 
-export const inviteTeamMemberController = async (req: AuthRequest, res: Response): Promise<void> => {
+export const inviteTeamMemberController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { userId: adminUserId, startupId } = req.user!;
     const { email, roleName, firstName, lastName } = req.body;
@@ -11,7 +14,7 @@ export const inviteTeamMemberController = async (req: AuthRequest, res: Response
     if (!email || !roleName) {
       res.status(400).json({
         success: false,
-        message: 'Email and roleName are required'
+        message: "Email and roleName are required",
       });
       return;
     }
@@ -21,17 +24,22 @@ export const inviteTeamMemberController = async (req: AuthRequest, res: Response
     if (!emailRegex.test(email)) {
       res.status(400).json({
         success: false,
-        message: 'Invalid email format'
+        message: "Invalid email format",
       });
       return;
     }
 
     // Valid roles (excluding Admin)
-    const validRoles = ['Accountant', 'CTO', 'Sales Lead', 'Operations Manager'];
+    const validRoles = [
+      "Accountant",
+      "CTO",
+      "Sales Lead",
+      "Operations Manager",
+    ];
     if (!validRoles.includes(roleName)) {
       res.status(400).json({
         success: false,
-        message: `Invalid role. Must be one of: ${validRoles.join(', ')}`
+        message: `Invalid role. Must be one of: ${validRoles.join(", ")}`,
       });
       return;
     }
@@ -40,42 +48,47 @@ export const inviteTeamMemberController = async (req: AuthRequest, res: Response
       email,
       roleName,
       firstName,
-      lastName
+      lastName,
     });
 
     res.status(201).json({
       success: true,
       data: result,
-      message: 'Team member invited successfully. Check email for login credentials.'
+      message:
+        "Team member invited successfully. Check email for login credentials.",
     });
   } catch (error) {
-    console.error('Invite team member error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
-    if (errorMessage.includes('Unauthorized')) {
+    console.error("Invite team member error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
+    if (errorMessage.includes("Unauthorized")) {
       res.status(403).json({
         success: false,
-        message: errorMessage
+        message: errorMessage,
       });
       return;
     }
 
-    if (errorMessage.includes('already exists')) {
+    if (errorMessage.includes("already exists")) {
       res.status(409).json({
         success: false,
-        message: errorMessage
+        message: errorMessage,
       });
       return;
     }
 
     res.status(400).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
 
-export const getTeamMembersController = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getTeamMembersController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { startupId } = req.user!;
 
@@ -83,20 +96,24 @@ export const getTeamMembersController = async (req: AuthRequest, res: Response):
 
     res.json({
       success: true,
-      data: teamMembers
+      data: teamMembers,
     });
   } catch (error) {
-    console.error('Get team members error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
+    console.error("Get team members error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
     res.status(500).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
 
-export const updateUserRoleController = async (req: AuthRequest, res: Response): Promise<void> => {
+export const updateUserRoleController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { userId: adminUserId, startupId } = req.user!;
     const { userId } = req.params;
@@ -105,49 +122,67 @@ export const updateUserRoleController = async (req: AuthRequest, res: Response):
     if (!roleName) {
       res.status(400).json({
         success: false,
-        message: 'RoleName is required'
+        message: "RoleName is required",
       });
       return;
     }
 
-    const validRoles = ['Accountant', 'CTO', 'Sales Lead', 'Operations Manager', 'Admin'];
+    const validRoles = [
+      "Accountant",
+      "CTO",
+      "Sales Lead",
+      "Operations Manager",
+      "Admin",
+    ];
     if (!validRoles.includes(roleName)) {
       res.status(400).json({
         success: false,
-        message: `Invalid role. Must be one of: ${validRoles.join(', ')}`
+        message: `Invalid role. Must be one of: ${validRoles.join(", ")}`,
       });
       return;
     }
 
-    const updatedUser = await teamService.updateUserRole(adminUserId, startupId, userId, {
-      roleName
-    });
+    const updatedUser = await teamService.updateUserRole(
+      adminUserId,
+      startupId,
+      userId,
+      {
+        roleName,
+      }
+    );
 
     res.json({
       success: true,
       data: updatedUser,
-      message: 'User role updated successfully'
+      message: "User role updated successfully",
     });
   } catch (error) {
-    console.error('Update user role error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
-    if (errorMessage.includes('Unauthorized') || errorMessage.includes('Cannot change')) {
+    console.error("Update user role error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
+    if (
+      errorMessage.includes("Unauthorized") ||
+      errorMessage.includes("Cannot change")
+    ) {
       res.status(403).json({
         success: false,
-        message: errorMessage
+        message: errorMessage,
       });
       return;
     }
 
     res.status(400).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
 
-export const deactivateUserController = async (req: AuthRequest, res: Response): Promise<void> => {
+export const deactivateUserController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { userId: adminUserId, startupId } = req.user!;
     const { userId } = req.params;
@@ -156,24 +191,27 @@ export const deactivateUserController = async (req: AuthRequest, res: Response):
 
     res.json({
       success: true,
-      message: 'User deactivated successfully'
+      message: "User deactivated successfully",
     });
   } catch (error) {
-    console.error('Deactivate user error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
-    if (errorMessage.includes('Unauthorized') || errorMessage.includes('Cannot deactivate')) {
+    console.error("Deactivate user error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
+    if (
+      errorMessage.includes("Unauthorized") ||
+      errorMessage.includes("Cannot deactivate")
+    ) {
       res.status(403).json({
         success: false,
-        message: errorMessage
+        message: errorMessage,
       });
       return;
     }
 
     res.status(400).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
-

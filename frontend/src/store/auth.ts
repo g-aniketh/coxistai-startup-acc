@@ -1,7 +1,7 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { apiClient, User, SignupRequest } from '@/lib/api';
-import toast from 'react-hot-toast';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { apiClient, User, SignupRequest } from "@/lib/api";
+import toast from "react-hot-toast";
 
 interface AuthState {
   // State
@@ -34,16 +34,16 @@ export const useAuthStore = create<AuthState>()(
       // Actions
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
-        
+
         try {
           const response = await apiClient.auth.login({ email, password });
-          
+
           if (response.success && response.data) {
             const { user, token } = response.data;
-            
+
             // Store token in localStorage
-            localStorage.setItem('authToken', token);
-            
+            localStorage.setItem("authToken", token);
+
             set({
               user,
               token,
@@ -51,11 +51,11 @@ export const useAuthStore = create<AuthState>()(
               isLoading: false,
               error: null,
             });
-            
-            toast.success('Login successful!');
+
+            toast.success("Login successful!");
             return true;
           } else {
-            const errorMsg = response.message || 'Login failed';
+            const errorMsg = response.message || "Login failed";
             set({
               error: errorMsg,
               isLoading: false,
@@ -64,11 +64,11 @@ export const useAuthStore = create<AuthState>()(
             return false;
           }
         } catch (error: any) {
-          const errorMessage = 
-            error.response?.data?.message || 
-            error.response?.data?.error || 
-            error.message || 
-            'Login failed';
+          const errorMessage =
+            error.response?.data?.message ||
+            error.response?.data?.error ||
+            error.message ||
+            "Login failed";
           set({
             error: errorMessage,
             isLoading: false,
@@ -80,16 +80,16 @@ export const useAuthStore = create<AuthState>()(
 
       signup: async (data: SignupRequest) => {
         set({ isLoading: true, error: null });
-        
+
         try {
           const response = await apiClient.auth.signup(data);
-          
+
           if (response.success && response.data) {
             const { user, token } = response.data;
-            
+
             // Store token in localStorage
-            localStorage.setItem('authToken', token);
-            
+            localStorage.setItem("authToken", token);
+
             set({
               user,
               token,
@@ -97,11 +97,11 @@ export const useAuthStore = create<AuthState>()(
               isLoading: false,
               error: null,
             });
-            
-            toast.success(response.message || 'Account created successfully!');
+
+            toast.success(response.message || "Account created successfully!");
             return true;
           } else {
-            const errorMsg = response.message || 'Signup failed';
+            const errorMsg = response.message || "Signup failed";
             set({
               error: errorMsg,
               isLoading: false,
@@ -110,11 +110,11 @@ export const useAuthStore = create<AuthState>()(
             return false;
           }
         } catch (error: any) {
-          const errorMessage = 
-            error.response?.data?.message || 
-            error.response?.data?.error || 
-            error.message || 
-            'Signup failed';
+          const errorMessage =
+            error.response?.data?.message ||
+            error.response?.data?.error ||
+            error.message ||
+            "Signup failed";
           set({
             error: errorMessage,
             isLoading: false,
@@ -126,8 +126,8 @@ export const useAuthStore = create<AuthState>()(
 
       logout: () => {
         // Clear localStorage
-        localStorage.removeItem('authToken');
-        
+        localStorage.removeItem("authToken");
+
         // Reset state
         set({
           user: null,
@@ -136,8 +136,8 @@ export const useAuthStore = create<AuthState>()(
           isLoading: false,
           error: null,
         });
-        
-        toast.success('Logged out successfully');
+
+        toast.success("Logged out successfully");
       },
 
       clearError: () => {
@@ -153,18 +153,18 @@ export const useAuthStore = create<AuthState>()(
       },
 
       checkAuth: async () => {
-        const token = localStorage.getItem('authToken');
-        
+        const token = localStorage.getItem("authToken");
+
         if (!token) {
           set({ isAuthenticated: false, user: null, token: null });
           return false;
         }
-        
+
         set({ isLoading: true });
-        
+
         try {
           const response = await apiClient.auth.me();
-          
+
           if (response.success && response.data) {
             set({
               user: response.data.user,
@@ -185,7 +185,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: 'auth-storage',
+      name: "auth-storage",
       partialize: (state) => ({
         user: state.user,
         token: state.token,

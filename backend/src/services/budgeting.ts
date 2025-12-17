@@ -1,12 +1,12 @@
-import { Prisma } from '@prisma/client';
-import { prisma } from '../lib/prisma';
+import { Prisma } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 
 export interface BudgetInput {
   name: string;
   description?: string;
   periodStart: string; // ISO date string
   periodEnd: string; // ISO date string
-  budgetType: 'LEDGER' | 'GROUP' | 'COST_CENTRE';
+  budgetType: "LEDGER" | "GROUP" | "COST_CENTRE";
   ledgerId?: string;
   ledgerGroupId?: string;
   costCentreId?: string;
@@ -21,7 +21,7 @@ export interface BudgetVariance {
   actualAmount: number;
   variance: number;
   variancePercentage: number;
-  status: 'WITHIN_BUDGET' | 'WARNING' | 'BREACH';
+  status: "WITHIN_BUDGET" | "WARNING" | "BREACH";
   breachThreshold?: number;
 }
 
@@ -33,21 +33,21 @@ export async function createBudget(
   input: BudgetInput
 ): Promise<any> {
   // Validate budget type and related entity
-  if (input.budgetType === 'LEDGER' && !input.ledgerId) {
-    throw new Error('Ledger ID is required for ledger-level budgets');
+  if (input.budgetType === "LEDGER" && !input.ledgerId) {
+    throw new Error("Ledger ID is required for ledger-level budgets");
   }
-  if (input.budgetType === 'GROUP' && !input.ledgerGroupId) {
-    throw new Error('Ledger Group ID is required for group-level budgets');
+  if (input.budgetType === "GROUP" && !input.ledgerGroupId) {
+    throw new Error("Ledger Group ID is required for group-level budgets");
   }
-  if (input.budgetType === 'COST_CENTRE' && !input.costCentreId) {
-    throw new Error('Cost Centre ID is required for cost centre-level budgets');
+  if (input.budgetType === "COST_CENTRE" && !input.costCentreId) {
+    throw new Error("Cost Centre ID is required for cost centre-level budgets");
   }
 
   const periodStart = new Date(input.periodStart);
   const periodEnd = new Date(input.periodEnd);
 
   if (periodStart >= periodEnd) {
-    throw new Error('Period start must be before period end');
+    throw new Error("Period start must be before period end");
   }
 
   // Store budget in metadata for now (schema extension pending)
@@ -64,7 +64,7 @@ export async function createBudget(
 
   // For now, store in a simple JSON file or use metadata approach
   // In production: await prisma.budget.create({ data: budgetData });
-  
+
   return budgetData;
 }
 
@@ -78,13 +78,13 @@ export async function calculateBudgetVariance(
 ): Promise<BudgetVariance | null> {
   // Get budget (from metadata/storage)
   // In production: const budget = await prisma.budget.findFirst({ where: { id: budgetId, startupId } });
-  
+
   // For now, return null as placeholder
   // Actual implementation would:
   // 1. Get budget details
   // 2. Calculate actual spending based on budget type
   // 3. Compare and calculate variance
-  
+
   return null;
 }
 
@@ -94,7 +94,7 @@ export async function calculateBudgetVariance(
 export async function listBudgets(
   startupId: string,
   filters?: {
-    budgetType?: 'LEDGER' | 'GROUP' | 'COST_CENTRE';
+    budgetType?: "LEDGER" | "GROUP" | "COST_CENTRE";
     periodStart?: string;
     periodEnd?: string;
   }
@@ -109,7 +109,7 @@ export async function listBudgets(
 export async function getBudgetVarianceAnalytics(
   startupId: string,
   filters?: {
-    budgetType?: 'LEDGER' | 'GROUP' | 'COST_CENTRE';
+    budgetType?: "LEDGER" | "GROUP" | "COST_CENTRE";
     periodStart?: string;
     periodEnd?: string;
     includeBreaches?: boolean;
@@ -141,9 +141,9 @@ export async function getBudgetVarianceAnalytics(
   const totalActual = variances.reduce((sum, v) => sum + v.actualAmount, 0);
   const totalVariance = totalActual - totalBudgeted;
 
-  const breaches = variances.filter(v => v.status === 'BREACH');
-  const warnings = variances.filter(v => v.status === 'WARNING');
-  const withinBudget = variances.filter(v => v.status === 'WITHIN_BUDGET');
+  const breaches = variances.filter((v) => v.status === "BREACH");
+  const warnings = variances.filter((v) => v.status === "WARNING");
+  const withinBudget = variances.filter((v) => v.status === "WITHIN_BUDGET");
 
   return {
     totalBudgets: budgets.length,
@@ -169,4 +169,3 @@ export async function checkBudgetBreaches(
 
   return analytics.breaches;
 }
-

@@ -125,8 +125,8 @@ export const inviteTeamMember = async (
           <p>You've been invited by ${
             adminUser.firstName || adminUser.email
           } to join <strong>${
-          adminUser.startup.name
-        }</strong> as a ${roleName}.</p>
+            adminUser.startup.name
+          }</strong> as a ${roleName}.</p>
           <p><strong>Your temporary login credentials:</strong></p>
           <p>Email: ${email}</p>
           <p>Temporary Password: <code>${tempPassword}</code></p>
@@ -134,8 +134,8 @@ export const inviteTeamMember = async (
           <p>Login at: <a href="${
             process.env.FRONTEND_URL || "http://localhost:3000"
           }/login">${
-          process.env.FRONTEND_URL || "http://localhost:3000"
-        }/login</a></p>
+            process.env.FRONTEND_URL || "http://localhost:3000"
+          }/login</a></p>
           <p>Best regards,<br/>The CoXist AI Team</p>
         `,
       });

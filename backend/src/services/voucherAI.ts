@@ -224,11 +224,14 @@ export async function analyzeVoucherAnomalies(
           (sum: number, v: any) => sum + v.totalAmount.toNumber(),
           0
         ),
-        byType: vouchers.reduce((acc: any, v: any) => {
-          const type = v.voucherType.name;
-          acc[type] = (acc[type] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>),
+        byType: vouchers.reduce(
+          (acc: any, v: any) => {
+            const type = v.voucherType.name;
+            acc[type] = (acc[type] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>
+        ),
         dateRange: {
           from: vouchers[vouchers.length - 1].date.toISOString().split("T")[0],
           to: vouchers[0].date.toISOString().split("T")[0],
@@ -365,14 +368,17 @@ export async function detectVoucherVariances(
     });
 
     // Group by voucher type/category
-    const byCategory = vouchers.reduce((acc: any, v: any) => {
-      const category = v.voucherType.category;
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(v);
-      return acc;
-    }, {} as Record<string, typeof vouchers>);
+    const byCategory = vouchers.reduce(
+      (acc: any, v: any) => {
+        const category = v.voucherType.category;
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push(v);
+        return acc;
+      },
+      {} as Record<string, typeof vouchers>
+    );
 
     // Calculate expected vs actual for each category
     for (const [category, categoryVouchers] of Object.entries(byCategory)) {
@@ -383,7 +389,7 @@ export async function detectVoucherVariances(
 
       // Calculate expected based on previous periods (simple moving average)
       const previousPeriods = periods
-        .filter(p => p.start < periodData.start)
+        .filter((p) => p.start < periodData.start)
         .slice(0, 3);
 
       if (previousPeriods.length > 0) {
@@ -506,29 +512,38 @@ export async function generateVoucherInsights(
       (sum: number, v: any) => sum + v.totalAmount.toNumber(),
       0
     ),
-    byType: vouchers.reduce((acc: any, v: any) => {
-      const type = v.voucherType.name;
-      acc[type] = {
-        count: (acc[type]?.count || 0) + 1,
-        total: (acc[type]?.total || 0) + v.totalAmount.toNumber(),
-      };
-      return acc;
-    }, {} as Record<string, { count: number; total: number }>),
-    byCategory: vouchers.reduce((acc: any, v: any) => {
-      const category = v.voucherType.category;
-      acc[category] = (acc[category] || 0) + v.totalAmount.toNumber();
-      return acc;
-    }, {} as Record<string, number>),
+    byType: vouchers.reduce(
+      (acc: any, v: any) => {
+        const type = v.voucherType.name;
+        acc[type] = {
+          count: (acc[type]?.count || 0) + 1,
+          total: (acc[type]?.total || 0) + v.totalAmount.toNumber(),
+        };
+        return acc;
+      },
+      {} as Record<string, { count: number; total: number }>
+    ),
+    byCategory: vouchers.reduce(
+      (acc: any, v: any) => {
+        const category = v.voucherType.category;
+        acc[category] = (acc[category] || 0) + v.totalAmount.toNumber();
+        return acc;
+      },
+      {} as Record<string, number>
+    ),
     dateRange: {
       from: vouchers[vouchers.length - 1].date.toISOString().split("T")[0],
       to: vouchers[0].date.toISOString().split("T")[0],
     },
     topLedgers: vouchers
       .flatMap((v: any) => v.entries)
-      .reduce((acc: any, e: any) => {
-        acc[e.ledgerName] = (acc[e.ledgerName] || 0) + e.amount.toNumber();
-        return acc;
-      }, {} as Record<string, number>),
+      .reduce(
+        (acc: any, e: any) => {
+          acc[e.ledgerName] = (acc[e.ledgerName] || 0) + e.amount.toNumber();
+          return acc;
+        },
+        {} as Record<string, number>
+      ),
   };
 
   const topLedgers = Object.entries(summary.topLedgers)

@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/Badge';
-import { 
-  Send, 
-  Bot, 
-  User, 
-  Loader2, 
+import { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/Badge";
+import {
+  Send,
+  Bot,
+  User,
+  Loader2,
   Sparkles,
   Minimize2,
   Maximize2,
@@ -19,139 +19,163 @@ import {
   DollarSign,
   Calendar,
   AlertTriangle,
-  CheckCircle
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
-import { apiClient, DashboardSummary } from '@/lib/api';
+  CheckCircle,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { apiClient, DashboardSummary } from "@/lib/api";
 
 interface Message {
   id: string;
-  type: 'user' | 'ai';
+  type: "user" | "ai";
   content: string;
   timestamp: Date;
   data?: any; // For structured data responses
 }
 
-const currencyFormatter = new Intl.NumberFormat('en-IN', {
-  style: 'currency',
-  currency: 'INR',
+const currencyFormatter = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
   minimumFractionDigits: 0,
   maximumFractionDigits: 0,
 });
 
 // Parse markdown and return React elements
-  const getDataIcon = (dataType: string) => {
-    switch (dataType) {
-      case 'revenue':
-        return <TrendingUp className="h-4 w-4 text-green-500" />;
-      case 'burn_rate':
-        return <AlertTriangle className="h-4 w-4 text-red-500" />;
-      case 'cash_balance':
-        return <DollarSign className="h-4 w-4 text-blue-500" />;
-      case 'runway':
-        return <Calendar className="h-4 w-4 text-purple-500" />;
-      case 'customers':
-        return <CheckCircle className="h-4 w-4 text-indigo-500" />;
-      default:
-        return <Sparkles className="h-4 w-4 text-blue-500" />;
-    }
-  };
+const getDataIcon = (dataType: string) => {
+  switch (dataType) {
+    case "revenue":
+      return <TrendingUp className="h-4 w-4 text-green-500" />;
+    case "burn_rate":
+      return <AlertTriangle className="h-4 w-4 text-red-500" />;
+    case "cash_balance":
+      return <DollarSign className="h-4 w-4 text-blue-500" />;
+    case "runway":
+      return <Calendar className="h-4 w-4 text-purple-500" />;
+    case "customers":
+      return <CheckCircle className="h-4 w-4 text-indigo-500" />;
+    default:
+      return <Sparkles className="h-4 w-4 text-blue-500" />;
+  }
+};
 
-  const renderDataVisualization = (data: any) => {
-    if (!data) return null;
+const renderDataVisualization = (data: any) => {
+  if (!data) return null;
 
-    switch (data.type) {
-      case 'cash_balance':
-        return (
-          <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="flex items-center gap-2 mb-2">
-              {getDataIcon(data.type)}
-              <span className="font-semibold text-blue-800">Cash Balance</span>
+  switch (data.type) {
+    case "cash_balance":
+      return (
+        <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center gap-2 mb-2">
+            {getDataIcon(data.type)}
+            <span className="font-semibold text-blue-800">Cash Balance</span>
+          </div>
+          <div className="text-2xl font-bold text-blue-900 mb-2">
+            {currencyFormatter.format(data.value)}
+          </div>
+          {data.accounts && data.accounts.length > 0 && (
+            <div className="space-y-1">
+              {data.accounts.map((account: any, index: number) => (
+                <div
+                  key={index}
+                  className="flex justify-between text-sm text-gray-700"
+                >
+                  <span>{account.name}</span>
+                  <span className="font-medium">
+                    {currencyFormatter.format(account.balance)}
+                  </span>
+                </div>
+              ))}
             </div>
-            <div className="text-2xl font-bold text-blue-900 mb-2">
-              {currencyFormatter.format(data.value)}
+          )}
+        </div>
+      );
+
+    case "revenue":
+      return (
+        <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+          <div className="flex items-center gap-2 mb-2">
+            {getDataIcon(data.type)}
+            <span className="font-semibold text-green-800">
+              Monthly Revenue
+            </span>
+          </div>
+          <div className="text-2xl font-bold text-green-900 mb-2">
+            {currencyFormatter.format(data.value)}
+          </div>
+          {data.period && (
+            <div className="text-sm text-green-700">Period: {data.period}</div>
+          )}
+        </div>
+      );
+
+    case "burn_rate":
+      return (
+        <div className="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
+          <div className="flex items-center gap-2 mb-2">
+            {getDataIcon(data.type)}
+            <span className="font-semibold text-red-800">
+              Monthly Burn Rate
+            </span>
+          </div>
+          <div className="text-2xl font-bold text-red-900 mb-2">
+            {currencyFormatter.format(data.value)}
+          </div>
+          {data.breakdown && (
+            <div className="space-y-1">
+              {data.breakdown.map((item: any, index: number) => (
+                <div
+                  key={index}
+                  className="flex justify-between text-sm text-gray-700"
+                >
+                  <span>{item.category}</span>
+                  <span className="font-medium">
+                    {currencyFormatter.format(item.amount)}
+                  </span>
+                </div>
+              ))}
             </div>
-            {data.accounts && data.accounts.length > 0 && (
-              <div className="space-y-1">
-                {data.accounts.map((account: any, index: number) => (
-                  <div key={index} className="flex justify-between text-sm text-gray-700">
-                    <span>{account.name}</span>
-                    <span className="font-medium">{currencyFormatter.format(account.balance)}</span>
-                  </div>
-                ))}
-              </div>
+          )}
+        </div>
+      );
+
+    case "runway":
+      return (
+        <div className="mt-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+          <div className="flex items-center gap-2 mb-2">
+            {getDataIcon(data.type)}
+            <span className="font-semibold text-purple-800">
+              Runway Analysis
+            </span>
+          </div>
+          <div className="text-2xl font-bold text-purple-900 mb-2">
+            {data.months.toFixed(1)} months
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge
+              className={
+                data.status === "healthy"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }
+            >
+              {data.status}
+            </Badge>
+            {data.recommendation && (
+              <span className="text-sm text-purple-700">
+                {data.recommendation}
+              </span>
             )}
           </div>
-        );
+        </div>
+      );
 
-      case 'revenue':
-        return (
-          <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
-            <div className="flex items-center gap-2 mb-2">
-              {getDataIcon(data.type)}
-              <span className="font-semibold text-green-800">Monthly Revenue</span>
-            </div>
-            <div className="text-2xl font-bold text-green-900 mb-2">
-              {currencyFormatter.format(data.value)}
-            </div>
-            {data.period && (
-              <div className="text-sm text-green-700">Period: {data.period}</div>
-            )}
-          </div>
-        );
+    default:
+      return null;
+  }
+};
 
-      case 'burn_rate':
-        return (
-          <div className="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
-            <div className="flex items-center gap-2 mb-2">
-              {getDataIcon(data.type)}
-              <span className="font-semibold text-red-800">Monthly Burn Rate</span>
-            </div>
-            <div className="text-2xl font-bold text-red-900 mb-2">
-              {currencyFormatter.format(data.value)}
-            </div>
-            {data.breakdown && (
-              <div className="space-y-1">
-                {data.breakdown.map((item: any, index: number) => (
-                  <div key={index} className="flex justify-between text-sm text-gray-700">
-                    <span>{item.category}</span>
-                    <span className="font-medium">{currencyFormatter.format(item.amount)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-
-      case 'runway':
-        return (
-          <div className="mt-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
-            <div className="flex items-center gap-2 mb-2">
-              {getDataIcon(data.type)}
-              <span className="font-semibold text-purple-800">Runway Analysis</span>
-            </div>
-            <div className="text-2xl font-bold text-purple-900 mb-2">
-              {data.months.toFixed(1)} months
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge className={data.status === 'healthy' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                {data.status}
-              </Badge>
-              {data.recommendation && (
-                <span className="text-sm text-purple-700">{data.recommendation}</span>
-              )}
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  const parseMarkdown = (text: string) => {
+const parseMarkdown = (text: string) => {
   const parts: (string | React.ReactElement)[] = [];
   let key = 0;
 
@@ -165,14 +189,14 @@ const currencyFormatter = new Intl.NumberFormat('en-IN', {
     if (match.index > lastIndex) {
       parts.push(text.substring(lastIndex, match.index));
     }
-    
+
     // Add the bold text
     parts.push(
       <strong key={key++} className="font-bold">
         {match[1]}
       </strong>
     );
-    
+
     lastIndex = match.index + match[0].length;
   }
 
@@ -194,13 +218,14 @@ export default function FloatingChatbot() {
   const [isMinimized, setIsMinimized] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: '1',
-      type: 'ai',
-      content: "Hi! I'm your AI CFO assistant. How can I help you with your startup's finances today?",
-      timestamp: new Date()
-    }
+      id: "1",
+      type: "ai",
+      content:
+        "Hi! I'm your AI CFO assistant. How can I help you with your startup's finances today?",
+      timestamp: new Date(),
+    },
   ]);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [isLoadingSummary, setIsLoadingSummary] = useState(false);
@@ -211,14 +236,15 @@ export default function FloatingChatbot() {
   useEffect(() => {
     if (isOpen && !summary && !isLoadingSummary) {
       setIsLoadingSummary(true);
-      apiClient.dashboard.summary()
+      apiClient.dashboard
+        .summary()
         .then((response) => {
           if (response.success && response.data) {
             setSummary(response.data);
           }
         })
         .catch((error) => {
-          console.error('Failed to load dashboard summary:', error);
+          console.error("Failed to load dashboard summary:", error);
         })
         .finally(() => {
           setIsLoadingSummary(false);
@@ -231,7 +257,9 @@ export default function FloatingChatbot() {
     if (scrollAreaRef.current && isOpen && !isMinimized) {
       // Use setTimeout to ensure DOM is updated
       setTimeout(() => {
-        const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
+        const viewport = scrollAreaRef.current?.querySelector(
+          "[data-radix-scroll-area-viewport]"
+        ) as HTMLElement;
         if (viewport) {
           viewport.scrollTop = viewport.scrollHeight;
         }
@@ -245,43 +273,46 @@ export default function FloatingChatbot() {
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      type: 'user',
+      type: "user",
       content: inputValue.trim(),
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
+    setMessages((prev) => [...prev, userMessage]);
+    setInputValue("");
     setIsLoading(true);
 
     try {
       // Generate AI response based on the question
       const response = await generateAIResponse(inputValue.trim());
-      
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        type: 'ai',
+        type: "ai",
         content: response.content,
         timestamp: new Date(),
-        data: response.data
+        data: response.data,
       };
 
-      setMessages(prev => [...prev, aiMessage]);
+      setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
-      console.error('AI response error:', error);
+      console.error("AI response error:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        type: 'ai',
-        content: "I'm sorry, I encountered an error processing your request. Please try again or visit the full AI Assistant page.",
-        timestamp: new Date()
+        type: "ai",
+        content:
+          "I'm sorry, I encountered an error processing your request. Please try again or visit the full AI Assistant page.",
+        timestamp: new Date(),
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const generateAIResponse = async (question: string): Promise<{ content: string; data?: any }> => {
+  const generateAIResponse = async (
+    question: string
+  ): Promise<{ content: string; data?: any }> => {
     // Ensure we have summary data
     let data = summary;
     if (!data) {
@@ -292,20 +323,21 @@ export default function FloatingChatbot() {
           setSummary(summaryResponse.data);
         }
       } catch (fetchError) {
-        console.error('Failed to fetch summary:', fetchError);
+        console.error("Failed to fetch summary:", fetchError);
       }
     }
 
     if (!data) {
       return {
-        content: "I'm having trouble accessing your financial data right now. Please try again in a moment."
+        content:
+          "I'm having trouble accessing your financial data right now. Please try again in a moment.",
       };
     }
 
     try {
       // Use AI chat endpoint for conversational responses
       const response = await apiClient.ai.chat(question);
-      
+
       if (response.success && response.data) {
         const aiText = response.data.response;
         const lowerQuestion = question.toLowerCase();
@@ -314,95 +346,119 @@ export default function FloatingChatbot() {
         let structuredData: any = null;
 
         // Cash balance queries - be more specific to avoid matching "money" in descriptive questions
-        const isCashBalanceQuery = (
-          lowerQuestion.includes('cash balance') ||
-          lowerQuestion === 'what is my cash' ||
-          lowerQuestion === 'how much cash do i have' ||
-          (lowerQuestion.includes('what is my') && lowerQuestion.includes('cash') && !lowerQuestion.includes('use') && !lowerQuestion.includes('spend') && !lowerQuestion.includes('invest')) ||
-          (lowerQuestion.includes('how much') && lowerQuestion.includes('cash') && !lowerQuestion.includes('use') && !lowerQuestion.includes('spend'))
-        );
-        
+        const isCashBalanceQuery =
+          lowerQuestion.includes("cash balance") ||
+          lowerQuestion === "what is my cash" ||
+          lowerQuestion === "how much cash do i have" ||
+          (lowerQuestion.includes("what is my") &&
+            lowerQuestion.includes("cash") &&
+            !lowerQuestion.includes("use") &&
+            !lowerQuestion.includes("spend") &&
+            !lowerQuestion.includes("invest")) ||
+          (lowerQuestion.includes("how much") &&
+            lowerQuestion.includes("cash") &&
+            !lowerQuestion.includes("use") &&
+            !lowerQuestion.includes("spend"));
+
         if (isCashBalanceQuery) {
           structuredData = {
-            type: 'cash_balance',
+            type: "cash_balance",
             value: data.financial.totalBalance || 0,
-            accounts: data.accounts?.breakdown?.map((acc: any) => ({
-              name: acc.name || acc.accountName || 'Account',
-              balance: acc.balance || 0
-            })) || []
+            accounts:
+              data.accounts?.breakdown?.map((acc: any) => ({
+                name: acc.name || acc.accountName || "Account",
+                balance: acc.balance || 0,
+              })) || [],
           };
         }
         // Revenue queries - be specific
         else if (
-          lowerQuestion.includes('monthly revenue') ||
-          lowerQuestion.includes('what is my revenue') ||
-          lowerQuestion.includes('what is my monthly revenue') ||
-          (lowerQuestion.includes('revenue') && lowerQuestion.includes('what')) ||
-          (lowerQuestion.includes('revenue') && lowerQuestion.includes('how much'))
+          lowerQuestion.includes("monthly revenue") ||
+          lowerQuestion.includes("what is my revenue") ||
+          lowerQuestion.includes("what is my monthly revenue") ||
+          (lowerQuestion.includes("revenue") &&
+            lowerQuestion.includes("what")) ||
+          (lowerQuestion.includes("revenue") &&
+            lowerQuestion.includes("how much"))
         ) {
           structuredData = {
-            type: 'revenue',
+            type: "revenue",
             value: data.financial.monthlyRevenue || 0,
-            period: 'Current Month'
+            period: "Current Month",
           };
         }
         // Burn rate / expenses queries
-        else if (lowerQuestion.includes('burn') || lowerQuestion.includes('expense') || lowerQuestion.includes('spend')) {
+        else if (
+          lowerQuestion.includes("burn") ||
+          lowerQuestion.includes("expense") ||
+          lowerQuestion.includes("spend")
+        ) {
           structuredData = {
-            type: 'burn_rate',
-            value: data.financial.monthlyBurn || 0
+            type: "burn_rate",
+            value: data.financial.monthlyBurn || 0,
           };
         }
         // Runway queries
-        else if (lowerQuestion.includes('runway') || lowerQuestion.includes('months') || lowerQuestion.includes('survive')) {
+        else if (
+          lowerQuestion.includes("runway") ||
+          lowerQuestion.includes("months") ||
+          lowerQuestion.includes("survive")
+        ) {
           structuredData = {
-            type: 'runway',
+            type: "runway",
             months: data.financial.runwayMonths || 0,
-            status: (data.financial.runwayMonths || 0) >= 6 ? 'healthy' : 'low',
-            recommendation: (data.financial.runwayMonths || 0) >= 6 
-              ? 'You have a healthy runway. Consider fundraising before it drops below 6 months.'
-              : 'Your runway is getting low. Consider fundraising soon.'
+            status: (data.financial.runwayMonths || 0) >= 6 ? "healthy" : "low",
+            recommendation:
+              (data.financial.runwayMonths || 0) >= 6
+                ? "You have a healthy runway. Consider fundraising before it drops below 6 months."
+                : "Your runway is getting low. Consider fundraising soon.",
           };
         }
 
         // Always return the AI's text response, and optionally include the card
         return {
           content: aiText,
-          data: structuredData // Card is supplementary, not replacement
+          data: structuredData, // Card is supplementary, not replacement
         };
       } else {
-        throw new Error(response.message || 'Failed to get AI response');
+        throw new Error(response.message || "Failed to get AI response");
       }
     } catch (error: any) {
-      console.error('AI chat error:', error);
-      
+      console.error("AI chat error:", error);
+
       // Fallback: Provide basic answer using local data with structured visualization
       const lowerQuestion = question.toLowerCase();
       let structuredData: any = null;
 
-      if (lowerQuestion.includes('cash') || lowerQuestion.includes('balance') || lowerQuestion.includes('money')) {
+      if (
+        lowerQuestion.includes("cash") ||
+        lowerQuestion.includes("balance") ||
+        lowerQuestion.includes("money")
+      ) {
         structuredData = {
-          type: 'cash_balance',
+          type: "cash_balance",
           value: data.financial.totalBalance || 0,
-          accounts: data.accounts?.breakdown?.map((acc: any) => ({
-            name: acc.name || acc.accountName || 'Account',
-            balance: acc.balance || 0
-          })) || []
+          accounts:
+            data.accounts?.breakdown?.map((acc: any) => ({
+              name: acc.name || acc.accountName || "Account",
+              balance: acc.balance || 0,
+            })) || [],
         };
         return {
           content: `Your current cash balance is ${currencyFormatter.format(data.financial.totalBalance || 0)}.`,
-          data: structuredData
+          data: structuredData,
         };
       }
 
       return {
-        content: "I'm having trouble accessing the AI service right now. Please try again in a moment or visit the full AI Assistant page."
+        content:
+          "I'm having trouble accessing the AI service right now. Please try again in a moment or visit the full AI Assistant page.",
       };
     }
   };
 
   const handleOpenFullChat = () => {
-    router.push('/ai-assistant');
+    router.push("/ai-assistant");
   };
 
   const toggleOpen = () => {
@@ -478,62 +534,69 @@ export default function FloatingChatbot() {
             <div className="h-[400px] bg-white overflow-hidden">
               <ScrollArea ref={scrollAreaRef} className="h-full">
                 <div className="p-4 space-y-4 pb-4">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={cn(
-                      "flex items-start gap-3",
-                      message.type === 'user' ? 'justify-end' : 'justify-start'
-                    )}
-                  >
-                    {message.type === 'ai' && (
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={cn(
+                        "flex items-start gap-3",
+                        message.type === "user"
+                          ? "justify-end"
+                          : "justify-start"
+                      )}
+                    >
+                      {message.type === "ai" && (
+                        <div className="shrink-0 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                          <Bot className="h-4 w-4 text-gray-600" />
+                        </div>
+                      )}
+                      <div
+                        className={cn(
+                          "max-w-[80%] rounded-lg px-4 py-3",
+                          message.type === "user"
+                            ? "bg-[#607c47] text-white"
+                            : "bg-gray-100 text-gray-800"
+                        )}
+                      >
+                        {/* Always show the AI's text response, and add card as supplementary */}
+                        {message.content && (
+                          <div className="text-sm whitespace-pre-wrap leading-relaxed">
+                            {parseMarkdown(message.content)}
+                          </div>
+                        )}
+                        {message.data && (
+                          <div className="mt-2">
+                            {renderDataVisualization(message.data)}
+                          </div>
+                        )}
+                        <div className="text-xs opacity-70 mt-1 text-right">
+                          {message.timestamp.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </div>
+                      </div>
+                      {message.type === "user" && (
+                        <div className="shrink-0 w-8 h-8 bg-[#607c47] rounded-full flex items-center justify-center">
+                          <User className="h-4 w-4 text-white" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {isLoading && (
+                    <div className="flex items-start gap-3 justify-start">
                       <div className="shrink-0 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                         <Bot className="h-4 w-4 text-gray-600" />
                       </div>
-                    )}
-                    <div
-                      className={cn(
-                        "max-w-[80%] rounded-lg px-4 py-3",
-                        message.type === 'user'
-                          ? 'bg-[#607c47] text-white'
-                          : 'bg-gray-100 text-gray-800'
-                      )}
-                    >
-                      {/* Always show the AI's text response, and add card as supplementary */}
-                      {message.content && (
-                        <div className="text-sm whitespace-pre-wrap leading-relaxed">
-                          {parseMarkdown(message.content)}
+                      <div className="bg-gray-100 rounded-lg px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+                          <span className="text-sm text-gray-600">
+                            AI is thinking...
+                          </span>
                         </div>
-                      )}
-                      {message.data && (
-                        <div className="mt-2">
-                          {renderDataVisualization(message.data)}
-                        </div>
-                      )}
-                      <div className="text-xs opacity-70 mt-1 text-right">
-                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>
-                    {message.type === 'user' && (
-                      <div className="shrink-0 w-8 h-8 bg-[#607c47] rounded-full flex items-center justify-center">
-                        <User className="h-4 w-4 text-white" />
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {isLoading && (
-                  <div className="flex items-start gap-3 justify-start">
-                    <div className="shrink-0 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                      <Bot className="h-4 w-4 text-gray-600" />
-                    </div>
-                    <div className="bg-gray-100 rounded-lg px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
-                        <span className="text-sm text-gray-600">AI is thinking...</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                  )}
                 </div>
               </ScrollArea>
             </div>
@@ -549,8 +612,8 @@ export default function FloatingChatbot() {
                     className="pr-12 bg-white rounded-lg h-12 text-sm"
                     disabled={isLoading}
                   />
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     size="icon"
                     disabled={isLoading || !inputValue.trim()}
                     className="absolute top-1/2 right-2 -translate-y-1/2 h-8 w-8 rounded-md bg-[#607c47] hover:bg-[#4a6129]"
@@ -588,4 +651,3 @@ export default function FloatingChatbot() {
     </div>
   );
 }
-

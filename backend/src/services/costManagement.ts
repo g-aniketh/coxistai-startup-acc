@@ -27,7 +27,7 @@ const buildCategoryTree = (categories: Array<any>) => {
   const map = new Map<string, any>();
   const roots: any[] = [];
 
-  categories.forEach(category => {
+  categories.forEach((category) => {
     map.set(category.id, {
       id: category.id,
       name: category.name,
@@ -54,7 +54,7 @@ const buildCategoryTree = (categories: Array<any>) => {
     });
   });
 
-  categories.forEach(category => {
+  categories.forEach((category) => {
     const node = map.get(category.id);
     if (!node) {
       return;

@@ -1,9 +1,18 @@
-'use client';
+"use client";
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, AlertCircle, TrendingDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+} from "recharts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar, AlertCircle, TrendingDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface RunwayChartProps {
   currentBalance: number;
@@ -11,7 +20,11 @@ interface RunwayChartProps {
   runwayMonths: number | null;
 }
 
-export default function RunwayChart({ currentBalance, monthlyBurn, runwayMonths }: RunwayChartProps) {
+export default function RunwayChart({
+  currentBalance,
+  monthlyBurn,
+  runwayMonths,
+}: RunwayChartProps) {
   // Generate forecast data
   const generateForecast = () => {
     const months = [];
@@ -21,12 +34,12 @@ export default function RunwayChart({ currentBalance, monthlyBurn, runwayMonths 
     for (let i = 0; i <= monthsToProject; i++) {
       const date = new Date();
       date.setMonth(date.getMonth() + i);
-      
+
       months.push({
-        month: date.toLocaleDateString('en-IN', { month: 'short' }),
+        month: date.toLocaleDateString("en-IN", { month: "short" }),
         balance: Math.max(0, balance),
         projected: i > 0,
-        monthNumber: i
+        monthNumber: i,
       });
 
       balance -= monthlyBurn;
@@ -36,7 +49,7 @@ export default function RunwayChart({ currentBalance, monthlyBurn, runwayMonths 
   };
 
   const forecastData = generateForecast();
-  const runwayReached = forecastData.find(d => d.balance === 0);
+  const runwayReached = forecastData.find((d) => d.balance === 0);
   const isHealthy = runwayMonths === null || runwayMonths > 12;
   const isCritical = runwayMonths !== null && runwayMonths < 6;
 
@@ -59,34 +72,56 @@ export default function RunwayChart({ currentBalance, monthlyBurn, runwayMonths 
         {/* Runway Summary */}
         <div className="flex items-center justify-between mb-6 p-4 rounded-xl bg-gray-50 border border-gray-200">
           <div className="flex items-center gap-4">
-            <div className={cn(
-              "h-12 w-12 rounded-lg flex items-center justify-center",
-              isHealthy ? "bg-green-100" : isCritical ? "bg-red-100" : "bg-yellow-100"
-            )}>
-              <TrendingDown className={cn(
-                "h-6 w-6",
-                isHealthy ? "text-green-600" : isCritical ? "text-red-600" : "text-yellow-600"
-              )} />
+            <div
+              className={cn(
+                "h-12 w-12 rounded-lg flex items-center justify-center",
+                isHealthy
+                  ? "bg-green-100"
+                  : isCritical
+                    ? "bg-red-100"
+                    : "bg-yellow-100"
+              )}
+            >
+              <TrendingDown
+                className={cn(
+                  "h-6 w-6",
+                  isHealthy
+                    ? "text-green-600"
+                    : isCritical
+                      ? "text-red-600"
+                      : "text-yellow-600"
+                )}
+              />
             </div>
             <div>
               <p className="text-sm text-gray-600">Estimated Runway</p>
-              <p className={cn(
-                "text-2xl font-bold",
-                isHealthy ? "text-green-700" : isCritical ? "text-red-700" : "text-yellow-700"
-              )}>
-                {runwayMonths ? `${runwayMonths.toFixed(1)} months` : 'Healthy'}
+              <p
+                className={cn(
+                  "text-2xl font-bold",
+                  isHealthy
+                    ? "text-green-700"
+                    : isCritical
+                      ? "text-red-700"
+                      : "text-yellow-700"
+                )}
+              >
+                {runwayMonths ? `${runwayMonths.toFixed(1)} months` : "Healthy"}
               </p>
             </div>
           </div>
 
           {!isHealthy && runwayMonths && (
-            <div className={cn(
-              "flex items-center gap-2 px-3 py-1.5 rounded-full",
-              isCritical ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"
-            )}>
+            <div
+              className={cn(
+                "flex items-center gap-2 px-3 py-1.5 rounded-full",
+                isCritical
+                  ? "bg-red-100 text-red-700"
+                  : "bg-yellow-100 text-yellow-700"
+              )}
+            >
               <AlertCircle className="h-4 w-4" />
               <span className="text-xs font-medium">
-                {isCritical ? 'Critical' : 'Warning'}
+                {isCritical ? "Critical" : "Warning"}
               </span>
             </div>
           )}
@@ -94,40 +129,47 @@ export default function RunwayChart({ currentBalance, monthlyBurn, runwayMonths 
 
         {/* Chart */}
         <ResponsiveContainer width="100%" height={250}>
-          <LineChart data={forecastData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+          <LineChart
+            data={forecastData}
+            margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis 
-              dataKey="month" 
-              tick={{ fill: '#6b7280', fontSize: 12 }}
+            <XAxis
+              dataKey="month"
+              tick={{ fill: "#6b7280", fontSize: 12 }}
               stroke="#d1d5db"
             />
-            <YAxis 
-              tick={{ fill: '#6b7280', fontSize: 12 }}
+            <YAxis
+              tick={{ fill: "#6b7280", fontSize: 12 }}
               stroke="#d1d5db"
               tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#ffffff',
-                border: '1px solid #e5e7eb',
-                borderRadius: '0.75rem',
-                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
+                backgroundColor: "#ffffff",
+                border: "1px solid #e5e7eb",
+                borderRadius: "0.75rem",
+                boxShadow:
+                  "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
               }}
-              formatter={(value: number) => [`$${value.toLocaleString()}`, 'Balance']}
+              formatter={(value: number) => [
+                `$${value.toLocaleString()}`,
+                "Balance",
+              ]}
               labelFormatter={(label) => `Month: ${label}`}
             />
             {runwayReached && (
-              <ReferenceLine 
-                x={runwayReached.month} 
-                stroke="#ef4444" 
+              <ReferenceLine
+                x={runwayReached.month}
+                stroke="#ef4444"
                 strokeDasharray="4 4"
-                label={{ 
-                  value: 'Runway End', 
-                  position: 'insideTopRight',
-                  fill: '#ef4444',
+                label={{
+                  value: "Runway End",
+                  position: "insideTopRight",
+                  fill: "#ef4444",
                   fontSize: 12,
                   dy: -10,
-                  dx: -10
+                  dx: -10,
                 }}
               />
             )}
@@ -136,8 +178,8 @@ export default function RunwayChart({ currentBalance, monthlyBurn, runwayMonths 
               dataKey="balance"
               stroke="#607c47"
               strokeWidth={2}
-              dot={{ r: 4, fill: '#607c47' }}
-              activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }}
+              dot={{ r: 4, fill: "#607c47" }}
+              activeDot={{ r: 6, stroke: "#fff", strokeWidth: 2 }}
             />
           </LineChart>
         </ResponsiveContainer>
@@ -145,4 +187,3 @@ export default function RunwayChart({ currentBalance, monthlyBurn, runwayMonths 
     </Card>
   );
 }
-

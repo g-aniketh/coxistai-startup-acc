@@ -1,51 +1,51 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useAuthStore } from '@/store/auth';
-import AuthGuard from '@/components/auth/AuthGuard';
-import { Sparkles, Eye, EyeOff, Building2 } from 'lucide-react';
-import GradientText from '@/components/GradientText';
-import Magnet from '@/components/Magnet';
-import Aurora from '@/components/Aurora';
-import { cn } from '@/lib/utils';
-import { Input } from '@/components/ui/input';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useAuthStore } from "@/store/auth";
+import AuthGuard from "@/components/auth/AuthGuard";
+import { Sparkles, Eye, EyeOff, Building2 } from "lucide-react";
+import GradientText from "@/components/GradientText";
+import Magnet from "@/components/Magnet";
+import Aurora from "@/components/Aurora";
+import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 export default function RegisterPage() {
   const router = useRouter();
   const { signup, isLoading, error, clearError } = useAuthStore();
 
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    startupName: '',
-    firstName: '',
-    lastName: '',
+    email: "",
+    password: "",
+    confirmPassword: "",
+    startupName: "",
+    firstName: "",
+    lastName: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [validationError, setValidationError] = useState('');
+  const [validationError, setValidationError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
-    setValidationError('');
+    setValidationError("");
 
     // Validation
     if (formData.password !== formData.confirmPassword) {
-      setValidationError('Passwords do not match');
+      setValidationError("Passwords do not match");
       return;
     }
 
     if (formData.password.length < 8) {
-      setValidationError('Password must be at least 8 characters long');
+      setValidationError("Password must be at least 8 characters long");
       return;
     }
 
     if (!formData.startupName.trim()) {
-      setValidationError('Startup name is required');
+      setValidationError("Startup name is required");
       return;
     }
 
@@ -58,7 +58,7 @@ export default function RegisterPage() {
     });
 
     if (success) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   };
 
@@ -70,7 +70,7 @@ export default function RegisterPage() {
     <AuthGuard requireAuth={false}>
       <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
         <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <Aurora colorStops={['#ec4899', '#8b5cf6', '#6366f1']} />
+          <Aurora colorStops={["#ec4899", "#8b5cf6", "#6366f1"]} />
         </div>
         <div className="w-full max-w-md relative z-10 space-y-8">
           <div className="text-center">
@@ -182,7 +182,7 @@ export default function RegisterPage() {
                   <Input
                     id="password"
                     name="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     required
                     className="pr-10"
                     placeholder="••••••••"
@@ -218,7 +218,7 @@ export default function RegisterPage() {
                   <Input
                     id="confirmPassword"
                     name="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
+                    type={showConfirmPassword ? "text" : "password"}
                     required
                     className="pr-10"
                     placeholder="••••••••"
@@ -244,18 +244,18 @@ export default function RegisterPage() {
                 disabled={isLoading}
                 className="w-full bg-blue-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {isLoading ? 'Creating Account...' : 'Create Account'}
+                {isLoading ? "Creating Account..." : "Create Account"}
               </button>
 
               <p className="text-xs text-center text-muted-foreground pt-2">
-                By signing up, you agree to start with a 30-day pro trial.
-                No credit card required.
+                By signing up, you agree to start with a 30-day pro trial. No
+                credit card required.
               </p>
             </form>
           </div>
 
           <p className="text-center text-sm text-muted-foreground">
-            Already have an account?{' '}
+            Already have an account?{" "}
             <Link
               href="/login"
               className="font-medium text-primary hover:text-primary/80"

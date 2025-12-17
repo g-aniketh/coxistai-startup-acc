@@ -1,7 +1,7 @@
-import { Router, Request, Response } from 'express';
-import type { Router as IRouter } from 'express';
-import { AlertsService } from '../services/alerts';
-import { authenticateToken } from '../middleware/auth';
+import { Router, Request, Response } from "express";
+import type { Router as IRouter } from "express";
+import { AlertsService } from "../services/alerts";
+import { authenticateToken } from "../middleware/auth";
 
 const router: IRouter = Router();
 
@@ -13,10 +13,10 @@ router.use(authenticateToken);
  * @desc    Get all alerts
  * @access  Private
  */
-router.get('/', async (req: Request, res: Response) => {
+router.get("/", async (req: Request, res: Response) => {
   try {
     const tenantId = (req as any).user.tenantId;
-    const includeRead = req.query.includeRead === 'true';
+    const includeRead = req.query.includeRead === "true";
 
     const alerts = await AlertsService.getAlerts(tenantId, includeRead);
 
@@ -25,10 +25,10 @@ router.get('/', async (req: Request, res: Response) => {
       data: alerts,
     });
   } catch (error: any) {
-    console.error('Error fetching alerts:', error);
+    console.error("Error fetching alerts:", error);
     res.status(400).json({
       success: false,
-      message: error.message || 'Failed to fetch alerts',
+      message: error.message || "Failed to fetch alerts",
     });
   }
 });
@@ -38,7 +38,7 @@ router.get('/', async (req: Request, res: Response) => {
  * @desc    Get alert counts by severity
  * @access  Private
  */
-router.get('/counts', async (req: Request, res: Response) => {
+router.get("/counts", async (req: Request, res: Response) => {
   try {
     const tenantId = (req as any).user.tenantId;
 
@@ -49,10 +49,10 @@ router.get('/counts', async (req: Request, res: Response) => {
       data: counts,
     });
   } catch (error: any) {
-    console.error('Error fetching alert counts:', error);
+    console.error("Error fetching alert counts:", error);
     res.status(400).json({
       success: false,
-      message: error.message || 'Failed to fetch alert counts',
+      message: error.message || "Failed to fetch alert counts",
     });
   }
 });
@@ -62,7 +62,7 @@ router.get('/counts', async (req: Request, res: Response) => {
  * @desc    Generate alerts based on current metrics
  * @access  Private
  */
-router.post('/generate', async (req: Request, res: Response) => {
+router.post("/generate", async (req: Request, res: Response) => {
   try {
     const tenantId = (req as any).user.tenantId;
 
@@ -73,13 +73,13 @@ router.post('/generate', async (req: Request, res: Response) => {
     res.json({
       success: true,
       data: alerts,
-      message: 'Alerts generated successfully',
+      message: "Alerts generated successfully",
     });
   } catch (error: any) {
-    console.error('Error generating alerts:', error);
+    console.error("Error generating alerts:", error);
     res.status(400).json({
       success: false,
-      message: error.message || 'Failed to generate alerts',
+      message: error.message || "Failed to generate alerts",
     });
   }
 });
@@ -89,7 +89,7 @@ router.post('/generate', async (req: Request, res: Response) => {
  * @desc    Mark alert as read
  * @access  Private
  */
-router.put('/:id/read', async (req: Request, res: Response) => {
+router.put("/:id/read", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -98,13 +98,13 @@ router.put('/:id/read', async (req: Request, res: Response) => {
     res.json({
       success: true,
       data: alert,
-      message: 'Alert marked as read',
+      message: "Alert marked as read",
     });
   } catch (error: any) {
-    console.error('Error marking alert as read:', error);
+    console.error("Error marking alert as read:", error);
     res.status(400).json({
       success: false,
-      message: error.message || 'Failed to mark alert as read',
+      message: error.message || "Failed to mark alert as read",
     });
   }
 });
@@ -114,7 +114,7 @@ router.put('/:id/read', async (req: Request, res: Response) => {
  * @desc    Dismiss alert
  * @access  Private
  */
-router.put('/:id/dismiss', async (req: Request, res: Response) => {
+router.put("/:id/dismiss", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -123,16 +123,15 @@ router.put('/:id/dismiss', async (req: Request, res: Response) => {
     res.json({
       success: true,
       data: alert,
-      message: 'Alert dismissed',
+      message: "Alert dismissed",
     });
   } catch (error: any) {
-    console.error('Error dismissing alert:', error);
+    console.error("Error dismissing alert:", error);
     res.status(400).json({
       success: false,
-      message: error.message || 'Failed to dismiss alert',
+      message: error.message || "Failed to dismiss alert",
     });
   }
 });
 
 export default router;
-

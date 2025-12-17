@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { ReactNode, useState } from 'react';
-import { usePathname } from 'next/navigation';
-import Sidebar from './Sidebar';
-import FloatingChatbot from '@/components/FloatingChatbot';
+import { ReactNode, useState } from "react";
+import { usePathname } from "next/navigation";
+import Sidebar from "./Sidebar";
+import FloatingChatbot from "@/components/FloatingChatbot";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -15,14 +15,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const pathname = usePathname();
 
   // Hide chatbot on AI assistant page
-  const shouldShowChatbot = pathname !== '/ai-assistant';
+  const shouldShowChatbot = pathname !== "/ai-assistant";
 
   return (
     <div className="h-screen flex overflow-hidden bg-white">
       {/* Section 1: Sidebar - Desktop */}
       <aside className="hidden lg:flex lg:shrink-0 relative overflow-visible">
-        <Sidebar 
-          collapsed={isSidebarCollapsed} 
+        <Sidebar
+          collapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
       </aside>
@@ -35,10 +35,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
             className="fixed inset-0 bg-black/50 z-40 lg:hidden"
             onClick={() => setIsSidebarOpen(false)}
           />
-          
+
           {/* Sidebar */}
           <aside className="fixed inset-y-0 left-0 z-50 lg:hidden">
-            <Sidebar 
+            <Sidebar
               collapsed={false}
               onToggleCollapse={() => setIsSidebarOpen(false)}
             />
@@ -50,9 +50,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <div className="flex-1 flex overflow-hidden relative">
         {/* Section 2: Main Content */}
         <main className="flex-1 overflow-y-auto relative z-10 custom-scrollbar">
-          <div className="h-full">
-            {children}
-          </div>
+          <div className="h-full">{children}</div>
         </main>
       </div>
 

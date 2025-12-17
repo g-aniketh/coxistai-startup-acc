@@ -1,6 +1,6 @@
-import { Prisma, VoucherCategory, VoucherEntryType } from '@prisma/client';
-import { prisma } from '../lib/prisma';
-import { createVoucher, CreateVoucherInput } from './vouchers';
+import { Prisma, VoucherCategory, VoucherEntryType } from "@prisma/client";
+import { prisma } from "../lib/prisma";
+import { createVoucher, CreateVoucherInput } from "./vouchers";
 
 export interface EnhancedTallyTransaction {
   voucherNo: string;
@@ -12,7 +12,7 @@ export interface EnhancedTallyTransaction {
   entries: Array<{
     ledgerName: string;
     ledgerCode?: string;
-    entryType: 'DEBIT' | 'CREDIT';
+    entryType: "DEBIT" | "CREDIT";
     amount: number;
     narration?: string;
     // GST fields
@@ -30,15 +30,15 @@ export interface EnhancedTallyImportData {
     ledgerName: string;
     accountGroup: string;
     openingBalance: number;
-    openingType: 'Debit' | 'Credit';
+    openingType: "Debit" | "Credit";
   }>;
   parties: Array<{
     name: string;
-    type: 'Customer' | 'Supplier' | 'Employee' | 'Other';
+    type: "Customer" | "Supplier" | "Employee" | "Other";
     email?: string;
     phone?: string;
     openingBalance: number;
-    balanceType: 'Debit' | 'Credit';
+    balanceType: "Debit" | "Credit";
   }>;
   vouchers: EnhancedTallyTransaction[];
   gstData?: {
@@ -63,8 +63,8 @@ function mapTallyVoucherTypeToCategory(tallyType: string): VoucherCategory {
     Receipt: VoucherCategory.RECEIPT,
     Contra: VoucherCategory.CONTRA,
     Journal: VoucherCategory.JOURNAL,
-    'Credit Note': VoucherCategory.CREDIT_NOTE,
-    'Debit Note': VoucherCategory.DEBIT_NOTE,
+    "Credit Note": VoucherCategory.CREDIT_NOTE,
+    "Debit Note": VoucherCategory.DEBIT_NOTE,
   };
 
   return mapping[tallyType] || VoucherCategory.JOURNAL;
@@ -84,7 +84,7 @@ async function getOrCreateVoucherType(
       category,
       name: {
         equals: name,
-        mode: 'insensitive',
+        mode: "insensitive",
       },
     },
   });
@@ -97,7 +97,7 @@ async function getOrCreateVoucherType(
         category,
         abbreviation: name.substring(0, 3).toUpperCase(),
         isDefault: false,
-        numberingMethod: 'AUTOMATIC',
+        numberingMethod: "AUTOMATIC",
         nextNumber: 1,
       },
     });
@@ -124,7 +124,7 @@ async function findOrCreateNumberingSeries(
       voucherTypeId,
       name: {
         equals: seriesName,
-        mode: 'insensitive',
+        mode: "insensitive",
       },
     },
   });
@@ -156,12 +156,15 @@ async function findOrCreateNumberingSeries(
 /**
  * Parse voucher number to extract series and number
  */
-function parseVoucherNumber(voucherNo: string): { series?: string; number: string } {
+function parseVoucherNumber(voucherNo: string): {
+  series?: string;
+  number: string;
+} {
   // Try to extract series prefix (e.g., "SALES-001" -> series: "SALES", number: "001")
   const match = voucherNo.match(/^([A-Z]+[-_]?)(\d+)$/i);
   if (match) {
     return {
-      series: match[1].replace(/[-_]$/, ''),
+      series: match[1].replace(/[-_]$/, ""),
       number: match[2],
     };
   }
@@ -214,7 +217,7 @@ export async function importEnhancedTallyData(
               gstin: reg.gstin,
               stateCode: reg.stateCode,
               stateName: reg.stateName || null,
-              registrationType: reg.registrationType as any || 'REGULAR',
+              registrationType: (reg.registrationType as any) || "REGULAR",
               startDate: new Date(),
               isDefault: data.gstData.registrations.length === 1,
               isActive: true,
@@ -223,7 +226,9 @@ export async function importEnhancedTallyData(
           stats.gstRegistrationsCreated++;
         }
       } catch (error) {
-        stats.errors.push(`Failed to create GST registration ${reg.gstin}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        stats.errors.push(
+          `Failed to create GST registration ${reg.gstin}: ${error instanceof Error ? error.message : "Unknown error"}`
+        );
       }
     }
   }
@@ -243,7 +248,7 @@ export async function importEnhancedTallyData(
           data: {
             startupId,
             name: ledger.ledgerName,
-            type: 'Other',
+            type: "Other",
             openingBalance: ledger.openingBalance,
             balanceType: ledger.openingType,
           },
@@ -251,7 +256,9 @@ export async function importEnhancedTallyData(
         stats.ledgersCreated++;
       }
     } catch (error) {
-      stats.errors.push(`Failed to create ledger ${ledger.ledgerName}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      stats.errors.push(
+        `Failed to create ledger ${ledger.ledgerName}: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     }
   }
 
@@ -280,7 +287,9 @@ export async function importEnhancedTallyData(
         stats.partiesCreated++;
       }
     } catch (error) {
-      stats.errors.push(`Failed to create party ${party.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      stats.errors.push(
+        `Failed to create party ${party.name}: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     }
   }
 
@@ -297,12 +306,18 @@ export async function importEnhancedTallyData(
       const cacheKey = `${category}-${voucherTypeName}`;
       let voucherType = voucherTypeCache.get(cacheKey);
       if (!voucherType) {
-        voucherType = await getOrCreateVoucherType(startupId, category, voucherTypeName);
+        voucherType = await getOrCreateVoucherType(
+          startupId,
+          category,
+          voucherTypeName
+        );
         voucherTypeCache.set(cacheKey, voucherType);
       }
 
       // Parse voucher number to find series
-      const { series: parsedSeries, number: voucherNum } = parseVoucherNumber(tallyVoucher.voucherNo);
+      const { series: parsedSeries, number: voucherNum } = parseVoucherNumber(
+        tallyVoucher.voucherNo
+      );
       const seriesName = tallyVoucher.numberingSeries || parsedSeries;
 
       // Get or create numbering series
@@ -362,7 +377,7 @@ export async function importEnhancedTallyData(
       stats.voucherEntriesCreated += entries.length;
     } catch (error) {
       stats.errors.push(
-        `Failed to import voucher ${tallyVoucher.voucherNo}: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to import voucher ${tallyVoucher.voucherNo}: ${error instanceof Error ? error.message : "Unknown error"}`
       );
     }
   }
@@ -371,10 +386,12 @@ export async function importEnhancedTallyData(
   await prisma.importHistory.create({
     data: {
       startupId,
-      fileName: 'Enhanced Tally Import',
-      importType: 'TALLY',
-      totalRecords: data.vouchers.length + data.ledgers.length + data.parties.length,
-      successCount: stats.vouchersCreated + stats.ledgersCreated + stats.partiesCreated,
+      fileName: "Enhanced Tally Import",
+      importType: "TALLY",
+      totalRecords:
+        data.vouchers.length + data.ledgers.length + data.parties.length,
+      successCount:
+        stats.vouchersCreated + stats.ledgersCreated + stats.partiesCreated,
       failureCount: stats.errors.length,
       summary: JSON.stringify(stats),
     },
@@ -382,4 +399,3 @@ export async function importEnhancedTallyData(
 
   return stats;
 }
-

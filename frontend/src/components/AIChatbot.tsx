@@ -144,11 +144,7 @@ const renderBoldText = (text: string) => {
     if (isBold) {
       return <strong key={`bold-${index}`}>{part.slice(2, -2)}</strong>;
     }
-    return (
-      <span key={`text-${index}`}>
-        {renderTextWithNumbers(part)}
-      </span>
-    );
+    return <span key={`text-${index}`}>{renderTextWithNumbers(part)}</span>;
   });
 };
 
@@ -213,7 +209,7 @@ export default function AIChatbot({
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     onUserMessage?.();
     setInputValue("");
     setIsLoading(true);
@@ -231,7 +227,7 @@ export default function AIChatbot({
         data: response.data,
       };
 
-      setMessages(prev => [...prev, aiMessage]);
+      setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
       console.error("AI response error:", error);
       const errorMessage: Message = {
@@ -241,7 +237,7 @@ export default function AIChatbot({
           "I'm sorry, I encountered an error processing your request. Please try again.",
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -736,7 +732,7 @@ export default function AIChatbot({
           className="max-h-[62vh] md:h-[65vh] p-4 bg-white"
         >
           <div className="space-y-4 pb-4">
-            {messages.map(message => (
+            {messages.map((message) => (
               <div
                 key={message.id}
                 className={cn(
@@ -808,8 +804,8 @@ export default function AIChatbot({
           <div className="relative">
             <Input
               value={inputValue}
-              onChange={e => setInputValue(e.target.value)}
-              onKeyDown={event => {
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(event) => {
                 if (isLoading && event.key === "Enter") {
                   event.preventDefault();
                 }

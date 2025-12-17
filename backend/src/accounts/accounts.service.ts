@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -7,15 +7,18 @@ interface CreateAccountData {
   balance?: number;
 }
 
-export const createAccount = async (startupId: string, data: CreateAccountData) => {
+export const createAccount = async (
+  startupId: string,
+  data: CreateAccountData
+) => {
   const { accountName, balance = 0 } = data;
 
   const account = await prisma.mockBankAccount.create({
     data: {
       accountName,
       balance: Number(balance),
-      startupId
-    }
+      startupId,
+    },
   });
 
   return account;
@@ -27,10 +30,10 @@ export const getAccounts = async (startupId: string) => {
     include: {
       transactions: {
         take: 10,
-        orderBy: { date: 'desc' }
-      }
+        orderBy: { date: "desc" },
+      },
     },
-    orderBy: { createdAt: 'desc' }
+    orderBy: { createdAt: "desc" },
   });
 
   return accounts;
@@ -40,17 +43,17 @@ export const getAccountById = async (startupId: string, accountId: string) => {
   const account = await prisma.mockBankAccount.findFirst({
     where: {
       id: accountId,
-      startupId
+      startupId,
     },
     include: {
       transactions: {
-        orderBy: { date: 'desc' }
-      }
-    }
+        orderBy: { date: "desc" },
+      },
+    },
   });
 
   if (!account) {
-    throw new Error('Account not found');
+    throw new Error("Account not found");
   }
 
   return account;
@@ -64,12 +67,12 @@ export const updateAccount = async (
   const existingAccount = await prisma.mockBankAccount.findFirst({
     where: {
       id: accountId,
-      startupId
-    }
+      startupId,
+    },
   });
 
   if (!existingAccount) {
-    throw new Error('Account not found');
+    throw new Error("Account not found");
   }
 
   // Ensure balance is a number if provided
@@ -83,7 +86,7 @@ export const updateAccount = async (
 
   const account = await prisma.mockBankAccount.update({
     where: { id: accountId },
-    data: updateData
+    data: updateData,
   });
 
   return account;
@@ -93,27 +96,26 @@ export const deleteAccount = async (startupId: string, accountId: string) => {
   const account = await prisma.mockBankAccount.findFirst({
     where: {
       id: accountId,
-      startupId
-    }
+      startupId,
+    },
   });
 
   if (!account) {
-    throw new Error('Account not found');
+    throw new Error("Account not found");
   }
 
   // Check if there are transactions linked
   const transactionCount = await prisma.transaction.count({
-    where: { accountId }
+    where: { accountId },
   });
 
   if (transactionCount > 0) {
-    throw new Error('Cannot delete account with existing transactions');
+    throw new Error("Cannot delete account with existing transactions");
   }
 
   await prisma.mockBankAccount.delete({
-    where: { id: accountId }
+    where: { id: accountId },
   });
 
   return { success: true };
 };
-

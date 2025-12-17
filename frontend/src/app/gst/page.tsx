@@ -159,7 +159,7 @@ export default function GstManagementPage() {
       isDefault: registrations.length === 0,
       isActive: true,
     });
-const [registrationSaving, setRegistrationSaving] = useState(false);
+  const [registrationSaving, setRegistrationSaving] = useState(false);
 
   const [taxDialogOpen, setTaxDialogOpen] = useState(false);
   const [editingTaxRate, setEditingTaxRate] = useState<GstTaxRate | null>(null);
@@ -176,7 +176,7 @@ const [registrationSaving, setRegistrationSaving] = useState(false);
     effectiveTo: null,
     isActive: true,
   });
-const [taxSaving, setTaxSaving] = useState(false);
+  const [taxSaving, setTaxSaving] = useState(false);
 
   const [mappingDialogOpen, setMappingDialogOpen] = useState(false);
   const [editingMapping, setEditingMapping] = useState<GstLedgerMapping | null>(
@@ -189,7 +189,7 @@ const [taxSaving, setTaxSaving] = useState(false);
     ledgerCode: "",
     description: "",
   });
-const [mappingSaving, setMappingSaving] = useState(false);
+  const [mappingSaving, setMappingSaving] = useState(false);
 
   const loadGstData = async () => {
     try {
@@ -328,7 +328,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
 
   const resetTaxForm = () => {
     setTaxForm({
-      registrationId: registrations.find(reg => reg.isDefault)?.id || "",
+      registrationId: registrations.find((reg) => reg.isDefault)?.id || "",
       supplyType: "GOODS",
       hsnOrSac: "",
       description: "",
@@ -437,7 +437,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
 
   const resetMappingForm = () => {
     setMappingForm({
-      registrationId: registrations.find(reg => reg.isDefault)?.id || "",
+      registrationId: registrations.find((reg) => reg.isDefault)?.id || "",
       mappingType: "OUTPUT_CGST",
       ledgerName: "",
       ledgerCode: "",
@@ -552,7 +552,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {registrations.map(reg => (
+          {registrations.map((reg) => (
             <Card
               key={reg.id}
               className="rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow"
@@ -601,7 +601,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     Type:{" "}
                     <span className="text-[#2C2C2C] font-semibold normal-case">
                       {REGISTRATION_TYPES.find(
-                        item => item.value === reg.registrationType
+                        (item) => item.value === reg.registrationType
                       )?.label || reg.registrationType}
                     </span>
                   </span>
@@ -692,7 +692,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
               </TableRow>
             </TableHeader>
             <TableBody>
-              {taxRates.map(rate => (
+              {taxRates.map((rate) => (
                 <TableRow key={rate.id}>
                   <TableCell className="font-medium">
                     {rate.hsnOrSac || "General"}
@@ -779,7 +779,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
               </TableRow>
             </TableHeader>
             <TableBody>
-              {ledgerMappings.map(mapping => (
+              {ledgerMappings.map((mapping) => (
                 <TableRow key={mapping.id}>
                   <TableCell className="font-medium">
                     {LEDGER_MAPPING_LABELS[mapping.mappingType]}
@@ -849,7 +849,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                 label: "Ledger Mappings",
                 icon: ListChecks,
               },
-            ].map(tab => {
+            ].map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
@@ -901,7 +901,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     <Label>GSTIN *</Label>
                     <Input
                       value={registrationForm.gstin}
-                      onChange={e =>
+                      onChange={(e) =>
                         setRegistrationForm({
                           ...registrationForm,
                           gstin: e.target.value,
@@ -914,7 +914,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     <Label>Registration Type</Label>
                     <select
                       value={registrationForm.registrationType}
-                      onChange={e =>
+                      onChange={(e) =>
                         setRegistrationForm({
                           ...registrationForm,
                           registrationType: e.target
@@ -923,7 +923,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                       }
                       className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                     >
-                      {REGISTRATION_TYPES.map(type => (
+                      {REGISTRATION_TYPES.map((type) => (
                         <option key={type.value} value={type.value}>
                           {type.label}
                         </option>
@@ -937,7 +937,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     <Label>Legal Name</Label>
                     <Input
                       value={registrationForm.legalName || ""}
-                      onChange={e =>
+                      onChange={(e) =>
                         setRegistrationForm({
                           ...registrationForm,
                           legalName: e.target.value,
@@ -950,7 +950,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     <Label>Trade Name</Label>
                     <Input
                       value={registrationForm.tradeName || ""}
-                      onChange={e =>
+                      onChange={(e) =>
                         setRegistrationForm({
                           ...registrationForm,
                           tradeName: e.target.value,
@@ -966,19 +966,19 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     <Label>State Code *</Label>
                     <select
                       value={registrationForm.stateCode}
-                      onChange={e =>
+                      onChange={(e) =>
                         setRegistrationForm({
                           ...registrationForm,
                           stateCode: e.target.value,
                           stateName:
                             DEFAULT_STATE_CODES.find(
-                              item => item.code === e.target.value
+                              (item) => item.code === e.target.value
                             )?.name || "",
                         })
                       }
                       className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                     >
-                      {DEFAULT_STATE_CODES.map(state => (
+                      {DEFAULT_STATE_CODES.map((state) => (
                         <option key={state.code} value={state.code}>
                           {state.code} - {state.name}
                         </option>
@@ -989,7 +989,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     <Label>State Name</Label>
                     <Input
                       value={registrationForm.stateName || ""}
-                      onChange={e =>
+                      onChange={(e) =>
                         setRegistrationForm({
                           ...registrationForm,
                           stateName: e.target.value,
@@ -1006,7 +1006,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     <Input
                       type="date"
                       value={registrationForm.startDate}
-                      onChange={e =>
+                      onChange={(e) =>
                         setRegistrationForm({
                           ...registrationForm,
                           startDate: e.target.value,
@@ -1019,7 +1019,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     <Input
                       type="date"
                       value={registrationForm.endDate || ""}
-                      onChange={e =>
+                      onChange={(e) =>
                         setRegistrationForm({
                           ...registrationForm,
                           endDate: e.target.value ? e.target.value : null,
@@ -1035,7 +1035,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                       type="checkbox"
                       id="isDefault"
                       checked={registrationForm.isDefault ?? false}
-                      onChange={e =>
+                      onChange={(e) =>
                         setRegistrationForm({
                           ...registrationForm,
                           isDefault: e.target.checked,
@@ -1052,7 +1052,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                       type="checkbox"
                       id="isActive"
                       checked={registrationForm.isActive ?? true}
-                      onChange={e =>
+                      onChange={(e) =>
                         setRegistrationForm({
                           ...registrationForm,
                           isActive: e.target.checked,
@@ -1066,42 +1066,42 @@ const [mappingSaving, setMappingSaving] = useState(false);
                   </div>
                 </div>
 
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setRegistrationDialogOpen(false)}
-                      className="text-[#2C2C2C] border-gray-300 hover:bg-gray-100"
-                      disabled={registrationSaving}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleSaveRegistration}
-                      disabled={
-                        registrationSaving ||
-                        !registrationForm.gstin.trim() ||
-                        !registrationForm.stateCode
-                      }
-                      className="bg-[#607c47] hover:bg-[#4a6129] text-white"
-                    >
-                      {registrationSaving
-                        ? "Saving..."
-                        : editingRegistration
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setRegistrationDialogOpen(false)}
+                    className="text-[#2C2C2C] border-gray-300 hover:bg-gray-100"
+                    disabled={registrationSaving}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSaveRegistration}
+                    disabled={
+                      registrationSaving ||
+                      !registrationForm.gstin.trim() ||
+                      !registrationForm.stateCode
+                    }
+                    className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                  >
+                    {registrationSaving
+                      ? "Saving..."
+                      : editingRegistration
                         ? "Update"
                         : "Create"}
-                    </Button>
-                  </div>
+                  </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
 
           {/* Tax Rate Dialog */}
           <Dialog open={taxDialogOpen} onOpenChange={setTaxDialogOpen}>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle className="text-[#2C2C2C]">
-                    {editingTaxRate ? "Edit Tax Rate" : "Create Tax Rate"}
-                  </DialogTitle>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="text-[#2C2C2C]">
+                  {editingTaxRate ? "Edit Tax Rate" : "Create Tax Rate"}
+                </DialogTitle>
                 <DialogDescription>
                   Configure GST rate splits for HSN/SAC to automate voucher
                   postings.
@@ -1112,7 +1112,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                   <Label>Registration</Label>
                   <select
                     value={taxForm.registrationId || ""}
-                    onChange={e =>
+                    onChange={(e) =>
                       setTaxForm({
                         ...taxForm,
                         registrationId: e.target.value || "",
@@ -1121,7 +1121,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                   >
                     <option value="">Use default registration</option>
-                    {registrations.map(reg => (
+                    {registrations.map((reg) => (
                       <option key={reg.id} value={reg.id}>
                         {reg.gstin}
                       </option>
@@ -1134,7 +1134,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     <Label>Supply Type</Label>
                     <select
                       value={taxForm.supplyType}
-                      onChange={e =>
+                      onChange={(e) =>
                         setTaxForm({
                           ...taxForm,
                           supplyType: e.target.value as GstTaxSupplyType,
@@ -1142,7 +1142,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                       }
                       className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                     >
-                      {SUPPLY_TYPES.map(type => (
+                      {SUPPLY_TYPES.map((type) => (
                         <option key={type.value} value={type.value}>
                           {type.label}
                         </option>
@@ -1153,7 +1153,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     <Label>HSN / SAC</Label>
                     <Input
                       value={taxForm.hsnOrSac || ""}
-                      onChange={e =>
+                      onChange={(e) =>
                         setTaxForm({ ...taxForm, hsnOrSac: e.target.value })
                       }
                       placeholder="HSN or SAC code"
@@ -1165,7 +1165,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                   <Label>Description</Label>
                   <Textarea
                     value={taxForm.description || ""}
-                    onChange={e =>
+                    onChange={(e) =>
                       setTaxForm({ ...taxForm, description: e.target.value })
                     }
                     placeholder="Optional description"
@@ -1173,7 +1173,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                 </div>
 
                 <div className="grid grid-cols-4 gap-4">
-                  {TAX_PERCENT_FIELDS.map(field => (
+                  {TAX_PERCENT_FIELDS.map((field) => (
                     <div key={field.key} className="space-y-2">
                       <Label>{field.label}</Label>
                       <Input
@@ -1181,7 +1181,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                         step="0.01"
                         min="0"
                         value={taxForm[field.key] ?? 0}
-                        onChange={e =>
+                        onChange={(e) =>
                           setTaxForm({
                             ...taxForm,
                             [field.key]: Number(e.target.value),
@@ -1198,7 +1198,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     <Input
                       type="date"
                       value={taxForm.effectiveFrom || ""}
-                      onChange={e =>
+                      onChange={(e) =>
                         setTaxForm({
                           ...taxForm,
                           effectiveFrom: e.target.value || null,
@@ -1211,7 +1211,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     <Input
                       type="date"
                       value={taxForm.effectiveTo || ""}
-                      onChange={e =>
+                      onChange={(e) =>
                         setTaxForm({
                           ...taxForm,
                           effectiveTo: e.target.value || null,
@@ -1226,7 +1226,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     type="checkbox"
                     id="taxActive"
                     checked={taxForm.isActive ?? true}
-                    onChange={e =>
+                    onChange={(e) =>
                       setTaxForm({ ...taxForm, isActive: e.target.checked })
                     }
                     className="rounded border-gray-300"
@@ -1253,8 +1253,8 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     {taxSaving
                       ? "Saving..."
                       : editingTaxRate
-                      ? "Update"
-                      : "Create"}
+                        ? "Update"
+                        : "Create"}
                   </Button>
                 </div>
               </div>
@@ -1264,12 +1264,12 @@ const [mappingSaving, setMappingSaving] = useState(false);
           {/* Ledger Mapping Dialog */}
           <Dialog open={mappingDialogOpen} onOpenChange={setMappingDialogOpen}>
             <DialogContent className="max-w-xl">
-                <DialogHeader>
-                  <DialogTitle className="text-[#2C2C2C]">
-                    {editingMapping
-                      ? "Edit Ledger Mapping"
-                      : "Create Ledger Mapping"}
-                  </DialogTitle>
+              <DialogHeader>
+                <DialogTitle className="text-[#2C2C2C]">
+                  {editingMapping
+                    ? "Edit Ledger Mapping"
+                    : "Create Ledger Mapping"}
+                </DialogTitle>
                 <DialogDescription>
                   Map GST ledgers to automate tax liability and input credit
                   postings.
@@ -1281,7 +1281,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                   <Label>Registration</Label>
                   <select
                     value={mappingForm.registrationId || ""}
-                    onChange={e =>
+                    onChange={(e) =>
                       setMappingForm({
                         ...mappingForm,
                         registrationId: e.target.value || "",
@@ -1290,7 +1290,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                   >
                     <option value="">Use default registration</option>
-                    {registrations.map(reg => (
+                    {registrations.map((reg) => (
                       <option key={reg.id} value={reg.id}>
                         {reg.gstin}
                       </option>
@@ -1302,7 +1302,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                   <Label>Mapping Type *</Label>
                   <select
                     value={mappingForm.mappingType}
-                    onChange={e =>
+                    onChange={(e) =>
                       setMappingForm({
                         ...mappingForm,
                         mappingType: e.target.value as GstLedgerMappingType,
@@ -1310,7 +1310,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     }
                     className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                   >
-                    {LEDGER_MAPPING_OPTIONS.map(option => (
+                    {LEDGER_MAPPING_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
@@ -1322,7 +1322,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                   <Label>Ledger Name *</Label>
                   <Input
                     value={mappingForm.ledgerName}
-                    onChange={e =>
+                    onChange={(e) =>
                       setMappingForm({
                         ...mappingForm,
                         ledgerName: e.target.value,
@@ -1336,7 +1336,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                   <Label>Ledger Code</Label>
                   <Input
                     value={mappingForm.ledgerCode || ""}
-                    onChange={e =>
+                    onChange={(e) =>
                       setMappingForm({
                         ...mappingForm,
                         ledgerCode: e.target.value,
@@ -1350,7 +1350,7 @@ const [mappingSaving, setMappingSaving] = useState(false);
                   <Label>Description</Label>
                   <Textarea
                     value={mappingForm.description || ""}
-                    onChange={e =>
+                    onChange={(e) =>
                       setMappingForm({
                         ...mappingForm,
                         description: e.target.value,
@@ -1377,8 +1377,8 @@ const [mappingSaving, setMappingSaving] = useState(false);
                     {mappingSaving
                       ? "Saving..."
                       : editingMapping
-                      ? "Update"
-                      : "Create"}
+                        ? "Update"
+                        : "Create"}
                   </Button>
                 </div>
               </div>

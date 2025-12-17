@@ -1,14 +1,17 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 export const getDashboardSummary = async (startupId: string) => {
   // Get all mock bank accounts
   const accounts = await prisma.mockBankAccount.findMany({
-    where: { startupId }
+    where: { startupId },
   });
 
-  const totalBalance = accounts.reduce((sum, acc) => sum + Number(acc.balance), 0);
+  const totalBalance = accounts.reduce(
+    (sum, acc) => sum + Number(acc.balance),
+    0
+  );
 
   // Calculate monthly burn rate (last 3 months)
   const threeMonthsAgo = new Date();
@@ -17,23 +20,23 @@ export const getDashboardSummary = async (startupId: string) => {
   const recentTransactions = await prisma.transaction.findMany({
     where: {
       startupId,
-      date: { gte: threeMonthsAgo }
+      date: { gte: threeMonthsAgo },
     },
     include: {
-      account: true
+      account: true,
     },
     orderBy: {
-      date: 'desc'
-    }
+      date: "desc",
+    },
   });
 
   // Calculate income and expenses
   const income = recentTransactions
-    .filter(t => t.type === 'CREDIT')
+    .filter((t) => t.type === "CREDIT")
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const expenses = recentTransactions
-    .filter(t => t.type === 'DEBIT')
+    .filter((t) => t.type === "DEBIT")
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const netCashflow = income - expenses;
@@ -45,12 +48,15 @@ export const getDashboardSummary = async (startupId: string) => {
 
   // Get product inventory stats
   const products = await prisma.product.findMany({
-    where: { startupId }
+    where: { startupId },
   });
 
   const totalProducts = products.length;
-  const totalInventoryValue = products.reduce((sum, p) => sum + (Number(p.quantity) * Number(p.price)), 0);
-  const lowStockProducts = products.filter(p => p.quantity < 10).length;
+  const totalInventoryValue = products.reduce(
+    (sum, p) => sum + Number(p.quantity) * Number(p.price),
+    0
+  );
+  const lowStockProducts = products.filter((p) => p.quantity < 10).length;
 
   // Get sales stats (last 30 days)
   const thirtyDaysAgo = new Date();
@@ -59,12 +65,18 @@ export const getDashboardSummary = async (startupId: string) => {
   const recentSales = await prisma.sale.findMany({
     where: {
       startupId,
-      saleDate: { gte: thirtyDaysAgo }
-    }
+      saleDate: { gte: thirtyDaysAgo },
+    },
   });
 
-  const totalSales = recentSales.reduce((sum, s) => sum + Number(s.totalPrice), 0);
-  const unitsSold = recentSales.reduce((sum, s) => sum + Number(s.quantitySold), 0);
+  const totalSales = recentSales.reduce(
+    (sum, s) => sum + Number(s.totalPrice),
+    0
+  );
+  const unitsSold = recentSales.reduce(
+    (sum, s) => sum + Number(s.quantitySold),
+    0
+  );
 
   return {
     financial: {
@@ -72,116 +84,126 @@ export const getDashboardSummary = async (startupId: string) => {
       monthlyBurn: Number(monthlyBurn),
       monthlyRevenue: Number(monthlyRevenue),
       netCashflow: Number(netCashflow),
-      runwayMonths: runwayMonths === Infinity ? null : Number(runwayMonths.toFixed(1)),
+      runwayMonths:
+        runwayMonths === Infinity ? null : Number(runwayMonths.toFixed(1)),
       income: Number(income),
-      expenses: Number(expenses)
+      expenses: Number(expenses),
     },
     inventory: {
       totalProducts,
       totalInventoryValue: Number(totalInventoryValue),
-      lowStockProducts
+      lowStockProducts,
     },
     sales: {
       totalSales30Days: Number(totalSales),
       unitsSold30Days: unitsSold,
-      salesCount: recentSales.length
+      salesCount: recentSales.length,
     },
-    accounts: accounts.length
+    accounts: accounts.length,
   };
 };
 
-export const getCashflowChart = async (startupId: string, months: number = 6) => {
+export const getCashflowChart = async (
+  startupId: string,
+  months: number = 6
+) => {
   const startDate = new Date();
   startDate.setMonth(startDate.getMonth() - months);
 
   const transactions = await prisma.transaction.findMany({
     where: {
       startupId,
-      date: { gte: startDate }
+      date: { gte: startDate },
     },
     include: {
-      account: true
+      account: true,
     },
-    orderBy: { date: 'asc' }
+    orderBy: { date: "asc" },
   });
 
   // Group by month
-  const monthlyData: { [key: string]: { income: number; expenses: number; date: string } } = {};
+  const monthlyData: {
+    [key: string]: { income: number; expenses: number; date: string };
+  } = {};
 
-  transactions.forEach(t => {
-    const monthKey = `${t.date.getFullYear()}-${String(t.date.getMonth() + 1).padStart(2, '0')}`;
-    
+  transactions.forEach((t) => {
+    const monthKey = `${t.date.getFullYear()}-${String(t.date.getMonth() + 1).padStart(2, "0")}`;
+
     if (!monthlyData[monthKey]) {
       monthlyData[monthKey] = { income: 0, expenses: 0, date: monthKey };
     }
 
-    if (t.type === 'CREDIT') {
+    if (t.type === "CREDIT") {
       monthlyData[monthKey].income += Number(t.amount);
     } else {
       monthlyData[monthKey].expenses += Number(t.amount);
     }
   });
 
-  const chartData = Object.values(monthlyData).map(data => ({
+  const chartData = Object.values(monthlyData).map((data) => ({
     date: data.date,
     income: data.income,
     expenses: data.expenses,
-    netCashflow: data.income - data.expenses
+    netCashflow: data.income - data.expenses,
   }));
 
   return chartData;
 };
 
-export const getRecentActivity = async (startupId: string, limit: number = 10) => {
+export const getRecentActivity = async (
+  startupId: string,
+  limit: number = 10
+) => {
   const [recentTransactions, recentSales] = await Promise.all([
     prisma.transaction.findMany({
       where: { startupId },
       include: {
         account: {
           select: {
-            accountName: true
-          }
-        }
+            accountName: true,
+          },
+        },
       },
-      orderBy: { date: 'desc' },
-      take: limit
+      orderBy: { date: "desc" },
+      take: limit,
     }),
     prisma.sale.findMany({
       where: { startupId },
       include: {
         product: {
           select: {
-            name: true
-          }
-        }
+            name: true,
+          },
+        },
       },
-      orderBy: { saleDate: 'desc' },
-      take: limit
-    })
+      orderBy: { saleDate: "desc" },
+      take: limit,
+    }),
   ]);
 
   // Combine and sort by date
   const activities = [
-    ...recentTransactions.map(t => ({
-      type: 'transaction' as const,
+    ...recentTransactions.map((t) => ({
+      type: "transaction" as const,
       id: t.id,
       description: t.description,
       amount: t.amount,
       transactionType: t.type,
       date: t.date,
-      account: t.account.accountName
+      account: t.account.accountName,
     })),
-    ...recentSales.map(s => ({
-      type: 'sale' as const,
+    ...recentSales.map((s) => ({
+      type: "sale" as const,
       id: s.id,
       description: `Sale of ${s.quantitySold}x ${s.product.name}`,
       amount: s.totalPrice,
-      transactionType: 'CREDIT' as const,
+      transactionType: "CREDIT" as const,
       date: s.saleDate,
-      product: s.product.name
-    }))
-  ].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, limit);
+      product: s.product.name,
+    })),
+  ]
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
+    .slice(0, limit);
 
   return activities;
 };
-

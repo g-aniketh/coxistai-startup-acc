@@ -9,11 +9,13 @@ All protected endpoints require the `Authorization: Bearer <token>` header.
 ## 🔐 Authentication Endpoints
 
 ### 1. Signup
+
 **POST** `/auth/signup`
 
 Creates a new startup and admin user with 30-day pro trial.
 
 **Request Body:**
+
 ```json
 {
   "email": "founder@startup.com",
@@ -25,6 +27,7 @@ Creates a new startup and admin user with 30-day pro trial.
 ```
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -45,11 +48,13 @@ Creates a new startup and admin user with 30-day pro trial.
 ---
 
 ### 2. Login
+
 **POST** `/auth/login`
 
 Authenticates existing user.
 
 **Request Body:**
+
 ```json
 {
   "email": "founder@startup.com",
@@ -62,6 +67,7 @@ Authenticates existing user.
 ---
 
 ### 3. Get Current User
+
 **GET** `/auth/me`
 
 Returns current authenticated user's profile.
@@ -69,6 +75,7 @@ Returns current authenticated user's profile.
 **Headers:** `Authorization: Bearer <token>`
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -91,6 +98,7 @@ Returns current authenticated user's profile.
 ---
 
 ### 4. Create Team Member
+
 **POST** `/auth/team-member`
 
 Admin creates a team member (requires `manage_team` permission).
@@ -98,6 +106,7 @@ Admin creates a team member (requires `manage_team` permission).
 **Headers:** `Authorization: Bearer <token>`
 
 **Request Body:**
+
 ```json
 {
   "email": "accountant@startup.com",
@@ -111,6 +120,7 @@ Admin creates a team member (requires `manage_team` permission).
 **Valid Roles:** `Accountant`, `CTO`, `Sales Lead`, `Operations Manager`
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -129,6 +139,7 @@ Admin creates a team member (requires `manage_team` permission).
 ## 💰 Transactions Endpoints
 
 ### 5. Create Transaction
+
 **POST** `/transactions`
 
 Creates a new transaction and updates account balance.
@@ -136,6 +147,7 @@ Creates a new transaction and updates account balance.
 **Permissions:** `manage_transactions`
 
 **Request Body:**
+
 ```json
 {
   "amount": 5000,
@@ -146,6 +158,7 @@ Creates a new transaction and updates account balance.
 ```
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -165,6 +178,7 @@ Creates a new transaction and updates account balance.
 ---
 
 ### 6. Get Transactions
+
 **GET** `/transactions`
 
 Lists all transactions for the startup.
@@ -172,6 +186,7 @@ Lists all transactions for the startup.
 **Permissions:** `read_cashflow_dashboard`
 
 **Query Parameters:**
+
 - `accountId` (optional): Filter by account
 - `type` (optional): Filter by CREDIT or DEBIT
 - `startDate` (optional): ISO date string
@@ -180,6 +195,7 @@ Lists all transactions for the startup.
 - `offset` (optional, default: 0)
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -207,6 +223,7 @@ Lists all transactions for the startup.
 ---
 
 ### 7. Get Transaction by ID
+
 **GET** `/transactions/:transactionId`
 
 **Permissions:** `read_transactions`
@@ -214,6 +231,7 @@ Lists all transactions for the startup.
 ---
 
 ### 8. Delete Transaction
+
 **DELETE** `/transactions/:transactionId`
 
 Deletes transaction and reverses balance change.
@@ -225,6 +243,7 @@ Deletes transaction and reverses balance change.
 ## 📊 Dashboard Endpoints
 
 ### 9. Get Dashboard Summary
+
 **GET** `/dashboard/summary`
 
 Returns key financial and operational metrics.
@@ -232,6 +251,7 @@ Returns key financial and operational metrics.
 **Permissions:** `read_cashflow_dashboard`
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -263,6 +283,7 @@ Returns key financial and operational metrics.
 ---
 
 ### 10. Get Cashflow Chart Data
+
 **GET** `/dashboard/cashflow-chart`
 
 Returns monthly income/expense data for charting.
@@ -270,9 +291,11 @@ Returns monthly income/expense data for charting.
 **Permissions:** `read_cashflow_dashboard`
 
 **Query Parameters:**
+
 - `months` (optional, default: 6): Number of months to retrieve
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -296,6 +319,7 @@ Returns monthly income/expense data for charting.
 ---
 
 ### 11. Get Recent Activity
+
 **GET** `/dashboard/recent-activity`
 
 Returns recent transactions and sales combined.
@@ -303,9 +327,11 @@ Returns recent transactions and sales combined.
 **Permissions:** `read_cashflow_dashboard`
 
 **Query Parameters:**
+
 - `limit` (optional, default: 10)
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -337,6 +363,7 @@ Returns recent transactions and sales combined.
 ## 📦 Inventory Endpoints
 
 ### 12. Create Product
+
 **POST** `/inventory/products`
 
 Creates a new product.
@@ -344,6 +371,7 @@ Creates a new product.
 **Permissions:** `manage_inventory`
 
 **Request Body:**
+
 ```json
 {
   "name": "Product A",
@@ -353,6 +381,7 @@ Creates a new product.
 ```
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -371,11 +400,13 @@ Creates a new product.
 ---
 
 ### 13. Get All Products
+
 **GET** `/inventory/products`
 
 **Permissions:** `read_inventory_dashboard`
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -394,6 +425,7 @@ Creates a new product.
 ---
 
 ### 14. Get Product by ID
+
 **GET** `/inventory/products/:productId`
 
 **Permissions:** `read_inventory`
@@ -401,11 +433,13 @@ Creates a new product.
 ---
 
 ### 15. Update Product
+
 **PUT** `/inventory/products/:productId`
 
 **Permissions:** `manage_inventory`
 
 **Request Body:**
+
 ```json
 {
   "name": "Product A - Updated",
@@ -417,6 +451,7 @@ Creates a new product.
 ---
 
 ### 16. Delete Product
+
 **DELETE** `/inventory/products/:productId`
 
 **Permissions:** `manage_inventory`
@@ -424,6 +459,7 @@ Creates a new product.
 ---
 
 ### 17. Simulate Sale
+
 **POST** `/inventory/sales`
 
 Simulates a product sale, updates inventory, creates transaction.
@@ -431,6 +467,7 @@ Simulates a product sale, updates inventory, creates transaction.
 **Permissions:** `manage_inventory`
 
 **Request Body:**
+
 ```json
 {
   "productId": "clx123",
@@ -440,6 +477,7 @@ Simulates a product sale, updates inventory, creates transaction.
 ```
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -469,11 +507,13 @@ Simulates a product sale, updates inventory, creates transaction.
 ---
 
 ### 18. Get Sales
+
 **GET** `/inventory/sales`
 
 **Permissions:** `read_inventory_dashboard`
 
 **Query Parameters:**
+
 - `limit` (optional): Number of sales to return
 
 ---
@@ -481,6 +521,7 @@ Simulates a product sale, updates inventory, creates transaction.
 ## 🏦 Bank Accounts Endpoints
 
 ### 19. Create Bank Account
+
 **POST** `/accounts`
 
 Creates a mock bank account.
@@ -488,6 +529,7 @@ Creates a mock bank account.
 **Permissions:** `manage_billing`
 
 **Request Body:**
+
 ```json
 {
   "accountName": "Main Checking Account",
@@ -496,6 +538,7 @@ Creates a mock bank account.
 ```
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -513,11 +556,13 @@ Creates a mock bank account.
 ---
 
 ### 20. Get All Accounts
+
 **GET** `/accounts`
 
 **Permissions:** `read_cashflow_dashboard`
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -535,6 +580,7 @@ Creates a mock bank account.
 ---
 
 ### 21. Get Account by ID
+
 **GET** `/accounts/:accountId`
 
 **Permissions:** `read_cashflow_dashboard`
@@ -542,6 +588,7 @@ Creates a mock bank account.
 ---
 
 ### 22. Update Account
+
 **PUT** `/accounts/:accountId`
 
 **Permissions:** `manage_billing`
@@ -549,6 +596,7 @@ Creates a mock bank account.
 ---
 
 ### 23. Delete Account
+
 **DELETE** `/accounts/:accountId`
 
 **Permissions:** `manage_billing`
@@ -560,6 +608,7 @@ Note: Cannot delete accounts with existing transactions.
 ## 👥 Team Management Endpoints
 
 ### 24. Invite Team Member
+
 **POST** `/team/invite`
 
 Invites a new team member and sends email with credentials.
@@ -567,6 +616,7 @@ Invites a new team member and sends email with credentials.
 **Permissions:** `manage_team`
 
 **Request Body:**
+
 ```json
 {
   "email": "developer@startup.com",
@@ -579,6 +629,7 @@ Invites a new team member and sends email with credentials.
 **Valid Roles:** `Accountant`, `CTO`, `Sales Lead`, `Operations Manager`
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -598,6 +649,7 @@ Invites a new team member and sends email with credentials.
 ---
 
 ### 25. Get Team Members
+
 **GET** `/team`
 
 Lists all team members in the startup.
@@ -605,6 +657,7 @@ Lists all team members in the startup.
 **Permissions:** `read_team`
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -634,6 +687,7 @@ Lists all team members in the startup.
 ---
 
 ### 26. Update User Role
+
 **PUT** `/team/:userId/role`
 
 Changes a user's role.
@@ -641,6 +695,7 @@ Changes a user's role.
 **Permissions:** `manage_team`
 
 **Request Body:**
+
 ```json
 {
   "roleName": "Operations Manager"
@@ -648,6 +703,7 @@ Changes a user's role.
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -664,6 +720,7 @@ Changes a user's role.
 ---
 
 ### 27. Deactivate User
+
 **POST** `/team/:userId/deactivate`
 
 Deactivates a user account.
@@ -671,6 +728,7 @@ Deactivates a user account.
 **Permissions:** `manage_team`
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -682,13 +740,13 @@ Deactivates a user account.
 
 ## 📋 Permission Matrix
 
-| Role | Permissions |
-|------|------------|
-| **Admin** | All permissions (18) |
-| **Accountant** | Financial data, transactions, investor updates (13) |
-| **CTO** | Dashboards, scenarios, read-only (10) |
-| **Sales Lead** | Revenue, inventory dashboards (7) |
-| **Operations Manager** | Inventory management, dashboards (8) |
+| Role                   | Permissions                                         |
+| ---------------------- | --------------------------------------------------- |
+| **Admin**              | All permissions (18)                                |
+| **Accountant**         | Financial data, transactions, investor updates (13) |
+| **CTO**                | Dashboards, scenarios, read-only (10)               |
+| **Sales Lead**         | Revenue, inventory dashboards (7)                   |
+| **Operations Manager** | Inventory management, dashboards (8)                |
 
 ---
 
@@ -716,6 +774,7 @@ All endpoints follow a consistent error format:
 ```
 
 **Common HTTP Status Codes:**
+
 - `400` - Bad Request (validation errors)
 - `401` - Unauthorized (missing or invalid token)
 - `403` - Forbidden (insufficient permissions)
@@ -728,6 +787,7 @@ All endpoints follow a consistent error format:
 ## 🚀 Quick Start
 
 1. **Sign up a new startup:**
+
 ```bash
 curl -X POST http://localhost:3001/api/v1/auth/signup \
   -H "Content-Type: application/json" \
@@ -739,6 +799,7 @@ curl -X POST http://localhost:3001/api/v1/auth/signup \
 ```
 
 2. **Create a mock bank account:**
+
 ```bash
 curl -X POST http://localhost:3001/api/v1/accounts \
   -H "Content-Type: application/json" \
@@ -750,6 +811,7 @@ curl -X POST http://localhost:3001/api/v1/accounts \
 ```
 
 3. **Create a transaction:**
+
 ```bash
 curl -X POST http://localhost:3001/api/v1/transactions \
   -H "Content-Type: application/json" \
@@ -763,6 +825,7 @@ curl -X POST http://localhost:3001/api/v1/transactions \
 ```
 
 4. **Get dashboard summary:**
+
 ```bash
 curl http://localhost:3001/api/v1/dashboard/summary \
   -H "Authorization: Bearer YOUR_TOKEN"
@@ -772,4 +835,3 @@ curl http://localhost:3001/api/v1/dashboard/summary \
 
 **Version:** 1.0.0  
 **Last Updated:** October 10, 2025
-

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { cn } from '@/lib/utils';
+import { useEffect, useRef } from "react";
+import { cn } from "@/lib/utils";
 
 interface VortexProps {
   className?: string;
@@ -32,7 +32,7 @@ export default function Vortex({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     let animationFrameId: number;
@@ -65,7 +65,7 @@ export default function Vortex({
         const dx = this.x - centerX;
         const dy = this.y - centerY;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        
+
         this.angle += 0.02 * (1 - distance / (canvas!.width / 2));
 
         // Wrap around edges
@@ -94,7 +94,7 @@ export default function Vortex({
     };
 
     const animate = () => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       particles.forEach((particle) => {
@@ -111,21 +111,28 @@ export default function Vortex({
 
     init();
     animate();
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
-  }, [particleCount, rangeY, baseHue, baseSpeed, rangeSpeed, baseRadius, rangeRadius]);
+  }, [
+    particleCount,
+    rangeY,
+    baseHue,
+    baseSpeed,
+    rangeSpeed,
+    baseRadius,
+    rangeRadius,
+  ]);
 
   return (
-    <div className={cn('relative w-full h-full', containerClassName)}>
+    <div className={cn("relative w-full h-full", containerClassName)}>
       <canvas
         ref={canvasRef}
-        className={cn('absolute inset-0 w-full h-full', className)}
+        className={cn("absolute inset-0 w-full h-full", className)}
       />
     </div>
   );
 }
-

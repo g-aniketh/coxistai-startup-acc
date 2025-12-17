@@ -2,13 +2,17 @@
 // This is a placeholder to prevent build errors
 
 export class StripeService {
-  static async createAccount(tenantId: string, email: string, businessName: string) {
+  static async createAccount(
+    tenantId: string,
+    email: string,
+    businessName: string
+  ) {
     // Stub implementation
     return {
       id: `acct_stub_${Date.now()}`,
       email,
       businessName,
-      status: 'pending'
+      status: "pending",
     };
   }
 
@@ -16,9 +20,9 @@ export class StripeService {
     // Stub implementation
     return {
       id: accountId,
-      status: 'pending',
+      status: "pending",
       charges_enabled: false,
-      payouts_enabled: false
+      payouts_enabled: false,
     };
   }
 
@@ -26,44 +30,56 @@ export class StripeService {
     // Stub implementation
     return {
       id: `cus_stub_${Date.now()}`,
-      email: customerData.email
+      email: customerData.email,
     };
   }
 
-  static async createSubscription(accountId: string, customerId: string, priceId: string) {
+  static async createSubscription(
+    accountId: string,
+    customerId: string,
+    priceId: string
+  ) {
     // Stub implementation
     return {
       id: `sub_stub_${Date.now()}`,
-      status: 'active',
+      status: "active",
       current_period_start: Math.floor(Date.now() / 1000),
-      current_period_end: Math.floor(Date.now() / 1000) + 2592000 // 30 days
+      current_period_end: Math.floor(Date.now() / 1000) + 2592000, // 30 days
     };
   }
 
-  static async createInvoice(accountId: string, customerId: string, amount: number) {
+  static async createInvoice(
+    accountId: string,
+    customerId: string,
+    amount: number
+  ) {
     // Stub implementation
     return {
       id: `in_stub_${Date.now()}`,
       amount_due: amount,
-      status: 'paid'
+      status: "paid",
     };
   }
 
-  static async createPaymentIntent(accountId: string, amount: number, currency: string = 'usd') {
+  static async createPaymentIntent(
+    accountId: string,
+    amount: number,
+    currency: string = "usd"
+  ) {
     // Stub implementation
     return {
       id: `pi_stub_${Date.now()}`,
       amount,
       currency,
-      status: 'succeeded'
+      status: "succeeded",
     };
   }
 
   static async getAccountBalance(accountId: string) {
     // Stub implementation
     return {
-      available: [{ amount: 0, currency: 'usd' }],
-      pending: [{ amount: 0, currency: 'usd' }]
+      available: [{ amount: 0, currency: "usd" }],
+      pending: [{ amount: 0, currency: "usd" }],
     };
   }
 
@@ -71,7 +87,7 @@ export class StripeService {
     // Stub implementation
     return {
       id: accountId,
-      ...updates
+      ...updates,
     };
   }
 
@@ -80,7 +96,7 @@ export class StripeService {
     return {
       id: `acct_stub_${Date.now()}`,
       tenantId,
-      status: 'connected'
+      status: "connected",
     };
   }
 
@@ -89,7 +105,7 @@ export class StripeService {
     return {
       id: `acct_stub_${Date.now()}`,
       tenantId,
-      status: 'active'
+      status: "active",
     };
   }
 

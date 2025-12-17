@@ -87,7 +87,7 @@ export default function VouchersPage() {
   });
 
   const selectedVoucherType = useMemo(
-    () => voucherTypes.find(type => type.id === form.voucherTypeId),
+    () => voucherTypes.find((type) => type.id === form.voucherTypeId),
     [voucherTypes, form.voucherTypeId]
   );
 
@@ -98,13 +98,13 @@ export default function VouchersPage() {
 
   const totalDebit = useMemo(() => {
     return form.entries
-      .filter(entry => entry.entryType === "DEBIT")
+      .filter((entry) => entry.entryType === "DEBIT")
       .reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
   }, [form.entries]);
 
   const totalCredit = useMemo(() => {
     return form.entries
-      .filter(entry => entry.entryType === "CREDIT")
+      .filter((entry) => entry.entryType === "CREDIT")
       .reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
   }, [form.entries]);
 
@@ -124,11 +124,11 @@ export default function VouchersPage() {
         setVoucherTypes(typesRes.data);
         if (!form.voucherTypeId && typesRes.data.length > 0) {
           const defaultType =
-            typesRes.data.find(type => type.isDefault) ?? typesRes.data[0];
+            typesRes.data.find((type) => type.isDefault) ?? typesRes.data[0];
           const defaultSeries = defaultType.numberingSeries.find(
-            series => series.isDefault
+            (series) => series.isDefault
           );
-          setForm(prev => ({
+          setForm((prev) => ({
             ...prev,
             voucherTypeId: defaultType.id,
             numberingSeriesId: defaultSeries?.id,
@@ -157,12 +157,13 @@ export default function VouchersPage() {
   }, []);
 
   const handleTypeChange = (voucherTypeId: string) => {
-    const type = voucherTypes.find(item => item.id === voucherTypeId);
-    setForm(prev => ({
+    const type = voucherTypes.find((item) => item.id === voucherTypeId);
+    setForm((prev) => ({
       ...prev,
       voucherTypeId,
-      numberingSeriesId: type?.numberingSeries.find(series => series.isDefault)
-        ?.id,
+      numberingSeriesId: type?.numberingSeries.find(
+        (series) => series.isDefault
+      )?.id,
     }));
   };
 
@@ -170,7 +171,7 @@ export default function VouchersPage() {
     index: number,
     updater: (entry: EntryForm) => EntryForm
   ) => {
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
       entries: prev.entries.map((entry, i) =>
         i === index ? updater(entry) : entry
@@ -179,21 +180,21 @@ export default function VouchersPage() {
   };
 
   const addEntry = () => {
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
       entries: [...prev.entries, { ...DEFAULT_ENTRY, entryType: "CREDIT" }],
     }));
   };
 
   const removeEntry = (index: number) => {
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
       entries: prev.entries.filter((_, i) => i !== index),
     }));
   };
 
   const addBillReference = (entryIndex: number) => {
-    updateEntry(entryIndex, entry => ({
+    updateEntry(entryIndex, (entry) => ({
       ...entry,
       billReferences: [
         ...entry.billReferences,
@@ -215,7 +216,7 @@ export default function VouchersPage() {
       bill: EntryForm["billReferences"][number]
     ) => EntryForm["billReferences"][number]
   ) => {
-    updateEntry(entryIndex, entry => ({
+    updateEntry(entryIndex, (entry) => ({
       ...entry,
       billReferences: entry.billReferences.map((bill, i) =>
         i === billIndex ? updater(bill) : bill
@@ -224,7 +225,7 @@ export default function VouchersPage() {
   };
 
   const removeBillReference = (entryIndex: number, billIndex: number) => {
-    updateEntry(entryIndex, entry => ({
+    updateEntry(entryIndex, (entry) => ({
       ...entry,
       billReferences: entry.billReferences.filter((_, i) => i !== billIndex),
     }));
@@ -232,7 +233,7 @@ export default function VouchersPage() {
 
   const resetForm = () => {
     const defaultSeries =
-      selectedVoucherType?.numberingSeries.find(series => series.isDefault)
+      selectedVoucherType?.numberingSeries.find((series) => series.isDefault)
         ?.id ?? null;
     setForm({
       voucherTypeId: selectedVoucherType?.id ?? "",
@@ -265,7 +266,7 @@ export default function VouchersPage() {
         date: form.date,
         reference: form.reference?.trim() || undefined,
         narration: form.narration?.trim() || undefined,
-        entries: form.entries.map(entry => ({
+        entries: form.entries.map((entry) => ({
           ledgerName: entry.ledgerName.trim(),
           ledgerCode: entry.ledgerCode?.trim() || undefined,
           entryType: entry.entryType,
@@ -275,7 +276,7 @@ export default function VouchersPage() {
           costCategory: entry.costCategory?.trim() || undefined,
           billReferences:
             entry.billReferences?.length > 0
-              ? entry.billReferences.map(bill => ({
+              ? entry.billReferences.map((bill) => ({
                   reference: bill.reference.trim(),
                   amount: Number(bill.amount),
                   referenceType: bill.referenceType,
@@ -339,12 +340,14 @@ export default function VouchersPage() {
                       <select
                         id="voucherTypeId"
                         value={form.voucherTypeId}
-                        onChange={event => handleTypeChange(event.target.value)}
+                        onChange={(event) =>
+                          handleTypeChange(event.target.value)
+                        }
                         className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                         required
                       >
                         <option value="">Select voucher type</option>
-                        {voucherTypes.map(type => (
+                        {voucherTypes.map((type) => (
                           <option key={type.id} value={type.id}>
                             {type.name}
                           </option>
@@ -359,8 +362,8 @@ export default function VouchersPage() {
                       <select
                         id="numberingSeriesId"
                         value={form.numberingSeriesId ?? ""}
-                        onChange={event =>
-                          setForm(prev => ({
+                        onChange={(event) =>
+                          setForm((prev) => ({
                             ...prev,
                             numberingSeriesId: event.target.value || undefined,
                           }))
@@ -368,7 +371,7 @@ export default function VouchersPage() {
                         className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                       >
                         <option value="">Default</option>
-                        {numberingSeriesOptions.map(series => (
+                        {numberingSeriesOptions.map((series) => (
                           <option key={series.id} value={series.id}>
                             {series.name} (
                             {numberingMethodLabels[series.numberingMethod]})
@@ -383,8 +386,8 @@ export default function VouchersPage() {
                         id="voucherDate"
                         type="date"
                         value={form.date}
-                        onChange={event =>
-                          setForm(prev => ({
+                        onChange={(event) =>
+                          setForm((prev) => ({
                             ...prev,
                             date: event.target.value,
                           }))
@@ -399,8 +402,8 @@ export default function VouchersPage() {
                       <Input
                         id="voucherReference"
                         value={form.reference ?? ""}
-                        onChange={event =>
-                          setForm(prev => ({
+                        onChange={(event) =>
+                          setForm((prev) => ({
                             ...prev,
                             reference: event.target.value,
                           }))
@@ -413,8 +416,8 @@ export default function VouchersPage() {
                       <Textarea
                         id="voucherNarration"
                         value={form.narration ?? ""}
-                        onChange={event =>
-                          setForm(prev => ({
+                        onChange={(event) =>
+                          setForm((prev) => ({
                             ...prev,
                             narration: event.target.value,
                           }))
@@ -478,8 +481,8 @@ export default function VouchersPage() {
                             <Label>Ledger Name *</Label>
                             <Input
                               value={entry.ledgerName}
-                              onChange={event =>
-                                updateEntry(index, prevEntry => ({
+                              onChange={(event) =>
+                                updateEntry(index, (prevEntry) => ({
                                   ...prevEntry,
                                   ledgerName: event.target.value,
                                 }))
@@ -492,8 +495,8 @@ export default function VouchersPage() {
                             <Label>Ledger Code</Label>
                             <Input
                               value={entry.ledgerCode}
-                              onChange={event =>
-                                updateEntry(index, prevEntry => ({
+                              onChange={(event) =>
+                                updateEntry(index, (prevEntry) => ({
                                   ...prevEntry,
                                   ledgerCode: event.target.value,
                                 }))
@@ -505,8 +508,8 @@ export default function VouchersPage() {
                             <Label>Type</Label>
                             <select
                               value={entry.entryType}
-                              onChange={event =>
-                                updateEntry(index, prevEntry => ({
+                              onChange={(event) =>
+                                updateEntry(index, (prevEntry) => ({
                                   ...prevEntry,
                                   entryType: event.target
                                     .value as VoucherEntryType,
@@ -525,8 +528,8 @@ export default function VouchersPage() {
                               min="0"
                               step="0.01"
                               value={entry.amount}
-                              onChange={event =>
-                                updateEntry(index, prevEntry => ({
+                              onChange={(event) =>
+                                updateEntry(index, (prevEntry) => ({
                                   ...prevEntry,
                                   amount: event.target.value,
                                 }))
@@ -539,8 +542,8 @@ export default function VouchersPage() {
                             <Label>Narration</Label>
                             <Input
                               value={entry.narration}
-                              onChange={event =>
-                                updateEntry(index, prevEntry => ({
+                              onChange={(event) =>
+                                updateEntry(index, (prevEntry) => ({
                                   ...prevEntry,
                                   narration: event.target.value,
                                 }))
@@ -552,8 +555,8 @@ export default function VouchersPage() {
                             <Label>Cost Center</Label>
                             <Input
                               value={entry.costCenterName}
-                              onChange={event =>
-                                updateEntry(index, prevEntry => ({
+                              onChange={(event) =>
+                                updateEntry(index, (prevEntry) => ({
                                   ...prevEntry,
                                   costCenterName: event.target.value,
                                 }))
@@ -565,8 +568,8 @@ export default function VouchersPage() {
                             <Label>Cost Category</Label>
                             <Input
                               value={entry.costCategory}
-                              onChange={event =>
-                                updateEntry(index, prevEntry => ({
+                              onChange={(event) =>
+                                updateEntry(index, (prevEntry) => ({
                                   ...prevEntry,
                                   costCategory: event.target.value,
                                 }))
@@ -609,11 +612,11 @@ export default function VouchersPage() {
                                     <Label className="text-xs">Reference</Label>
                                     <Input
                                       value={bill.reference}
-                                      onChange={event =>
+                                      onChange={(event) =>
                                         updateBillReference(
                                           index,
                                           billIndex,
-                                          prevBill => ({
+                                          (prevBill) => ({
                                             ...prevBill,
                                             reference: event.target.value,
                                           })
@@ -629,11 +632,11 @@ export default function VouchersPage() {
                                       min="0"
                                       step="0.01"
                                       value={bill.amount}
-                                      onChange={event =>
+                                      onChange={(event) =>
                                         updateBillReference(
                                           index,
                                           billIndex,
-                                          prevBill => ({
+                                          (prevBill) => ({
                                             ...prevBill,
                                             amount: event.target.value,
                                           })
@@ -646,11 +649,11 @@ export default function VouchersPage() {
                                     <Label className="text-xs">Type</Label>
                                     <select
                                       value={bill.referenceType}
-                                      onChange={event =>
+                                      onChange={(event) =>
                                         updateBillReference(
                                           index,
                                           billIndex,
-                                          prevBill => ({
+                                          (prevBill) => ({
                                             ...prevBill,
                                             referenceType: event.target
                                               .value as VoucherBillReferenceType,
@@ -659,7 +662,7 @@ export default function VouchersPage() {
                                       }
                                       className="w-full rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-[#2C2C2C]"
                                     >
-                                      {billReferenceOptions.map(option => (
+                                      {billReferenceOptions.map((option) => (
                                         <option
                                           key={option.value}
                                           value={option.value}
@@ -674,11 +677,11 @@ export default function VouchersPage() {
                                     <Input
                                       type="date"
                                       value={bill.dueDate}
-                                      onChange={event =>
+                                      onChange={(event) =>
                                         updateBillReference(
                                           index,
                                           billIndex,
-                                          prevBill => ({
+                                          (prevBill) => ({
                                             ...prevBill,
                                             dueDate: event.target.value,
                                           })
@@ -690,11 +693,11 @@ export default function VouchersPage() {
                                     <Label className="text-xs">Remarks</Label>
                                     <Input
                                       value={bill.remarks}
-                                      onChange={event =>
+                                      onChange={(event) =>
                                         updateBillReference(
                                           index,
                                           billIndex,
-                                          prevBill => ({
+                                          (prevBill) => ({
                                             ...prevBill,
                                             remarks: event.target.value,
                                           })
@@ -786,7 +789,7 @@ export default function VouchersPage() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {vouchers.map(voucher => (
+                    {vouchers.map((voucher) => (
                       <div
                         key={voucher.id}
                         className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-2"

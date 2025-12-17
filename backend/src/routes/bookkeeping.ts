@@ -44,7 +44,9 @@ router.get("/ledger-groups", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const groups = await listLedgerGroups(startupId);
@@ -54,7 +56,10 @@ router.get("/ledger-groups", async (req: AuthRequest, res) => {
     console.error("List ledger groups error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to fetch ledger groups",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch ledger groups",
     });
   }
 });
@@ -63,7 +68,9 @@ router.post("/ledger-groups", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const created = await createLedgerGroup(startupId, req.body);
@@ -76,7 +83,10 @@ router.post("/ledger-groups", async (req: AuthRequest, res) => {
     console.error("Create ledger group error:", error);
     return res.status(400).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to create ledger group",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to create ledger group",
     });
   }
 });
@@ -85,10 +95,16 @@ router.put("/ledger-groups/:groupId", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
-    const updated = await updateLedgerGroup(startupId, req.params.groupId, req.body);
+    const updated = await updateLedgerGroup(
+      startupId,
+      req.params.groupId,
+      req.body
+    );
     return res.json({
       success: true,
       data: updated,
@@ -98,7 +114,10 @@ router.put("/ledger-groups/:groupId", async (req: AuthRequest, res) => {
     console.error("Update ledger group error:", error);
     return res.status(400).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to update ledger group",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to update ledger group",
     });
   }
 });
@@ -107,7 +126,9 @@ router.delete("/ledger-groups/:groupId", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     await deleteLedgerGroup(startupId, req.params.groupId);
@@ -119,7 +140,10 @@ router.delete("/ledger-groups/:groupId", async (req: AuthRequest, res) => {
     console.error("Delete ledger group error:", error);
     return res.status(400).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to delete ledger group",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to delete ledger group",
     });
   }
 });
@@ -128,7 +152,9 @@ router.get("/ledgers", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const ledgers = await listLedgers(startupId);
@@ -137,7 +163,8 @@ router.get("/ledgers", async (req: AuthRequest, res) => {
     console.error("List ledgers error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to fetch ledgers",
+      message:
+        error instanceof Error ? error.message : "Failed to fetch ledgers",
     });
   }
 });
@@ -146,7 +173,9 @@ router.post("/ledgers", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const created = await createLedger(startupId, req.body);
@@ -159,7 +188,8 @@ router.post("/ledgers", async (req: AuthRequest, res) => {
     console.error("Create ledger error:", error);
     return res.status(400).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to create ledger",
+      message:
+        error instanceof Error ? error.message : "Failed to create ledger",
     });
   }
 });
@@ -168,10 +198,16 @@ router.put("/ledgers/:ledgerId", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
-    const updated = await updateLedger(startupId, req.params.ledgerId, req.body);
+    const updated = await updateLedger(
+      startupId,
+      req.params.ledgerId,
+      req.body
+    );
     return res.json({
       success: true,
       data: updated,
@@ -181,7 +217,8 @@ router.put("/ledgers/:ledgerId", async (req: AuthRequest, res) => {
     console.error("Update ledger error:", error);
     return res.status(400).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to update ledger",
+      message:
+        error instanceof Error ? error.message : "Failed to update ledger",
     });
   }
 });
@@ -190,7 +227,9 @@ router.delete("/ledgers/:ledgerId", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     await deleteLedger(startupId, req.params.ledgerId);
@@ -202,7 +241,8 @@ router.delete("/ledgers/:ledgerId", async (req: AuthRequest, res) => {
     console.error("Delete ledger error:", error);
     return res.status(400).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to delete ledger",
+      message:
+        error instanceof Error ? error.message : "Failed to delete ledger",
     });
   }
 });
@@ -212,7 +252,9 @@ router.get("/trial-balance", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const asOnDate = req.query.asOnDate as string | undefined;
@@ -222,7 +264,10 @@ router.get("/trial-balance", async (req: AuthRequest, res) => {
     console.error("Trial balance error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to generate trial balance",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to generate trial balance",
     });
   }
 });
@@ -231,7 +276,9 @@ router.get("/profit-loss", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const fromDate = req.query.fromDate as string | undefined;
@@ -242,7 +289,10 @@ router.get("/profit-loss", async (req: AuthRequest, res) => {
     console.error("Profit & Loss error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to generate profit & loss",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to generate profit & loss",
     });
   }
 });
@@ -251,7 +301,9 @@ router.get("/balance-sheet", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const asOnDate = req.query.asOnDate as string | undefined;
@@ -261,7 +313,10 @@ router.get("/balance-sheet", async (req: AuthRequest, res) => {
     console.error("Balance sheet error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to generate balance sheet",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to generate balance sheet",
     });
   }
 });
@@ -270,7 +325,9 @@ router.get("/cash-flow", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const fromDate = req.query.fromDate as string | undefined;
@@ -281,7 +338,8 @@ router.get("/cash-flow", async (req: AuthRequest, res) => {
     console.error("Cash flow error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to generate cash flow",
+      message:
+        error instanceof Error ? error.message : "Failed to generate cash flow",
     });
   }
 });
@@ -290,7 +348,9 @@ router.get("/financial-ratios", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const asOnDate = req.query.asOnDate as string | undefined;
@@ -300,7 +360,10 @@ router.get("/financial-ratios", async (req: AuthRequest, res) => {
     console.error("Financial ratios error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to generate financial ratios",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to generate financial ratios",
     });
   }
 });
@@ -310,7 +373,9 @@ router.get("/cash-book", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const fromDate = req.query.fromDate as string | undefined;
@@ -321,7 +386,8 @@ router.get("/cash-book", async (req: AuthRequest, res) => {
     console.error("Cash book error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to generate cash book",
+      message:
+        error instanceof Error ? error.message : "Failed to generate cash book",
     });
   }
 });
@@ -330,19 +396,27 @@ router.get("/bank-book", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const bankLedgerName = req.query.bankLedgerName as string | undefined;
     const fromDate = req.query.fromDate as string | undefined;
     const toDate = req.query.toDate as string | undefined;
-    const bankBook = await getBankBook(startupId, bankLedgerName, fromDate, toDate);
+    const bankBook = await getBankBook(
+      startupId,
+      bankLedgerName,
+      fromDate,
+      toDate
+    );
     return res.json({ success: true, data: bankBook });
   } catch (error) {
     console.error("Bank book error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to generate bank book",
+      message:
+        error instanceof Error ? error.message : "Failed to generate bank book",
     });
   }
 });
@@ -351,12 +425,16 @@ router.get("/day-book", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const date = req.query.date as string | undefined;
     if (!date) {
-      return res.status(400).json({ success: false, message: "Date is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Date is required" });
     }
 
     const dayBook = await getDayBook(startupId, date);
@@ -365,7 +443,8 @@ router.get("/day-book", async (req: AuthRequest, res) => {
     console.error("Day book error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to generate day book",
+      message:
+        error instanceof Error ? error.message : "Failed to generate day book",
     });
   }
 });
@@ -374,23 +453,35 @@ router.get("/ledger-book", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const ledgerName = req.query.ledgerName as string | undefined;
     if (!ledgerName) {
-      return res.status(400).json({ success: false, message: "Ledger name is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Ledger name is required" });
     }
 
     const fromDate = req.query.fromDate as string | undefined;
     const toDate = req.query.toDate as string | undefined;
-    const ledgerBook = await getLedgerBook(startupId, ledgerName, fromDate, toDate);
+    const ledgerBook = await getLedgerBook(
+      startupId,
+      ledgerName,
+      fromDate,
+      toDate
+    );
     return res.json({ success: true, data: ledgerBook });
   } catch (error) {
     console.error("Ledger book error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to generate ledger book",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to generate ledger book",
     });
   }
 });
@@ -399,23 +490,40 @@ router.get("/journals", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
-    const journalType = req.query.journalType as 'SALES' | 'PURCHASE' | 'PAYMENT' | 'RECEIPT' | 'CONTRA' | 'JOURNAL' | undefined;
+    const journalType = req.query.journalType as
+      | "SALES"
+      | "PURCHASE"
+      | "PAYMENT"
+      | "RECEIPT"
+      | "CONTRA"
+      | "JOURNAL"
+      | undefined;
     if (!journalType) {
-      return res.status(400).json({ success: false, message: "Journal type is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Journal type is required" });
     }
 
     const fromDate = req.query.fromDate as string | undefined;
     const toDate = req.query.toDate as string | undefined;
-    const journals = await getJournals(startupId, journalType, fromDate, toDate);
+    const journals = await getJournals(
+      startupId,
+      journalType,
+      fromDate,
+      toDate
+    );
     return res.json({ success: true, data: journals });
   } catch (error) {
     console.error("Journals error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to generate journals",
+      message:
+        error instanceof Error ? error.message : "Failed to generate journals",
     });
   }
 });
@@ -425,7 +533,9 @@ router.get("/exception-reports", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const asOnDate = req.query.asOnDate as string | undefined;
@@ -435,7 +545,10 @@ router.get("/exception-reports", async (req: AuthRequest, res) => {
     console.error("Exception reports error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to generate exception reports",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to generate exception reports",
     });
   }
 });
@@ -445,19 +558,29 @@ router.get("/cost-centre-pl", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const costCentreId = req.query.costCentreId as string | undefined;
     const fromDate = req.query.fromDate as string | undefined;
     const toDate = req.query.toDate as string | undefined;
-    const report = await getCostCentrePL(startupId, costCentreId, fromDate, toDate);
+    const report = await getCostCentrePL(
+      startupId,
+      costCentreId,
+      fromDate,
+      toDate
+    );
     return res.json({ success: true, data: report });
   } catch (error) {
     console.error("Cost centre P&L error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to generate cost centre P&L",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to generate cost centre P&L",
     });
   }
 });
@@ -467,7 +590,9 @@ router.post("/budgets", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const budget = await createBudget(startupId, req.body);
@@ -476,7 +601,8 @@ router.post("/budgets", async (req: AuthRequest, res) => {
     console.error("Create budget error:", error);
     return res.status(400).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to create budget",
+      message:
+        error instanceof Error ? error.message : "Failed to create budget",
     });
   }
 });
@@ -485,11 +611,17 @@ router.get("/budgets", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const filters = {
-      budgetType: req.query.budgetType as 'LEDGER' | 'GROUP' | 'COST_CENTRE' | undefined,
+      budgetType: req.query.budgetType as
+        | "LEDGER"
+        | "GROUP"
+        | "COST_CENTRE"
+        | undefined,
       periodStart: req.query.periodStart as string | undefined,
       periodEnd: req.query.periodEnd as string | undefined,
     };
@@ -499,7 +631,8 @@ router.get("/budgets", async (req: AuthRequest, res) => {
     console.error("List budgets error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to fetch budgets",
+      message:
+        error instanceof Error ? error.message : "Failed to fetch budgets",
     });
   }
 });
@@ -508,14 +641,20 @@ router.get("/budgets/variance", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const filters = {
-      budgetType: req.query.budgetType as 'LEDGER' | 'GROUP' | 'COST_CENTRE' | undefined,
+      budgetType: req.query.budgetType as
+        | "LEDGER"
+        | "GROUP"
+        | "COST_CENTRE"
+        | undefined,
       periodStart: req.query.periodStart as string | undefined,
       periodEnd: req.query.periodEnd as string | undefined,
-      includeBreaches: req.query.includeBreaches === 'true',
+      includeBreaches: req.query.includeBreaches === "true",
     };
     const analytics = await getBudgetVarianceAnalytics(startupId, filters);
     return res.json({ success: true, data: analytics });
@@ -523,7 +662,10 @@ router.get("/budgets/variance", async (req: AuthRequest, res) => {
     console.error("Budget variance analytics error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to generate variance analytics",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to generate variance analytics",
     });
   }
 });
@@ -532,7 +674,9 @@ router.get("/budgets/breaches", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const asOnDate = req.query.asOnDate as string | undefined;
@@ -542,7 +686,10 @@ router.get("/budgets/breaches", async (req: AuthRequest, res) => {
     console.error("Budget breaches check error:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to check budget breaches",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to check budget breaches",
     });
   }
 });
@@ -552,7 +699,9 @@ router.post("/year-end/closing-entries", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const result = await generateClosingEntries(startupId, {
@@ -564,7 +713,10 @@ router.post("/year-end/closing-entries", async (req: AuthRequest, res) => {
     console.error("Generate closing entries error:", error);
     return res.status(400).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to generate closing entries",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to generate closing entries",
     });
   }
 });
@@ -573,7 +725,9 @@ router.post("/year-end/depreciation", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const result = await runDepreciation(startupId, req.body);
@@ -582,7 +736,8 @@ router.post("/year-end/depreciation", async (req: AuthRequest, res) => {
     console.error("Run depreciation error:", error);
     return res.status(400).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to run depreciation",
+      message:
+        error instanceof Error ? error.message : "Failed to run depreciation",
     });
   }
 });
@@ -591,7 +746,9 @@ router.post("/year-end/carry-forward", async (req: AuthRequest, res) => {
   try {
     const startupId = req.user?.startupId;
     if (!startupId) {
-      return res.status(400).json({ success: false, message: "Startup context is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
     }
 
     const { fromFinancialYearEnd, toFinancialYearStart } = req.body;
@@ -612,10 +769,12 @@ router.post("/year-end/carry-forward", async (req: AuthRequest, res) => {
     console.error("Carry forward balances error:", error);
     return res.status(400).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to carry forward balances",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to carry forward balances",
     });
   }
 });
 
 export default router;
-

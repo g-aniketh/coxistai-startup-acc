@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/store/auth';
+import { useAuthStore } from "@/store/auth";
 
 /**
  * Custom hook for checking user permissions
@@ -16,9 +16,9 @@ export const usePermissions = () => {
    */
   const can = (action: string, subject: string): boolean => {
     if (!user || !user.permissions) return false;
-    
+
     // Admins can do everything
-    if (user.roles.includes('Admin')) return true;
+    if (user.roles.includes("Admin")) return true;
 
     // Check if user has the specific permission
     const permissionString = `${action}_${subject}`;
@@ -32,7 +32,7 @@ export const usePermissions = () => {
    */
   const hasRole = (roles: string[]): boolean => {
     if (!user || !user.roles) return false;
-    return user.roles.some(role => roles.includes(role));
+    return user.roles.some((role) => roles.includes(role));
   };
 
   /**
@@ -41,7 +41,7 @@ export const usePermissions = () => {
    */
   const isAdmin = (): boolean => {
     if (!user || !user.roles) return false;
-    return user.roles.includes('Admin');
+    return user.roles.includes("Admin");
   };
 
   /**
@@ -60,13 +60,12 @@ export const usePermissions = () => {
     return user?.roles || [];
   };
 
-  return { 
-    can, 
-    hasRole, 
-    isAdmin, 
-    getPermissions, 
+  return {
+    can,
+    hasRole,
+    isAdmin,
+    getPermissions,
     getRoles,
-    user 
+    user,
   };
 };
-

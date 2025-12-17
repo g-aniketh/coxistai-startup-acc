@@ -183,7 +183,7 @@ export default function Sidebar({
         </div>
         {onToggleCollapse && (
           <button
-            onClick={e => {
+            onClick={(e) => {
               e.stopPropagation();
               onToggleCollapse();
             }}
@@ -213,8 +213,8 @@ export default function Sidebar({
                 ? user.firstName && user.lastName
                   ? `${user.firstName} ${user.lastName}`
                   : user.firstName
-                  ? user.firstName
-                  : user.email.split("@")[0]
+                    ? user.firstName
+                    : user.email.split("@")[0]
                 : "Guest"}
             </p>
           </div>
@@ -223,7 +223,7 @@ export default function Sidebar({
 
       {/* Navigation */}
       <nav className="flex-1 p-4 pt-2 space-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-        {navigationSections.map(section => (
+        {navigationSections.map((section) => (
           <div key={section.label} className="space-y-2">
             {!collapsed && (
               <p className="text-xs uppercase tracking-wide text-gray-500 px-3">
@@ -231,7 +231,7 @@ export default function Sidebar({
               </p>
             )}
             <div className="space-y-2">
-              {section.items.map(item => {
+              {section.items.map((item) => {
                 const isActive = pathname === item.href;
                 return (
                   <NavLink key={item.name} item={item} isActive={isActive} />

@@ -1,8 +1,11 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middleware/auth';
-import * as aiService from './ai.service';
+import { Response } from "express";
+import { AuthRequest } from "../middleware/auth";
+import * as aiService from "./ai.service";
 
-export const getFinancialInsightsController = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getFinancialInsightsController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { startupId } = req.user!;
 
@@ -11,28 +14,32 @@ export const getFinancialInsightsController = async (req: AuthRequest, res: Resp
     res.json({
       success: true,
       data: insights,
-      message: 'AI insights generated successfully'
+      message: "AI insights generated successfully",
     });
   } catch (error) {
-    console.error('Get financial insights error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
+    console.error("Get financial insights error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
     res.status(500).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
 
-export const runWhatIfScenarioController = async (req: AuthRequest, res: Response): Promise<void> => {
+export const runWhatIfScenarioController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { startupId } = req.user!;
     const { scenario } = req.body;
 
-    if (!scenario || typeof scenario !== 'string') {
+    if (!scenario || typeof scenario !== "string") {
       res.status(400).json({
         success: false,
-        message: 'Scenario description is required'
+        message: "Scenario description is required",
       });
       return;
     }
@@ -40,7 +47,7 @@ export const runWhatIfScenarioController = async (req: AuthRequest, res: Respons
     if (scenario.length < 10) {
       res.status(400).json({
         success: false,
-        message: 'Scenario description must be at least 10 characters'
+        message: "Scenario description must be at least 10 characters",
       });
       return;
     }
@@ -50,20 +57,24 @@ export const runWhatIfScenarioController = async (req: AuthRequest, res: Respons
     res.json({
       success: true,
       data: result,
-      message: 'Scenario analysis completed'
+      message: "Scenario analysis completed",
     });
   } catch (error) {
-    console.error('Run what-if scenario error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
+    console.error("Run what-if scenario error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
     res.status(500).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
 
-export const generateInvestorUpdateController = async (req: AuthRequest, res: Response): Promise<void> => {
+export const generateInvestorUpdateController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { startupId } = req.user!;
     const { periodStart, periodEnd } = req.body;
@@ -71,7 +82,7 @@ export const generateInvestorUpdateController = async (req: AuthRequest, res: Re
     if (!periodStart || !periodEnd) {
       res.status(400).json({
         success: false,
-        message: 'periodStart and periodEnd are required'
+        message: "periodStart and periodEnd are required",
       });
       return;
     }
@@ -82,7 +93,7 @@ export const generateInvestorUpdateController = async (req: AuthRequest, res: Re
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
       res.status(400).json({
         success: false,
-        message: 'Invalid date format'
+        message: "Invalid date format",
       });
       return;
     }
@@ -90,26 +101,30 @@ export const generateInvestorUpdateController = async (req: AuthRequest, res: Re
     if (startDate >= endDate) {
       res.status(400).json({
         success: false,
-        message: 'periodStart must be before periodEnd'
+        message: "periodStart must be before periodEnd",
       });
       return;
     }
 
-    const update = await aiService.generateInvestorUpdate(startupId, startDate, endDate);
+    const update = await aiService.generateInvestorUpdate(
+      startupId,
+      startDate,
+      endDate
+    );
 
     res.json({
       success: true,
       data: update,
-      message: 'Investor update generated successfully'
+      message: "Investor update generated successfully",
     });
   } catch (error) {
-    console.error('Generate investor update error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
+    console.error("Generate investor update error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
     res.status(500).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
-

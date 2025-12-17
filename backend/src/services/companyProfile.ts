@@ -1,5 +1,5 @@
-import { Prisma } from '@prisma/client';
-import { prisma } from '../lib/prisma';
+import { Prisma } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 
 export interface CompanyAddressInput {
   id?: string;
@@ -34,7 +34,7 @@ export interface CompanyProfileInput {
 export const getCompanyProfile = async (startupId: string) => {
   return prisma.companyProfile.findUnique({
     where: { startupId },
-    include: { addresses: { orderBy: { createdAt: 'asc' } } },
+    include: { addresses: { orderBy: { createdAt: "asc" } } },
   });
 };
 
@@ -59,13 +59,13 @@ export const upsertCompanyProfile = async (
   } = input;
 
   if (!displayName?.trim()) {
-    throw new Error('Display name is required');
+    throw new Error("Display name is required");
   }
 
   const sanitizedAddresses = addresses
     .map((address) => ({
       ...address,
-      line1: address.line1?.trim() ?? '',
+      line1: address.line1?.trim() ?? "",
       label: address.label?.trim() || undefined,
       line2: address.line2?.trim() || undefined,
       city: address.city?.trim() || undefined,
@@ -78,7 +78,10 @@ export const upsertCompanyProfile = async (
     }))
     .filter((address) => address.line1.length > 0);
 
-  if (sanitizedAddresses.length && !sanitizedAddresses.some((addr) => addr.isPrimary)) {
+  if (
+    sanitizedAddresses.length &&
+    !sanitizedAddresses.some((addr) => addr.isPrimary)
+  ) {
     sanitizedAddresses[0].isPrimary = true;
   }
 
@@ -99,7 +102,7 @@ export const upsertCompanyProfile = async (
           displayName: displayName.trim(),
           legalName: legalName?.trim() || null,
           mailingName: mailingName?.trim() || null,
-          baseCurrency: baseCurrency?.trim() || 'INR',
+          baseCurrency: baseCurrency?.trim() || "INR",
           country: country?.trim() || null,
           state: state?.trim() || null,
           city: city?.trim() || null,
@@ -117,7 +120,7 @@ export const upsertCompanyProfile = async (
               }
             : undefined,
         },
-        include: { addresses: { orderBy: { createdAt: 'asc' } } },
+        include: { addresses: { orderBy: { createdAt: "asc" } } },
       });
 
       return createdProfile;
@@ -188,7 +191,7 @@ export const upsertCompanyProfile = async (
     if (addressCount === 0) {
       const firstAddress = await tx.companyAddress.findFirst({
         where: { profileId: existingProfile.id },
-        orderBy: { createdAt: 'asc' },
+        orderBy: { createdAt: "asc" },
       });
 
       if (firstAddress) {
@@ -201,7 +204,7 @@ export const upsertCompanyProfile = async (
 
     return tx.companyProfile.findUnique({
       where: { id: existingProfile.id },
-      include: { addresses: { orderBy: { createdAt: 'asc' } } },
+      include: { addresses: { orderBy: { createdAt: "asc" } } },
     });
   });
 };

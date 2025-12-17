@@ -4,7 +4,7 @@ import {
   InterestComputation,
   LedgerBalanceType,
 } from "@prisma/client";
-import { Decimal } from '@prisma/client/runtime/library';
+import { Decimal } from "@prisma/client/runtime/library";
 import { prisma } from "../lib/prisma";
 
 type ChartGroupDefinition = {
@@ -82,7 +82,7 @@ export const bootstrapLedgerStructure = async (startupId: string) => {
 
   for (const group of CHART_OF_ACCOUNTS) {
     const parentId = group.parent
-      ? createdGroups.get(group.parent) ?? null
+      ? (createdGroups.get(group.parent) ?? null)
       : null;
     const created = await prisma.ledgerGroup.create({
       data: {
@@ -315,9 +315,7 @@ export const createLedger = async (startupId: string, input: LedgerInput) => {
       mailingAddress: input.mailingAddress
         ? (input.mailingAddress as any)
         : undefined,
-      bankDetails: input.bankDetails
-        ? (input.bankDetails as any)
-        : undefined,
+      bankDetails: input.bankDetails ? (input.bankDetails as any) : undefined,
       costCenterApplicable: Boolean(input.costCenterApplicable),
       openingBalance:
         input.openingBalance !== undefined && input.openingBalance !== null
@@ -325,9 +323,7 @@ export const createLedger = async (startupId: string, input: LedgerInput) => {
           : undefined,
       openingBalanceType: (input.openingBalanceType ??
         "DEBIT") as LedgerBalanceType,
-      metadata: input.metadata
-        ? (input.metadata as any)
-        : undefined,
+      metadata: input.metadata ? (input.metadata as any) : undefined,
     },
   });
 };
@@ -379,9 +375,7 @@ export const updateLedger = async (
       mailingAddress: input.mailingAddress
         ? (input.mailingAddress as any)
         : undefined,
-      bankDetails: input.bankDetails
-        ? (input.bankDetails as any)
-        : undefined,
+      bankDetails: input.bankDetails ? (input.bankDetails as any) : undefined,
       costCenterApplicable: input.costCenterApplicable ?? undefined,
       openingBalance:
         input.openingBalance !== undefined && input.openingBalance !== null
@@ -390,9 +384,7 @@ export const updateLedger = async (
       openingBalanceType: input.openingBalanceType
         ? (input.openingBalanceType as LedgerBalanceType)
         : undefined,
-      metadata: input.metadata
-        ? (input.metadata as any)
-        : undefined,
+      metadata: input.metadata ? (input.metadata as any) : undefined,
     },
   });
 };

@@ -1,5 +1,5 @@
-import { Prisma } from '@prisma/client';
-import { prisma } from '../lib/prisma';
+import { Prisma } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 
 /**
  * List all roles with their permissions
@@ -20,7 +20,7 @@ export const listRoles = async (startupId?: string) => {
         select: { userId: true },
       },
     },
-    orderBy: { name: 'asc' },
+    orderBy: { name: "asc" },
   });
 
   return roles.map(({ users, ...rest }: any) => ({
@@ -66,7 +66,11 @@ export const getRole = async (roleId: string) => {
 /**
  * Create a new role
  */
-export const createRole = async (data: { name: string; description?: string; permissionIds?: string[] }) => {
+export const createRole = async (data: {
+  name: string;
+  description?: string;
+  permissionIds?: string[];
+}) => {
   const { name, description, permissionIds = [] } = data;
 
   // Check if role already exists
@@ -75,7 +79,7 @@ export const createRole = async (data: { name: string; description?: string; per
   });
 
   if (existing) {
-    throw new Error('Role with this name already exists');
+    throw new Error("Role with this name already exists");
   }
 
   return prisma.role.create({
@@ -113,7 +117,7 @@ export const updateRole = async (
   });
 
   if (!role) {
-    throw new Error('Role not found');
+    throw new Error("Role not found");
   }
 
   // If name is being changed, check if new name already exists
@@ -123,7 +127,7 @@ export const updateRole = async (
     });
 
     if (existing) {
-      throw new Error('Role with this name already exists');
+      throw new Error("Role with this name already exists");
     }
   }
 
@@ -176,18 +180,18 @@ export const deleteRole = async (roleId: string) => {
   });
 
   if (!role) {
-    throw new Error('Role not found');
+    throw new Error("Role not found");
   }
 
   if (role._count.users > 0) {
-    throw new Error('Cannot delete role that is assigned to users');
+    throw new Error("Cannot delete role that is assigned to users");
   }
 
   await prisma.role.delete({
     where: { id: roleId },
   });
 
-  return { success: true, message: 'Role deleted successfully' };
+  return { success: true, message: "Role deleted successfully" };
 };
 
 /**
@@ -202,7 +206,7 @@ export const listPermissions = async () => {
         },
       },
     },
-    orderBy: [{ subject: 'asc' }, { action: 'asc' }],
+    orderBy: [{ subject: "asc" }, { action: "asc" }],
   });
 };
 
@@ -245,7 +249,7 @@ export const createPermission = async (data: {
   });
 
   if (existing) {
-    throw new Error('Permission with this action and subject already exists');
+    throw new Error("Permission with this action and subject already exists");
   }
 
   return prisma.permission.create({
@@ -271,7 +275,7 @@ export const updatePermission = async (
   });
 
   if (!permission) {
-    throw new Error('Permission not found');
+    throw new Error("Permission not found");
   }
 
   // If action or subject is being changed, check if new combination already exists
@@ -289,7 +293,7 @@ export const updatePermission = async (
     });
 
     if (existing && existing.id !== permissionId) {
-      throw new Error('Permission with this action and subject already exists');
+      throw new Error("Permission with this action and subject already exists");
     }
   }
 
@@ -319,18 +323,18 @@ export const deletePermission = async (permissionId: string) => {
   });
 
   if (!permission) {
-    throw new Error('Permission not found');
+    throw new Error("Permission not found");
   }
 
   if (permission._count.roles > 0) {
-    throw new Error('Cannot delete permission that is assigned to roles');
+    throw new Error("Cannot delete permission that is assigned to roles");
   }
 
   await prisma.permission.delete({
     where: { id: permissionId },
   });
 
-  return { success: true, message: 'Permission deleted successfully' };
+  return { success: true, message: "Permission deleted successfully" };
 };
 
 /**
@@ -356,7 +360,7 @@ export const getUsersWithRoles = async (startupId: string) => {
         },
       },
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: "desc" },
   });
 };
 
@@ -370,7 +374,7 @@ export const assignRoleToUser = async (userId: string, roleId: string) => {
   });
 
   if (!user) {
-    throw new Error('User not found');
+    throw new Error("User not found");
   }
 
   // Check if role exists
@@ -379,7 +383,7 @@ export const assignRoleToUser = async (userId: string, roleId: string) => {
   });
 
   if (!role) {
-    throw new Error('Role not found');
+    throw new Error("Role not found");
   }
 
   // Check if already assigned
@@ -393,7 +397,7 @@ export const assignRoleToUser = async (userId: string, roleId: string) => {
   });
 
   if (existing) {
-    throw new Error('Role is already assigned to this user');
+    throw new Error("Role is already assigned to this user");
   }
 
   return prisma.userRole.create({
@@ -439,7 +443,7 @@ export const removeRoleFromUser = async (userId: string, roleId: string) => {
   });
 
   if (!userRole) {
-    throw new Error('Role is not assigned to this user');
+    throw new Error("Role is not assigned to this user");
   }
 
   await prisma.userRole.delete({
@@ -451,7 +455,7 @@ export const removeRoleFromUser = async (userId: string, roleId: string) => {
     },
   });
 
-  return { success: true, message: 'Role removed from user successfully' };
+  return { success: true, message: "Role removed from user successfully" };
 };
 
 /**
@@ -464,7 +468,7 @@ export const setUserRoles = async (userId: string, roleIds: string[]) => {
   });
 
   if (!user) {
-    throw new Error('User not found');
+    throw new Error("User not found");
   }
 
   // Verify all roles exist
@@ -477,7 +481,7 @@ export const setUserRoles = async (userId: string, roleIds: string[]) => {
   });
 
   if (roles.length !== roleIds.length) {
-    throw new Error('One or more roles not found');
+    throw new Error("One or more roles not found");
   }
 
   // Remove all existing roles and assign new ones
@@ -515,4 +519,3 @@ export const setUserRoles = async (userId: string, roleIds: string[]) => {
     },
   });
 };
-

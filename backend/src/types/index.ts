@@ -1,4 +1,4 @@
-import { Request } from 'express';
+import { Request } from "express";
 
 // API Response types
 export interface ApiResponse<T = any> {
@@ -10,11 +10,11 @@ export interface ApiResponse<T = any> {
 
 // Health check response
 export interface HealthResponse {
-  status: 'healthy' | 'unhealthy';
+  status: "healthy" | "unhealthy";
   timestamp: string;
   uptime: number;
   environment: string;
-  database: 'connected' | 'disconnected';
+  database: "connected" | "disconnected";
   version: string;
   error?: string;
 }
@@ -37,7 +37,7 @@ export interface User {
   id: string;
   email: string;
   passwordHash: string;
-  role: 'admin' | 'member';
+  role: "admin" | "member";
   createdAt: Date;
   updatedAt: Date;
   tenantId: string;

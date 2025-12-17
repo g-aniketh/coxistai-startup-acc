@@ -7,35 +7,35 @@ export class TransactionSyncService {
 
   static start() {
     if (this.isRunning) return;
-    
+
     this.isRunning = true;
-    console.log('🔄 Transaction sync service started (stub mode)');
-    
+    console.log("🔄 Transaction sync service started (stub mode)");
+
     // Stub: No actual syncing, just log periodically
     this.syncInterval = setInterval(() => {
-      console.log('📊 Transaction sync check (stub mode)');
+      console.log("📊 Transaction sync check (stub mode)");
     }, 300000); // 5 minutes
   }
 
   static stop() {
     if (!this.isRunning) return;
-    
+
     this.isRunning = false;
     if (this.syncInterval) {
       clearInterval(this.syncInterval);
       this.syncInterval = null;
     }
-    console.log('⏹️ Transaction sync service stopped');
+    console.log("⏹️ Transaction sync service stopped");
   }
 
   static async syncAllItems() {
     // Stub implementation
-    console.log('🔄 Syncing all items (stub mode)');
+    console.log("🔄 Syncing all items (stub mode)");
     return {
       itemsSynced: 0,
       transactionsAdded: 0,
       transactionsModified: 0,
-      errors: []
+      errors: [],
     };
   }
 
@@ -45,7 +45,7 @@ export class TransactionSyncService {
     return {
       added: [],
       modified: [],
-      removed: []
+      removed: [],
     };
   }
 
@@ -55,7 +55,7 @@ export class TransactionSyncService {
       totalItems: 0,
       totalAccounts: 0,
       lastSyncTime: new Date(),
-      isHealthy: true
+      isHealthy: true,
     };
   }
 }

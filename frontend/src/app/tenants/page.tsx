@@ -1,18 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { apiClient, TeamMember } from '@/lib/api';
-import MainLayout from '@/components/layout/MainLayout';
-import AuthGuard from '@/components/auth/AuthGuard';
-import { 
-  Building2,
-  User,
-  Plus,
-  Search
-} from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from "react";
+import { apiClient, TeamMember } from "@/lib/api";
+import MainLayout from "@/components/layout/MainLayout";
+import AuthGuard from "@/components/auth/AuthGuard";
+import { Building2, User, Plus, Search } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function TenantsPage() {
   const [tenants, setTenants] = useState<TeamMember[]>([]);
@@ -26,10 +21,10 @@ export default function TenantsPage() {
         if (response.success && response.data) {
           setTenants(response.data);
         } else {
-          setError(response.error || 'Failed to fetch tenants');
+          setError(response.error || "Failed to fetch tenants");
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
         setLoading(false);
       }
@@ -45,7 +40,9 @@ export default function TenantsPage() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">Organizations</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">
+                Organizations
+              </h1>
               <p className="text-sm text-[#2C2C2C]/70 mt-1">
                 Manage all organizations in the platform.
               </p>
@@ -53,7 +50,10 @@ export default function TenantsPage() {
             <div className="flex gap-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input placeholder="Search organizations..." className="pl-10 bg-white rounded-lg" />
+                <Input
+                  placeholder="Search organizations..."
+                  className="pl-10 bg-white rounded-lg"
+                />
               </div>
               <Button className="flex items-center gap-2 bg-[#607c47] hover:bg-[#4a6129] text-white">
                 <Plus className="h-4 w-4" />
@@ -73,8 +73,8 @@ export default function TenantsPage() {
               </div>
             ) : tenants.length > 0 ? (
               tenants.map((tenant) => (
-                <Card 
-                  key={tenant.id} 
+                <Card
+                  key={tenant.id}
                   className="rounded-xl border-0 shadow-lg hover:shadow-xl transition-shadow"
                 >
                   <CardContent className="p-6">
@@ -90,7 +90,7 @@ export default function TenantsPage() {
                         </h3>
                         <div className="flex items-center gap-1 mt-1 text-sm text-gray-500">
                           <User className="h-4 w-4" />
-                          <span>{tenant.roles.join(', ')}</span>
+                          <span>{tenant.roles.join(", ")}</span>
                         </div>
                       </div>
                     </div>
@@ -105,7 +105,9 @@ export default function TenantsPage() {
             ) : (
               <div className="col-span-full p-6 text-center">
                 <Building2 className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No organizations</h3>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">
+                  No organizations
+                </h3>
                 <p className="mt-1 text-sm text-gray-500">
                   No organizations found in the system.
                 </p>
@@ -117,4 +119,3 @@ export default function TenantsPage() {
     </AuthGuard>
   );
 }
-

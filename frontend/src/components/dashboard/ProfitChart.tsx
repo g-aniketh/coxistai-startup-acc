@@ -1,15 +1,21 @@
-'use client';
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
-import { MoreHorizontal } from 'lucide-react';
-import { DashboardSummary } from '@/lib/api';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from "recharts";
+import { MoreHorizontal } from "lucide-react";
+import { DashboardSummary } from "@/lib/api";
 
 interface ProfitChartProps {
   summary?: DashboardSummary;
 }
 
-const COLORS = ['#8b5cf6', '#a78bfa', '#c4b5fd'];
+const COLORS = ["#8b5cf6", "#a78bfa", "#c4b5fd"];
 
 const renderLegend = (props: any) => {
   const { payload } = props;
@@ -17,8 +23,11 @@ const renderLegend = (props: any) => {
     <div className="flex flex-col space-y-2">
       {payload.map((entry: any, index: number) => (
         <div key={`item-${index}`} className="flex items-center">
-          <div className="w-3 h-3 rounded-full mr-3" style={{ backgroundColor: entry.color }} />
-          <div className='flex justify-between w-full'>
+          <div
+            className="w-3 h-3 rounded-full mr-3"
+            style={{ backgroundColor: entry.color }}
+          />
+          <div className="flex justify-between w-full">
             <span className="text-gray-600 mr-2">{entry.name}</span>
             <span className="font-semibold text-gray-800">{entry.value}%</span>
           </div>
@@ -31,9 +40,9 @@ const renderLegend = (props: any) => {
 export default function ProfitChart({ summary }: ProfitChartProps) {
   // Use mock data that matches the image exactly
   const data = [
-    { name: 'Giveaway', value: 60 },
-    { name: 'Affiliate', value: 24 },
-    { name: 'Offline Sales', value: 16 },
+    { name: "Giveaway", value: 60 },
+    { name: "Affiliate", value: 24 },
+    { name: "Offline Sales", value: 16 },
   ];
 
   const totalValue = data.reduce((sum, entry) => sum + entry.value, 0);
@@ -42,7 +51,9 @@ export default function ProfitChart({ summary }: ProfitChartProps) {
     <Card className="rounded-2xl shadow-lg border-0 bg-white p-4">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div>
-          <CardTitle className="text-lg font-semibold text-gray-800">Monthly Profits</CardTitle>
+          <CardTitle className="text-lg font-semibold text-gray-800">
+            Monthly Profits
+          </CardTitle>
           <CardDescription className="text-sm text-gray-500">
             Total Profit Growth of 26%
           </CardDescription>
@@ -64,7 +75,10 @@ export default function ProfitChart({ summary }: ProfitChartProps) {
                 dataKey="value"
               >
                 {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
               <text
@@ -74,14 +88,24 @@ export default function ProfitChart({ summary }: ProfitChartProps) {
                 dominantBaseline="middle"
                 className="text-lg font-bold text-gray-800"
               >
-                <tspan x="50%" dy="-0.5em" className="text-sm text-gray-500">Total</tspan>
-                <tspan x="50%" dy="1.2em" className="text-xl font-bold text-gray-800">$76,356</tspan>
+                <tspan x="50%" dy="-0.5em" className="text-sm text-gray-500">
+                  Total
+                </tspan>
+                <tspan
+                  x="50%"
+                  dy="1.2em"
+                  className="text-xl font-bold text-gray-800"
+                >
+                  $76,356
+                </tspan>
               </text>
             </PieChart>
           </ResponsiveContainer>
         </div>
         <div className="w-full md:w-1/2">
-          {renderLegend({ payload: data.map((d, i) => ({...d, color: COLORS[i]})) })}
+          {renderLegend({
+            payload: data.map((d, i) => ({ ...d, color: COLORS[i] })),
+          })}
         </div>
       </CardContent>
     </Card>

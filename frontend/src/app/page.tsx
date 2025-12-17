@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/auth';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/auth";
 
 export default function Home() {
   const router = useRouter();
@@ -12,12 +12,12 @@ export default function Home() {
     const initAuth = async () => {
       const authSuccess = await checkAuth();
       if (authSuccess) {
-        router.push('/dashboard');
+        router.push("/dashboard");
       } else {
-        router.push('/login');
+        router.push("/login");
       }
     };
-    
+
     initAuth();
   }, [checkAuth, router]);
 

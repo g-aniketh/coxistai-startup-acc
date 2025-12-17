@@ -1,4 +1,4 @@
-import { prisma } from '../lib/prisma';
+import { prisma } from "../lib/prisma";
 
 export interface CompanyFeatureToggleInput {
   enableAccounting?: boolean;
@@ -39,15 +39,42 @@ export const upsertCompanyFeatureToggle = async (
   });
 
   const payload: Required<CompanyFeatureToggleInput> = {
-    enableAccounting: input.enableAccounting ?? existing?.enableAccounting ?? DEFAULT_TOGGLES.enableAccounting,
-    enableInventory: input.enableInventory ?? existing?.enableInventory ?? DEFAULT_TOGGLES.enableInventory,
-    enableTaxation: input.enableTaxation ?? existing?.enableTaxation ?? DEFAULT_TOGGLES.enableTaxation,
-    enablePayroll: input.enablePayroll ?? existing?.enablePayroll ?? DEFAULT_TOGGLES.enablePayroll,
-    enableAIInsights: input.enableAIInsights ?? existing?.enableAIInsights ?? DEFAULT_TOGGLES.enableAIInsights,
-    enableScenarioPlanning: input.enableScenarioPlanning ?? existing?.enableScenarioPlanning ?? DEFAULT_TOGGLES.enableScenarioPlanning,
-    enableAutomations: input.enableAutomations ?? existing?.enableAutomations ?? DEFAULT_TOGGLES.enableAutomations,
-    enableVendorManagement: input.enableVendorManagement ?? existing?.enableVendorManagement ?? DEFAULT_TOGGLES.enableVendorManagement,
-    enableBillingAndInvoicing: input.enableBillingAndInvoicing ?? existing?.enableBillingAndInvoicing ?? DEFAULT_TOGGLES.enableBillingAndInvoicing,
+    enableAccounting:
+      input.enableAccounting ??
+      existing?.enableAccounting ??
+      DEFAULT_TOGGLES.enableAccounting,
+    enableInventory:
+      input.enableInventory ??
+      existing?.enableInventory ??
+      DEFAULT_TOGGLES.enableInventory,
+    enableTaxation:
+      input.enableTaxation ??
+      existing?.enableTaxation ??
+      DEFAULT_TOGGLES.enableTaxation,
+    enablePayroll:
+      input.enablePayroll ??
+      existing?.enablePayroll ??
+      DEFAULT_TOGGLES.enablePayroll,
+    enableAIInsights:
+      input.enableAIInsights ??
+      existing?.enableAIInsights ??
+      DEFAULT_TOGGLES.enableAIInsights,
+    enableScenarioPlanning:
+      input.enableScenarioPlanning ??
+      existing?.enableScenarioPlanning ??
+      DEFAULT_TOGGLES.enableScenarioPlanning,
+    enableAutomations:
+      input.enableAutomations ??
+      existing?.enableAutomations ??
+      DEFAULT_TOGGLES.enableAutomations,
+    enableVendorManagement:
+      input.enableVendorManagement ??
+      existing?.enableVendorManagement ??
+      DEFAULT_TOGGLES.enableVendorManagement,
+    enableBillingAndInvoicing:
+      input.enableBillingAndInvoicing ??
+      existing?.enableBillingAndInvoicing ??
+      DEFAULT_TOGGLES.enableBillingAndInvoicing,
   };
 
   if (!existing) {

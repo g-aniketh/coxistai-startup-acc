@@ -1,18 +1,25 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import AuthGuard from '@/components/auth/AuthGuard';
-import MainLayout from '@/components/layout/MainLayout';
-import { apiClient } from '@/lib/api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/Badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  Upload, 
-  FileText, 
-  AlertCircle, 
-  CheckCircle, 
+import { useState } from "react";
+import AuthGuard from "@/components/auth/AuthGuard";
+import MainLayout from "@/components/layout/MainLayout";
+import { apiClient } from "@/lib/api";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/Badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Upload,
+  FileText,
+  AlertCircle,
+  CheckCircle,
   AlertTriangle,
   Download,
   Eye,
@@ -23,18 +30,22 @@ import {
   Users,
   TrendingUp,
   BookOpen,
-} from 'lucide-react';
-import { parseTallyExcel, generateTallySampleTemplate, TallyImportData } from '@/lib/excel-parser';
-import toast from 'react-hot-toast';
-import { formatCurrency } from '@/lib/utils';
-import * as XLSX from 'xlsx';
+} from "lucide-react";
+import {
+  parseTallyExcel,
+  generateTallySampleTemplate,
+  TallyImportData,
+} from "@/lib/excel-parser";
+import toast from "react-hot-toast";
+import { formatCurrency } from "@/lib/utils";
+import * as XLSX from "xlsx";
 
-type ImportStep = 'upload' | 'preview' | 'confirm' | 'processing' | 'complete';
+type ImportStep = "upload" | "preview" | "confirm" | "processing" | "complete";
 
 export default function TallyImportPage() {
-  const [step, setStep] = useState<ImportStep>('upload');
+  const [step, setStep] = useState<ImportStep>("upload");
   const [dragActive, setDragActive] = useState(false);
-  const [fileName, setFileName] = useState('');
+  const [fileName, setFileName] = useState("");
   const [importData, setImportData] = useState<TallyImportData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
@@ -47,8 +58,12 @@ export default function TallyImportPage() {
 
   // Handle file upload
   const handleFileUpload = async (file: File) => {
-    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls') && !file.name.endsWith('.csv')) {
-      toast.error('Please upload an Excel file (.xlsx, .xls) or CSV file');
+    if (
+      !file.name.endsWith(".xlsx") &&
+      !file.name.endsWith(".xls") &&
+      !file.name.endsWith(".csv")
+    ) {
+      toast.error("Please upload an Excel file (.xlsx, .xls) or CSV file");
       return;
     }
 
@@ -57,26 +72,28 @@ export default function TallyImportPage() {
 
     try {
       const data = await parseTallyExcel(file);
-      
+
       if (data.errors.length > 0) {
         toast.error(`Import errors found: ${data.errors[0]}`);
         return;
       }
 
       setImportData(data);
-      
+
       if (data.warnings.length > 0) {
         toast.success(`File parsed! Found ${data.warnings.length} warning(s)`, {
           duration: 4000,
         });
       } else {
-        toast.success('File parsed successfully!');
+        toast.success("File parsed successfully!");
       }
 
-      setStep('preview');
+      setStep("preview");
     } catch (error) {
-      toast.error(`Failed to parse file: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      console.error('Parse error:', error);
+      toast.error(
+        `Failed to parse file: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+      console.error("Parse error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -85,9 +102,9 @@ export default function TallyImportPage() {
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
+    if (e.type === "dragenter" || e.type === "dragover") {
       setDragActive(true);
-    } else if (e.type === 'dragleave') {
+    } else if (e.type === "dragleave") {
       setDragActive(false);
     }
   };
@@ -113,47 +130,51 @@ export default function TallyImportPage() {
   const downloadSampleTemplate = () => {
     try {
       const wb = generateTallySampleTemplate();
-      XLSX.writeFile(wb, 'Tally_Import_Template.xlsx');
-      toast.success('Sample template downloaded!');
+      XLSX.writeFile(wb, "Tally_Import_Template.xlsx");
+      toast.success("Sample template downloaded!");
     } catch (error) {
-      toast.error('Failed to download template');
+      toast.error("Failed to download template");
     }
   };
 
   const handleImport = async () => {
     if (!importData) return;
 
-    setStep('processing');
+    setStep("processing");
     setImportProgress(0);
 
     try {
       // Simulate processing
       for (let i = 0; i <= 100; i += 10) {
         setImportProgress(i);
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 200));
       }
 
       // Call API endpoint to save the data
       const response = await apiClient.import.tally(importData);
 
-      setStep('complete');
-      toast.success('Data imported successfully! Your dashboard will now reflect the new records.');
+      setStep("complete");
+      toast.success(
+        "Data imported successfully! Your dashboard will now reflect the new records."
+      );
     } catch (error) {
-      toast.error(`Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      setStep('preview');
+      toast.error(
+        `Import failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+      setStep("preview");
     }
   };
 
   const resetImport = () => {
-    setStep('upload');
-    setFileName('');
+    setStep("upload");
+    setFileName("");
     setImportData(null);
     setImportProgress(0);
     setSelectedLedgerIndex(0);
   };
 
   // Render different steps
-  if (step === 'upload') {
+  if (step === "upload") {
     return (
       <AuthGuard requireAuth={true}>
         <MainLayout>
@@ -165,7 +186,8 @@ export default function TallyImportPage() {
                 Import from Tally
               </h1>
               <p className="text-gray-700">
-                Migrate your Tally financial records to Coxist AI. Your data will be seamlessly integrated into your dashboard.
+                Migrate your Tally financial records to Coxist AI. Your data
+                will be seamlessly integrated into your dashboard.
               </p>
             </div>
 
@@ -173,7 +195,7 @@ export default function TallyImportPage() {
             <Card className="border-2 border-dashed border-blue-300 bg-blue-50 rounded-lg overflow-hidden">
               <div
                 className={`p-12 text-center cursor-pointer transition-all ${
-                  dragActive ? 'bg-blue-100 border-4 border-blue-500' : ''
+                  dragActive ? "bg-blue-100 border-4 border-blue-500" : ""
                 }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
@@ -187,8 +209,12 @@ export default function TallyImportPage() {
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">Drop your Tally Excel file here</h3>
-                    <p className="text-gray-700 mt-1">or click to browse your computer</p>
+                    <h3 className="text-xl font-semibold text-gray-900">
+                      Drop your Tally Excel file here
+                    </h3>
+                    <p className="text-gray-700 mt-1">
+                      or click to browse your computer
+                    </p>
                   </div>
                   <div className="flex gap-3 justify-center">
                     <label>
@@ -199,8 +225,8 @@ export default function TallyImportPage() {
                         className="hidden"
                         disabled={isLoading}
                       />
-                      <Button 
-                        asChild 
+                      <Button
+                        asChild
                         className="bg-blue-600 hover:bg-blue-700"
                         disabled={isLoading}
                       >
@@ -220,7 +246,9 @@ export default function TallyImportPage() {
                       </Button>
                     </label>
                   </div>
-                  <p className="text-sm text-gray-700">Supported formats: .xlsx, .xls, .csv</p>
+                  <p className="text-sm text-gray-700">
+                    Supported formats: .xlsx, .xls, .csv
+                  </p>
                 </div>
               </div>
             </Card>
@@ -232,8 +260,13 @@ export default function TallyImportPage() {
                   <div className="flex items-start gap-3">
                     <BookOpen className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
                     <div>
-                      <p className="font-semibold text-gray-900">What will be imported?</p>
-                      <p className="text-sm text-gray-700 mt-1">Ledgers, parties, opening balances, and all transactions.</p>
+                      <p className="font-semibold text-gray-900">
+                        What will be imported?
+                      </p>
+                      <p className="text-sm text-gray-700 mt-1">
+                        Ledgers, parties, opening balances, and all
+                        transactions.
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -244,8 +277,13 @@ export default function TallyImportPage() {
                   <div className="flex items-start gap-3">
                     <CheckCircle className="h-5 w-5 text-green-600 mt-1 flex-shrink-0" />
                     <div>
-                      <p className="font-semibold text-gray-900">Your data is safe</p>
-                      <p className="text-sm text-gray-700 mt-1">All transactions are verified and balanced before import.</p>
+                      <p className="font-semibold text-gray-900">
+                        Your data is safe
+                      </p>
+                      <p className="text-sm text-gray-700 mt-1">
+                        All transactions are verified and balanced before
+                        import.
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -256,8 +294,12 @@ export default function TallyImportPage() {
                   <div className="flex items-start gap-3">
                     <TrendingUp className="h-5 w-5 text-purple-600 mt-1 flex-shrink-0" />
                     <div>
-                      <p className="font-semibold text-gray-900">Instant dashboards</p>
-                      <p className="text-sm text-gray-700 mt-1">See your financial metrics immediately after import.</p>
+                      <p className="font-semibold text-gray-900">
+                        Instant dashboards
+                      </p>
+                      <p className="text-sm text-gray-700 mt-1">
+                        See your financial metrics immediately after import.
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -267,11 +309,19 @@ export default function TallyImportPage() {
             {/* Sample Template */}
             <Card className="border-gray-200 bg-gradient-to-r from-gray-50 to-white">
               <CardHeader>
-                <CardTitle className="text-lg text-gray-900">Need a sample template?</CardTitle>
+                <CardTitle className="text-lg text-gray-900">
+                  Need a sample template?
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <p className="text-gray-800">Download our comprehensive Tally import template with 25+ ledgers, 6 parties, and 30+ transactions across all voucher types (Sales, Purchase, Payment, Receipt, Journal, Contra). This template demonstrates real-world Tally export formats including Revenue, Expenses, Assets, Liabilities, and more.</p>
-                <Button 
+                <p className="text-gray-800">
+                  Download our comprehensive Tally import template with 25+
+                  ledgers, 6 parties, and 30+ transactions across all voucher
+                  types (Sales, Purchase, Payment, Receipt, Journal, Contra).
+                  This template demonstrates real-world Tally export formats
+                  including Revenue, Expenses, Assets, Liabilities, and more.
+                </p>
+                <Button
                   onClick={downloadSampleTemplate}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
@@ -305,7 +355,7 @@ export default function TallyImportPage() {
     );
   }
 
-  if (step === 'preview' && importData) {
+  if (step === "preview" && importData) {
     return (
       <AuthGuard requireAuth={true}>
         <MainLayout>
@@ -319,10 +369,7 @@ export default function TallyImportPage() {
                 </h1>
                 <p className="text-gray-700 mt-1">File: {fileName}</p>
               </div>
-              <Button 
-                variant="outline" 
-                onClick={resetImport}
-              >
+              <Button variant="outline" onClick={resetImport}>
                 <X className="h-4 w-4 mr-2" />
                 Cancel
               </Button>
@@ -334,8 +381,12 @@ export default function TallyImportPage() {
                 <CardContent className="pt-6">
                   <div className="text-center">
                     <BookOpen className="h-6 w-6 text-blue-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-700 font-semibold">Ledgers</p>
-                    <p className="text-2xl font-bold text-gray-900">{importData.summary.totalLedgers}</p>
+                    <p className="text-sm text-gray-700 font-semibold">
+                      Ledgers
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {importData.summary.totalLedgers}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -344,8 +395,12 @@ export default function TallyImportPage() {
                 <CardContent className="pt-6">
                   <div className="text-center">
                     <Users className="h-6 w-6 text-green-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-700 font-semibold">Parties</p>
-                    <p className="text-2xl font-bold text-gray-900">{importData.summary.totalParties}</p>
+                    <p className="text-sm text-gray-700 font-semibold">
+                      Parties
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {importData.summary.totalParties}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -354,8 +409,12 @@ export default function TallyImportPage() {
                 <CardContent className="pt-6">
                   <div className="text-center">
                     <BarChart3 className="h-6 w-6 text-purple-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-700 font-semibold">Transactions</p>
-                    <p className="text-2xl font-bold text-gray-900">{importData.summary.totalTransactions}</p>
+                    <p className="text-sm text-gray-700 font-semibold">
+                      Transactions
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {importData.summary.totalTransactions}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -364,8 +423,12 @@ export default function TallyImportPage() {
                 <CardContent className="pt-6">
                   <div className="text-center">
                     <DollarSign className="h-6 w-6 text-amber-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-700 font-semibold">Total Amount</p>
-                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(importData.summary.totalDebit)}</p>
+                    <p className="text-sm text-gray-700 font-semibold">
+                      Total Amount
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {formatCurrency(importData.summary.totalDebit)}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -383,7 +446,10 @@ export default function TallyImportPage() {
                 <CardContent>
                   <ul className="space-y-2">
                     {importData.errors.map((error, idx) => (
-                      <li key={idx} className="text-sm text-red-800 flex items-start gap-2">
+                      <li
+                        key={idx}
+                        className="text-sm text-red-800 flex items-start gap-2"
+                      >
                         <span className="mt-1">•</span>
                         <span>{error}</span>
                       </li>
@@ -404,7 +470,10 @@ export default function TallyImportPage() {
                 <CardContent>
                   <ul className="space-y-2">
                     {importData.warnings.map((warning, idx) => (
-                      <li key={idx} className="text-sm text-amber-800 flex items-start gap-2">
+                      <li
+                        key={idx}
+                        className="text-sm text-amber-800 flex items-start gap-2"
+                      >
                         <span className="mt-1">•</span>
                         <span>{warning}</span>
                       </li>
@@ -418,12 +487,22 @@ export default function TallyImportPage() {
             {importData.ledgers.length > 0 && (
               <Card className="bg-white">
                 <CardHeader>
-                  <div className="flex items-center justify-between cursor-pointer" onClick={() => setExpandedSections(prev => ({ ...prev, ledgers: !prev.ledgers }))}>
+                  <div
+                    className="flex items-center justify-between cursor-pointer"
+                    onClick={() =>
+                      setExpandedSections((prev) => ({
+                        ...prev,
+                        ledgers: !prev.ledgers,
+                      }))
+                    }
+                  >
                     <CardTitle className="text-gray-900 flex items-center gap-2">
                       <BookOpen className="h-5 w-5" />
                       Ledgers ({importData.ledgers.length})
                     </CardTitle>
-                    <Badge variant="outline" className="text-gray-700">{expandedSections.ledgers ? 'Hide' : 'Show'}</Badge>
+                    <Badge variant="outline" className="text-gray-700">
+                      {expandedSections.ledgers ? "Hide" : "Show"}
+                    </Badge>
                   </div>
                 </CardHeader>
                 {expandedSections.ledgers && (
@@ -432,22 +511,41 @@ export default function TallyImportPage() {
                       {importData.ledgers.map((ledger, idx) => {
                         // Determine badge color based on account group
                         const getGroupColor = (group: string) => {
-                          if (group.includes('Cash') || group.includes('Bank')) return 'bg-blue-50 hover:bg-blue-100 border-l-4 border-blue-500';
-                          if (group.includes('Revenue')) return 'bg-green-50 hover:bg-green-100 border-l-4 border-green-500';
-                          if (group.includes('Expense')) return 'bg-red-50 hover:bg-red-100 border-l-4 border-red-500';
-                          if (group.includes('Asset')) return 'bg-purple-50 hover:bg-purple-100 border-l-4 border-purple-500';
-                          if (group.includes('Liability') || group.includes('Capital')) return 'bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-500';
-                          return 'bg-gray-50 hover:bg-gray-100 border-l-4 border-gray-400';
+                          if (group.includes("Cash") || group.includes("Bank"))
+                            return "bg-blue-50 hover:bg-blue-100 border-l-4 border-blue-500";
+                          if (group.includes("Revenue"))
+                            return "bg-green-50 hover:bg-green-100 border-l-4 border-green-500";
+                          if (group.includes("Expense"))
+                            return "bg-red-50 hover:bg-red-100 border-l-4 border-red-500";
+                          if (group.includes("Asset"))
+                            return "bg-purple-50 hover:bg-purple-100 border-l-4 border-purple-500";
+                          if (
+                            group.includes("Liability") ||
+                            group.includes("Capital")
+                          )
+                            return "bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-500";
+                          return "bg-gray-50 hover:bg-gray-100 border-l-4 border-gray-400";
                         };
                         return (
-                          <div key={idx} className={`p-4 rounded-lg flex items-center justify-between transition-all duration-200 shadow-sm ${getGroupColor(ledger.accountGroup || '')}`}>
+                          <div
+                            key={idx}
+                            className={`p-4 rounded-lg flex items-center justify-between transition-all duration-200 shadow-sm ${getGroupColor(ledger.accountGroup || "")}`}
+                          >
                             <div>
-                              <p className="font-semibold text-gray-900">{ledger.ledgerName}</p>
-                              <p className="text-sm text-gray-700 font-medium">{ledger.accountGroup || 'No group'}</p>
+                              <p className="font-semibold text-gray-900">
+                                {ledger.ledgerName}
+                              </p>
+                              <p className="text-sm text-gray-700 font-medium">
+                                {ledger.accountGroup || "No group"}
+                              </p>
                             </div>
                             <div className="text-right">
-                              <p className="font-bold text-gray-900 text-lg">{formatCurrency(ledger.openingBalance)}</p>
-                              <p className={`text-xs font-semibold ${ledger.openingType === 'Debit' ? 'text-blue-700' : 'text-green-700'}`}>
+                              <p className="font-bold text-gray-900 text-lg">
+                                {formatCurrency(ledger.openingBalance)}
+                              </p>
+                              <p
+                                className={`text-xs font-semibold ${ledger.openingType === "Debit" ? "text-blue-700" : "text-green-700"}`}
+                              >
                                 {ledger.openingType}
                               </p>
                             </div>
@@ -464,12 +562,22 @@ export default function TallyImportPage() {
             {importData.parties.length > 0 && (
               <Card className="bg-white">
                 <CardHeader>
-                  <div className="flex items-center justify-between cursor-pointer" onClick={() => setExpandedSections(prev => ({ ...prev, parties: !prev.parties }))}>
+                  <div
+                    className="flex items-center justify-between cursor-pointer"
+                    onClick={() =>
+                      setExpandedSections((prev) => ({
+                        ...prev,
+                        parties: !prev.parties,
+                      }))
+                    }
+                  >
                     <CardTitle className="text-gray-900 flex items-center gap-2">
                       <Users className="h-5 w-5" />
                       Parties ({importData.parties.length})
                     </CardTitle>
-                    <Badge variant="outline" className="text-gray-700">{expandedSections.parties ? 'Hide' : 'Show'}</Badge>
+                    <Badge variant="outline" className="text-gray-700">
+                      {expandedSections.parties ? "Hide" : "Show"}
+                    </Badge>
                   </div>
                 </CardHeader>
                 {expandedSections.parties && (
@@ -478,29 +586,59 @@ export default function TallyImportPage() {
                       <Table>
                         <TableHeader>
                           <TableRow className="bg-gradient-to-r from-blue-50 to-purple-50">
-                            <TableHead className="font-semibold text-gray-900">Party Name</TableHead>
-                            <TableHead className="font-semibold text-gray-900">Type</TableHead>
-                            <TableHead className="font-semibold text-gray-900">Opening Balance</TableHead>
-                            <TableHead className="font-semibold text-gray-900">Balance Type</TableHead>
-                            <TableHead className="font-semibold text-gray-900">Email</TableHead>
+                            <TableHead className="font-semibold text-gray-900">
+                              Party Name
+                            </TableHead>
+                            <TableHead className="font-semibold text-gray-900">
+                              Type
+                            </TableHead>
+                            <TableHead className="font-semibold text-gray-900">
+                              Opening Balance
+                            </TableHead>
+                            <TableHead className="font-semibold text-gray-900">
+                              Balance Type
+                            </TableHead>
+                            <TableHead className="font-semibold text-gray-900">
+                              Email
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {importData.parties.map((party, idx) => (
-                            <TableRow key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                              <TableCell className="font-semibold text-gray-900">{party.name}</TableCell>
+                            <TableRow
+                              key={idx}
+                              className={
+                                idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                              }
+                            >
+                              <TableCell className="font-semibold text-gray-900">
+                                {party.name}
+                              </TableCell>
                               <TableCell>
-                                <Badge variant="outline" className={`${party.type === 'Customer' ? 'border-green-500 text-green-700 bg-green-50' : 'border-orange-500 text-orange-700 bg-orange-50'}`}>
+                                <Badge
+                                  variant="outline"
+                                  className={`${party.type === "Customer" ? "border-green-500 text-green-700 bg-green-50" : "border-orange-500 text-orange-700 bg-orange-50"}`}
+                                >
                                   {party.type}
                                 </Badge>
                               </TableCell>
-                              <TableCell className="text-gray-900 font-medium">{formatCurrency(party.openingBalance)}</TableCell>
+                              <TableCell className="text-gray-900 font-medium">
+                                {formatCurrency(party.openingBalance)}
+                              </TableCell>
                               <TableCell>
-                                <Badge className={party.balanceType === 'Debit' ? 'bg-blue-100 text-blue-800 font-semibold' : 'bg-green-100 text-green-800 font-semibold'}>
+                                <Badge
+                                  className={
+                                    party.balanceType === "Debit"
+                                      ? "bg-blue-100 text-blue-800 font-semibold"
+                                      : "bg-green-100 text-green-800 font-semibold"
+                                  }
+                                >
                                   {party.balanceType}
                                 </Badge>
                               </TableCell>
-                              <TableCell className="text-sm text-gray-900">{party.email || '—'}</TableCell>
+                              <TableCell className="text-sm text-gray-900">
+                                {party.email || "—"}
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -516,12 +654,14 @@ export default function TallyImportPage() {
               <Button variant="outline" onClick={resetImport}>
                 Cancel
               </Button>
-              <Button 
-                onClick={() => setStep('confirm')}
+              <Button
+                onClick={() => setStep("confirm")}
                 className="bg-blue-600 hover:bg-blue-700"
                 disabled={importData.errors.length > 0}
               >
-                {importData.errors.length > 0 ? 'Fix Errors First' : 'Continue to Import'}
+                {importData.errors.length > 0
+                  ? "Fix Errors First"
+                  : "Continue to Import"}
               </Button>
             </div>
           </div>
@@ -530,15 +670,19 @@ export default function TallyImportPage() {
     );
   }
 
-  if (step === 'confirm' && importData) {
+  if (step === "confirm" && importData) {
     return (
       <AuthGuard requireAuth={true}>
         <MainLayout>
           <div className="p-4 md:p-8 space-y-6 max-w-2xl mx-auto bg-white min-h-screen">
             {/* Header */}
             <div className="text-center space-y-2">
-              <h1 className="text-3xl font-bold text-gray-900">Ready to Import?</h1>
-              <p className="text-gray-700">Review the summary below and confirm to proceed</p>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Ready to Import?
+              </h1>
+              <p className="text-gray-700">
+                Review the summary below and confirm to proceed
+              </p>
             </div>
 
             {/* Summary */}
@@ -549,20 +693,36 @@ export default function TallyImportPage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <p className="text-sm text-blue-700 font-semibold">Ledgers to Import</p>
-                    <p className="text-2xl font-bold text-blue-900">{importData.summary.totalLedgers}</p>
+                    <p className="text-sm text-blue-700 font-semibold">
+                      Ledgers to Import
+                    </p>
+                    <p className="text-2xl font-bold text-blue-900">
+                      {importData.summary.totalLedgers}
+                    </p>
                   </div>
                   <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                    <p className="text-sm text-green-700 font-semibold">Parties to Import</p>
-                    <p className="text-2xl font-bold text-green-900">{importData.summary.totalParties}</p>
+                    <p className="text-sm text-green-700 font-semibold">
+                      Parties to Import
+                    </p>
+                    <p className="text-2xl font-bold text-green-900">
+                      {importData.summary.totalParties}
+                    </p>
                   </div>
                   <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                    <p className="text-sm text-purple-700 font-semibold">Transactions</p>
-                    <p className="text-2xl font-bold text-purple-900">{importData.summary.totalTransactions}</p>
+                    <p className="text-sm text-purple-700 font-semibold">
+                      Transactions
+                    </p>
+                    <p className="text-2xl font-bold text-purple-900">
+                      {importData.summary.totalTransactions}
+                    </p>
                   </div>
                   <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-                    <p className="text-sm text-amber-700 font-semibold">Total Amount</p>
-                    <p className="text-2xl font-bold text-amber-900">{formatCurrency(importData.summary.totalDebit)}</p>
+                    <p className="text-sm text-amber-700 font-semibold">
+                      Total Amount
+                    </p>
+                    <p className="text-2xl font-bold text-amber-900">
+                      {formatCurrency(importData.summary.totalDebit)}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -574,8 +734,14 @@ export default function TallyImportPage() {
                 <div className="flex items-start gap-3">
                   <CheckCircle className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
                   <div>
-                    <p className="font-semibold text-blue-900">All checks passed</p>
-                    <p className="text-sm text-blue-800 mt-1">Your data is ready to be imported. This will update your financial dashboard with all ledgers, parties, and transactions.</p>
+                    <p className="font-semibold text-blue-900">
+                      All checks passed
+                    </p>
+                    <p className="text-sm text-blue-800 mt-1">
+                      Your data is ready to be imported. This will update your
+                      financial dashboard with all ledgers, parties, and
+                      transactions.
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -583,10 +749,14 @@ export default function TallyImportPage() {
 
             {/* Action Buttons */}
             <div className="flex gap-3 pt-4">
-              <Button variant="outline" onClick={() => setStep('preview')} className="flex-1">
+              <Button
+                variant="outline"
+                onClick={() => setStep("preview")}
+                className="flex-1"
+              >
                 Back to Review
               </Button>
-              <Button 
+              <Button
                 onClick={handleImport}
                 className="flex-1 bg-green-600 hover:bg-green-700"
               >
@@ -600,7 +770,7 @@ export default function TallyImportPage() {
     );
   }
 
-  if (step === 'processing') {
+  if (step === "processing") {
     return (
       <AuthGuard requireAuth={true}>
         <MainLayout>
@@ -609,26 +779,32 @@ export default function TallyImportPage() {
               <div className="flex justify-center">
                 <div className="relative w-20 h-20">
                   <div className="absolute inset-0 rounded-full border-4 border-gray-200" />
-                  <div 
+                  <div
                     className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-600 animate-spin"
                     style={{
-                      borderTopColor: '#2563eb',
+                      borderTopColor: "#2563eb",
                     }}
                   />
                 </div>
               </div>
-              <h1 className="text-3xl font-bold text-gray-900">Importing Your Data</h1>
-              <p className="text-gray-700">Please wait while we process your Tally records...</p>
-              
+              <h1 className="text-3xl font-bold text-gray-900">
+                Importing Your Data
+              </h1>
+              <p className="text-gray-700">
+                Please wait while we process your Tally records...
+              </p>
+
               {/* Progress bar */}
               <div className="w-full max-w-md mt-6">
                 <div className="bg-gray-200 rounded-full h-2 overflow-hidden">
-                  <div 
+                  <div
                     className="bg-blue-600 h-full transition-all duration-300"
                     style={{ width: `${importProgress}%` }}
                   />
                 </div>
-                <p className="text-sm text-gray-800 font-semibold mt-2">{importProgress}% Complete</p>
+                <p className="text-sm text-gray-800 font-semibold mt-2">
+                  {importProgress}% Complete
+                </p>
               </div>
 
               <div className="mt-6 space-y-2 text-sm text-gray-800">
@@ -643,7 +819,7 @@ export default function TallyImportPage() {
     );
   }
 
-  if (step === 'complete') {
+  if (step === "complete") {
     return (
       <AuthGuard requireAuth={true}>
         <MainLayout>
@@ -654,46 +830,71 @@ export default function TallyImportPage() {
                   <CheckCircle className="h-16 w-16 text-green-600" />
                 </div>
               </div>
-              <h1 className="text-3xl font-bold text-gray-900">Import Successful!</h1>
-              <p className="text-gray-700">Your Tally data has been successfully imported</p>
-              
+              <h1 className="text-3xl font-bold text-gray-900">
+                Import Successful!
+              </h1>
+              <p className="text-gray-700">
+                Your Tally data has been successfully imported
+              </p>
+
               {importData && (
                 <Card className="mt-6 text-left bg-gradient-to-br from-green-50 to-blue-50 border-2 border-green-200">
                   <CardContent className="pt-6">
                     <div className="space-y-4">
                       <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                        <span className="text-gray-800 font-semibold">Ledgers Imported:</span>
-                        <span className="font-bold text-blue-700 text-xl">{importData.summary.totalLedgers}</span>
+                        <span className="text-gray-800 font-semibold">
+                          Ledgers Imported:
+                        </span>
+                        <span className="font-bold text-blue-700 text-xl">
+                          {importData.summary.totalLedgers}
+                        </span>
                       </div>
                       <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                        <span className="text-gray-800 font-semibold">Parties Added:</span>
-                        <span className="font-bold text-green-700 text-xl">{importData.summary.totalParties}</span>
+                        <span className="text-gray-800 font-semibold">
+                          Parties Added:
+                        </span>
+                        <span className="font-bold text-green-700 text-xl">
+                          {importData.summary.totalParties}
+                        </span>
                       </div>
                       <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-                        <span className="text-gray-800 font-semibold">Transactions Recorded:</span>
-                        <span className="font-bold text-purple-700 text-xl">{importData.summary.totalTransactions}</span>
+                        <span className="text-gray-800 font-semibold">
+                          Transactions Recorded:
+                        </span>
+                        <span className="font-bold text-purple-700 text-xl">
+                          {importData.summary.totalTransactions}
+                        </span>
                       </div>
                       <div className="flex justify-between items-center p-3 bg-amber-50 rounded-lg">
-                        <span className="text-gray-800 font-semibold">Total Amount:</span>
-                        <span className="font-bold text-amber-700 text-xl">{formatCurrency(importData.summary.totalDebit)}</span>
+                        <span className="text-gray-800 font-semibold">
+                          Total Amount:
+                        </span>
+                        <span className="font-bold text-amber-700 text-xl">
+                          {formatCurrency(importData.summary.totalDebit)}
+                        </span>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               )}
 
-              <p className="text-sm text-gray-700 mt-4">Your financial dashboard has been updated with all imported records.</p>
+              <p className="text-sm text-gray-700 mt-4">
+                Your financial dashboard has been updated with all imported
+                records.
+              </p>
 
               <div className="flex gap-3 pt-4 w-full">
-                <Button 
+                <Button
                   variant="outline"
                   onClick={resetImport}
                   className="flex-1"
                 >
                   Import Another File
                 </Button>
-                <Button 
-                  onClick={() => window.location.href = '/financial-dashboard'}
+                <Button
+                  onClick={() =>
+                    (window.location.href = "/financial-dashboard")
+                  }
                   className="flex-1 bg-blue-600 hover:bg-blue-700"
                 >
                   View Dashboard

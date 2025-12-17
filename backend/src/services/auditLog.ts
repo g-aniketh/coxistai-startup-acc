@@ -234,11 +234,11 @@ export const getAuditLogSummary = async (
 
   return {
     totalLogs,
-    byAction: byAction.map(item => ({
+    byAction: byAction.map((item) => ({
       action: item.action,
       count: item._count.action,
     })),
-    byEntityType: byEntityType.map(item => ({
+    byEntityType: byEntityType.map((item) => ({
       entityType: item.entityType,
       count: item._count.entityType,
     })),

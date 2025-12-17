@@ -1,9 +1,12 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middleware/auth';
-import * as transactionService from './transactions.service';
-import { TransactionType } from '@prisma/client';
+import { Response } from "express";
+import { AuthRequest } from "../middleware/auth";
+import * as transactionService from "./transactions.service";
+import { TransactionType } from "@prisma/client";
 
-export const createTransactionController = async (req: AuthRequest, res: Response): Promise<void> => {
+export const createTransactionController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { startupId } = req.user!;
     const { amount, type, description, accountId } = req.body;
@@ -12,23 +15,23 @@ export const createTransactionController = async (req: AuthRequest, res: Respons
     if (!amount || !type || !description || !accountId) {
       res.status(400).json({
         success: false,
-        message: 'Amount, type, description, and accountId are required'
+        message: "Amount, type, description, and accountId are required",
       });
       return;
     }
 
-    if (typeof amount !== 'number' || amount <= 0) {
+    if (typeof amount !== "number" || amount <= 0) {
       res.status(400).json({
         success: false,
-        message: 'Amount must be a positive number'
+        message: "Amount must be a positive number",
       });
       return;
     }
 
-    if (!['CREDIT', 'DEBIT'].includes(type)) {
+    if (!["CREDIT", "DEBIT"].includes(type)) {
       res.status(400).json({
         success: false,
-        message: 'Type must be either CREDIT or DEBIT'
+        message: "Type must be either CREDIT or DEBIT",
       });
       return;
     }
@@ -37,36 +40,33 @@ export const createTransactionController = async (req: AuthRequest, res: Respons
       amount,
       type: type as TransactionType,
       description,
-      accountId
+      accountId,
     });
 
     res.status(201).json({
       success: true,
       data: transaction,
-      message: 'Transaction created successfully'
+      message: "Transaction created successfully",
     });
   } catch (error) {
-    console.error('Create transaction error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
+    console.error("Create transaction error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
     res.status(400).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
 
-export const getTransactionsController = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getTransactionsController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { startupId } = req.user!;
-    const { 
-      accountId, 
-      type, 
-      startDate, 
-      endDate, 
-      limit, 
-      offset 
-    } = req.query;
+    const { accountId, type, startDate, endDate, limit, offset } = req.query;
 
     const filters: any = {};
 
@@ -102,43 +102,54 @@ export const getTransactionsController = async (req: AuthRequest, res: Response)
       pagination: {
         total: result.total,
         limit: filters.limit || 50,
-        offset: filters.offset || 0
-      }
+        offset: filters.offset || 0,
+      },
     });
   } catch (error) {
-    console.error('Get transactions error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
+    console.error("Get transactions error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
     res.status(500).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
 
-export const getTransactionByIdController = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getTransactionByIdController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { startupId } = req.user!;
     const { transactionId } = req.params;
 
-    const transaction = await transactionService.getTransactionById(startupId, transactionId);
+    const transaction = await transactionService.getTransactionById(
+      startupId,
+      transactionId
+    );
 
     res.json({
       success: true,
-      data: transaction
+      data: transaction,
     });
   } catch (error) {
-    console.error('Get transaction error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
+    console.error("Get transaction error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
     res.status(404).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
 
-export const deleteTransactionController = async (req: AuthRequest, res: Response): Promise<void> => {
+export const deleteTransactionController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { startupId } = req.user!;
     const { transactionId } = req.params;
@@ -147,16 +158,16 @@ export const deleteTransactionController = async (req: AuthRequest, res: Respons
 
     res.json({
       success: true,
-      message: 'Transaction deleted successfully'
+      message: "Transaction deleted successfully",
     });
   } catch (error) {
-    console.error('Delete transaction error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
+    console.error("Delete transaction error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
     res.status(400).json({
       success: false,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 };
-

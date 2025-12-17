@@ -68,7 +68,7 @@ export default function AIAssistantPage() {
     setInsightsLoading(true);
     try {
       // Mock data for demonstration
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate API call
 
       const mockInsights = {
         cashFlow: {
@@ -150,7 +150,7 @@ export default function AIAssistantPage() {
     setScenarioLoading(true);
     try {
       // Mock scenario analysis
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      await new Promise((resolve) => setTimeout(resolve, 2500));
 
       const mockResult = {
         scenario: scenario,
@@ -186,7 +186,7 @@ export default function AIAssistantPage() {
     setForecastLoading(true);
     try {
       // Mock data for demonstration
-      await new Promise(resolve => setTimeout(resolve, 2500)); // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 2500)); // Simulate API call
 
       const periods = {
         "3months": 3,
@@ -537,8 +537,8 @@ export default function AIAssistantPage() {
                                         rec.priority === "High"
                                           ? "bg-red-100 text-red-800"
                                           : rec.priority === "Medium"
-                                          ? "bg-yellow-100 text-yellow-800"
-                                          : "bg-green-100 text-green-800"
+                                            ? "bg-yellow-100 text-yellow-800"
+                                            : "bg-green-100 text-green-800"
                                       }
                                     >
                                       {rec.priority} Priority
@@ -580,8 +580,8 @@ export default function AIAssistantPage() {
                                     alert.type === "warning"
                                       ? "bg-yellow-50 border-yellow-400"
                                       : alert.type === "error"
-                                      ? "bg-red-50 border-red-400"
-                                      : "bg-blue-50 border-blue-400"
+                                        ? "bg-red-50 border-red-400"
+                                        : "bg-blue-50 border-blue-400"
                                   }`}
                                 >
                                   <div className="flex items-start gap-2">
@@ -644,7 +644,7 @@ export default function AIAssistantPage() {
                             id="scenario"
                             placeholder="e.g., What happens if we hire 2 engineers at $150k/year each?"
                             value={scenario}
-                            onChange={e => setScenario(e.target.value)}
+                            onChange={(e) => setScenario(e.target.value)}
                             className="mt-2"
                           />
                         </div>

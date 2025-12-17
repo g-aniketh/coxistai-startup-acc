@@ -555,7 +555,7 @@ export async function getFinancialRatios(
 
   // Calculate current assets and current liabilities
   const currentAssets = balanceSheet.assets
-    .filter(a =>
+    .filter((a) =>
       [
         "CURRENT_ASSET",
         "SUNDRY_DEBTOR",
@@ -568,13 +568,13 @@ export async function getFinancialRatios(
 
   const currentLiabilities = balanceSheet.liabilities
     .filter(
-      l =>
+      (l) =>
         l.category === "CURRENT_LIABILITY" || l.category === "SUNDRY_CREDITOR"
     )
     .reduce((sum, l) => sum + l.amount, 0);
 
   const inventory = balanceSheet.assets
-    .filter(a => a.category === "STOCK")
+    .filter((a) => a.category === "STOCK")
     .reduce((sum, a) => sum + a.amount, 0);
 
   const quickAssets = currentAssets - inventory;
@@ -584,7 +584,7 @@ export async function getFinancialRatios(
     0
   );
   const totalDebt = balanceSheet.liabilities
-    .filter(l => l.category === "LOAN")
+    .filter((l) => l.category === "LOAN")
     .reduce((sum, l) => sum + l.amount, 0);
   const totalAssets = balanceSheet.totalAssets;
 

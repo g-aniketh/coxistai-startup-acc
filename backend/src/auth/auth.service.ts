@@ -170,9 +170,9 @@ export const signup = async (data: SignupData) => {
   await ensureDefaultVoucherTypes(prisma, startup.id);
 
   const user = startup.users[0];
-  const roleNames = user.roles.map(userRole => userRole.role.name);
-  const permissions = user.roles.flatMap(userRole =>
-    userRole.role.permissions.map(p => `${p.action}_${p.subject}`)
+  const roleNames = user.roles.map((userRole) => userRole.role.name);
+  const permissions = user.roles.flatMap((userRole) =>
+    userRole.role.permissions.map((p) => `${p.action}_${p.subject}`)
   );
 
   // Generate JWT token
@@ -340,9 +340,9 @@ export const login = async (data: LoginData) => {
   }
 
   // Extract role names and permissions
-  const roleNames = user.roles.map(userRole => userRole.role.name);
-  const permissions = user.roles.flatMap(userRole =>
-    userRole.role.permissions.map(p => `${p.action}_${p.subject}`)
+  const roleNames = user.roles.map((userRole) => userRole.role.name);
+  const permissions = user.roles.flatMap((userRole) =>
+    userRole.role.permissions.map((p) => `${p.action}_${p.subject}`)
   );
 
   // Generate JWT token
@@ -498,9 +498,9 @@ export const createTeamMember = async (
   }
 
   // Check if admin has manage_team permission
-  const hasPermission = adminUser.roles.some(userRole =>
+  const hasPermission = adminUser.roles.some((userRole) =>
     userRole.role.permissions.some(
-      p => p.action === "manage" && p.subject === "team"
+      (p) => p.action === "manage" && p.subject === "team"
     )
   );
 
@@ -562,7 +562,7 @@ export const createTeamMember = async (
     email: newUser.email,
     firstName: newUser.firstName,
     lastName: newUser.lastName,
-    roles: newUser.roles.map(ur => ur.role.name),
+    roles: newUser.roles.map((ur) => ur.role.name),
     isActive: newUser.isActive,
   };
 };

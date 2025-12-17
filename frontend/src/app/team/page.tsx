@@ -190,7 +190,7 @@ export default function TeamPage() {
                 </Card>
               </div>
             ) : (
-              members.map(member => (
+              members.map((member) => (
                 <Card
                   key={member.id}
                   className="p-6 rounded-3xl border border-gray-100 bg-white shadow-sm"
@@ -221,7 +221,7 @@ export default function TeamPage() {
                     <div>
                       <p className="text-xs text-[#1f1f1f]/60 mb-1">Roles</p>
                       <div className="flex flex-wrap gap-1.5">
-                        {member.roles.map(role => (
+                        {member.roles.map((role) => (
                           <Badge
                             key={role}
                             variant="outline"
@@ -279,7 +279,7 @@ export default function TeamPage() {
                       id="firstName"
                       placeholder="John"
                       value={inviteForm.firstName}
-                      onChange={e =>
+                      onChange={(e) =>
                         setInviteForm({
                           ...inviteForm,
                           firstName: e.target.value,
@@ -293,7 +293,7 @@ export default function TeamPage() {
                       id="lastName"
                       placeholder="Doe"
                       value={inviteForm.lastName}
-                      onChange={e =>
+                      onChange={(e) =>
                         setInviteForm({
                           ...inviteForm,
                           lastName: e.target.value,
@@ -310,7 +310,7 @@ export default function TeamPage() {
                     type="email"
                     placeholder="member@startup.com"
                     value={inviteForm.email}
-                    onChange={e =>
+                    onChange={(e) =>
                       setInviteForm({ ...inviteForm, email: e.target.value })
                     }
                     required
@@ -321,7 +321,7 @@ export default function TeamPage() {
                   <Label htmlFor="role">Role</Label>
                   <Select
                     value={inviteForm.roleName}
-                    onValueChange={value =>
+                    onValueChange={(value) =>
                       setInviteForm({ ...inviteForm, roleName: value })
                     }
                   >

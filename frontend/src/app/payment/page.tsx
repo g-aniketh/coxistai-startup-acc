@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import MainLayout from '@/components/layout/MainLayout';
-import AuthGuard from '@/components/auth/AuthGuard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { 
-  CheckCircle, 
-  CreditCard, 
-  Plus, 
-  Landmark, 
+import MainLayout from "@/components/layout/MainLayout";
+import AuthGuard from "@/components/auth/AuthGuard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  CheckCircle,
+  CreditCard,
+  Plus,
+  Landmark,
   ExternalLink,
   Search,
   Settings,
@@ -18,10 +18,10 @@ import {
   DollarSign,
   Calendar,
   AlertTriangle,
-} from 'lucide-react';
-import Link from 'next/link';
-import { Badge } from '@/components/ui/Badge';
-import toast from 'react-hot-toast';
+} from "lucide-react";
+import Link from "next/link";
+import { Badge } from "@/components/ui/Badge";
+import toast from "react-hot-toast";
 
 const subscriptionPlans = [
   {
@@ -30,16 +30,16 @@ const subscriptionPlans = [
     originalPrice: "$75/mo",
     features: [
       "Automated Cashflow Dashboard",
-      "Runway & Burn Tracking", 
+      "Runway & Burn Tracking",
       "Basic 'What If' Scenarios",
       "Email Support",
-      "Up to 2 bank accounts"
+      "Up to 2 bank accounts",
     ],
     current: true,
     popular: false,
     color: "bg-blue-50",
     borderColor: "border-blue-200",
-    textColor: "text-blue-900"
+    textColor: "text-blue-900",
   },
   {
     name: "SMB CFO",
@@ -52,13 +52,13 @@ const subscriptionPlans = [
       "Investor Update Drafts",
       "Priority Support",
       "Up to 5 bank accounts",
-      "Custom integrations"
+      "Custom integrations",
     ],
     current: false,
     popular: true,
     color: "bg-[#C9E0B0]",
     borderColor: "border-[#607c47]",
-    textColor: "text-[#3a5129]"
+    textColor: "text-[#3a5129]",
   },
   {
     name: "Enterprise",
@@ -72,48 +72,48 @@ const subscriptionPlans = [
       "Dedicated Account Manager",
       "Unlimited bank accounts",
       "White-label options",
-      "API access"
+      "API access",
     ],
     current: false,
     popular: false,
     color: "bg-purple-50",
     borderColor: "border-purple-200",
-    textColor: "text-purple-900"
-  }
+    textColor: "text-purple-900",
+  },
 ];
 
 const connectedAccounts = [
-  { 
-    name: "Stripe", 
-    icon: CreditCard, 
-    connected: true, 
+  {
+    name: "Stripe",
+    icon: CreditCard,
+    connected: true,
     status: "Live",
     lastSync: "2 minutes ago",
-    balance: "$12,450"
+    balance: "$12,450",
   },
-  { 
-    name: "QuickBooks", 
-    icon: Landmark, 
-    connected: true, 
+  {
+    name: "QuickBooks",
+    icon: Landmark,
+    connected: true,
     status: "Live",
     lastSync: "1 hour ago",
-    balance: "N/A"
+    balance: "N/A",
   },
-  { 
-    name: "Bank of America", 
-    icon: Landmark, 
-    connected: false, 
+  {
+    name: "Bank of America",
+    icon: Landmark,
+    connected: false,
     status: "Disconnected",
     lastSync: "Never",
-    balance: "N/A"
+    balance: "N/A",
   },
-  { 
-    name: "Chase Bank", 
-    icon: Landmark, 
-    connected: true, 
+  {
+    name: "Chase Bank",
+    icon: Landmark,
+    connected: true,
     status: "Live",
     lastSync: "5 minutes ago",
-    balance: "$125,000"
+    balance: "$125,000",
   },
 ];
 
@@ -121,27 +121,27 @@ const recentTransactions = [
   {
     id: "txn_001",
     description: "Stripe payment processing",
-    amount: -125.50,
+    amount: -125.5,
     date: "2024-01-15",
     status: "completed",
-    type: "fee"
+    type: "fee",
   },
   {
-    id: "txn_002", 
+    id: "txn_002",
     description: "Monthly subscription",
-    amount: -50.00,
+    amount: -50.0,
     date: "2024-01-14",
     status: "completed",
-    type: "subscription"
+    type: "subscription",
   },
   {
     id: "txn_003",
     description: "Customer payment",
-    amount: 2500.00,
+    amount: 2500.0,
     date: "2024-01-13",
     status: "completed",
-    type: "income"
-  }
+    type: "income",
+  },
 ];
 
 export default function PaymentPage() {
@@ -154,9 +154,9 @@ export default function PaymentPage() {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
       minimumFractionDigits: 2,
     }).format(amount);
   };
@@ -171,7 +171,9 @@ export default function PaymentPage() {
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">Billing & Integrations</h1>
+                  <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">
+                    Billing & Integrations
+                  </h1>
                   <p className="text-sm text-[#2C2C2C]/70">
                     Manage your subscription and connected financial accounts
                   </p>
@@ -179,7 +181,10 @@ export default function PaymentPage() {
                 <div className="flex gap-3">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input placeholder="Search accounts..." className="pl-10 bg-white rounded-lg" />
+                    <Input
+                      placeholder="Search accounts..."
+                      className="pl-10 bg-white rounded-lg"
+                    />
                   </div>
                   <Button className="flex items-center gap-2 bg-[#607c47] hover:bg-[#4a6129] text-white">
                     <Settings className="h-4 w-4" />
@@ -196,8 +201,13 @@ export default function PaymentPage() {
                       <Shield className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-blue-900">Secure Billing & Integrations</h3>
-                      <p className="text-sm text-blue-700">Bank-level security • Real-time sync • Automated reconciliation</p>
+                      <h3 className="font-semibold text-blue-900">
+                        Secure Billing & Integrations
+                      </h3>
+                      <p className="text-sm text-blue-700">
+                        Bank-level security • Real-time sync • Automated
+                        reconciliation
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-blue-600">
@@ -216,16 +226,26 @@ export default function PaymentPage() {
                         <CheckCircle className="h-6 w-6 text-green-600" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-green-900">Current Plan: Startup</h3>
-                        <p className="text-sm text-green-700">Next billing: February 14, 2024</p>
+                        <h3 className="text-lg font-semibold text-green-900">
+                          Current Plan: Startup
+                        </h3>
+                        <p className="text-sm text-green-700">
+                          Next billing: February 14, 2024
+                        </p>
                         <div className="flex items-center gap-2 mt-2">
-                          <Badge className="bg-green-100 text-green-700">Active</Badge>
-                          <span className="text-sm text-green-600">$50/month</span>
+                          <Badge className="bg-green-100 text-green-700">
+                            Active
+                          </Badge>
+                          <span className="text-sm text-green-600">
+                            $50/month
+                          </span>
                         </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-green-900">$50</div>
+                      <div className="text-2xl font-bold text-green-900">
+                        $50
+                      </div>
                       <div className="text-sm text-green-600">per month</div>
                     </div>
                   </div>
@@ -234,36 +254,54 @@ export default function PaymentPage() {
 
               {/* Subscription Plans */}
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-[#2C2C2C]">Available Plans</h2>
+                <h2 className="text-xl font-semibold text-[#2C2C2C]">
+                  Available Plans
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {subscriptionPlans.map((plan, index) => (
-                    <Card 
-                      key={index} 
+                    <Card
+                      key={index}
                       className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-shadow flex flex-col bg-white ${
-                        plan.popular ? 'ring-2 ring-[#607c47]' : ''
+                        plan.popular ? "ring-2 ring-[#607c47]" : ""
                       }`}
                     >
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg font-medium text-[#2C2C2C]">{plan.name}</CardTitle>
+                          <CardTitle className="text-lg font-medium text-[#2C2C2C]">
+                            {plan.name}
+                          </CardTitle>
                           {plan.popular && (
-                            <Badge className="bg-[#607c47] text-white">Most Popular</Badge>
+                            <Badge className="bg-[#607c47] text-white">
+                              Most Popular
+                            </Badge>
                           )}
                           {plan.current && (
-                            <Badge variant="outline" className="border-green-300 bg-green-50 text-green-700">Current</Badge>
+                            <Badge
+                              variant="outline"
+                              className="border-green-300 bg-green-50 text-green-700"
+                            >
+                              Current
+                            </Badge>
                           )}
                         </div>
                         <div className="flex items-baseline gap-2">
-                          <span className="text-3xl font-bold text-[#2C2C2C]">{plan.price}</span>
+                          <span className="text-3xl font-bold text-[#2C2C2C]">
+                            {plan.price}
+                          </span>
                           {plan.originalPrice && (
-                            <span className="text-sm text-gray-500 line-through">{plan.originalPrice}</span>
+                            <span className="text-sm text-gray-500 line-through">
+                              {plan.originalPrice}
+                            </span>
                           )}
                         </div>
                       </CardHeader>
                       <CardContent className="pt-0 flex-1 flex flex-col">
                         <ul className="space-y-2 mb-6 flex-1">
                           {plan.features.map((feature, featureIndex) => (
-                            <li key={featureIndex} className="flex items-center gap-2 text-sm text-gray-600">
+                            <li
+                              key={featureIndex}
+                              className="flex items-center gap-2 text-sm text-gray-600"
+                            >
                               <CheckCircle className="h-4 w-4 text-green-500" />
                               {feature}
                             </li>
@@ -273,12 +311,16 @@ export default function PaymentPage() {
                           onClick={() => handleUpgrade(plan.name)}
                           disabled={plan.current}
                           className={`w-full ${
-                            plan.current 
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                              : 'bg-[#607c47] hover:bg-[#4a6129] text-white'
+                            plan.current
+                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                              : "bg-[#607c47] hover:bg-[#4a6129] text-white"
                           }`}
                         >
-                          {plan.current ? 'Current Plan' : plan.name === 'Enterprise' ? 'Contact Sales' : 'Upgrade'}
+                          {plan.current
+                            ? "Current Plan"
+                            : plan.name === "Enterprise"
+                              ? "Contact Sales"
+                              : "Upgrade"}
                         </Button>
                       </CardContent>
                     </Card>
@@ -288,31 +330,50 @@ export default function PaymentPage() {
 
               {/* Connected Accounts */}
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-[#2C2C2C]">Connected Accounts</h2>
+                <h2 className="text-xl font-semibold text-[#2C2C2C]">
+                  Connected Accounts
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {connectedAccounts.map((account, index) => (
-                    <Card key={index} className="bg-white rounded-xl border-0 shadow-lg hover:shadow-xl transition-shadow">
+                    <Card
+                      key={index}
+                      className="bg-white rounded-xl border-0 shadow-lg hover:shadow-xl transition-shadow"
+                    >
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-lg ${
-                              account.connected ? 'bg-green-100' : 'bg-gray-100'
-                            }`}>
-                              <account.icon className={`h-5 w-5 ${
-                                account.connected ? 'text-green-600' : 'text-gray-500'
-                              }`} />
+                            <div
+                              className={`p-2 rounded-lg ${
+                                account.connected
+                                  ? "bg-green-100"
+                                  : "bg-gray-100"
+                              }`}
+                            >
+                              <account.icon
+                                className={`h-5 w-5 ${
+                                  account.connected
+                                    ? "text-green-600"
+                                    : "text-gray-500"
+                                }`}
+                              />
                             </div>
                             <div>
-                              <h3 className="font-semibold text-[#2C2C2C]">{account.name}</h3>
-                              <p className="text-sm text-gray-600">Last sync: {account.lastSync}</p>
+                              <h3 className="font-semibold text-[#2C2C2C]">
+                                {account.name}
+                              </h3>
+                              <p className="text-sm text-gray-600">
+                                Last sync: {account.lastSync}
+                              </p>
                             </div>
                           </div>
                           <div className="text-right">
-                            <Badge className={
-                              account.connected 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-gray-100 text-gray-700'
-                            }>
+                            <Badge
+                              className={
+                                account.connected
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-gray-100 text-gray-700"
+                              }
+                            >
                               {account.status}
                             </Badge>
                             {account.balance !== "N/A" && (
@@ -325,19 +386,27 @@ export default function PaymentPage() {
                         <div className="flex gap-2">
                           {account.connected ? (
                             <>
-                              <Button variant="outline" size="sm" className="border-gray-300 text-[#2C2C2C]">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-gray-300 text-[#2C2C2C]"
+                              >
                                 <Settings className="h-4 w-4 mr-1" />
                                 Settings
                               </Button>
-                              <Button variant="outline" size="sm" className="border-gray-300 text-[#2C2C2C]">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-gray-300 text-[#2C2C2C]"
+                              >
                                 <ExternalLink className="h-4 w-4 mr-1" />
                                 View
                               </Button>
                             </>
                           ) : (
-                            <Button 
+                            <Button
                               onClick={() => handleConnectAccount(account.name)}
-                              size="sm" 
+                              size="sm"
                               className="bg-[#607c47] hover:bg-[#4a6129] text-white"
                             >
                               <Plus className="h-4 w-4 mr-1" />
@@ -362,33 +431,52 @@ export default function PaymentPage() {
                 <CardContent className="pt-0">
                   <div className="space-y-3">
                     {recentTransactions.map((transaction) => (
-                      <div key={transaction.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div
+                        key={transaction.id}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      >
                         <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg ${
-                            transaction.type === 'income' ? 'bg-green-100' :
-                            transaction.type === 'subscription' ? 'bg-blue-100' :
-                            'bg-red-100'
-                          }`}>
-                            {transaction.type === 'income' ? (
+                          <div
+                            className={`p-2 rounded-lg ${
+                              transaction.type === "income"
+                                ? "bg-green-100"
+                                : transaction.type === "subscription"
+                                  ? "bg-blue-100"
+                                  : "bg-red-100"
+                            }`}
+                          >
+                            {transaction.type === "income" ? (
                               <DollarSign className="h-4 w-4 text-green-600" />
-                            ) : transaction.type === 'subscription' ? (
+                            ) : transaction.type === "subscription" ? (
                               <Calendar className="h-4 w-4 text-blue-600" />
                             ) : (
                               <AlertTriangle className="h-4 w-4 text-red-600" />
                             )}
                           </div>
                           <div>
-                            <div className="font-medium text-[#2C2C2C]">{transaction.description}</div>
-                            <div className="text-sm text-gray-600">{transaction.date}</div>
+                            <div className="font-medium text-[#2C2C2C]">
+                              {transaction.description}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {transaction.date}
+                            </div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className={`font-semibold ${
-                            transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
-                          }`}>
-                            {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
+                          <div
+                            className={`font-semibold ${
+                              transaction.amount > 0
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }`}
+                          >
+                            {transaction.amount > 0 ? "+" : ""}
+                            {formatCurrency(transaction.amount)}
                           </div>
-                          <Badge variant="outline" className="text-xs border-green-300 text-green-700">
+                          <Badge
+                            variant="outline"
+                            className="text-xs border-green-300 text-green-700"
+                          >
                             {transaction.status}
                           </Badge>
                         </div>

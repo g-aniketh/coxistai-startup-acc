@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import AuthGuard from '@/components/auth/AuthGuard';
-import MainLayout from '@/components/layout/MainLayout';
-import AIChatbot from '@/components/AIChatbot';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/Badge';
-import { 
-  Bot, 
-  Sparkles, 
-  TrendingUp, 
-  DollarSign, 
-  Calendar, 
+import AuthGuard from "@/components/auth/AuthGuard";
+import MainLayout from "@/components/layout/MainLayout";
+import AIChatbot from "@/components/AIChatbot";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/Badge";
+import {
+  Bot,
+  Sparkles,
+  TrendingUp,
+  DollarSign,
+  Calendar,
   AlertTriangle,
   CheckCircle,
-  Lightbulb
-} from 'lucide-react';
+  Lightbulb,
+} from "lucide-react";
 
 export default function AIChatbotPage() {
   return (
@@ -32,10 +32,14 @@ export default function AIChatbotPage() {
                     AI CFO Chatbot
                   </h1>
                   <p className="text-sm text-[#2C2C2C]/70 mt-1">
-                    Ask me anything about your financial data and get instant insights
+                    Ask me anything about your financial data and get instant
+                    insights
                   </p>
                 </div>
-                <Badge variant="outline" className="flex items-center gap-2 border-gray-300 text-[#2C2C2C]">
+                <Badge
+                  variant="outline"
+                  className="flex items-center gap-2 border-gray-300 text-[#2C2C2C]"
+                >
                   <Sparkles className="h-4 w-4" />
                   Demo Mode
                 </Badge>
@@ -49,8 +53,13 @@ export default function AIChatbotPage() {
                       <Bot className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-blue-900">AI CFO Chatbot</h3>
-                      <p className="text-sm text-blue-700">Intelligent financial analysis • Real-time data integration</p>
+                      <h3 className="font-semibold text-blue-900">
+                        AI CFO Chatbot
+                      </h3>
+                      <p className="text-sm text-blue-700">
+                        Intelligent financial analysis • Real-time data
+                        integration
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-blue-600">

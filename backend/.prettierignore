@@ -1,0 +1,15 @@
+node_modules
+dist
+build
+coverage
+*.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.env
+.env.local
+.env.production
+*.log
+.DS_Store
+prisma/migrations
+

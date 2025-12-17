@@ -135,7 +135,7 @@ const getSettlementEntryOptions = (
   if (!bill) return voucher.entries;
 
   const matchingEntries = voucher.entries.filter(
-    entry => entry.ledgerName.toLowerCase() === bill.ledgerName.toLowerCase()
+    (entry) => entry.ledgerName.toLowerCase() === bill.ledgerName.toLowerCase()
   );
 
   return matchingEntries.length > 0 ? matchingEntries : voucher.entries;
@@ -157,9 +157,8 @@ export default function BillsPage() {
   const [voucherOptions, setVoucherOptions] = useState<Voucher[]>([]);
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
-  const [settleForm, setSettleForm] = useState<SettleFormState>(
-    defaultSettleForm()
-  );
+  const [settleForm, setSettleForm] =
+    useState<SettleFormState>(defaultSettleForm());
   const [settling, setSettling] = useState(false);
   const [settleDialogOpen, setSettleDialogOpen] = useState(false);
   const [reminders, setReminders] = useState<any[]>([]);
@@ -259,7 +258,7 @@ export default function BillsPage() {
   };
 
   const handleBillFormChange = (field: keyof BillFormState, value: string) => {
-    setBillForm(prev => ({
+    setBillForm((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -325,7 +324,9 @@ export default function BillsPage() {
 
   const selectedVoucher = useMemo(() => {
     if (!settleForm.voucherId) return undefined;
-    return voucherOptions.find(voucher => voucher.id === settleForm.voucherId);
+    return voucherOptions.find(
+      (voucher) => voucher.id === settleForm.voucherId
+    );
   }, [settleForm.voucherId, voucherOptions]);
 
   const settlementEntries = useMemo(
@@ -337,7 +338,7 @@ export default function BillsPage() {
     field: keyof SettleFormState,
     value: string
   ) => {
-    setSettleForm(prev => ({
+    setSettleForm((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -345,11 +346,11 @@ export default function BillsPage() {
 
   useEffect(() => {
     if (!selectedVoucher) {
-      setSettleForm(prev => ({ ...prev, voucherEntryId: "" }));
+      setSettleForm((prev) => ({ ...prev, voucherEntryId: "" }));
       return;
     }
 
-    setSettleForm(prev => {
+    setSettleForm((prev) => {
       if (prev.voucherEntryId) return prev;
       const initialEntry = settlementEntries[0];
       return {
@@ -422,7 +423,7 @@ export default function BillsPage() {
             </div>
 
             <div className="flex gap-2">
-              {(Object.keys(BILL_TYPE_LABELS) as BillType[]).map(type => (
+              {(Object.keys(BILL_TYPE_LABELS) as BillType[]).map((type) => (
                 <Button
                   key={type}
                   type="button"
@@ -503,13 +504,13 @@ export default function BillsPage() {
                 <p className="text-xl font-semibold text-[#2C2C2C]">
                   {formatCurrency(
                     bills
-                      .filter(bill => bill.status === "SETTLED")
+                      .filter((bill) => bill.status === "SETTLED")
                       .reduce((sum, bill) => sum + bill.originalAmount, 0)
                   )}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {bills.filter(bill => bill.status === "SETTLED").length} bills
-                  settled
+                  {bills.filter((bill) => bill.status === "SETTLED").length}{" "}
+                  bills settled
                 </p>
               </CardContent>
             </Card>
@@ -553,7 +554,7 @@ export default function BillsPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {bills.map(bill => (
+                        {bills.map((bill) => (
                           <TableRow
                             key={bill.id}
                             className="hover:bg-gray-50/70"
@@ -652,7 +653,7 @@ export default function BillsPage() {
                     <Label>Bill Number *</Label>
                     <Input
                       value={billForm.billNumber}
-                      onChange={event =>
+                      onChange={(event) =>
                         handleBillFormChange("billNumber", event.target.value)
                       }
                       placeholder="INV-001"
@@ -664,7 +665,7 @@ export default function BillsPage() {
                     <Label>Ledger Name *</Label>
                     <Input
                       value={billForm.ledgerName}
-                      onChange={event =>
+                      onChange={(event) =>
                         handleBillFormChange("ledgerName", event.target.value)
                       }
                       placeholder={
@@ -682,7 +683,7 @@ export default function BillsPage() {
                       <Input
                         type="date"
                         value={billForm.billDate}
-                        onChange={event =>
+                        onChange={(event) =>
                           handleBillFormChange("billDate", event.target.value)
                         }
                       />
@@ -692,7 +693,7 @@ export default function BillsPage() {
                       <Input
                         type="date"
                         value={billForm.dueDate}
-                        onChange={event =>
+                        onChange={(event) =>
                           handleBillFormChange("dueDate", event.target.value)
                         }
                       />
@@ -706,7 +707,7 @@ export default function BillsPage() {
                       min="0"
                       step="0.01"
                       value={billForm.originalAmount}
-                      onChange={event =>
+                      onChange={(event) =>
                         handleBillFormChange(
                           "originalAmount",
                           event.target.value
@@ -721,7 +722,7 @@ export default function BillsPage() {
                     <Label>Reference</Label>
                     <Input
                       value={billForm.reference}
-                      onChange={event =>
+                      onChange={(event) =>
                         handleBillFormChange("reference", event.target.value)
                       }
                       placeholder="PO number or external reference"
@@ -732,7 +733,7 @@ export default function BillsPage() {
                     <Label>Narration</Label>
                     <Textarea
                       value={billForm.narration}
-                      onChange={event =>
+                      onChange={(event) =>
                         handleBillFormChange("narration", event.target.value)
                       }
                       placeholder="Optional narration"
@@ -750,7 +751,7 @@ export default function BillsPage() {
                     </p>
                     <select
                       value={billForm.voucherId}
-                      onChange={event => {
+                      onChange={(event) => {
                         const voucherId = event.target.value;
                         handleBillFormChange("voucherId", voucherId);
                         if (!voucherId) {
@@ -758,11 +759,11 @@ export default function BillsPage() {
                           return;
                         }
                         const voucher = voucherOptions.find(
-                          item => item.id === voucherId
+                          (item) => item.id === voucherId
                         );
                         const entry =
                           voucher?.entries.find(
-                            entry =>
+                            (entry) =>
                               entry.ledgerName.toLowerCase() ===
                               billForm.ledgerName.toLowerCase()
                           ) ?? voucher?.entries[0];
@@ -774,7 +775,7 @@ export default function BillsPage() {
                       className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
                     >
                       <option value="">Select voucher</option>
-                      {voucherOptions.map(voucher => (
+                      {voucherOptions.map((voucher) => (
                         <option key={voucher.id} value={voucher.id}>
                           {voucher.voucherNumber} • {voucher.voucherType.name} (
                           {format(new Date(voucher.date), "dd MMM yyyy")})
@@ -784,7 +785,7 @@ export default function BillsPage() {
                     {billForm.voucherId && (
                       <select
                         value={billForm.voucherEntryId}
-                        onChange={event =>
+                        onChange={(event) =>
                           handleBillFormChange(
                             "voucherEntryId",
                             event.target.value
@@ -795,10 +796,10 @@ export default function BillsPage() {
                         <option value="">Select voucher entry</option>
                         {getSettlementEntryOptions(
                           voucherOptions.find(
-                            voucher => voucher.id === billForm.voucherId
+                            (voucher) => voucher.id === billForm.voucherId
                           ),
                           null
-                        ).map(entry => (
+                        ).map((entry) => (
                           <option key={entry.id} value={entry.id}>
                             {entry.ledgerName} • {entry.entryType} •{" "}
                             {formatCurrency(entry.amount)}
@@ -844,15 +845,15 @@ export default function BillsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {reminders.slice(0, 10).map(reminder => (
+                  {reminders.slice(0, 10).map((reminder) => (
                     <div
                       key={reminder.id}
                       className={`rounded-lg border p-4 ${
                         reminder.isOverdue
                           ? "border-red-200 bg-red-50"
                           : reminder.reminderType === "URGENT"
-                          ? "border-orange-200 bg-orange-50"
-                          : "border-yellow-200 bg-yellow-50"
+                            ? "border-orange-200 bg-orange-50"
+                            : "border-yellow-200 bg-yellow-50"
                       }`}
                     >
                       <div className="flex items-start justify-between">
@@ -866,8 +867,8 @@ export default function BillsPage() {
                                 reminder.isOverdue
                                   ? "bg-red-100 text-red-700"
                                   : reminder.reminderType === "URGENT"
-                                  ? "bg-orange-100 text-orange-700"
-                                  : "bg-yellow-100 text-yellow-700"
+                                    ? "bg-orange-100 text-orange-700"
+                                    : "bg-yellow-100 text-yellow-700"
                               }
                             >
                               {reminder.isOverdue
@@ -1094,7 +1095,7 @@ export default function BillsPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {ledgerSummary.map(ledger => (
+                  {ledgerSummary.map((ledger) => (
                     <div
                       key={ledger.ledgerName}
                       className="rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-4 shadow-sm space-y-3"
@@ -1119,7 +1120,7 @@ export default function BillsPage() {
                         {formatCurrency(ledger.totalOutstanding)}
                       </div>
                       <div className="space-y-2">
-                        {ledger.bills.slice(0, 3).map(bill => (
+                        {ledger.bills.slice(0, 3).map((bill) => (
                           <div
                             key={bill.billNumber}
                             className="text-xs text-[#2C2C2C]/80 flex justify-between"
@@ -1145,7 +1146,7 @@ export default function BillsPage() {
 
           <Dialog
             open={settleDialogOpen && Boolean(selectedBill)}
-            onOpenChange={open => {
+            onOpenChange={(open) => {
               setSettleDialogOpen(open);
               if (!open) {
                 setSelectedBill(null);
@@ -1178,14 +1179,14 @@ export default function BillsPage() {
                     <Label>Select Voucher *</Label>
                     <select
                       value={settleForm.voucherId}
-                      onChange={event =>
+                      onChange={(event) =>
                         handleSettleFormChange("voucherId", event.target.value)
                       }
                       className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
                       required
                     >
                       <option value="">Select voucher</option>
-                      {voucherOptions.map(voucher => (
+                      {voucherOptions.map((voucher) => (
                         <option key={voucher.id} value={voucher.id}>
                           {voucher.voucherNumber} • {voucher.voucherType.name} (
                           {format(new Date(voucher.date), "dd MMM yyyy")})
@@ -1204,7 +1205,7 @@ export default function BillsPage() {
                     <Label>Select Voucher Entry *</Label>
                     <select
                       value={settleForm.voucherEntryId}
-                      onChange={event =>
+                      onChange={(event) =>
                         handleSettleFormChange(
                           "voucherEntryId",
                           event.target.value
@@ -1215,7 +1216,7 @@ export default function BillsPage() {
                       disabled={!settleForm.voucherId}
                     >
                       <option value="">Select entry</option>
-                      {settlementEntries.map(entry => (
+                      {settlementEntries.map((entry) => (
                         <option key={entry.id} value={entry.id}>
                           {entry.ledgerName} • {entry.entryType} •{" "}
                           {formatCurrency(entry.amount)}
@@ -1231,7 +1232,7 @@ export default function BillsPage() {
                       min="0"
                       step="0.01"
                       value={settleForm.settlementAmount}
-                      onChange={event =>
+                      onChange={(event) =>
                         handleSettleFormChange(
                           "settlementAmount",
                           event.target.value
@@ -1247,7 +1248,7 @@ export default function BillsPage() {
                       <Label>Reference</Label>
                       <Input
                         value={settleForm.reference}
-                        onChange={event =>
+                        onChange={(event) =>
                           handleSettleFormChange(
                             "reference",
                             event.target.value
@@ -1260,7 +1261,7 @@ export default function BillsPage() {
                       <Label>Remarks</Label>
                       <Input
                         value={settleForm.remarks}
-                        onChange={event =>
+                        onChange={(event) =>
                           handleSettleFormChange("remarks", event.target.value)
                         }
                         placeholder="Optional remarks"

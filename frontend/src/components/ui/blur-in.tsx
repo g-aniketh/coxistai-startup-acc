@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { motion } from 'motion/react';
-import { cn } from '@/lib/utils';
+import { motion } from "motion/react";
+import { cn } from "@/lib/utils";
 
 interface BlurInProps {
   children: React.ReactNode;
@@ -20,8 +20,8 @@ export default function BlurIn({
   duration = 0.8,
 }: BlurInProps) {
   const defaultVariants = {
-    hidden: { filter: 'blur(10px)', opacity: 0 },
-    visible: { filter: 'blur(0px)', opacity: 1 },
+    hidden: { filter: "blur(10px)", opacity: 0 },
+    visible: { filter: "blur(0px)", opacity: 1 },
   };
   const combinedVariants = variant || defaultVariants;
 
@@ -37,4 +37,3 @@ export default function BlurIn({
     </motion.div>
   );
 }
-

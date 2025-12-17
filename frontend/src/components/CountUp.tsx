@@ -1,10 +1,10 @@
-import { useEffect, useRef } from 'react';
-import { useInView, useMotionValue, useSpring } from 'motion/react';
+import { useEffect, useRef } from "react";
+import { useInView, useMotionValue, useSpring } from "motion/react";
 
 interface CountUpProps {
   to: number;
   from?: number;
-  direction?: 'up' | 'down';
+  direction?: "up" | "down";
   delay?: number;
   duration?: number;
   className?: string;
@@ -20,35 +20,35 @@ interface CountUpProps {
 export default function CountUp({
   to,
   from = 0,
-  direction = 'up',
+  direction = "up",
   delay = 0,
   duration = 2,
-  className = '',
+  className = "",
   startWhen = true,
-  separator = '',
-  prefix = '',
-  suffix = '',
+  separator = "",
+  prefix = "",
+  suffix = "",
   decimals,
   onStart,
-  onEnd
+  onEnd,
 }: CountUpProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  const motionValue = useMotionValue(direction === 'down' ? to : from);
+  const motionValue = useMotionValue(direction === "down" ? to : from);
 
   const damping = 20 + 40 * (1 / duration);
   const stiffness = 100 * (1 / duration);
 
   const springValue = useSpring(motionValue, {
     damping,
-    stiffness
+    stiffness,
   });
 
-  const isInView = useInView(ref, { once: true, margin: '0px' });
+  const isInView = useInView(ref, { once: true, margin: "0px" });
 
   const getDecimalPlaces = (num: number): number => {
     const str = num.toString();
-    if (str.includes('.')) {
-      const decimals = str.split('.')[1];
+    if (str.includes(".")) {
+      const decimals = str.split(".")[1];
       if (parseInt(decimals) !== 0) {
         return decimals.length;
       }
@@ -56,27 +56,30 @@ export default function CountUp({
     return 0;
   };
 
-  const maxDecimals = decimals !== undefined ? decimals : Math.max(getDecimalPlaces(from), getDecimalPlaces(to));
+  const maxDecimals =
+    decimals !== undefined
+      ? decimals
+      : Math.max(getDecimalPlaces(from), getDecimalPlaces(to));
 
   useEffect(() => {
     if (ref.current) {
-      ref.current.textContent = `${prefix}${String(direction === 'down' ? to : from)}${suffix}`;
+      ref.current.textContent = `${prefix}${String(direction === "down" ? to : from)}${suffix}`;
     }
   }, [from, to, direction, prefix, suffix]);
 
   useEffect(() => {
     if (isInView && startWhen) {
-      if (typeof onStart === 'function') {
+      if (typeof onStart === "function") {
         onStart();
       }
 
       const timeoutId = setTimeout(() => {
-        motionValue.set(direction === 'down' ? from : to);
+        motionValue.set(direction === "down" ? from : to);
       }, delay * 1000);
 
       const durationTimeoutId = setTimeout(
         () => {
-          if (typeof onEnd === 'function') {
+          if (typeof onEnd === "function") {
             onEnd();
           }
         },
@@ -88,21 +91,36 @@ export default function CountUp({
         clearTimeout(durationTimeoutId);
       };
     }
-  }, [isInView, startWhen, motionValue, direction, from, to, delay, onStart, onEnd, duration]);
+  }, [
+    isInView,
+    startWhen,
+    motionValue,
+    direction,
+    from,
+    to,
+    delay,
+    onStart,
+    onEnd,
+    duration,
+  ]);
 
   useEffect(() => {
-    const unsubscribe = springValue.on('change', latest => {
+    const unsubscribe = springValue.on("change", (latest) => {
       if (ref.current) {
         const hasDecimals = maxDecimals > 0;
 
         const options: Intl.NumberFormatOptions = {
           useGrouping: !!separator,
           minimumFractionDigits: hasDecimals ? maxDecimals : 0,
-          maximumFractionDigits: hasDecimals ? maxDecimals : 0
+          maximumFractionDigits: hasDecimals ? maxDecimals : 0,
         };
 
-        const formattedNumber = Intl.NumberFormat('en-IN', options).format(latest);
-        const finalNumber = separator ? formattedNumber.replace(/,/g, separator) : formattedNumber;
+        const formattedNumber = Intl.NumberFormat("en-IN", options).format(
+          latest
+        );
+        const finalNumber = separator
+          ? formattedNumber.replace(/,/g, separator)
+          : formattedNumber;
 
         ref.current.textContent = `${prefix}${finalNumber}${suffix}`;
       }

@@ -538,12 +538,12 @@ export const getOutstandingByLedger = async (
     });
   }
 
-  return Array.from(ledgerMap.values()).map(ledger => ({
+  return Array.from(ledgerMap.values()).map((ledger) => ({
     ledgerName: ledger.ledgerName,
     ledgerCode: ledger.ledgerCode,
     billCount: ledger.billCount,
     totalOutstanding: Number(ledger.totalOutstanding),
-    bills: ledger.bills.map(bill => ({
+    bills: ledger.bills.map((bill) => ({
       billNumber: bill.billNumber,
       billDate: bill.billDate,
       dueDate: bill.dueDate,
@@ -615,8 +615,8 @@ export const getBillReminders = async (
           daysOverdue > 0
             ? "OVERDUE"
             : daysUntilDue <= 3
-            ? "URGENT"
-            : "WARNING",
+              ? "URGENT"
+              : "WARNING",
       };
     });
 
@@ -660,7 +660,7 @@ export const getBillCashFlowProjections = async (
     const monthDate = new Date(now.getFullYear(), now.getMonth() + i, 1);
     const nextMonth = new Date(now.getFullYear(), now.getMonth() + i + 1, 1);
 
-    const monthBills = bills.filter(bill => {
+    const monthBills = bills.filter((bill) => {
       const dueDate = bill.dueDate || bill.billDate;
       return dueDate >= monthDate && dueDate < nextMonth;
     });
@@ -684,7 +684,7 @@ export const getBillCashFlowProjections = async (
       receivablesExpected: Number(receivablesExpected),
       payablesExpected: Number(payablesExpected),
       netCashFlow: Number(receivablesExpected) - Number(payablesExpected),
-      bills: monthBills.map(bill => ({
+      bills: monthBills.map((bill) => ({
         billNumber: bill.billNumber,
         ledgerName: bill.ledgerName,
         amount: Number(bill.outstandingAmount),
@@ -765,7 +765,7 @@ export const getBillsAnalytics = async (
   const now = new Date();
   const receivablesAvgDays =
     receivables
-      .filter(b => b.dueDate && b.status !== BillStatus.SETTLED)
+      .filter((b) => b.dueDate && b.status !== BillStatus.SETTLED)
       .reduce((sum: number, b: any) => {
         const days = Math.floor(
           (now.getTime() - (b.dueDate || b.billDate).getTime()) /
@@ -779,7 +779,7 @@ export const getBillsAnalytics = async (
 
   const payablesAvgDays =
     payables
-      .filter(b => b.dueDate && b.status !== BillStatus.SETTLED)
+      .filter((b) => b.dueDate && b.status !== BillStatus.SETTLED)
       .reduce((sum: number, b: any) => {
         const days = Math.floor(
           (now.getTime() - (b.dueDate || b.billDate).getTime()) /

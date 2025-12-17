@@ -2,23 +2,31 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { apiClient } from '@/lib/api';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import toast from 'react-hot-toast';
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { apiClient } from "@/lib/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import toast from "react-hot-toast";
 
 // Zod validation schema
 const accountSchema = z.object({
-  accountName: z.string()
-    .min(3, 'Account name must be at least 3 characters')
-    .max(50, 'Account name must be less than 50 characters'),
-  balance: z.number()
-    .nonnegative('Balance cannot be negative')
-    .max(1000000000, 'Balance is too large'),
+  accountName: z
+    .string()
+    .min(3, "Account name must be at least 3 characters")
+    .max(50, "Account name must be less than 50 characters"),
+  balance: z
+    .number()
+    .nonnegative("Balance cannot be negative")
+    .max(1000000000, "Balance is too large"),
 });
 
 type AccountFormData = z.infer<typeof accountSchema>;
@@ -29,7 +37,11 @@ interface CreateAccountModalProps {
   onSuccess: () => void;
 }
 
-export default function CreateAccountModal({ isOpen, onClose, onSuccess }: CreateAccountModalProps) {
+export default function CreateAccountModal({
+  isOpen,
+  onClose,
+  onSuccess,
+}: CreateAccountModalProps) {
   const {
     register,
     handleSubmit,
@@ -57,16 +69,16 @@ export default function CreateAccountModal({ isOpen, onClose, onSuccess }: Creat
       });
 
       if (response.success) {
-        toast.success('Bank account created successfully!');
+        toast.success("Bank account created successfully!");
         reset();
         setStep(1);
         onSuccess();
         onClose();
       } else {
-        toast.error(response.message || 'Failed to create account');
+        toast.error(response.message || "Failed to create account");
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to create account');
+      toast.error(error.response?.data?.message || "Failed to create account");
     }
   };
 

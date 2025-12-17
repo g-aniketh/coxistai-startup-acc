@@ -1,12 +1,16 @@
 // STUB: Analytics service - simplified implementation
 // This is a placeholder to prevent build errors
 
-import { prisma } from '../lib/prisma';
-import { Prisma } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
+import { prisma } from "../lib/prisma";
+import { Prisma } from "@prisma/client";
+import { Decimal } from "@prisma/client/runtime/library";
 
 export class AnalyticsService {
-  static async getMetrics(startupId: string, periodStart: Date, periodEnd: Date) {
+  static async getMetrics(
+    startupId: string,
+    periodStart: Date,
+    periodEnd: Date
+  ) {
     try {
       // Get basic transaction data
       const transactions = await prisma.transaction.findMany({
@@ -27,9 +31,11 @@ export class AnalyticsService {
         .filter((t: any) => t.amount > 0)
         .reduce((sum: number, t: any) => sum + t.amount, 0);
 
-      const totalExpenses = Math.abs(transactions
-        .filter((t: any) => t.amount < 0)
-        .reduce((sum: number, t: any) => sum + t.amount, 0));
+      const totalExpenses = Math.abs(
+        transactions
+          .filter((t: any) => t.amount < 0)
+          .reduce((sum: number, t: any) => sum + t.amount, 0)
+      );
 
       const netIncome = totalRevenue - totalExpenses;
 
@@ -50,10 +56,10 @@ export class AnalyticsService {
         },
       };
     } catch (error) {
-      console.error('Analytics error:', error);
+      console.error("Analytics error:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -81,10 +87,10 @@ export class AnalyticsService {
         },
       };
     } catch (error) {
-      console.error('Account balance error:', error);
+      console.error("Account balance error:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -93,7 +99,7 @@ export class AnalyticsService {
     try {
       const metrics = await prisma.cashflowMetric.findMany({
         where: { startupId },
-        orderBy: { periodStart: 'desc' },
+        orderBy: { periodStart: "desc" },
         take: 12, // Last 12 months
       });
 
@@ -102,10 +108,10 @@ export class AnalyticsService {
         data: metrics,
       };
     } catch (error) {
-      console.error('Cashflow metrics error:', error);
+      console.error("Cashflow metrics error:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -130,10 +136,10 @@ export class AnalyticsService {
         data: metric,
       };
     } catch (error) {
-      console.error('Create cashflow metric error:', error);
+      console.error("Create cashflow metric error:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -142,7 +148,7 @@ export class AnalyticsService {
     try {
       const latestMetric = await prisma.cashflowMetric.findFirst({
         where: { startupId },
-        orderBy: { periodStart: 'desc' },
+        orderBy: { periodStart: "desc" },
       });
 
       return {
@@ -150,10 +156,10 @@ export class AnalyticsService {
         data: latestMetric,
       };
     } catch (error) {
-      console.error('Latest metrics error:', error);
+      console.error("Latest metrics error:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -168,7 +174,7 @@ export class AnalyticsService {
           startupId,
           periodStart: { gte: startDate },
         },
-        orderBy: { periodStart: 'asc' },
+        orderBy: { periodStart: "asc" },
       });
 
       return {
@@ -176,10 +182,10 @@ export class AnalyticsService {
         data: metrics,
       };
     } catch (error) {
-      console.error('Metrics history error:', error);
+      console.error("Metrics history error:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -192,10 +198,10 @@ export class AnalyticsService {
 
       return await this.getMetrics(startupId, startOfMonth, endOfMonth);
     } catch (error) {
-      console.error('Current month metrics error:', error);
+      console.error("Current month metrics error:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -204,7 +210,7 @@ export class AnalyticsService {
     try {
       const alerts = await prisma.alert.findMany({
         where: { startupId },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         take: 5,
       });
 
@@ -212,7 +218,10 @@ export class AnalyticsService {
         where: { startupId },
       });
 
-      const totalBalance = accounts.reduce((sum: number, acc: any) => sum + acc.balance, 0);
+      const totalBalance = accounts.reduce(
+        (sum: number, acc: any) => sum + acc.balance,
+        0
+      );
 
       return {
         success: true,
@@ -224,15 +233,19 @@ export class AnalyticsService {
         },
       };
     } catch (error) {
-      console.error('Dashboard summary error:', error);
+      console.error("Dashboard summary error:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
 
-  static async getRevenueBreakdown(startupId: string, startDate: Date, endDate: Date) {
+  static async getRevenueBreakdown(
+    startupId: string,
+    startDate: Date,
+    endDate: Date
+  ) {
     try {
       // Stub implementation - returns mock data
       return {
@@ -245,15 +258,18 @@ export class AnalyticsService {
         },
       };
     } catch (error) {
-      console.error('Revenue breakdown error:', error);
+      console.error("Revenue breakdown error:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
 
   private static getMonthsDifference(start: Date, end: Date): number {
-    return (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+    return (
+      (end.getFullYear() - start.getFullYear()) * 12 +
+      (end.getMonth() - start.getMonth())
+    );
   }
 }

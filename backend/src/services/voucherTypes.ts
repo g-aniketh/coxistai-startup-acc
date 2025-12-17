@@ -1,5 +1,11 @@
-import { Prisma, PrismaClient, VoucherCategory, VoucherNumberingBehavior, VoucherNumberingMethod } from '@prisma/client';
-import { prisma } from '../lib/prisma';
+import {
+  Prisma,
+  PrismaClient,
+  VoucherCategory,
+  VoucherNumberingBehavior,
+  VoucherNumberingMethod,
+} from "@prisma/client";
+import { prisma } from "../lib/prisma";
 
 const DEFAULT_VOUCHER_TYPES: Array<{
   name: string;
@@ -12,22 +18,44 @@ const DEFAULT_VOUCHER_TYPES: Array<{
   allowManualOverride?: boolean;
   allowDuplicateNumbers?: boolean;
 }> = [
-  { name: 'Payment', abbreviation: 'PMT', category: 'PAYMENT', prefix: 'PMT/' },
-  { name: 'Receipt', abbreviation: 'RCT', category: 'RECEIPT', prefix: 'RCT/' },
-  { name: 'Contra', abbreviation: 'CTR', category: 'CONTRA', prefix: 'CTR/' },
-  { name: 'Journal', abbreviation: 'JRN', category: 'JOURNAL', prefix: 'JRN/' },
-  { name: 'Sales', abbreviation: 'SAL', category: 'SALES', prefix: 'SAL/' },
-  { name: 'Purchase', abbreviation: 'PUR', category: 'PURCHASE', prefix: 'PUR/' },
-  { name: 'Debit Note', abbreviation: 'DN', category: 'DEBIT_NOTE', prefix: 'DN/' },
-  { name: 'Credit Note', abbreviation: 'CN', category: 'CREDIT_NOTE', prefix: 'CN/' },
+  { name: "Payment", abbreviation: "PMT", category: "PAYMENT", prefix: "PMT/" },
+  { name: "Receipt", abbreviation: "RCT", category: "RECEIPT", prefix: "RCT/" },
+  { name: "Contra", abbreviation: "CTR", category: "CONTRA", prefix: "CTR/" },
+  { name: "Journal", abbreviation: "JRN", category: "JOURNAL", prefix: "JRN/" },
+  { name: "Sales", abbreviation: "SAL", category: "SALES", prefix: "SAL/" },
+  {
+    name: "Purchase",
+    abbreviation: "PUR",
+    category: "PURCHASE",
+    prefix: "PUR/",
+  },
+  {
+    name: "Debit Note",
+    abbreviation: "DN",
+    category: "DEBIT_NOTE",
+    prefix: "DN/",
+  },
+  {
+    name: "Credit Note",
+    abbreviation: "CN",
+    category: "CREDIT_NOTE",
+    prefix: "CN/",
+  },
 ];
 
-const composeVoucherNumber = (prefix: string | null | undefined, sequence: number, suffix?: string | null) => {
+const composeVoucherNumber = (
+  prefix: string | null | undefined,
+  sequence: number,
+  suffix?: string | null
+) => {
   const base = sequence.toString();
-  return `${prefix ?? ''}${base}${suffix ?? ''}`;
+  return `${prefix ?? ""}${base}${suffix ?? ""}`;
 };
 
-export const ensureDefaultVoucherTypes = async (client: PrismaClient, startupId: string) => {
+export const ensureDefaultVoucherTypes = async (
+  client: PrismaClient,
+  startupId: string
+) => {
   const existingCount = await client.voucherType.count({
     where: { startupId },
   });
@@ -45,8 +73,8 @@ export const ensureDefaultVoucherTypes = async (client: PrismaClient, startupId:
         category: definition.category,
         prefix: definition.prefix,
         suffix: definition.suffix,
-        numberingMethod: definition.numberingMethod ?? 'AUTOMATIC',
-        numberingBehavior: definition.numberingBehavior ?? 'RENUMBER',
+        numberingMethod: definition.numberingMethod ?? "AUTOMATIC",
+        numberingBehavior: definition.numberingBehavior ?? "RENUMBER",
         allowManualOverride: definition.allowManualOverride ?? false,
         allowDuplicateNumbers: definition.allowDuplicateNumbers ?? false,
         isDefault: true,
@@ -57,7 +85,7 @@ export const ensureDefaultVoucherTypes = async (client: PrismaClient, startupId:
       data: {
         startupId,
         voucherTypeId: voucherType.id,
-        name: 'Default',
+        name: "Default",
         prefix: definition.prefix,
         suffix: definition.suffix,
         numberingMethod: voucherType.numberingMethod,
@@ -75,10 +103,10 @@ export const listVoucherTypes = async (startupId: string) => {
 
   return prisma.voucherType.findMany({
     where: { startupId },
-    orderBy: { name: 'asc' },
+    orderBy: { name: "asc" },
     include: {
       numberingSeries: {
-        orderBy: { name: 'asc' },
+        orderBy: { name: "asc" },
       },
     },
   });
@@ -104,7 +132,7 @@ export const createVoucherType = async (
     });
 
     if (existing) {
-      throw new Error('Voucher type with this name already exists');
+      throw new Error("Voucher type with this name already exists");
     }
 
     const voucherType = await tx.voucherType.create({
@@ -113,8 +141,8 @@ export const createVoucherType = async (
         name: data.name,
         abbreviation: data.abbreviation,
         category: data.category,
-        numberingMethod: data.numberingMethod ?? 'AUTOMATIC',
-        numberingBehavior: data.numberingBehavior ?? 'RENUMBER',
+        numberingMethod: data.numberingMethod ?? "AUTOMATIC",
+        numberingBehavior: data.numberingBehavior ?? "RENUMBER",
         prefix: data.prefix,
         suffix: data.suffix,
         allowManualOverride: data.allowManualOverride ?? false,
@@ -126,7 +154,7 @@ export const createVoucherType = async (
       data: {
         startupId,
         voucherTypeId: voucherType.id,
-        name: 'Default',
+        name: "Default",
         isDefault: true,
         prefix: data.prefix,
         suffix: data.suffix,
@@ -160,7 +188,7 @@ export const updateVoucherType = async (
   });
 
   if (!voucherType) {
-    throw new Error('Voucher type not found');
+    throw new Error("Voucher type not found");
   }
 
   const updateData: any = {
@@ -169,11 +197,13 @@ export const updateVoucherType = async (
     numberingBehavior: data.numberingBehavior ?? voucherType.numberingBehavior,
     prefix: data.prefix ?? voucherType.prefix,
     suffix: data.suffix ?? voucherType.suffix,
-    allowManualOverride: data.allowManualOverride ?? voucherType.allowManualOverride,
-    allowDuplicateNumbers: data.allowDuplicateNumbers ?? voucherType.allowDuplicateNumbers,
+    allowManualOverride:
+      data.allowManualOverride ?? voucherType.allowManualOverride,
+    allowDuplicateNumbers:
+      data.allowDuplicateNumbers ?? voucherType.allowDuplicateNumbers,
   };
 
-  if (typeof data.nextNumber === 'number' && data.nextNumber >= 1) {
+  if (typeof data.nextNumber === "number" && data.nextNumber >= 1) {
     updateData.nextNumber = data.nextNumber;
   }
 
@@ -203,7 +233,7 @@ export const createVoucherNumberingSeries = async (
   });
 
   if (!voucherType) {
-    throw new Error('Voucher type not found');
+    throw new Error("Voucher type not found");
   }
 
   if (payload.isDefault) {
@@ -221,11 +251,14 @@ export const createVoucherNumberingSeries = async (
       prefix: payload.prefix,
       suffix: payload.suffix,
       numberingMethod: payload.numberingMethod ?? voucherType.numberingMethod,
-      numberingBehavior: payload.numberingBehavior ?? voucherType.numberingBehavior,
+      numberingBehavior:
+        payload.numberingBehavior ?? voucherType.numberingBehavior,
       startNumber: payload.startNumber ?? 1,
       nextNumber: payload.startNumber ?? 1,
-      allowManualOverride: payload.allowManualOverride ?? voucherType.allowManualOverride,
-      allowDuplicateNumbers: payload.allowDuplicateNumbers ?? voucherType.allowDuplicateNumbers,
+      allowManualOverride:
+        payload.allowManualOverride ?? voucherType.allowManualOverride,
+      allowDuplicateNumbers:
+        payload.allowDuplicateNumbers ?? voucherType.allowDuplicateNumbers,
       isDefault: payload.isDefault ?? false,
     },
   });
@@ -243,7 +276,7 @@ export const getNextVoucherNumber = async (
       });
 
       if (!series) {
-        throw new Error('Numbering series not found');
+        throw new Error("Numbering series not found");
       }
 
       const nextNumber = series.nextNumber;
@@ -260,7 +293,7 @@ export const getNextVoucherNumber = async (
     });
 
     if (!voucherType) {
-      throw new Error('Voucher type not found');
+      throw new Error("Voucher type not found");
     }
 
     const nextNumber = voucherType.nextNumber;
@@ -269,7 +302,11 @@ export const getNextVoucherNumber = async (
       data: { nextNumber: { increment: 1 } },
     });
 
-    return composeVoucherNumber(voucherType.prefix, nextNumber, voucherType.suffix);
+    return composeVoucherNumber(
+      voucherType.prefix,
+      nextNumber,
+      voucherType.suffix
+    );
   });
 };
 
