@@ -1,4 +1,4 @@
-import { PrismaClient, TransactionType } from "@prisma/client";
+import { PrismaClient, TransactionType, Prisma } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -64,7 +64,7 @@ export const getTransactions = async (
     offset?: number;
   }
 ) => {
-  const where: any = { startupId };
+  const where: Prisma.TransactionWhereInput = { startupId };
 
   if (filters?.accountId) {
     where.accountId = filters.accountId;

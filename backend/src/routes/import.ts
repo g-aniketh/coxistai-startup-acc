@@ -69,7 +69,7 @@ router.post(
   authenticateToken,
   async (req: Request, res: Response) => {
     try {
-      const userId = (req as any).user?.userId;
+      const userId = req.user?.userId;
       if (!userId) {
         return res
           .status(401)

@@ -108,7 +108,12 @@ export const updateAccountController = async (
     const { accountId } = req.params;
     const { accountName, balance } = req.body;
 
-    const updateData: any = {};
+    interface AccountUpdateData {
+      accountName?: string;
+      balance?: number;
+    }
+
+    const updateData: AccountUpdateData = {};
     if (accountName !== undefined) updateData.accountName = accountName;
     if (balance !== undefined) {
       if (typeof balance !== "number" || balance < 0) {

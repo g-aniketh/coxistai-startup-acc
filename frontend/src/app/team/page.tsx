@@ -91,8 +91,11 @@ export default function TeamPage() {
       } else {
         toast.error(response.message || "Failed to create account");
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to create account");
+    } catch (error) {
+      const message = error instanceof Error 
+        ? error.message 
+        : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to create account";
+      toast.error(message);
     } finally {
       setInviting(false);
     }
@@ -111,8 +114,11 @@ export default function TeamPage() {
       } else {
         toast.error(response.message || "Failed to deactivate user");
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to deactivate user");
+    } catch (error) {
+      const message = error instanceof Error 
+        ? error.message 
+        : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to deactivate user";
+      toast.error(message);
     }
   };
 

@@ -695,9 +695,9 @@ export const getBillCashFlowProjections = async (
       );
 
     const payablesExpected = monthBills
-      .filter((b: any) => b.billType === BillType.PAYABLE)
+      .filter((b) => b.billType === BillType.PAYABLE)
       .reduce(
-        (sum: Decimal, b: any) => sum.plus(b.outstandingAmount),
+        (sum: Decimal, b) => sum.plus(b.outstandingAmount),
         new Decimal(0)
       );
 
@@ -788,7 +788,7 @@ export const getBillsAnalytics = async (
   const receivablesAvgDays =
     receivables
       .filter((b) => b.dueDate && b.status !== BillStatus.SETTLED)
-      .reduce((sum: number, b: any) => {
+      .reduce((sum: number, b) => {
         const days = Math.floor(
           (now.getTime() - (b.dueDate || b.billDate).getTime()) /
             (1000 * 60 * 60 * 24)
@@ -802,7 +802,7 @@ export const getBillsAnalytics = async (
   const payablesAvgDays =
     payables
       .filter((b) => b.dueDate && b.status !== BillStatus.SETTLED)
-      .reduce((sum: number, b: any) => {
+      .reduce((sum: number, b) => {
         const days = Math.floor(
           (now.getTime() - (b.dueDate || b.billDate).getTime()) /
             (1000 * 60 * 60 * 24)

@@ -26,10 +26,36 @@ export interface DepreciationRunInput {
  * Generate closing entries for year-end
  * Transfers P&L balances to Capital/Retained Earnings
  */
+type VoucherWithRelations = Prisma.VoucherGetPayload<{
+  include: {
+    entries: {
+      include: {
+        billReferences: true;
+      };
+    };
+    inventoryLines: {
+      include: {
+        item: true;
+        warehouse: true;
+      };
+    };
+    voucherType: true;
+    numberingSeries: true;
+    partyLedger: true;
+  };
+}>;
+
+interface ClosingEntry {
+  ledgerName: string;
+  entryType: VoucherEntryType;
+  amount: number;
+  narration?: string;
+}
+
 export async function generateClosingEntries(
   startupId: string,
   input: ClosingEntryInput
-): Promise<{ voucher: any; entries: any[] }> {
+): Promise<{ voucher: VoucherWithRelations; entries: ClosingEntry[] }> {
   const yearEndDate = new Date(input.financialYearEnd);
 
   // Get all income and expense ledgers
@@ -100,7 +126,7 @@ export async function generateClosingEntries(
   let totalExpense = 0;
 
   for (const [ledgerName, balance] of closingBalances) {
-    const ledger = incomeExpenseLedgers.find((l: any) => l.name === ledgerName);
+    const ledger = incomeExpenseLedgers.find((l) => l.name === ledgerName);
     if (!ledger) continue;
 
     const category = ledger.group.category;
@@ -168,7 +194,7 @@ export async function generateClosingEntries(
 
   // Close all income/expense accounts
   for (const [ledgerName, balance] of closingBalances) {
-    const ledger = incomeExpenseLedgers.find((l: any) => l.name === ledgerName);
+    const ledger = incomeExpenseLedgers.find((l) => l.name === ledgerName);
     if (!ledger) continue;
 
     const category = ledger.group.category;
@@ -254,10 +280,17 @@ export async function generateClosingEntries(
 /**
  * Run depreciation calculation
  */
+interface DepreciationEntry {
+  ledgerName: string;
+  entryType: VoucherEntryType;
+  amount: number;
+  narration?: string;
+}
+
 export async function runDepreciation(
   startupId: string,
   input: DepreciationRunInput
-): Promise<{ voucher: any; depreciationEntries: any[] }> {
+): Promise<{ voucher: VoucherWithRelations; depreciationEntries: DepreciationEntry[] }> {
   const asOnDate = new Date(input.asOnDate);
 
   // Get fixed asset ledgers
@@ -275,7 +308,7 @@ export async function runDepreciation(
   const assetLedgers = await prisma.ledger.findMany({
     where: {
       startupId,
-      groupId: { in: assetGroups.map((g: any) => g.id) },
+      groupId: { in: assetGroups.map((g) => g.id) },
     },
     include: { group: true },
   });

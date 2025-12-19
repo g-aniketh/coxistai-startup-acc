@@ -91,7 +91,13 @@ cfoRoutes.get(
       const skip = (pageNum - 1) * limitNum;
 
       // Build where clause
-      const where: any = {
+      const where: {
+        account: { startupId: string };
+        date?: { gte?: Date; lte?: Date };
+        categoryId?: number;
+        accountId?: string;
+        description?: { contains: string; mode: "insensitive" };
+      } = {
         account: {
           startupId: req.user.startupId,
         },
@@ -127,7 +133,7 @@ cfoRoutes.get(
       }
 
       // Build orderBy clause
-      const orderBy: any = {};
+      const orderBy: Record<string, "asc" | "desc"> = {};
       orderBy[sortBy as string] = sortOrder as "asc" | "desc";
 
       // Get transactions with pagination
@@ -437,7 +443,12 @@ cfoRoutes.get(
       }
 
       // TODO: Implement transaction categories
-      const categories: any[] = []; // await prisma.transactionCategory.findMany(...);
+      interface TransactionCategory {
+        id: string;
+        name: string;
+        [key: string]: string | number | boolean | null | undefined;
+      }
+      const categories: TransactionCategory[] = []; // await prisma.transactionCategory.findMany(...);
 
       return res.json({
         success: true,
@@ -599,9 +610,15 @@ cfoRoutes.get(
 );
 
 // Helper function to generate recommendations
+interface HealthFactor {
+  name: string;
+  score: number;
+  max: number;
+}
+
 function generateRecommendations(
   score: number,
-  factors: any[],
+  factors: HealthFactor[],
   totalBalance: number,
   netCashFlow: number,
   burnRate: number

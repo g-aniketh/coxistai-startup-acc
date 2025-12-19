@@ -216,10 +216,21 @@ export default function TransactionsPage() {
     }
   };
 
-  const handleTransactionAdded = async (transactionData: any) => {
+  const handleTransactionAdded = async (transactionData: {
+    amount: number;
+    type: "income" | "expense";
+    description: string;
+    category: string;
+    date: string;
+    accountId: string;
+  }) => {
     try {
       // Add the new transaction to the state
-      setTransactions((prev) => [transactionData, ...prev]);
+      const newTransaction: DemoTransaction = {
+        id: Date.now().toString(),
+        ...transactionData,
+      };
+      setTransactions((prev) => [newTransaction, ...prev]);
 
       // Update the accounts if needed (for balance changes)
       // In a real app, this would be handled by the backend

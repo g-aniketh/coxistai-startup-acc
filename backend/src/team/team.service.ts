@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { Resend } from "resend";
 
@@ -155,7 +155,7 @@ export const inviteTeamMember = async (
     email: newUser.email,
     firstName: newUser.firstName,
     lastName: newUser.lastName,
-    roles: newUser.roles.map((ur: any) => ur.role.name),
+    roles: newUser.roles.map((ur) => ur.role.name),
     isActive: newUser.isActive,
     tempPassword, // Return temp password in case email fails
   };
@@ -174,12 +174,22 @@ export const getTeamMembers = async (startupId: string) => {
     orderBy: { createdAt: "asc" },
   });
 
-  return users.map((user: any) => ({
+  type UserWithRoles = Prisma.UserGetPayload<{
+    include: {
+      roles: {
+        include: {
+          role: true;
+        };
+      };
+    };
+  }>;
+
+  return users.map((user: UserWithRoles) => ({
     id: user.id,
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
-    roles: user.roles.map((ur: any) => ur.role.name),
+    roles: user.roles.map((ur) => ur.role.name),
     isActive: user.isActive,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
@@ -257,7 +267,7 @@ export const updateUserRole = async (
     email: updatedUser!.email,
     firstName: updatedUser!.firstName,
     lastName: updatedUser!.lastName,
-    roles: updatedUser!.roles.map((ur: any) => ur.role.name),
+    roles: updatedUser!.roles.map((ur) => ur.role.name),
     isActive: updatedUser!.isActive,
   };
 };

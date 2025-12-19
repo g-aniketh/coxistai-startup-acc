@@ -1,6 +1,16 @@
 // STUB: Stripe service - not implemented yet
 // This is a placeholder to prevent build errors
 
+interface CustomerData {
+  email: string;
+  name?: string;
+  [key: string]: string | undefined;
+}
+
+interface AccountUpdates {
+  [key: string]: string | number | boolean | null | undefined;
+}
+
 export class StripeService {
   static async createAccount(
     tenantId: string,
@@ -26,7 +36,7 @@ export class StripeService {
     };
   }
 
-  static async createCustomer(accountId: string, customerData: any) {
+  static async createCustomer(accountId: string, customerData: CustomerData) {
     // Stub implementation
     return {
       id: `cus_stub_${Date.now()}`,
@@ -83,7 +93,7 @@ export class StripeService {
     };
   }
 
-  static async updateAccount(accountId: string, updates: any) {
+  static async updateAccount(accountId: string, updates: AccountUpdates) {
     // Stub implementation
     return {
       id: accountId,

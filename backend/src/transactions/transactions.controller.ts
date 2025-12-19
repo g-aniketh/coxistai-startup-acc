@@ -68,7 +68,16 @@ export const getTransactionsController = async (
     const { startupId } = req.user!;
     const { accountId, type, startDate, endDate, limit, offset } = req.query;
 
-    const filters: any = {};
+    interface TransactionFilters {
+      accountId?: string;
+      type?: TransactionType;
+      startDate?: Date;
+      endDate?: Date;
+      limit?: number;
+      offset?: number;
+    }
+
+    const filters: TransactionFilters = {};
 
     if (accountId) {
       filters.accountId = accountId as string;

@@ -1,8 +1,8 @@
-import { Router, Request, Response } from "express";
+import { Router, Response } from "express";
 import type { Router as IRouter } from "express";
 import { AnalyticsService } from "../services/analytics";
 import { AlertsService } from "../services/alerts";
-import { authenticateToken } from "../middleware/auth";
+import { authenticateToken, AuthRequest } from "../middleware/auth";
 
 const router: IRouter = Router();
 
@@ -14,9 +14,16 @@ router.use(authenticateToken);
  * @desc    Calculate metrics for current month
  * @access  Private
  */
-router.post("/calculate", async (req: Request, res: Response) => {
+router.post("/calculate", async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const tenantId = (req as any).user.tenantId;
+    const tenantId = req.user?.startupId;
+    if (!tenantId) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
 
     const metrics =
       await AnalyticsService.calculateCurrentMonthMetrics(tenantId);
@@ -29,11 +36,13 @@ router.post("/calculate", async (req: Request, res: Response) => {
       data: metrics,
       message: "Metrics calculated successfully",
     });
-  } catch (error: any) {
+    return;
+  } catch (error) {
     console.error("Error calculating metrics:", error);
+    const message = error instanceof Error ? error.message : "Failed to calculate metrics";
     res.status(400).json({
       success: false,
-      message: error.message || "Failed to calculate metrics",
+      message,
     });
   }
 });
@@ -43,9 +52,16 @@ router.post("/calculate", async (req: Request, res: Response) => {
  * @desc    Get latest metrics
  * @access  Private
  */
-router.get("/latest", async (req: Request, res: Response): Promise<void> => {
+router.get("/latest", async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const tenantId = (req as any).user.tenantId;
+    const tenantId = req.user?.startupId;
+    if (!tenantId) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
 
     const metrics = await AnalyticsService.getLatestMetrics(tenantId);
 
@@ -61,12 +77,14 @@ router.get("/latest", async (req: Request, res: Response): Promise<void> => {
       success: true,
       data: metrics,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error fetching metrics:", error);
+    const message = error instanceof Error ? error.message : "Failed to fetch metrics";
     res.status(400).json({
       success: false,
-      message: error.message || "Failed to fetch metrics",
+      message,
     });
+    return;
   }
 });
 
@@ -75,9 +93,16 @@ router.get("/latest", async (req: Request, res: Response): Promise<void> => {
  * @desc    Get metrics history
  * @access  Private
  */
-router.get("/history", async (req: Request, res: Response) => {
+router.get("/history", async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const tenantId = (req as any).user.tenantId;
+    const tenantId = req.user?.startupId;
+    if (!tenantId) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
     const months = parseInt(req.query.months as string) || 12;
 
     const history = await AnalyticsService.getMetricsHistory(tenantId, months);
@@ -86,12 +111,15 @@ router.get("/history", async (req: Request, res: Response) => {
       success: true,
       data: history,
     });
-  } catch (error: any) {
+    return;
+  } catch (error) {
     console.error("Error fetching history:", error);
+    const message = error instanceof Error ? error.message : "Failed to fetch metrics history";
     res.status(400).json({
       success: false,
-      message: error.message || "Failed to fetch metrics history",
+      message,
     });
+    return;
   }
 });
 
@@ -100,9 +128,16 @@ router.get("/history", async (req: Request, res: Response) => {
  * @desc    Get dashboard summary with metrics, trends, and recent activity
  * @access  Private
  */
-router.get("/dashboard", async (req: Request, res: Response) => {
+router.get("/dashboard", async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const tenantId = (req as any).user.tenantId;
+    const tenantId = req.user?.startupId;
+    if (!tenantId) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
 
     const summary = await AnalyticsService.getDashboardSummary(tenantId);
 
@@ -110,12 +145,15 @@ router.get("/dashboard", async (req: Request, res: Response) => {
       success: true,
       data: summary,
     });
-  } catch (error: any) {
+    return;
+  } catch (error) {
     console.error("Error fetching dashboard:", error);
+    const message = error instanceof Error ? error.message : "Failed to fetch dashboard data";
     res.status(400).json({
       success: false,
-      message: error.message || "Failed to fetch dashboard data",
+      message,
     });
+    return;
   }
 });
 
@@ -124,9 +162,16 @@ router.get("/dashboard", async (req: Request, res: Response) => {
  * @desc    Get revenue breakdown by source
  * @access  Private
  */
-router.get("/revenue-breakdown", async (req: Request, res: Response) => {
+router.get("/revenue-breakdown", async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const tenantId = (req as any).user.tenantId;
+    const tenantId = req.user?.startupId;
+    if (!tenantId) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
 
     // Default to current month
     const now = new Date();
@@ -147,12 +192,15 @@ router.get("/revenue-breakdown", async (req: Request, res: Response) => {
       success: true,
       data: breakdown,
     });
-  } catch (error: any) {
+    return;
+  } catch (error) {
     console.error("Error fetching revenue breakdown:", error);
+    const message = error instanceof Error ? error.message : "Failed to fetch revenue breakdown";
     res.status(400).json({
       success: false,
-      message: error.message || "Failed to fetch revenue breakdown",
+      message,
     });
+    return;
   }
 });
 

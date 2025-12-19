@@ -180,9 +180,10 @@ Respond in JSON format:
         recommendations: response.recommendations,
         confidence: response.confidence,
       };
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error generating forecast:", error);
-      throw new Error(`Failed to generate forecast: ${error.message}`);
+      const message = error instanceof Error ? error.message : "Unknown error";
+      throw new Error(`Failed to generate forecast: ${message}`);
     }
   }
 
@@ -745,9 +746,10 @@ Please provide a helpful, specific answer based on their actual financial data. 
         completion.choices[0].message.content ||
         "I'm sorry, I couldn't generate a response. Please try again."
       );
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error in AI chat:", error);
-      throw new Error(error.message || "Failed to generate chat response");
+      const message = error instanceof Error ? error.message : "Failed to generate chat response";
+      throw new Error(message);
     }
   }
 }

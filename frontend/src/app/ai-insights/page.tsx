@@ -15,24 +15,44 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
+interface AIInsight {
+  healthScore?: number;
+  healthAssessment?: string;
+  positives?: string[];
+  concerns?: string[];
+  recommendations?: string[];
+  burnAnalysis?: string;
+  topSpendingCategories?: string[];
+  costSavingSuggestions?: string[];
+  revenueOpportunities?: string[];
+  cashflowHealth?: string;
+  keyMetrics?: {
+    totalBalance: number;
+    monthlyBurn: number;
+    monthlyRevenue: number;
+    runway: number | null;
+  };
+}
+
 export default function AIInsightsPage() {
-  const [insights, setInsights] = useState<any>(null);
+  const [insights, setInsights] = useState<AIInsight | null>(null);
   const [loading, setLoading] = useState(false);
 
   const generateInsights = async () => {
     setLoading(true);
     try {
       const response = await apiClient.ai.getInsights();
-      if (response.success) {
+      if (response.success && response.data) {
         setInsights(response.data);
         toast.success("AI insights generated successfully!");
       } else {
         toast.error(response.message || "Failed to generate insights");
       }
-    } catch (error: any) {
-      toast.error(
-        error.response?.data?.message || "Failed to generate insights"
-      );
+    } catch (error) {
+      const message = error instanceof Error 
+        ? error.message 
+        : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to generate insights";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -88,7 +108,7 @@ export default function AIInsightsPage() {
                     Total Balance
                   </p>
                   <h3 className="text-2xl font-bold">
-                    ${insights.keyMetrics.totalBalance.toLocaleString()}
+                    ${insights.keyMetrics?.totalBalance.toLocaleString() ?? "N/A"}
                   </h3>
                 </Card>
                 <Card className="p-6">
@@ -96,7 +116,7 @@ export default function AIInsightsPage() {
                     Monthly Burn
                   </p>
                   <h3 className="text-2xl font-bold text-red-500">
-                    ${insights.keyMetrics.monthlyBurn.toLocaleString()}
+                    ${insights.keyMetrics?.monthlyBurn.toLocaleString() ?? "N/A"}
                   </h3>
                 </Card>
                 <Card className="p-6">
@@ -104,13 +124,13 @@ export default function AIInsightsPage() {
                     Monthly Revenue
                   </p>
                   <h3 className="text-2xl font-bold text-green-500">
-                    ${insights.keyMetrics.monthlyRevenue.toLocaleString()}
+                    ${insights.keyMetrics?.monthlyRevenue.toLocaleString() ?? "N/A"}
                   </h3>
                 </Card>
                 <Card className="p-6">
                   <p className="text-sm text-muted-foreground mb-1">Runway</p>
                   <h3 className="text-2xl font-bold">
-                    {insights.keyMetrics.runway
+                    {insights.keyMetrics?.runway
                       ? `${insights.keyMetrics.runway.toFixed(1)}mo`
                       : "∞"}
                   </h3>

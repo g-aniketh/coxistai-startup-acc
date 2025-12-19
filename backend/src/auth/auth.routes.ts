@@ -25,7 +25,7 @@ router.get(
     try {
       // Fetch complete user data from database
       const user = await prisma.user.findUnique({
-        where: { id: (req as any).user!.userId },
+        where: { id: req.user!.userId },
         include: {
           startup: {
             select: {

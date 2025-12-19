@@ -429,12 +429,18 @@ export async function getCashFlow(
   }
 
   // Get vouchers affecting cash/bank
-  const voucherFilters: any = {
+  const voucherFilters: Prisma.VoucherWhereInput = {
     startupId,
-    date: {},
   };
-  if (from) voucherFilters.date!.gte = from;
-  if (to) voucherFilters.date!.lte = to;
+  if (from || to) {
+    voucherFilters.date = {};
+    if (from) {
+      voucherFilters.date.gte = from;
+    }
+    if (to) {
+      voucherFilters.date.lte = to;
+    }
+  }
 
   const vouchers = await prisma.voucher.findMany({
     where: voucherFilters,
@@ -668,12 +674,18 @@ export async function getCashBook(
   }
 
   // Get vouchers affecting cash
-  const voucherFilters: any = {
+  const voucherFilters: Prisma.VoucherWhereInput = {
     startupId,
-    date: {},
   };
-  if (from) voucherFilters.date!.gte = from;
-  if (to) voucherFilters.date!.lte = to;
+  if (from || to) {
+    voucherFilters.date = {};
+    if (from) {
+      voucherFilters.date.gte = from;
+    }
+    if (to) {
+      voucherFilters.date.lte = to;
+    }
+  }
 
   const vouchers = await prisma.voucher.findMany({
     where: voucherFilters,
@@ -784,12 +796,18 @@ export async function getBankBook(
   }> = [];
 
   // Get vouchers affecting this bank
-  const voucherFilters: any = {
+  const voucherFilters: Prisma.VoucherWhereInput = {
     startupId,
-    date: {},
   };
-  if (from) voucherFilters.date!.gte = from;
-  if (to) voucherFilters.date!.lte = to;
+  if (from || to) {
+    voucherFilters.date = {};
+    if (from) {
+      voucherFilters.date.gte = from;
+    }
+    if (to) {
+      voucherFilters.date.lte = to;
+    }
+  }
 
   const vouchers = await prisma.voucher.findMany({
     where: voucherFilters,
@@ -931,12 +949,18 @@ export async function getLedgerBook(
   let runningBalance = openingBalance;
 
   // Get voucher entries for this ledger
-  const voucherFilters: any = {
+  const voucherFilters: Prisma.VoucherWhereInput = {
     startupId,
-    date: {},
   };
-  if (from) voucherFilters.date!.gte = from;
-  if (to) voucherFilters.date!.lte = to;
+  if (from || to) {
+    voucherFilters.date = {};
+    if (from) {
+      voucherFilters.date.gte = from;
+    }
+    if (to) {
+      voucherFilters.date.lte = to;
+    }
+  }
 
   const vouchers = await prisma.voucher.findMany({
     where: voucherFilters,

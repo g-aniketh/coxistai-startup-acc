@@ -15,7 +15,7 @@ interface CashflowMetricInput {
   netCashflow?: number;
   burnRate?: number;
   runway?: number;
-  [key: string]: unknown;
+  [key: string]: string | number | boolean | Date | null | undefined;
 }
 
 export class AnalyticsService {

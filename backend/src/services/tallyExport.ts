@@ -202,8 +202,12 @@ export async function exportGstDataToExcel(startupId: string) {
   const taxRatesSheet = XLSX.utils.json_to_sheet(taxRatesData);
   XLSX.utils.book_append_sheet(workbook, taxRatesSheet, "Tax Rates");
 
+  type LedgerMappingWithRegistration = Prisma.GstLedgerMappingGetPayload<{
+    include: { registration: true };
+  }>;
+
   // Ledger Mappings sheet
-  const mappingsData = ledgerMappings.map((lm: any) => ({
+  const mappingsData = ledgerMappings.map((lm: LedgerMappingWithRegistration) => ({
     "Mapping Type": lm.mappingType,
     "Ledger Name": lm.ledgerName,
     "Ledger Code": lm.ledgerCode || "",

@@ -201,10 +201,9 @@ plaidRoutes.post("/webhook", async (req: Request, res: Response) => {
       case "TRANSACTIONS":
         // Sync transactions for the item
         // TODO: Implement plaidItem model
-        const plaidItem = null;
-
-        if (plaidItem) {
-          await PlaidService.syncTransactions((plaidItem as any).id);
+        // For now, use item_id directly from webhook
+        if (item_id && typeof item_id === "string") {
+          await PlaidService.syncTransactions(item_id);
           console.log(`Synced transactions for item: ${item_id}`);
         }
         break;

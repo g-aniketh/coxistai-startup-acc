@@ -39,17 +39,123 @@ export default function AICopilotPage() {
     "insights" | "scenarios" | "forecasting"
   >("insights");
 
+  interface AIRecommendation {
+    title: string;
+    description: string;
+    priority: "High" | "Medium" | "Low";
+    impact: string;
+    effort: "Low" | "Medium" | "High";
+  }
+
+  interface AIAlert {
+    type: "warning" | "error" | "info" | "critical";
+    message: string;
+    action: string;
+    severity?: "low" | "medium" | "high";
+  }
+
+  interface AIInsights {
+    cashFlow: {
+      current: number;
+      projected: number;
+      change: number;
+    };
+    runway: {
+      current: number;
+      projected: number;
+      change: number;
+    };
+    burnRate: {
+      current: number;
+      projected: number;
+      change: number;
+    };
+    revenue: {
+      current: number;
+      projected: number;
+      change: number;
+    };
+    recommendations: AIRecommendation[];
+    alerts: AIAlert[];
+  }
+
+  interface ScenarioResult {
+    scenario: string;
+    impact: {
+      runway: {
+        current: number;
+        new: number;
+        change: number;
+      };
+      burnRate: {
+        current: number;
+        new: number;
+        change: number;
+      };
+      cashFlow: {
+        current: number;
+        new: number;
+        change: number;
+      };
+    };
+    projectedRevenue?: number;
+    projectedExpenses?: number;
+    projectedRunway?: number;
+    analysis: string;
+    insights?: string[];
+    risks?: string[];
+    recommendations: string[];
+    riskLevel?: string;
+  }
+
   // Insights state
-  const [insights, setInsights] = useState<any>(null);
+  const [insights, setInsights] = useState<AIInsights | null>(null);
   const [insightsLoading, setInsightsLoading] = useState(false);
 
   // Scenarios state
   const [scenario, setScenario] = useState("");
-  const [scenarioResult, setScenarioResult] = useState<any>(null);
+  const [scenarioResult, setScenarioResult] = useState<ScenarioResult | null>(null);
   const [scenarioLoading, setScenarioLoading] = useState(false);
 
+  interface ForecastData {
+    period: "3months" | "6months" | "12months";
+    months: number;
+    revenue: {
+      current: number;
+      projected: Array<{
+        month: string;
+        amount: number;
+        growth: number;
+      }>;
+    };
+    expenses: {
+      current: number;
+      projected: Array<{
+        month: string;
+        amount: number;
+        growth: number;
+      }>;
+    };
+    cashFlow: {
+      current: number;
+      projected: Array<{
+        month: string;
+        amount: number;
+        cumulative?: number;
+        growth?: number;
+      }>;
+    };
+    runway?: {
+      current: number;
+      projected: number;
+    };
+    insights?: string[];
+    risks?: string[];
+    recommendations?: string[];
+  }
+
   // Forecasting state
-  const [forecastData, setForecastData] = useState<any>(null);
+  const [forecastData, setForecastData] = useState<ForecastData | null>(null);
   const [forecastLoading, setForecastLoading] = useState(false);
   const [forecastPeriod, setForecastPeriod] = useState<
     "3months" | "6months" | "12months"
@@ -95,32 +201,32 @@ export default function AICopilotPage() {
             title: "Optimize SaaS Subscriptions",
             description: "Review and consolidate unused software licenses",
             impact: "Save $2,100/month",
-            effort: "Low",
-            priority: "High",
+            effort: "Low" as const,
+            priority: "High" as const,
           },
           {
             title: "Implement Usage-Based Pricing",
             description: "Introduce tiered pricing to increase ARPU",
             impact: "Increase revenue by 25%",
-            effort: "Medium",
-            priority: "High",
+            effort: "Medium" as const,
+            priority: "High" as const,
           },
           {
             title: "Hire Customer Success Manager",
             description: "Reduce churn and increase customer satisfaction",
             impact: "Reduce churn by 2%",
-            effort: "High",
-            priority: "Medium",
+            effort: "High" as const,
+            priority: "Medium" as const,
           },
         ],
         alerts: [
           {
-            type: "warning",
+            type: "warning" as const,
             message: "Burn rate trending up 5% this month",
             action: "Review contractor costs",
           },
           {
-            type: "info",
+            type: "info" as const,
             message: "Customer acquisition cost decreasing",
             action: "Consider scaling marketing spend",
           },
@@ -502,7 +608,7 @@ export default function AICopilotPage() {
                         <CardContent className="pt-0">
                           <div className="space-y-4">
                             {insights.recommendations.map(
-                              (rec: any, index: number) => (
+                              (rec: AIRecommendation, index: number) => (
                                 <div
                                   key={index}
                                   className="bg-gray-50 rounded-lg p-4"
@@ -560,7 +666,7 @@ export default function AICopilotPage() {
                         <CardContent className="pt-0">
                           <div className="space-y-3">
                             {insights.alerts.map(
-                              (alert: any, index: number) => (
+                              (alert: AIAlert, index: number) => (
                                 <div
                                   key={index}
                                   className={`p-3 rounded-lg border-l-4 ${
@@ -833,8 +939,8 @@ export default function AICopilotPage() {
                             </Label>
                             <Select
                               value={forecastPeriod}
-                              onValueChange={(value: any) =>
-                                setForecastPeriod(value)
+                              onValueChange={(value: string) =>
+                                setForecastPeriod(value as "3months" | "6months" | "12months")
                               }
                             >
                               <SelectTrigger className="w-[200px] mt-2 bg-white">
@@ -949,15 +1055,21 @@ export default function AICopilotPage() {
                                   Projected Runway
                                 </div>
                                 <div className="text-lg font-bold text-blue-900">
-                                  {forecastData.runway.projected.toFixed(1)} mo
+                                  {forecastData.runway?.projected.toFixed(1) ?? "N/A"} mo
                                 </div>
                                 <div className="text-xs text-blue-600">
-                                  +
-                                  {(
-                                    forecastData.runway.projected -
-                                    forecastData.runway.current
-                                  ).toFixed(1)}{" "}
-                                  mo change
+                                  {forecastData.runway ? (
+                                    <>
+                                      +
+                                      {(
+                                        forecastData.runway.projected -
+                                        forecastData.runway.current
+                                      ).toFixed(1)}{" "}
+                                      mo change
+                                    </>
+                                  ) : (
+                                    "N/A"
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -1001,18 +1113,22 @@ export default function AICopilotPage() {
                           </CardHeader>
                           <CardContent className="pt-0">
                             <div className="space-y-3">
-                              {forecastData.insights.map(
-                                (insight: string, index: number) => (
-                                  <div
-                                    key={index}
-                                    className="flex items-start gap-2 text-sm text-gray-600"
-                                  >
-                                    <span className="text-[#607c47] mt-1">
-                                      →
-                                    </span>
-                                    <span>{insight}</span>
-                                  </div>
+                              {forecastData.insights && forecastData.insights.length > 0 ? (
+                                forecastData.insights.map(
+                                  (insight: string, index: number) => (
+                                    <div
+                                      key={index}
+                                      className="flex items-start gap-2 text-sm text-gray-600"
+                                    >
+                                      <span className="text-[#607c47] mt-1">
+                                        →
+                                      </span>
+                                      <span>{insight}</span>
+                                    </div>
+                                  )
                                 )
+                              ) : (
+                                <p className="text-sm text-gray-500">No insights available</p>
                               )}
                             </div>
                           </CardContent>
@@ -1027,18 +1143,22 @@ export default function AICopilotPage() {
                           </CardHeader>
                           <CardContent className="pt-0">
                             <div className="space-y-3">
-                              {forecastData.risks.map(
-                                (risk: string, index: number) => (
-                                  <div
-                                    key={index}
-                                    className="flex items-start gap-2 text-sm text-gray-600"
-                                  >
-                                    <span className="text-orange-500 mt-1">
-                                      ⚠
-                                    </span>
-                                    <span>{risk}</span>
-                                  </div>
+                              {forecastData.risks && forecastData.risks.length > 0 ? (
+                                forecastData.risks.map(
+                                  (risk: string, index: number) => (
+                                    <div
+                                      key={index}
+                                      className="flex items-start gap-2 text-sm text-gray-600"
+                                    >
+                                      <span className="text-orange-500 mt-1">
+                                        ⚠
+                                      </span>
+                                      <span>{risk}</span>
+                                    </div>
+                                  )
                                 )
+                              ) : (
+                                <p className="text-sm text-gray-500">No risks identified</p>
                               )}
                             </div>
                           </CardContent>
@@ -1055,22 +1175,26 @@ export default function AICopilotPage() {
                         </CardHeader>
                         <CardContent className="pt-0">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {forecastData.recommendations.map(
-                              (rec: string, index: number) => (
-                                <div
-                                  key={index}
-                                  className="bg-gray-50 rounded-lg p-4"
-                                >
-                                  <div className="flex items-start gap-2">
-                                    <div className="p-1 bg-[#607c47] rounded-full">
-                                      <CheckCircle className="h-3 w-3 text-white" />
+                            {forecastData.recommendations && forecastData.recommendations.length > 0 ? (
+                              forecastData.recommendations.map(
+                                (rec: string, index: number) => (
+                                  <div
+                                    key={index}
+                                    className="bg-gray-50 rounded-lg p-4"
+                                  >
+                                    <div className="flex items-start gap-2">
+                                      <div className="p-1 bg-[#607c47] rounded-full">
+                                        <CheckCircle className="h-3 w-3 text-white" />
+                                      </div>
+                                      <span className="text-sm text-gray-700">
+                                        {rec}
+                                      </span>
                                     </div>
-                                    <span className="text-sm text-gray-700">
-                                      {rec}
-                                    </span>
                                   </div>
-                                </div>
+                                )
                               )
+                            ) : (
+                              <p className="text-sm text-gray-500">No recommendations available</p>
                             )}
                           </div>
                         </CardContent>

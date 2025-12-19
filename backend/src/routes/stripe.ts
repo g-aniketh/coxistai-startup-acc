@@ -1,7 +1,7 @@
-import { Router, Request, Response } from "express";
+import { Router, Response } from "express";
 import type { Router as IRouter } from "express";
 import { StripeService } from "../services/stripe";
-import { authenticateToken } from "../middleware/auth";
+import { authenticateToken, AuthRequest } from "../middleware/auth";
 
 const router: IRouter = Router();
 
@@ -13,10 +13,17 @@ router.use(authenticateToken);
  * @desc    Connect a Stripe account
  * @access  Private
  */
-router.post("/connect", async (req: Request, res: Response) => {
+router.post("/connect", async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { apiKey } = req.body;
-    const tenantId = (req as any).user.tenantId;
+    const tenantId = req.user?.startupId;
+    if (!tenantId) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
 
     const account = await StripeService.connectAccount(tenantId, apiKey);
 
@@ -25,11 +32,13 @@ router.post("/connect", async (req: Request, res: Response) => {
       data: account,
       message: "Stripe account connected successfully",
     });
-  } catch (error: any) {
+    return;
+  } catch (error) {
     console.error("Error connecting Stripe:", error);
+    const message = error instanceof Error ? error.message : "Failed to connect Stripe account";
     res.status(400).json({
       success: false,
-      message: error.message || "Failed to connect Stripe account",
+      message,
     });
   }
 });
@@ -39,9 +48,16 @@ router.post("/connect", async (req: Request, res: Response) => {
  * @desc    Sync all Stripe data
  * @access  Private
  */
-router.post("/sync", async (req: Request, res: Response): Promise<void> => {
+router.post("/sync", async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const tenantId = (req as any).user.tenantId;
+    const tenantId = req.user?.startupId;
+    if (!tenantId) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
 
     const account = await StripeService.getAccountForTenant(tenantId);
     if (!account) {
@@ -61,12 +77,14 @@ router.post("/sync", async (req: Request, res: Response): Promise<void> => {
       success: true,
       message: "Stripe sync started. This may take a few minutes.",
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error syncing Stripe:", error);
+    const message = error instanceof Error ? error.message : "Failed to sync Stripe data";
     res.status(400).json({
       success: false,
-      message: error.message || "Failed to sync Stripe data",
+      message,
     });
+    return;
   }
 });
 
@@ -75,9 +93,16 @@ router.post("/sync", async (req: Request, res: Response): Promise<void> => {
  * @desc    Get connected Stripe account
  * @access  Private
  */
-router.get("/account", async (req: Request, res: Response): Promise<void> => {
+router.get("/account", async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const tenantId = (req as any).user.tenantId;
+    const tenantId = req.user?.startupId;
+    if (!tenantId) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
 
     const account = await StripeService.getAccountForTenant(tenantId);
 
@@ -106,12 +131,14 @@ router.get("/account", async (req: Request, res: Response): Promise<void> => {
       success: true,
       data: safeAccount,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error fetching Stripe account:", error);
+    const message = error instanceof Error ? error.message : "Failed to fetch Stripe account";
     res.status(400).json({
       success: false,
-      message: error.message || "Failed to fetch Stripe account",
+      message,
     });
+    return;
   }
 });
 
@@ -122,9 +149,16 @@ router.get("/account", async (req: Request, res: Response): Promise<void> => {
  */
 router.delete(
   "/disconnect",
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const tenantId = (req as any).user.tenantId;
+      const tenantId = req.user?.startupId;
+      if (!tenantId) {
+        res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+        });
+        return;
+      }
 
       const account = await StripeService.getAccountForTenant(tenantId);
       if (!account) {
@@ -141,12 +175,14 @@ router.delete(
         success: true,
         message: "Stripe account disconnected successfully",
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error disconnecting Stripe:", error);
+      const message = error instanceof Error ? error.message : "Failed to disconnect Stripe account";
       res.status(400).json({
         success: false,
-        message: error.message || "Failed to disconnect Stripe account",
+        message,
       });
+      return;
     }
   }
 );

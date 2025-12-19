@@ -1,7 +1,7 @@
-import { Router, Request, Response } from "express";
+import { Router, Response } from "express";
 import type { Router as IRouter } from "express";
 import { AICFOService } from "../services/aiCFO";
-import { authenticateToken } from "../middleware/auth";
+import { authenticateToken, AuthRequest } from "../middleware/auth";
 
 const router: IRouter = Router();
 
@@ -13,9 +13,16 @@ router.use(authenticateToken);
  * @desc    Generate AI-powered forecast
  * @access  Private
  */
-router.post("/forecast", async (req: Request, res: Response) => {
+router.post("/forecast", async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const tenantId = (req as any).user.tenantId;
+    const tenantId = req.user?.startupId;
+    if (!tenantId) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
     const { months = 12 } = req.body;
 
     const forecast = await AICFOService.generateForecast(tenantId, months);
@@ -25,11 +32,13 @@ router.post("/forecast", async (req: Request, res: Response) => {
       data: forecast,
       message: "Forecast generated successfully",
     });
-  } catch (error: any) {
+    return;
+  } catch (error) {
     console.error("Error generating forecast:", error);
+    const message = error instanceof Error ? error.message : "Failed to generate forecast";
     res.status(400).json({
       success: false,
-      message: error.message || "Failed to generate forecast",
+      message,
     });
   }
 });
@@ -39,9 +48,16 @@ router.post("/forecast", async (req: Request, res: Response) => {
  * @desc    Run "What If" scenario analysis
  * @access  Private
  */
-router.post("/scenario", async (req: Request, res: Response): Promise<void> => {
+router.post("/scenario", async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const tenantId = (req as any).user.tenantId;
+    const tenantId = req.user?.startupId;
+    if (!tenantId) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
     const { name, inputs } = req.body;
 
     if (!name || !inputs) {
@@ -59,12 +75,14 @@ router.post("/scenario", async (req: Request, res: Response): Promise<void> => {
       data: result,
       message: "Scenario analysis completed",
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error running scenario:", error);
+    const message = error instanceof Error ? error.message : "Failed to run scenario";
     res.status(400).json({
       success: false,
-      message: error.message || "Failed to run scenario",
+      message,
     });
+    return;
   }
 });
 
@@ -73,9 +91,16 @@ router.post("/scenario", async (req: Request, res: Response): Promise<void> => {
  * @desc    Get all scenarios
  * @access  Private
  */
-router.get("/scenarios", async (req: Request, res: Response) => {
+router.get("/scenarios", async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const tenantId = (req as any).user.tenantId;
+    const tenantId = req.user?.startupId;
+    if (!tenantId) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
 
     const scenarios = await AICFOService.getScenarios(tenantId);
 
@@ -83,12 +108,15 @@ router.get("/scenarios", async (req: Request, res: Response) => {
       success: true,
       data: scenarios,
     });
-  } catch (error: any) {
+    return;
+  } catch (error) {
     console.error("Error fetching scenarios:", error);
+    const message = error instanceof Error ? error.message : "Failed to fetch scenarios";
     res.status(400).json({
       success: false,
-      message: error.message || "Failed to fetch scenarios",
+      message,
     });
+    return;
   }
 });
 
@@ -97,9 +125,16 @@ router.get("/scenarios", async (req: Request, res: Response) => {
  * @desc    Get AI-powered insights for current financial state
  * @access  Private
  */
-router.get("/insights", async (req: Request, res: Response) => {
+router.get("/insights", async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const tenantId = (req as any).user.tenantId;
+    const tenantId = req.user?.startupId;
+    if (!tenantId) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
 
     const insights = await AICFOService.getInsights(tenantId);
 
@@ -107,12 +142,15 @@ router.get("/insights", async (req: Request, res: Response) => {
       success: true,
       data: insights,
     });
-  } catch (error: any) {
+    return;
+  } catch (error) {
     console.error("Error getting insights:", error);
+    const message = error instanceof Error ? error.message : "Failed to get insights";
     res.status(400).json({
       success: false,
-      message: error.message || "Failed to get insights",
+      message,
     });
+    return;
   }
 });
 
@@ -123,9 +161,16 @@ router.get("/insights", async (req: Request, res: Response) => {
  */
 router.post(
   "/investor-update",
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const tenantId = (req as any).user.tenantId;
+      const tenantId = req.user?.startupId;
+      if (!tenantId) {
+        res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+        });
+        return;
+      }
       const { periodStart, periodEnd } = req.body;
 
       if (!periodStart || !periodEnd) {
@@ -147,12 +192,14 @@ router.post(
         data: update,
         message: "Investor update generated successfully",
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error generating investor update:", error);
+      const message = error instanceof Error ? error.message : "Failed to generate investor update";
       res.status(400).json({
         success: false,
-        message: error.message || "Failed to generate investor update",
+        message,
       });
+      return;
     }
   }
 );
@@ -162,9 +209,16 @@ router.post(
  * @desc    Get all investor updates
  * @access  Private
  */
-router.get("/investor-updates", async (req: Request, res: Response) => {
+router.get("/investor-updates", async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const tenantId = (req as any).user.tenantId;
+    const tenantId = req.user?.startupId;
+    if (!tenantId) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
 
     const updates = await AICFOService.getInvestorUpdates(tenantId);
 
@@ -172,12 +226,15 @@ router.get("/investor-updates", async (req: Request, res: Response) => {
       success: true,
       data: updates,
     });
-  } catch (error: any) {
+    return;
+  } catch (error) {
     console.error("Error fetching investor updates:", error);
+    const message = error instanceof Error ? error.message : "Failed to fetch investor updates";
     res.status(400).json({
       success: false,
-      message: error.message || "Failed to fetch investor updates",
+      message,
     });
+    return;
   }
 });
 
@@ -188,7 +245,7 @@ router.get("/investor-updates", async (req: Request, res: Response) => {
  */
 router.put(
   "/investor-update/:id/publish",
-  async (req: Request, res: Response) => {
+  async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
 
@@ -199,12 +256,14 @@ router.put(
         data: update,
         message: "Investor update published successfully",
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error publishing investor update:", error);
+      const message = error instanceof Error ? error.message : "Failed to publish investor update";
       res.status(400).json({
         success: false,
-        message: error.message || "Failed to publish investor update",
+        message,
       });
+      return;
     }
   }
 );
@@ -214,9 +273,16 @@ router.put(
  * @desc    Chat with AI CFO using financial context
  * @access  Private
  */
-router.post("/chat", async (req: Request, res: Response): Promise<void> => {
+router.post("/chat", async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const startupId = (req as any).user.startupId;
+    const startupId = req.user?.startupId;
+    if (!startupId) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
     const { message } = req.body;
 
     if (!message) {
@@ -234,12 +300,14 @@ router.post("/chat", async (req: Request, res: Response): Promise<void> => {
       data: { response },
       message: "Chat response generated successfully",
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error in chat:", error);
+    const message = error instanceof Error ? error.message : "Failed to generate chat response";
     res.status(400).json({
       success: false,
-      message: error.message || "Failed to generate chat response",
+      message,
     });
+    return;
   }
 });
 

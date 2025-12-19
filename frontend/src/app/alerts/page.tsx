@@ -35,8 +35,59 @@ import {
 import { Badge } from "@/components/ui/Badge";
 import toast from "react-hot-toast";
 
+interface AlertRecommendation {
+  action: string;
+  impact: string;
+  effort: "low" | "medium" | "high";
+}
+
+interface Alert {
+  id: string;
+  title: string;
+  message: string;
+  severity: "critical" | "warning" | "info";
+  currentValue?: number;
+  thresholdValue?: number;
+  createdAt: string;
+  recommendations?: AlertRecommendation[];
+  isRead: boolean;
+  isDismissed: boolean;
+}
+
+interface AIPattern {
+  type: string;
+  impact: "High" | "Positive" | "Negative" | "Medium";
+  description: string;
+  recommendation?: string;
+  trend?: string;
+}
+
+interface AIPrediction {
+  metric: string;
+  forecast?: string;
+  prediction?: string;
+  confidence: number;
+  timeframe?: string;
+  action?: string;
+}
+
+interface AIAnomaly {
+  type: string;
+  description: string;
+  severity: "low" | "medium" | "high";
+  detectedAt?: string;
+  impact?: string;
+}
+
+interface AIInsights {
+  patterns: AIPattern[];
+  predictions: AIPrediction[];
+  anomalies: AIAnomaly[];
+  recommendations?: AlertRecommendation[];
+}
+
 export default function AlertsPage() {
-  const [alerts, setAlerts] = useState<any[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [counts, setCounts] = useState({
     total: 0,
     critical: 0,
@@ -49,7 +100,7 @@ export default function AlertsPage() {
     "all"
   );
   const [searchTerm, setSearchTerm] = useState("");
-  const [aiInsights, setAiInsights] = useState<any>(null);
+  const [aiInsights, setAiInsights] = useState<AIInsights | null>(null);
   const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
   const [alertSettings, setAlertSettings] = useState({
     burnRateThreshold: 15,
@@ -77,7 +128,7 @@ export default function AlertsPage() {
           title: "High Burn Rate Alert",
           message:
             "Your monthly burn rate has increased by 15% above forecast. Current burn: ₹12.8L/month vs projected ₹11.1L/month.",
-          severity: "critical",
+          severity: "critical" as const,
           currentValue: 15400,
           thresholdValue: 13400,
           createdAt: "2024-01-15T10:30:00Z",
@@ -85,12 +136,12 @@ export default function AlertsPage() {
             {
               action: "Review contractor utilization and optimize costs",
               impact: "Potential savings: ₹1.7L/month",
-              effort: "medium",
+              effort: "medium" as const,
             },
             {
               action: "Audit SaaS subscriptions and remove unused tools",
               impact: "Potential savings: ₹66,400/month",
-              effort: "low",
+              effort: "low" as const,
             },
           ],
           isRead: false,
@@ -101,7 +152,7 @@ export default function AlertsPage() {
           title: "Revenue Growth Opportunity",
           message:
             "Your churn rate has decreased by 2.3% this month. Consider implementing expansion pricing to capitalize on customer satisfaction.",
-          severity: "info",
+          severity: "info" as const,
           currentValue: 2.1,
           thresholdValue: 4.4,
           createdAt: "2024-01-14T14:20:00Z",
@@ -109,12 +160,12 @@ export default function AlertsPage() {
             {
               action: "Implement usage-based pricing tiers",
               impact: "Potential revenue increase: 15-25%",
-              effort: "high",
+              effort: "high" as const,
             },
             {
               action: "Launch customer success program",
               impact: "Reduce churn by additional 1-2%",
-              effort: "medium",
+              effort: "medium" as const,
             },
           ],
           isRead: true,
@@ -125,7 +176,7 @@ export default function AlertsPage() {
           title: "Cash Flow Warning",
           message:
             "You have 3 overdue invoices totaling ₹10.4L. This represents 8% of your monthly revenue.",
-          severity: "warning",
+          severity: "warning" as const,
           currentValue: 12500,
           thresholdValue: 5000,
           createdAt: "2024-01-13T09:15:00Z",
@@ -133,12 +184,12 @@ export default function AlertsPage() {
             {
               action: "Send automated payment reminders",
               impact: "Expected collection: 70-80%",
-              effort: "low",
+              effort: "low" as const,
             },
             {
               action: "Implement stricter payment terms",
               impact: "Reduce future overdue amounts",
-              effort: "medium",
+              effort: "medium" as const,
             },
           ],
           isRead: false,
@@ -149,7 +200,7 @@ export default function AlertsPage() {
           title: "Runway Status Update",
           message:
             "Based on current burn rate, you have 8.2 months of runway remaining. Consider fundraising timeline.",
-          severity: "info",
+          severity: "info" as const,
           currentValue: 8.2,
           thresholdValue: 6.0,
           createdAt: "2024-01-12T16:45:00Z",
@@ -157,12 +208,12 @@ export default function AlertsPage() {
             {
               action: "Begin Series A fundraising process",
               impact: "Extend runway to 18+ months",
-              effort: "high",
+              effort: "high" as const,
             },
             {
               action: "Optimize burn rate for extended runway",
               impact: "Extend runway by 2-3 months",
-              effort: "medium",
+              effort: "medium" as const,
             },
           ],
           isRead: true,
@@ -194,12 +245,12 @@ export default function AlertsPage() {
       // Mock data for demonstration
       await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate AI generation
 
-      const newAlert = {
+      const newAlert: Alert = {
         id: Date.now().toString(),
         title: "AI-Generated Alert",
         message:
           "AI analysis detected a potential optimization opportunity in your expense categories.",
-        severity: "info",
+        severity: "info" as const,
         currentValue: Math.floor(Math.random() * 10000) + 5000,
         thresholdValue: Math.floor(Math.random() * 8000) + 3000,
         createdAt: new Date().toISOString(),
@@ -207,12 +258,11 @@ export default function AlertsPage() {
           {
             action: "Review and optimize identified expense category",
             impact: "Potential savings: 10-15%",
-            effort: "medium",
+            effort: "medium" as const,
           },
         ],
         isRead: false,
         isDismissed: false,
-        aiGenerated: true,
       };
 
       setAlerts((prev) => [newAlert, ...prev]);
@@ -240,14 +290,14 @@ export default function AlertsPage() {
           {
             type: "Spending Pattern",
             description: "SaaS expenses have increased 23% month-over-month",
-            impact: "High",
+            impact: "High" as const,
             trend: "increasing",
             recommendation: "Implement subscription management tool",
           },
           {
             type: "Revenue Pattern",
             description: "Customer acquisition cost decreased by 15%",
-            impact: "Positive",
+            impact: "Positive" as const,
             trend: "improving",
             recommendation:
               "Scale marketing spend while maintaining efficiency",
@@ -255,7 +305,7 @@ export default function AlertsPage() {
           {
             type: "Cash Flow Pattern",
             description: "Payment collection time improved by 3 days",
-            impact: "Medium",
+            impact: "Medium" as const,
             trend: "improving",
             recommendation: "Continue automated payment reminders",
           },
@@ -284,13 +334,13 @@ export default function AlertsPage() {
           {
             type: "Unusual Transaction",
             description: "Large payment of ₹20.8L received 5 days early",
-            severity: "info",
+            severity: "low" as const,
             impact: "Positive cash flow impact",
           },
           {
             type: "Expense Spike",
             description: "Marketing spend increased 40% this week",
-            severity: "warning",
+            severity: "medium" as const,
             impact: "Monitor ROI and budget allocation",
           },
         ],
@@ -611,7 +661,7 @@ export default function AlertsPage() {
                     <CardContent className="pt-0">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {aiInsights.patterns.map(
-                          (pattern: any, index: number) => (
+                          (pattern: AIPattern, index: number) => (
                             <div
                               key={index}
                               className="bg-gray-50 rounded-lg p-4"
@@ -661,7 +711,7 @@ export default function AlertsPage() {
                       <CardContent className="pt-0">
                         <div className="space-y-4">
                           {aiInsights.predictions.map(
-                            (prediction: any, index: number) => (
+                            (prediction: AIPrediction, index: number) => (
                               <div
                                 key={index}
                                 className="border-l-4 border-blue-200 pl-4"
@@ -700,7 +750,7 @@ export default function AlertsPage() {
                       <CardContent className="pt-0">
                         <div className="space-y-4">
                           {aiInsights.anomalies.map(
-                            (anomaly: any, index: number) => (
+                            (anomaly: AIAnomaly, index: number) => (
                               <div
                                 key={index}
                                 className="bg-gray-50 rounded-lg p-3"
@@ -711,7 +761,7 @@ export default function AlertsPage() {
                                   </h4>
                                   <Badge
                                     className={
-                                      anomaly.severity === "warning"
+                                      anomaly.severity === "medium" || anomaly.severity === "high"
                                         ? "bg-yellow-100"
                                         : "bg-blue-100"
                                     }
@@ -805,14 +855,14 @@ export default function AlertsPage() {
                                   <DollarSign className="h-4 w-4 text-gray-500" />
                                   <span className="text-gray-600">
                                     Current:{" "}
-                                    {formatCurrency(alert.currentValue)}
+                                    {alert.currentValue !== undefined ? formatCurrency(alert.currentValue) : "N/A"}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <TrendingUp className="h-4 w-4 text-gray-500" />
                                   <span className="text-gray-600">
                                     Threshold:{" "}
-                                    {formatCurrency(alert.thresholdValue)}
+                                    {alert.thresholdValue !== undefined ? formatCurrency(alert.thresholdValue) : "N/A"}
                                   </span>
                                 </div>
                               </div>
@@ -851,7 +901,7 @@ export default function AlertsPage() {
                               </h4>
                               <div className="space-y-3">
                                 {alert.recommendations.map(
-                                  (rec: any, index: number) => (
+                                  (rec: AlertRecommendation, index: number) => (
                                     <div
                                       key={index}
                                       className="bg-white/60 rounded-lg p-3"

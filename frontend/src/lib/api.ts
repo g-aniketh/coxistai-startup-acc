@@ -1081,9 +1081,9 @@ export interface AuditLog {
   entityId: string;
   action: AuditAction;
   description?: string | null;
-  oldValues?: any;
-  newValues?: any;
-  metadata?: any;
+  oldValues?: Record<string, unknown>;
+  newValues?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
   ipAddress?: string | null;
   userAgent?: string | null;
   createdAt: string;
@@ -1205,7 +1205,71 @@ export interface VoucherAlert {
   message: string;
   voucherIds: string[];
   recommendations?: string[];
-  metadata?: any;
+  metadata?: Record<string, unknown>;
+}
+
+export interface BudgetInput {
+  name: string;
+  description?: string;
+  periodStart: string; // ISO date string
+  periodEnd: string; // ISO date string
+  budgetType: "LEDGER" | "GROUP" | "COST_CENTRE";
+  ledgerId?: string;
+  ledgerGroupId?: string;
+  costCentreId?: string;
+  amount: number;
+  currency?: string;
+}
+
+export interface ImportedLedger {
+  ledgerName: string;
+  accountGroup: string;
+  openingBalance: number;
+  openingType: "Debit" | "Credit";
+  transactions: ImportedTransaction[];
+}
+
+export interface ImportedTransaction {
+  voucherNo: string;
+  voucherType:
+    | "Sales"
+    | "Purchase"
+    | "Journal"
+    | "Receipt"
+    | "Payment"
+    | "Contra";
+  date: string;
+  narration: string;
+  particulars: string;
+  amount: number;
+  debit: number;
+  credit: number;
+  reference?: string;
+}
+
+export interface ImportedParty {
+  name: string;
+  type: "Customer" | "Supplier" | "Employee" | "Other";
+  partyType: string;
+  mobileNumber?: string;
+  email?: string;
+  openingBalance: number;
+  balanceType: "Debit" | "Credit";
+}
+
+export interface TallyImportPayload {
+  ledgers: ImportedLedger[];
+  parties: ImportedParty[];
+  summary: {
+    totalLedgers: number;
+    totalParties: number;
+    totalTransactions: number;
+    dateRange: { from: string; to: string };
+    totalDebit: number;
+    totalCredit: number;
+  };
+  errors: string[];
+  warnings: string[];
 }
 
 export interface VoucherVariance {
@@ -1617,8 +1681,23 @@ export const apiClient = {
 
     runScenario: async (
       name: string,
-      inputs: any
-    ): Promise<ApiResponse<any>> => {
+      inputs: Record<string, unknown>
+    ): Promise<ApiResponse<{
+      scenario: string;
+      impact: {
+        cashFlow: number;
+        runway: number;
+        burnRate: number;
+        revenue: number;
+      };
+      projectedRevenue?: number;
+      projectedExpenses?: number;
+      projectedRunway?: number;
+      analysis?: string;
+      insights?: string[];
+      risks: string[];
+      recommendations: string[];
+    }>> => {
       const response = await api.post("/ai-cfo/scenario", { name, inputs });
       return response.data;
     },
@@ -2246,7 +2325,21 @@ export const apiClient = {
       return response.data;
     },
 
-    createBudget: async (data: any): Promise<ApiResponse<any>> => {
+    createBudget: async (data: BudgetInput): Promise<ApiResponse<{
+      id: string;
+      name: string;
+      description?: string | null;
+      periodStart: string;
+      periodEnd: string;
+      budgetType: "LEDGER" | "GROUP" | "COST_CENTRE";
+      ledgerId?: string | null;
+      ledgerGroupId?: string | null;
+      costCentreId?: string | null;
+      amount: number;
+      currency: string;
+      createdAt: string;
+      updatedAt: string;
+    }>> => {
       const response = await api.post("/bookkeeping/budgets", data);
       return response.data;
     },
@@ -2696,12 +2789,35 @@ export const apiClient = {
   // ============================================================================
 
   import: {
-    tally: async (importData: any): Promise<ApiResponse<any>> => {
+    tally: async (importData: TallyImportPayload): Promise<ApiResponse<{
+      success: boolean;
+      message: string;
+      summary: {
+        totalLedgers: number;
+        totalParties: number;
+        totalTransactions: number;
+        totalDebit: number;
+        totalCredit: number;
+      };
+      errors: string[];
+      warnings: string[];
+    }>> => {
       const response = await api.post("/import/tally", importData);
       return response.data;
     },
 
-    tallyEnhanced: async (importData: any): Promise<ApiResponse<any>> => {
+    tallyEnhanced: async (importData: Record<string, unknown>): Promise<ApiResponse<{
+      success: boolean;
+      message: string;
+      stats: {
+        ledgersCreated: number;
+        partiesCreated: number;
+        vouchersCreated: number;
+        transactionsCreated: number;
+      };
+      errors: string[];
+      warnings: string[];
+    }>> => {
       const response = await api.post("/import/tally-enhanced", importData);
       return response.data;
     },

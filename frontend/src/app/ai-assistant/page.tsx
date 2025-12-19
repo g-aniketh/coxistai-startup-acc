@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -40,13 +39,71 @@ export default function AIAssistantPage() {
   >("chatbot");
   const [hasInteracted, setHasInteracted] = useState(false);
 
+  interface AIRecommendation {
+    title: string;
+    description: string;
+    priority: "High" | "Medium" | "Low";
+    impact: string;
+    effort: "Low" | "Medium" | "High";
+  }
+
+  interface AIAlert {
+    type: "warning" | "error" | "info";
+    title: string;
+    message: string;
+    action: string;
+    severity?: "low" | "medium" | "high";
+  }
+
+  interface AIInsights {
+    cashFlow: {
+      current: number;
+      projected: number;
+      change: number;
+    };
+    runway: {
+      current: number;
+      projected: number;
+      change: number;
+    };
+    burnRate: {
+      current: number;
+      projected: number;
+      change: number;
+    };
+    revenue: {
+      current: number;
+      projected: number;
+      change: number;
+    };
+    recommendations: AIRecommendation[];
+    alerts: AIAlert[];
+  }
+
+  interface ScenarioResult {
+    scenario: string;
+    impact: {
+      cashFlow: number;
+      runway: number;
+      burnRate: number;
+      revenue: number;
+    };
+    projectedRevenue?: number;
+    projectedExpenses?: number;
+    projectedRunway?: number;
+    analysis?: string;
+    insights?: string[];
+    risks: string[];
+    recommendations: string[];
+  }
+
   // Insights state
-  const [insights, setInsights] = useState<any>(null);
+  const [insights, setInsights] = useState<AIInsights | null>(null);
   const [insightsLoading, setInsightsLoading] = useState(false);
 
   // Scenarios state
   const [scenario, setScenario] = useState("");
-  const [scenarioResult, setScenarioResult] = useState<any>(null);
+  const [scenarioResult, setScenarioResult] = useState<ScenarioResult | null>(null);
   const [scenarioLoading, setScenarioLoading] = useState(false);
 
   // Forecasting state
@@ -96,34 +153,34 @@ export default function AIAssistantPage() {
             title: "Optimize SaaS Subscriptions",
             description: "Review and consolidate unused software licenses",
             impact: "Save $2,100/month",
-            effort: "Low",
-            priority: "High",
+            effort: "Low" as const,
+            priority: "High" as const,
           },
           {
             title: "Implement Usage-Based Pricing",
             description: "Introduce tiered pricing to increase ARPU",
             impact: "Increase revenue by 25%",
-            effort: "Medium",
-            priority: "High",
+            effort: "Medium" as const,
+            priority: "High" as const,
           },
           {
             title: "Hire Customer Success Manager",
             description: "Reduce churn and increase customer satisfaction",
             impact: "Reduce churn by 15%",
-            effort: "Medium",
-            priority: "Medium",
+            effort: "Medium" as const,
+            priority: "Medium" as const,
           },
         ],
         alerts: [
           {
-            type: "warning",
+            type: "warning" as const,
             title: "Cash Runway Alert",
             message:
               "Current runway is 8.2 months. Consider fundraising timeline.",
             action: "Plan fundraising",
           },
           {
-            type: "info",
+            type: "info" as const,
             title: "Revenue Opportunity",
             message: "Usage-based pricing could increase revenue by 25%",
             action: "Implement pricing tiers",
@@ -523,7 +580,7 @@ export default function AIAssistantPage() {
                         <CardContent className="pt-0">
                           <div className="space-y-4">
                             {insights.recommendations.map(
-                              (rec: any, index: number) => (
+                              (rec: AIRecommendation, index: number) => (
                                 <div
                                   key={index}
                                   className="border border-gray-200 rounded-lg p-4"
@@ -573,7 +630,7 @@ export default function AIAssistantPage() {
                         <CardContent className="pt-0">
                           <div className="space-y-3">
                             {insights.alerts.map(
-                              (alert: any, index: number) => (
+                              (alert: AIAlert, index: number) => (
                                 <div
                                   key={index}
                                   className={`p-3 rounded-lg border-l-4 ${
