@@ -13,146 +13,162 @@ router.use(authenticateToken);
  * @desc    Generate AI-powered forecast
  * @access  Private
  */
-router.post("/forecast", async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const tenantId = req.user?.startupId;
-    if (!tenantId) {
-      res.status(401).json({
-        success: false,
-        message: "Unauthorized",
+router.post(
+  "/forecast",
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const tenantId = req.user?.startupId;
+      if (!tenantId) {
+        res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+        });
+        return;
+      }
+      const { months = 12 } = req.body;
+
+      const forecast = await AICFOService.generateForecast(tenantId, months);
+
+      res.json({
+        success: true,
+        data: forecast,
+        message: "Forecast generated successfully",
       });
       return;
+    } catch (error) {
+      console.error("Error generating forecast:", error);
+      const message =
+        error instanceof Error ? error.message : "Failed to generate forecast";
+      res.status(400).json({
+        success: false,
+        message,
+      });
     }
-    const { months = 12 } = req.body;
-
-    const forecast = await AICFOService.generateForecast(tenantId, months);
-
-    res.json({
-      success: true,
-      data: forecast,
-      message: "Forecast generated successfully",
-    });
-    return;
-  } catch (error) {
-    console.error("Error generating forecast:", error);
-    const message = error instanceof Error ? error.message : "Failed to generate forecast";
-    res.status(400).json({
-      success: false,
-      message,
-    });
   }
-});
+);
 
 /**
  * @route   POST /api/v1/ai-cfo/scenario
  * @desc    Run "What If" scenario analysis
  * @access  Private
  */
-router.post("/scenario", async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const tenantId = req.user?.startupId;
-    if (!tenantId) {
-      res.status(401).json({
-        success: false,
-        message: "Unauthorized",
-      });
-      return;
-    }
-    const { name, inputs } = req.body;
+router.post(
+  "/scenario",
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const tenantId = req.user?.startupId;
+      if (!tenantId) {
+        res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+        });
+        return;
+      }
+      const { name, inputs } = req.body;
 
-    if (!name || !inputs) {
+      if (!name || !inputs) {
+        res.status(400).json({
+          success: false,
+          message: "Scenario name and inputs are required",
+        });
+        return;
+      }
+
+      const result = await AICFOService.runScenario(tenantId, name, inputs);
+
+      res.json({
+        success: true,
+        data: result,
+        message: "Scenario analysis completed",
+      });
+    } catch (error) {
+      console.error("Error running scenario:", error);
+      const message =
+        error instanceof Error ? error.message : "Failed to run scenario";
       res.status(400).json({
         success: false,
-        message: "Scenario name and inputs are required",
+        message,
       });
       return;
     }
-
-    const result = await AICFOService.runScenario(tenantId, name, inputs);
-
-    res.json({
-      success: true,
-      data: result,
-      message: "Scenario analysis completed",
-    });
-  } catch (error) {
-    console.error("Error running scenario:", error);
-    const message = error instanceof Error ? error.message : "Failed to run scenario";
-    res.status(400).json({
-      success: false,
-      message,
-    });
-    return;
   }
-});
+);
 
 /**
  * @route   GET /api/v1/ai-cfo/scenarios
  * @desc    Get all scenarios
  * @access  Private
  */
-router.get("/scenarios", async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const tenantId = req.user?.startupId;
-    if (!tenantId) {
-      res.status(401).json({
+router.get(
+  "/scenarios",
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const tenantId = req.user?.startupId;
+      if (!tenantId) {
+        res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+        });
+        return;
+      }
+
+      const scenarios = await AICFOService.getScenarios(tenantId);
+
+      res.json({
+        success: true,
+        data: scenarios,
+      });
+      return;
+    } catch (error) {
+      console.error("Error fetching scenarios:", error);
+      const message =
+        error instanceof Error ? error.message : "Failed to fetch scenarios";
+      res.status(400).json({
         success: false,
-        message: "Unauthorized",
+        message,
       });
       return;
     }
-
-    const scenarios = await AICFOService.getScenarios(tenantId);
-
-    res.json({
-      success: true,
-      data: scenarios,
-    });
-    return;
-  } catch (error) {
-    console.error("Error fetching scenarios:", error);
-    const message = error instanceof Error ? error.message : "Failed to fetch scenarios";
-    res.status(400).json({
-      success: false,
-      message,
-    });
-    return;
   }
-});
+);
 
 /**
  * @route   GET /api/v1/ai-cfo/insights
  * @desc    Get AI-powered insights for current financial state
  * @access  Private
  */
-router.get("/insights", async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const tenantId = req.user?.startupId;
-    if (!tenantId) {
-      res.status(401).json({
+router.get(
+  "/insights",
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const tenantId = req.user?.startupId;
+      if (!tenantId) {
+        res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+        });
+        return;
+      }
+
+      const insights = await AICFOService.getInsights(tenantId);
+
+      res.json({
+        success: true,
+        data: insights,
+      });
+      return;
+    } catch (error) {
+      console.error("Error getting insights:", error);
+      const message =
+        error instanceof Error ? error.message : "Failed to get insights";
+      res.status(400).json({
         success: false,
-        message: "Unauthorized",
+        message,
       });
       return;
     }
-
-    const insights = await AICFOService.getInsights(tenantId);
-
-    res.json({
-      success: true,
-      data: insights,
-    });
-    return;
-  } catch (error) {
-    console.error("Error getting insights:", error);
-    const message = error instanceof Error ? error.message : "Failed to get insights";
-    res.status(400).json({
-      success: false,
-      message,
-    });
-    return;
   }
-});
+);
 
 /**
  * @route   POST /api/v1/ai-cfo/investor-update
@@ -194,7 +210,10 @@ router.post(
       });
     } catch (error) {
       console.error("Error generating investor update:", error);
-      const message = error instanceof Error ? error.message : "Failed to generate investor update";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to generate investor update";
       res.status(400).json({
         success: false,
         message,
@@ -209,34 +228,40 @@ router.post(
  * @desc    Get all investor updates
  * @access  Private
  */
-router.get("/investor-updates", async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const tenantId = req.user?.startupId;
-    if (!tenantId) {
-      res.status(401).json({
+router.get(
+  "/investor-updates",
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const tenantId = req.user?.startupId;
+      if (!tenantId) {
+        res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+        });
+        return;
+      }
+
+      const updates = await AICFOService.getInvestorUpdates(tenantId);
+
+      res.json({
+        success: true,
+        data: updates,
+      });
+      return;
+    } catch (error) {
+      console.error("Error fetching investor updates:", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch investor updates";
+      res.status(400).json({
         success: false,
-        message: "Unauthorized",
+        message,
       });
       return;
     }
-
-    const updates = await AICFOService.getInvestorUpdates(tenantId);
-
-    res.json({
-      success: true,
-      data: updates,
-    });
-    return;
-  } catch (error) {
-    console.error("Error fetching investor updates:", error);
-    const message = error instanceof Error ? error.message : "Failed to fetch investor updates";
-    res.status(400).json({
-      success: false,
-      message,
-    });
-    return;
   }
-});
+);
 
 /**
  * @route   PUT /api/v1/ai-cfo/investor-update/:id/publish
@@ -258,7 +283,10 @@ router.put(
       });
     } catch (error) {
       console.error("Error publishing investor update:", error);
-      const message = error instanceof Error ? error.message : "Failed to publish investor update";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to publish investor update";
       res.status(400).json({
         success: false,
         message,
@@ -302,7 +330,10 @@ router.post("/chat", async (req: AuthRequest, res: Response): Promise<void> => {
     });
   } catch (error) {
     console.error("Error in chat:", error);
-    const message = error instanceof Error ? error.message : "Failed to generate chat response";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to generate chat response";
     res.status(400).json({
       success: false,
       message,

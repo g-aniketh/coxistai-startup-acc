@@ -103,7 +103,9 @@ export default function AIAssistantPage() {
 
   // Scenarios state
   const [scenario, setScenario] = useState("");
-  const [scenarioResult, setScenarioResult] = useState<ScenarioResult | null>(null);
+  const [scenarioResult, setScenarioResult] = useState<ScenarioResult | null>(
+    null
+  );
   const [scenarioLoading, setScenarioLoading] = useState(false);
 
   // Forecasting state

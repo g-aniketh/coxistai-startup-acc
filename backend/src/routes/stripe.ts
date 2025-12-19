@@ -13,35 +13,41 @@ router.use(authenticateToken);
  * @desc    Connect a Stripe account
  * @access  Private
  */
-router.post("/connect", async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const { apiKey } = req.body;
-    const tenantId = req.user?.startupId;
-    if (!tenantId) {
-      res.status(401).json({
-        success: false,
-        message: "Unauthorized",
+router.post(
+  "/connect",
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const { apiKey } = req.body;
+      const tenantId = req.user?.startupId;
+      if (!tenantId) {
+        res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+        });
+        return;
+      }
+
+      const account = await StripeService.connectAccount(tenantId, apiKey);
+
+      res.json({
+        success: true,
+        data: account,
+        message: "Stripe account connected successfully",
       });
       return;
+    } catch (error) {
+      console.error("Error connecting Stripe:", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to connect Stripe account";
+      res.status(400).json({
+        success: false,
+        message,
+      });
     }
-
-    const account = await StripeService.connectAccount(tenantId, apiKey);
-
-    res.json({
-      success: true,
-      data: account,
-      message: "Stripe account connected successfully",
-    });
-    return;
-  } catch (error) {
-    console.error("Error connecting Stripe:", error);
-    const message = error instanceof Error ? error.message : "Failed to connect Stripe account";
-    res.status(400).json({
-      success: false,
-      message,
-    });
   }
-});
+);
 
 /**
  * @route   POST /api/v1/stripe/sync
@@ -79,7 +85,8 @@ router.post("/sync", async (req: AuthRequest, res: Response): Promise<void> => {
     });
   } catch (error) {
     console.error("Error syncing Stripe:", error);
-    const message = error instanceof Error ? error.message : "Failed to sync Stripe data";
+    const message =
+      error instanceof Error ? error.message : "Failed to sync Stripe data";
     res.status(400).json({
       success: false,
       message,
@@ -93,54 +100,60 @@ router.post("/sync", async (req: AuthRequest, res: Response): Promise<void> => {
  * @desc    Get connected Stripe account
  * @access  Private
  */
-router.get("/account", async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const tenantId = req.user?.startupId;
-    if (!tenantId) {
-      res.status(401).json({
+router.get(
+  "/account",
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const tenantId = req.user?.startupId;
+      if (!tenantId) {
+        res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+        });
+        return;
+      }
+
+      const account = await StripeService.getAccountForTenant(tenantId);
+
+      if (!account) {
+        res.status(404).json({
+          success: false,
+          message: "No Stripe account connected",
+        });
+        return;
+      }
+
+      // Remove sensitive data
+      const safeAccount = {
+        id: account.id,
+        stripeAccountId: account.id,
+        email: "stub@example.com",
+        businessName: "Stub Business",
+        country: "US",
+        currency: "USD",
+        accountType: "express",
+        isActive: account.status === "active",
+        createdAt: new Date(),
+      };
+
+      res.json({
+        success: true,
+        data: safeAccount,
+      });
+    } catch (error) {
+      console.error("Error fetching Stripe account:", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch Stripe account";
+      res.status(400).json({
         success: false,
-        message: "Unauthorized",
+        message,
       });
       return;
     }
-
-    const account = await StripeService.getAccountForTenant(tenantId);
-
-    if (!account) {
-      res.status(404).json({
-        success: false,
-        message: "No Stripe account connected",
-      });
-      return;
-    }
-
-    // Remove sensitive data
-    const safeAccount = {
-      id: account.id,
-      stripeAccountId: account.id,
-      email: "stub@example.com",
-      businessName: "Stub Business",
-      country: "US",
-      currency: "USD",
-      accountType: "express",
-      isActive: account.status === "active",
-      createdAt: new Date(),
-    };
-
-    res.json({
-      success: true,
-      data: safeAccount,
-    });
-  } catch (error) {
-    console.error("Error fetching Stripe account:", error);
-    const message = error instanceof Error ? error.message : "Failed to fetch Stripe account";
-    res.status(400).json({
-      success: false,
-      message,
-    });
-    return;
   }
-});
+);
 
 /**
  * @route   DELETE /api/v1/stripe/disconnect
@@ -177,7 +190,10 @@ router.delete(
       });
     } catch (error) {
       console.error("Error disconnecting Stripe:", error);
-      const message = error instanceof Error ? error.message : "Failed to disconnect Stripe account";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to disconnect Stripe account";
       res.status(400).json({
         success: false,
         message,

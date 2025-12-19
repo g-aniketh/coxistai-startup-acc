@@ -58,7 +58,9 @@ type CostCategoryWithCenters = Prisma.CostCategoryGetPayload<{
   };
 }>;
 
-const buildCategoryTree = (categories: CostCategoryWithCenters[]): CostCategoryNode[] => {
+const buildCategoryTree = (
+  categories: CostCategoryWithCenters[]
+): CostCategoryNode[] => {
   const map = new Map<string, CostCategoryNode>();
   const roots: CostCategoryNode[] = [];
 

@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { apiClient, PaymentMode, Ledger } from "@/lib/api";
 import { format } from "date-fns";
 import { ArrowLeft, Save } from "lucide-react";
@@ -218,68 +225,78 @@ export default function PaymentVoucherPage() {
                     <Label htmlFor="paymentMode" className="text-[#2C2C2C]">
                       Payment Mode *
                     </Label>
-                    <select
-                      id="paymentMode"
+                    <Select
                       value={form.paymentMode}
-                      onChange={(e) =>
+                      onValueChange={(value) =>
                         setForm({
                           ...form,
-                          paymentMode: e.target.value as PaymentMode,
+                          paymentMode: value as PaymentMode,
                         })
                       }
-                      className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-[#2C2C2C] focus:outline-none focus:ring-2 focus:ring-[#607c47] focus:border-transparent"
                       required
                     >
-                      {paymentModeOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select payment mode" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {paymentModeOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="paidFromLedgerId" className="text-[#2C2C2C]">
+                    <Label
+                      htmlFor="paidFromLedgerId"
+                      className="text-[#2C2C2C]"
+                    >
                       Paid From (CASH/BANK) *
                     </Label>
-                    <select
-                      id="paidFromLedgerId"
+                    <Select
                       value={form.paidFromLedgerId}
-                      onChange={(e) =>
-                        setForm({ ...form, paidFromLedgerId: e.target.value })
+                      onValueChange={(value) =>
+                        setForm({ ...form, paidFromLedgerId: value })
                       }
-                      className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-[#2C2C2C] focus:outline-none focus:ring-2 focus:ring-[#607c47] focus:border-transparent"
                       required
                     >
-                      <option value="">Select cash/bank ledger</option>
-                      {cashBankLedgers.map((ledger) => (
-                        <option key={ledger.id} value={ledger.id}>
-                          {ledger.name}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select cash/bank ledger" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {cashBankLedgers.map((ledger) => (
+                          <SelectItem key={ledger.id} value={ledger.id}>
+                            {ledger.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="paidToLedgerId" className="text-[#2C2C2C]">
                       Paid To *
                     </Label>
-                    <select
-                      id="paidToLedgerId"
+                    <Select
                       value={form.paidToLedgerId}
-                      onChange={(e) =>
-                        setForm({ ...form, paidToLedgerId: e.target.value })
+                      onValueChange={(value) =>
+                        setForm({ ...form, paidToLedgerId: value })
                       }
-                      className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-[#2C2C2C] focus:outline-none focus:ring-2 focus:ring-[#607c47] focus:border-transparent"
                       required
                     >
-                      <option value="">Select ledger</option>
-                      {otherLedgers.map((ledger) => (
-                        <option key={ledger.id} value={ledger.id}>
-                          {ledger.name}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select ledger" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {otherLedgers.map((ledger) => (
+                          <SelectItem key={ledger.id} value={ledger.id}>
+                            {ledger.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
@@ -334,7 +351,11 @@ export default function PaymentVoucherPage() {
 
                 <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
                   <Link href="/vouchers">
-                    <Button type="button" variant="outline" className="border-gray-200">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="border-gray-200"
+                    >
                       Cancel
                     </Button>
                   </Link>

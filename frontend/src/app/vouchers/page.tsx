@@ -9,6 +9,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import {
   apiClient,
   VoucherType,
   CreateVoucherRequest,
@@ -26,6 +35,21 @@ import {
   CheckCircle,
   XCircle,
   Clock,
+  Wallet,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  ArrowLeftRight,
+  BookOpen,
+  ShoppingCart,
+  Package,
+  FileCheck,
+  FileX,
+  Truck,
+  Boxes,
+  RefreshCw,
+  Settings,
+  Warehouse,
+  Layers,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
@@ -332,201 +356,341 @@ export default function VouchersPage() {
           </div>
 
           {/* Quick Actions - Type-Specific Forms */}
-          <Card className="rounded-2xl shadow-lg border-0 bg-white">
+          <Card className="border border-gray-200 shadow-sm bg-white">
             <CardHeader>
-              <CardTitle className="text-lg text-[#2C2C2C]">
+              <CardTitle className="text-xl text-[#2C2C2C]">
                 Quick Create - Type-Specific Forms
               </CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-[#2C2C2C]/70">
                 Use dedicated forms for each voucher type with automatic posting
                 rules
               </p>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-sm font-semibold text-[#2C2C2C] mb-3">
-                    Core Vouchers
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              <Tabs defaultValue="core" className="w-full">
+                <TabsList className="grid w-full grid-cols-4 bg-gray-50">
+                  <TabsTrigger
+                    value="core"
+                    className="data-[state=active]:bg-white data-[state=active]:text-[#607c47]"
+                  >
+                    Core
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="sales"
+                    className="data-[state=active]:bg-white data-[state=active]:text-[#607c47]"
+                  >
+                    Sales & Purchase
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="inventory"
+                    className="data-[state=active]:bg-white data-[state=active]:text-[#607c47]"
+                  >
+                    Inventory
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="advanced"
+                    className="data-[state=active]:bg-white data-[state=active]:text-[#607c47]"
+                  >
+                    Advanced
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="core" className="mt-6">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <Link href="/vouchers/payment">
-                      <Button variant="outline" className="w-full border-gray-200">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Payment
+                      <Button
+                        variant="outline"
+                        className="w-full h-auto flex-col gap-3 py-5 border-2 border-gray-200 hover:border-[#607c47] hover:shadow-lg hover:shadow-[#607c47]/10 transition-all duration-300 group relative overflow-hidden"
+                        style={{ backgroundColor: "white" }}
+                      >
+                        <div className="p-3 rounded-xl bg-white border-2 border-gray-100 shadow-sm group-hover:border-[#607c47] group-hover:shadow-md group-hover:bg-[#607c47]/5 transition-all duration-300">
+                          <Wallet className="h-6 w-6 text-[#607c47] group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <span className="text-sm font-semibold text-[#2C2C2C] group-hover:text-[#607c47] transition-colors duration-300">
+                          Payment
+                        </span>
                       </Button>
                     </Link>
                     <Link href="/vouchers/receipt">
-                      <Button variant="outline" className="w-full border-gray-200">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Receipt
+                      <Button
+                        variant="outline"
+                        className="w-full h-auto flex-col gap-3 py-5 border-2 border-gray-200 hover:border-[#607c47] hover:shadow-lg hover:shadow-[#607c47]/10 transition-all duration-300 group relative overflow-hidden"
+                        style={{ backgroundColor: "white" }}
+                      >
+                        <div className="p-3 rounded-xl bg-white border-2 border-gray-100 shadow-sm group-hover:border-[#607c47] group-hover:shadow-md group-hover:bg-[#607c47]/5 transition-all duration-300">
+                          <ArrowDownCircle className="h-6 w-6 text-[#607c47] group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <span className="text-sm font-semibold text-[#2C2C2C] group-hover:text-[#607c47] transition-colors duration-300">
+                          Receipt
+                        </span>
                       </Button>
                     </Link>
                     <Link href="/vouchers/contra">
-                      <Button variant="outline" className="w-full border-gray-200">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Contra
+                      <Button
+                        variant="outline"
+                        className="w-full h-auto flex-col gap-3 py-5 border-2 border-gray-200 hover:border-[#607c47] hover:shadow-lg hover:shadow-[#607c47]/10 transition-all duration-300 group relative overflow-hidden"
+                        style={{ backgroundColor: "white" }}
+                      >
+                        <div className="p-3 rounded-xl bg-white border-2 border-gray-100 shadow-sm group-hover:border-[#607c47] group-hover:shadow-md group-hover:bg-[#607c47]/5 transition-all duration-300">
+                          <ArrowLeftRight className="h-6 w-6 text-[#607c47] group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <span className="text-sm font-semibold text-[#2C2C2C] group-hover:text-[#607c47] transition-colors duration-300">
+                          Contra
+                        </span>
                       </Button>
                     </Link>
                     <Link href="/vouchers/journal">
-                      <Button variant="outline" className="w-full border-gray-200">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Journal
+                      <Button
+                        variant="outline"
+                        className="w-full h-auto flex-col gap-3 py-5 border-2 border-gray-200 hover:border-[#607c47] hover:shadow-lg hover:shadow-[#607c47]/10 transition-all duration-300 group relative overflow-hidden"
+                        style={{ backgroundColor: "white" }}
+                      >
+                        <div className="p-3 rounded-xl bg-white border-2 border-gray-100 shadow-sm group-hover:border-[#607c47] group-hover:shadow-md group-hover:bg-[#607c47]/5 transition-all duration-300">
+                          <BookOpen className="h-6 w-6 text-[#607c47] group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <span className="text-sm font-semibold text-[#2C2C2C] group-hover:text-[#607c47] transition-colors duration-300">
+                          Journal
+                        </span>
                       </Button>
                     </Link>
                   </div>
-                </div>
+                </TabsContent>
 
-                <div>
-                  <h3 className="text-sm font-semibold text-[#2C2C2C] mb-3">
-                    Sales & Purchase
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                <TabsContent value="sales" className="mt-6">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <Link href="/vouchers/sales">
-                      <Button variant="outline" className="w-full border-gray-200">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Sales
+                      <Button
+                        variant="outline"
+                        className="w-full h-auto flex-col gap-3 py-5 border-2 border-gray-200 hover:border-[#607c47] hover:shadow-lg hover:shadow-[#607c47]/10 transition-all duration-300 group relative overflow-hidden"
+                        style={{ backgroundColor: "white" }}
+                      >
+                        <div className="p-3 rounded-xl bg-white border-2 border-gray-100 shadow-sm group-hover:border-[#607c47] group-hover:shadow-md group-hover:bg-[#607c47]/5 transition-all duration-300">
+                          <ShoppingCart className="h-6 w-6 text-[#607c47] group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <span className="text-sm font-semibold text-[#2C2C2C] group-hover:text-[#607c47] transition-colors duration-300">
+                          Sales
+                        </span>
                       </Button>
                     </Link>
                     <Link href="/vouchers/purchase">
-                      <Button variant="outline" className="w-full border-gray-200">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Purchase
+                      <Button
+                        variant="outline"
+                        className="w-full h-auto flex-col gap-3 py-5 border-2 border-gray-200 hover:border-[#607c47] hover:shadow-lg hover:shadow-[#607c47]/10 transition-all duration-300 group relative overflow-hidden"
+                        style={{ backgroundColor: "white" }}
+                      >
+                        <div className="p-3 rounded-xl bg-white border-2 border-gray-100 shadow-sm group-hover:border-[#607c47] group-hover:shadow-md group-hover:bg-[#607c47]/5 transition-all duration-300">
+                          <Package className="h-6 w-6 text-[#607c47] group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <span className="text-sm font-semibold text-[#2C2C2C] group-hover:text-[#607c47] transition-colors duration-300">
+                          Purchase
+                        </span>
                       </Button>
                     </Link>
                     <Link href="/vouchers/credit-note">
-                      <Button variant="outline" className="w-full border-gray-200">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Credit Note
+                      <Button
+                        variant="outline"
+                        className="w-full h-auto flex-col gap-3 py-5 border-2 border-gray-200 hover:border-[#607c47] hover:shadow-lg hover:shadow-[#607c47]/10 transition-all duration-300 group relative overflow-hidden"
+                        style={{ backgroundColor: "white" }}
+                      >
+                        <div className="p-3 rounded-xl bg-white border-2 border-gray-100 shadow-sm group-hover:border-[#607c47] group-hover:shadow-md group-hover:bg-[#607c47]/5 transition-all duration-300">
+                          <FileCheck className="h-6 w-6 text-[#607c47] group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <span className="text-sm font-semibold text-[#2C2C2C] group-hover:text-[#607c47] transition-colors duration-300">
+                          Credit Note
+                        </span>
                       </Button>
                     </Link>
                     <Link href="/vouchers/debit-note">
-                      <Button variant="outline" className="w-full border-gray-200">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Debit Note
+                      <Button
+                        variant="outline"
+                        className="w-full h-auto flex-col gap-3 py-5 border-2 border-gray-200 hover:border-[#607c47] hover:shadow-lg hover:shadow-[#607c47]/10 transition-all duration-300 group relative overflow-hidden"
+                        style={{ backgroundColor: "white" }}
+                      >
+                        <div className="p-3 rounded-xl bg-white border-2 border-gray-100 shadow-sm group-hover:border-[#607c47] group-hover:shadow-md group-hover:bg-[#607c47]/5 transition-all duration-300">
+                          <FileX className="h-6 w-6 text-[#607c47] group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <span className="text-sm font-semibold text-[#2C2C2C] group-hover:text-[#607c47] transition-colors duration-300">
+                          Debit Note
+                        </span>
                       </Button>
                     </Link>
                   </div>
-                </div>
+                </TabsContent>
 
-                <div>
-                  <h3 className="text-sm font-semibold text-[#2C2C2C] mb-3">
-                    Inventory Operations
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                <TabsContent value="inventory" className="mt-6">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <Link href="/vouchers/delivery-note">
-                      <Button variant="outline" className="w-full border-gray-200">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Delivery Note
+                      <Button
+                        variant="outline"
+                        className="w-full h-auto flex-col gap-3 py-5 border-2 border-gray-200 hover:border-[#607c47] hover:shadow-lg hover:shadow-[#607c47]/10 transition-all duration-300 group relative overflow-hidden"
+                        style={{ backgroundColor: "white" }}
+                      >
+                        <div className="p-3 rounded-xl bg-white border-2 border-gray-100 shadow-sm group-hover:border-[#607c47] group-hover:shadow-md group-hover:bg-[#607c47]/5 transition-all duration-300">
+                          <Truck className="h-6 w-6 text-[#607c47] group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <span className="text-sm font-semibold text-[#2C2C2C] group-hover:text-[#607c47] transition-colors duration-300">
+                          Delivery Note
+                        </span>
                       </Button>
                     </Link>
                     <Link href="/vouchers/receipt-note">
-                      <Button variant="outline" className="w-full border-gray-200">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Receipt Note
+                      <Button
+                        variant="outline"
+                        className="w-full h-auto flex-col gap-3 py-5 border-2 border-gray-200 hover:border-[#607c47] hover:shadow-lg hover:shadow-[#607c47]/10 transition-all duration-300 group relative overflow-hidden"
+                        style={{ backgroundColor: "white" }}
+                      >
+                        <div className="p-3 rounded-xl bg-white border-2 border-gray-100 shadow-sm group-hover:border-[#607c47] group-hover:shadow-md group-hover:bg-[#607c47]/5 transition-all duration-300">
+                          <Boxes className="h-6 w-6 text-[#607c47] group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <span className="text-sm font-semibold text-[#2C2C2C] group-hover:text-[#607c47] transition-colors duration-300">
+                          Receipt Note
+                        </span>
                       </Button>
                     </Link>
                     <Link href="/vouchers/stock-journal">
-                      <Button variant="outline" className="w-full border-gray-200">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Stock Journal
+                      <Button
+                        variant="outline"
+                        className="w-full h-auto flex-col gap-3 py-5 border-2 border-gray-200 hover:border-[#607c47] hover:shadow-lg hover:shadow-[#607c47]/10 transition-all duration-300 group relative overflow-hidden"
+                        style={{ backgroundColor: "white" }}
+                      >
+                        <div className="p-3 rounded-xl bg-white border-2 border-gray-100 shadow-sm group-hover:border-[#607c47] group-hover:shadow-md group-hover:bg-[#607c47]/5 transition-all duration-300">
+                          <RefreshCw className="h-6 w-6 text-[#607c47] group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <span className="text-sm font-semibold text-[#2C2C2C] group-hover:text-[#607c47] transition-colors duration-300">
+                          Stock Journal
+                        </span>
                       </Button>
                     </Link>
                   </div>
-                </div>
+                </TabsContent>
 
-                <div>
-                  <h3 className="text-sm font-semibold text-[#2C2C2C] mb-3">
-                    Advanced & Master Data
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                <TabsContent value="advanced" className="mt-6">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <Link href="/vouchers/memo">
-                      <Button variant="outline" className="w-full border-gray-200">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Memo Voucher
+                      <Button
+                        variant="outline"
+                        className="w-full h-auto flex-col gap-3 py-5 border-2 border-gray-200 hover:border-[#607c47] hover:shadow-lg hover:shadow-[#607c47]/10 transition-all duration-300 group relative overflow-hidden"
+                        style={{ backgroundColor: "white" }}
+                      >
+                        <div className="p-3 rounded-xl bg-white border-2 border-gray-100 shadow-sm group-hover:border-[#607c47] group-hover:shadow-md group-hover:bg-[#607c47]/5 transition-all duration-300">
+                          <FileText className="h-6 w-6 text-[#607c47] group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <span className="text-sm font-semibold text-[#2C2C2C] group-hover:text-[#607c47] transition-colors duration-300">
+                          Memo Voucher
+                        </span>
                       </Button>
                     </Link>
                     <Link href="/vouchers/reversing-journal">
-                      <Button variant="outline" className="w-full border-gray-200">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Reversing Journal
+                      <Button
+                        variant="outline"
+                        className="w-full h-auto flex-col gap-3 py-5 border-2 border-gray-200 hover:border-[#607c47] hover:shadow-lg hover:shadow-[#607c47]/10 transition-all duration-300 group relative overflow-hidden"
+                        style={{ backgroundColor: "white" }}
+                      >
+                        <div className="p-3 rounded-xl bg-white border-2 border-gray-100 shadow-sm group-hover:border-[#607c47] group-hover:shadow-md group-hover:bg-[#607c47]/5 transition-all duration-300">
+                          <RefreshCw className="h-6 w-6 text-[#607c47] group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <span className="text-sm font-semibold text-[#2C2C2C] group-hover:text-[#607c47] transition-colors duration-300">
+                          Reversing Journal
+                        </span>
                       </Button>
                     </Link>
                     <Link href="/vouchers/items">
-                      <Button variant="outline" className="w-full border-gray-200">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Items
+                      <Button
+                        variant="outline"
+                        className="w-full h-auto flex-col gap-3 py-5 border-2 border-gray-200 hover:border-[#607c47] hover:shadow-lg hover:shadow-[#607c47]/10 transition-all duration-300 group relative overflow-hidden"
+                        style={{ backgroundColor: "white" }}
+                      >
+                        <div className="p-3 rounded-xl bg-white border-2 border-gray-100 shadow-sm group-hover:border-[#607c47] group-hover:shadow-md group-hover:bg-[#607c47]/5 transition-all duration-300">
+                          <Layers className="h-6 w-6 text-[#607c47] group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <span className="text-sm font-semibold text-[#2C2C2C] group-hover:text-[#607c47] transition-colors duration-300">
+                          Items
+                        </span>
                       </Button>
                     </Link>
                     <Link href="/vouchers/warehouses">
-                      <Button variant="outline" className="w-full border-gray-200">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Warehouses
+                      <Button
+                        variant="outline"
+                        className="w-full h-auto flex-col gap-3 py-5 border-2 border-gray-200 hover:border-[#607c47] hover:shadow-lg hover:shadow-[#607c47]/10 transition-all duration-300 group relative overflow-hidden"
+                        style={{ backgroundColor: "white" }}
+                      >
+                        <div className="p-3 rounded-xl bg-white border-2 border-gray-100 shadow-sm group-hover:border-[#607c47] group-hover:shadow-md group-hover:bg-[#607c47]/5 transition-all duration-300">
+                          <Warehouse className="h-6 w-6 text-[#607c47] group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <span className="text-sm font-semibold text-[#2C2C2C] group-hover:text-[#607c47] transition-colors duration-300">
+                          Warehouses
+                        </span>
                       </Button>
                     </Link>
                   </div>
-                </div>
-              </div>
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <Card className="xl:col-span-2 rounded-2xl shadow-lg border-0 bg-white">
-              <CardHeader className="flex flex-col gap-2">
-                <CardTitle className="text-lg text-[#2C2C2C]">
+            <Card className="xl:col-span-2 border border-gray-200 shadow-sm bg-white">
+              <CardHeader className="flex flex-col gap-2 pb-4">
+                <CardTitle className="text-xl text-[#2C2C2C]">
                   Create Voucher (Manual Entry)
                 </CardTitle>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[#2C2C2C]/70">
                   Select the voucher type, enter ledger lines, and ensure the
                   voucher remains balanced. For type-specific forms, use the
                   quick actions above.
                 </p>
               </CardHeader>
+              <Separator className="mb-6" />
               <CardContent>
                 <form className="space-y-6" onSubmit={handleSubmit}>
                   <div className="grid gap-4 md:grid-cols-3">
                     <div className="space-y-2">
-                      <Label htmlFor="voucherTypeId">Voucher Type</Label>
-                      <select
-                        id="voucherTypeId"
+                      <Label htmlFor="voucherTypeId">Voucher Type *</Label>
+                      <Select
                         value={form.voucherTypeId}
-                        onChange={(event) =>
-                          handleTypeChange(event.target.value)
-                        }
-                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
+                        onValueChange={handleTypeChange}
                         required
                       >
-                        <option value="">Select voucher type</option>
-                        {voucherTypes.map((type) => (
-                          <option key={type.id} value={type.id}>
-                            {type.name}
-                          </option>
-                        ))}
-                      </select>
+                        <SelectTrigger className="w-full bg-white border-gray-200 text-[#2C2C2C]">
+                          <SelectValue placeholder="Select voucher type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {voucherTypes.map((type) => (
+                            <SelectItem key={type.id} value={type.id}>
+                              {type.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="numberingSeriesId">
                         Numbering Series
                       </Label>
-                      <select
-                        id="numberingSeriesId"
-                        value={form.numberingSeriesId ?? ""}
-                        onChange={(event) =>
+                      <Select
+                        value={form.numberingSeriesId ?? undefined}
+                        onValueChange={(value) =>
                           setForm((prev) => ({
                             ...prev,
-                            numberingSeriesId: event.target.value || undefined,
+                            numberingSeriesId:
+                              value === "default" ? undefined : value,
                           }))
                         }
-                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                       >
-                        <option value="">Default</option>
-                        {numberingSeriesOptions.map((series) => (
-                          <option key={series.id} value={series.id}>
-                            {series.name} (
-                            {numberingMethodLabels[series.numberingMethod]})
-                          </option>
-                        ))}
-                      </select>
+                        <SelectTrigger className="w-full bg-white border-gray-200 text-[#2C2C2C]">
+                          <SelectValue placeholder="Default" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="default">Default</SelectItem>
+                          {numberingSeriesOptions.map((series) => (
+                            <SelectItem key={series.id} value={series.id}>
+                              {series.name} (
+                              {numberingMethodLabels[series.numberingMethod]})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="space-y-2">
@@ -576,22 +740,23 @@ export default function VouchersPage() {
                     </div>
                   </div>
 
+                  <Separator className="my-6" />
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-base font-semibold text-[#2C2C2C]">
+                        <h3 className="text-lg font-semibold text-[#2C2C2C]">
                           Voucher Entries
                         </h3>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-[#2C2C2C]/70 mt-1">
                           Debit and credit lines must balance. Add bill
-                          references to match Tally’s bill-wise tracking.
+                          references to match Tally's bill-wise tracking.
                         </p>
                       </div>
                       <Button
                         type="button"
-                        variant="secondary"
+                        variant="outline"
                         onClick={addEntry}
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-2 border-gray-200 hover:border-[#607c47] hover:bg-[#607c47]/5"
                       >
                         <Plus className="h-4 w-4" /> Add Entry
                       </Button>
@@ -600,14 +765,25 @@ export default function VouchersPage() {
                     {form.entries.map((entry, index) => (
                       <div
                         key={index}
-                        className="space-y-3 rounded-xl border border-gray-200 p-4 bg-gray-50"
+                        className="space-y-4 rounded-xl border border-gray-200 p-5 bg-gradient-to-br from-white to-gray-50/50 hover:shadow-md transition-shadow"
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                            <span className="px-2 py-1 rounded bg-white border border-gray-200">
+                        <div className="flex items-center justify-between pb-2 border-b border-gray-200">
+                          <div className="flex flex-wrap gap-2">
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                entry.entryType === "DEBIT"
+                                  ? "bg-blue-100 text-blue-700 border border-blue-200"
+                                  : "bg-green-100 text-green-700 border border-green-200"
+                              }`}
+                            >
+                              {entry.entryType === "DEBIT" ? (
+                                <ArrowUpCircle className="h-3 w-3 inline mr-1" />
+                              ) : (
+                                <ArrowDownCircle className="h-3 w-3 inline mr-1" />
+                              )}
                               {entry.entryType}
                             </span>
-                            <span className="px-2 py-1 rounded bg-white border border-gray-200">
+                            <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium border border-gray-200">
                               Entry #{index + 1}
                             </span>
                           </div>
@@ -616,7 +792,7 @@ export default function VouchersPage() {
                               type="button"
                               variant="ghost"
                               size="sm"
-                              className="text-xs text-red-500 hover:text-red-600"
+                              className="text-xs text-red-500 hover:text-red-600 hover:bg-red-50"
                               onClick={() => removeEntry(index)}
                             >
                               <Trash2 className="h-3 w-3 mr-1" />
@@ -655,20 +831,23 @@ export default function VouchersPage() {
                           </div>
                           <div className="space-y-2">
                             <Label>Type</Label>
-                            <select
+                            <Select
                               value={entry.entryType}
-                              onChange={(event) =>
+                              onValueChange={(value) =>
                                 updateEntry(index, (prevEntry) => ({
                                   ...prevEntry,
-                                  entryType: event.target
-                                    .value as VoucherEntryType,
+                                  entryType: value as VoucherEntryType,
                                 }))
                               }
-                              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                             >
-                              <option value="DEBIT">Debit</option>
-                              <option value="CREDIT">Credit</option>
-                            </select>
+                              <SelectTrigger className="w-full bg-white border-gray-200 text-[#2C2C2C]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="DEBIT">Debit</SelectItem>
+                                <SelectItem value="CREDIT">Credit</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-2">
                             <Label>Amount *</Label>
@@ -796,30 +975,34 @@ export default function VouchersPage() {
                                   </div>
                                   <div className="space-y-1">
                                     <Label className="text-xs">Type</Label>
-                                    <select
+                                    <Select
                                       value={bill.referenceType}
-                                      onChange={(event) =>
+                                      onValueChange={(value) =>
                                         updateBillReference(
                                           index,
                                           billIndex,
                                           (prevBill) => ({
                                             ...prevBill,
-                                            referenceType: event.target
-                                              .value as VoucherBillReferenceType,
+                                            referenceType:
+                                              value as VoucherBillReferenceType,
                                           })
                                         )
                                       }
-                                      className="w-full rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-[#2C2C2C]"
                                     >
-                                      {billReferenceOptions.map((option) => (
-                                        <option
-                                          key={option.value}
-                                          value={option.value}
-                                        >
-                                          {option.label}
-                                        </option>
-                                      ))}
-                                    </select>
+                                      <SelectTrigger className="w-full bg-white border-gray-200 text-[#2C2C2C] h-8 text-xs">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {billReferenceOptions.map((option) => (
+                                          <SelectItem
+                                            key={option.value}
+                                            value={option.value}
+                                          >
+                                            {option.label}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
                                   </div>
                                   <div className="space-y-1">
                                     <Label className="text-xs">Due Date</Label>
@@ -878,26 +1061,42 @@ export default function VouchersPage() {
                     ))}
                   </div>
 
-                  <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 flex items-center justify-between text-sm">
-                    <span className="font-medium text-[#2C2C2C]">
-                      Total Debit:{" "}
-                      <span className="text-[#607c47]">
-                        {totalDebit.toFixed(2)}
+                  <div className="rounded-xl border-2 border-gray-200 bg-gradient-to-r from-white to-gray-50 px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-6">
+                      <div className="flex items-center gap-2">
+                        <ArrowUpCircle className="h-5 w-5 text-blue-600" />
+                        <span className="text-sm font-medium text-[#2C2C2C]">
+                          Total Debit:
+                        </span>
+                        <span className="text-lg font-semibold text-blue-600">
+                          ₹{totalDebit.toFixed(2)}
+                        </span>
+                      </div>
+                      <Separator orientation="vertical" className="h-8" />
+                      <div className="flex items-center gap-2">
+                        <ArrowDownCircle className="h-5 w-5 text-green-600" />
+                        <span className="text-sm font-medium text-[#2C2C2C]">
+                          Total Credit:
+                        </span>
+                        <span className="text-lg font-semibold text-green-600">
+                          ₹{totalCredit.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {isBalanced ? (
+                        <CheckCircle className="h-5 w-5 text-emerald-600" />
+                      ) : (
+                        <XCircle className="h-5 w-5 text-red-500" />
+                      )}
+                      <span
+                        className={`text-base font-semibold ${
+                          isBalanced ? "text-emerald-600" : "text-red-500"
+                        }`}
+                      >
+                        {isBalanced ? "Balanced" : "Not Balanced"}
                       </span>
-                    </span>
-                    <span className="font-medium text-[#2C2C2C]">
-                      Total Credit:{" "}
-                      <span className="text-[#607c47]">
-                        {totalCredit.toFixed(2)}
-                      </span>
-                    </span>
-                    <span
-                      className={`font-semibold ${
-                        isBalanced ? "text-emerald-600" : "text-red-500"
-                      }`}
-                    >
-                      {isBalanced ? "Balanced" : "Not Balanced"}
-                    </span>
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-end gap-3">
@@ -921,12 +1120,13 @@ export default function VouchersPage() {
               </CardContent>
             </Card>
 
-            <Card className="rounded-2xl shadow-lg border-0 bg-white">
+            <Card className="border border-gray-200 shadow-sm bg-white">
               <CardHeader>
-                <CardTitle className="text-lg text-[#2C2C2C]">
+                <CardTitle className="text-xl text-[#2C2C2C]">
                   Recent Vouchers
                 </CardTitle>
               </CardHeader>
+              <Separator className="mb-4" />
               <CardContent className="space-y-3">
                 {loading ? (
                   <div className="flex items-center justify-center py-12 text-muted-foreground">
@@ -970,22 +1170,22 @@ export default function VouchersPage() {
                       return (
                         <div
                           key={voucher.id}
-                          className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-2"
+                          className="rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-50/50 p-4 space-y-3 hover:shadow-md transition-shadow"
                         >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <p className="text-sm font-semibold text-[#2C2C2C]">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className="text-base font-semibold text-[#2C2C2C]">
                                   {voucher.voucherNumber}
                                 </p>
                                 {getStatusBadge(voucher.status)}
                               </div>
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-xs text-[#2C2C2C]/70">
                                 {voucher.voucherType.name} •{" "}
                                 {format(new Date(voucher.date), "dd MMM yyyy")}
                               </p>
                             </div>
-                            <div className="text-sm font-semibold text-[#607c47]">
+                            <div className="text-lg font-bold text-[#607c47]">
                               ₹{Number(voucher.totalAmount ?? 0).toFixed(2)}
                             </div>
                           </div>

@@ -9,6 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   apiClient,
   GstLedgerMapping,
   GstLedgerMappingInput,
@@ -888,7 +895,7 @@ export default function GstManagementPage() {
                     ? "Edit GST Registration"
                     : "Create GST Registration"}
                 </DialogTitle>
-                <DialogDescription>
+                <DialogDescription className="text-[#2C2C2C]/70">
                   {editingRegistration
                     ? "Update GSTIN details and defaults."
                     : "Add a GST registration (GSTIN) for this entity."}
@@ -912,23 +919,26 @@ export default function GstManagementPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>Registration Type</Label>
-                    <select
+                    <Select
                       value={registrationForm.registrationType}
-                      onChange={(e) =>
+                      onValueChange={(value) =>
                         setRegistrationForm({
                           ...registrationForm,
-                          registrationType: e.target
-                            .value as GstRegistrationType,
+                          registrationType: value as GstRegistrationType,
                         })
                       }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                     >
-                      {REGISTRATION_TYPES.map((type) => (
-                        <option key={type.value} value={type.value}>
-                          {type.label}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full bg-white border-gray-200 text-[#2C2C2C]">
+                        <SelectValue placeholder="Select registration type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {REGISTRATION_TYPES.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
@@ -1102,7 +1112,7 @@ export default function GstManagementPage() {
                 <DialogTitle className="text-[#2C2C2C]">
                   {editingTaxRate ? "Edit Tax Rate" : "Create Tax Rate"}
                 </DialogTitle>
-                <DialogDescription>
+                <DialogDescription className="text-[#2C2C2C]/70">
                   Configure GST rate splits for HSN/SAC to automate voucher
                   postings.
                 </DialogDescription>
@@ -1110,23 +1120,27 @@ export default function GstManagementPage() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>Registration</Label>
-                  <select
+                  <Select
                     value={taxForm.registrationId || ""}
-                    onChange={(e) =>
+                    onValueChange={(value) =>
                       setTaxForm({
                         ...taxForm,
-                        registrationId: e.target.value || "",
+                        registrationId: value || "",
                       })
                     }
-                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                   >
-                    <option value="">Use default registration</option>
-                    {registrations.map((reg) => (
-                      <option key={reg.id} value={reg.id}>
-                        {reg.gstin}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full bg-white border-gray-200 text-[#2C2C2C]">
+                      <SelectValue placeholder="Use default registration" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Use default registration</SelectItem>
+                      {registrations.map((reg) => (
+                        <SelectItem key={reg.id} value={reg.id}>
+                          {reg.gstin}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -1270,7 +1284,7 @@ export default function GstManagementPage() {
                     ? "Edit Ledger Mapping"
                     : "Create Ledger Mapping"}
                 </DialogTitle>
-                <DialogDescription>
+                <DialogDescription className="text-[#2C2C2C]/70">
                   Map GST ledgers to automate tax liability and input credit
                   postings.
                 </DialogDescription>

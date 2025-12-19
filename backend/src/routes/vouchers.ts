@@ -152,28 +152,26 @@ router.post("/", async (req: Request, res: Response) => {
     }
 
     const normalizedEntries = entries
-      ? entries.map(
-          (entry: EntryInput) => ({
-            ledgerName: entry.ledgerName,
-            ledgerCode: entry.ledgerCode,
-            entryType: entry.entryType as VoucherEntryType,
-            amount: Number(entry.amount),
-            narration: entry.narration,
-            costCenterName: entry.costCenterName,
-            costCategory: entry.costCategory,
-            billReferences: Array.isArray(entry.billReferences)
-              ? entry.billReferences.map((bill) => ({
-                  reference: bill.reference,
-                  amount: Number(bill.amount),
-                  referenceType: bill.referenceType as
-                    | VoucherBillReferenceType
-                    | undefined,
-                  dueDate: bill.dueDate,
-                  remarks: bill.remarks,
-                }))
-              : undefined,
-          })
-        )
+      ? entries.map((entry: EntryInput) => ({
+          ledgerName: entry.ledgerName,
+          ledgerCode: entry.ledgerCode,
+          entryType: entry.entryType as VoucherEntryType,
+          amount: Number(entry.amount),
+          narration: entry.narration,
+          costCenterName: entry.costCenterName,
+          costCategory: entry.costCategory,
+          billReferences: Array.isArray(entry.billReferences)
+            ? entry.billReferences.map((bill) => ({
+                reference: bill.reference,
+                amount: Number(bill.amount),
+                referenceType: bill.referenceType as
+                  | VoucherBillReferenceType
+                  | undefined,
+                dueDate: bill.dueDate,
+                remarks: bill.remarks,
+              }))
+            : undefined,
+        }))
       : undefined;
 
     interface InventoryLineInput {
@@ -188,22 +186,20 @@ router.post("/", async (req: Request, res: Response) => {
     }
 
     const normalizedInventoryLines = inventoryLines
-      ? inventoryLines.map(
-          (line: InventoryLineInput) => ({
-            itemId: line.itemId,
-            warehouseId: line.warehouseId,
-            quantity: Number(line.quantity),
-            rate: Number(line.rate),
-            discountAmount: line.discountAmount
-              ? Number(line.discountAmount)
-              : undefined,
-            gstRatePercent: line.gstRatePercent
-              ? Number(line.gstRatePercent)
-              : undefined,
-            batchNumber: line.batchNumber,
-            narration: line.narration,
-          })
-        )
+      ? inventoryLines.map((line: InventoryLineInput) => ({
+          itemId: line.itemId,
+          warehouseId: line.warehouseId,
+          quantity: Number(line.quantity),
+          rate: Number(line.rate),
+          discountAmount: line.discountAmount
+            ? Number(line.discountAmount)
+            : undefined,
+          gstRatePercent: line.gstRatePercent
+            ? Number(line.gstRatePercent)
+            : undefined,
+          batchNumber: line.batchNumber,
+          narration: line.narration,
+        }))
       : undefined;
 
     const voucher = await createVoucher(startupId, {

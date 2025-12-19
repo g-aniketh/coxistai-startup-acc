@@ -57,7 +57,8 @@ export default function AuditLogPage() {
   const [total, setTotal] = useState(0);
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [showDetails, setShowDetails] = useState(false);
-  const [exceptionReports, setExceptionReports] = useState<ExceptionReport | null>(null);
+  const [exceptionReports, setExceptionReports] =
+    useState<ExceptionReport | null>(null);
   const [exceptionLoading, setExceptionLoading] = useState(false);
   const [exceptionAsOnDate, setExceptionAsOnDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -536,8 +537,10 @@ export default function AuditLogPage() {
               <Dialog open={showDetails} onOpenChange={setShowDetails}>
                 <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>Audit Log Details</DialogTitle>
-                    <DialogDescription>
+                    <DialogTitle className="text-[#2C2C2C]">
+                      Audit Log Details
+                    </DialogTitle>
+                    <DialogDescription className="text-[#2C2C2C]/70">
                       Detailed information about this audit log entry
                     </DialogDescription>
                   </DialogHeader>

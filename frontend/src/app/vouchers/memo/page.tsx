@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { apiClient, Ledger, VoucherEntryType } from "@/lib/api";
 import { format } from "date-fns";
 import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react";
@@ -211,9 +218,7 @@ export default function MemoVoucherPage() {
     } catch (error) {
       console.error("Create memo voucher error:", error);
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to create memo voucher"
+        error instanceof Error ? error.message : "Failed to create memo voucher"
       );
     } finally {
       setSubmitting(false);
@@ -251,7 +256,8 @@ export default function MemoVoucherPage() {
                 Memo Voucher
               </h1>
               <p className="text-sm text-[#2C2C2C]/70">
-                Create provisional/hypothetical entries (does not affect ledger balances or stock)
+                Create provisional/hypothetical entries (does not affect ledger
+                balances or stock)
               </p>
             </div>
           </div>
@@ -263,10 +269,16 @@ export default function MemoVoucherPage() {
               </CardTitle>
               <div className="flex items-center gap-4 text-sm mt-2">
                 <span className="text-[#2C2C2C]">
-                  Total Debit: <span className="font-semibold text-[#607c47]">₹{totalDebit.toFixed(2)}</span>
+                  Total Debit:{" "}
+                  <span className="font-semibold text-[#607c47]">
+                    ₹{totalDebit.toFixed(2)}
+                  </span>
                 </span>
                 <span className="text-[#2C2C2C]">
-                  Total Credit: <span className="font-semibold text-[#607c47]">₹{totalCredit.toFixed(2)}</span>
+                  Total Credit:{" "}
+                  <span className="font-semibold text-[#607c47]">
+                    ₹{totalCredit.toFixed(2)}
+                  </span>
                 </span>
                 <span
                   className={`font-semibold ${
@@ -277,7 +289,8 @@ export default function MemoVoucherPage() {
                 </span>
               </div>
               <p className="text-xs text-amber-600 mt-2">
-                ⚠️ This is a provisional entry. It will NOT update ledger balances or inventory.
+                ⚠️ This is a provisional entry. It will NOT update ledger
+                balances or inventory.
               </p>
             </CardHeader>
             <CardContent>
@@ -345,21 +358,27 @@ export default function MemoVoucherPage() {
                             className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
                           >
                             <td className="px-4 py-3">
-                              <select
+                              <Select
                                 value={entry.ledgerId}
-                                onChange={(e) =>
-                                  updateEntry(index, "ledgerId", e.target.value)
+                                onValueChange={(value) =>
+                                  updateEntry(index, "ledgerId", value)
                                 }
-                                className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-[#2C2C2C] focus:outline-none focus:ring-2 focus:ring-[#607c47] focus:border-transparent"
                                 required
                               >
-                                <option value="">Select ledger</option>
-                                {ledgers.map((ledger) => (
-                                  <option key={ledger.id} value={ledger.id}>
-                                    {ledger.name}
-                                  </option>
-                                ))}
-                              </select>
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="Select ledger" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {ledgers.map((ledger) => (
+                                    <SelectItem
+                                      key={ledger.id}
+                                      value={ledger.id}
+                                    >
+                                      {ledger.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             </td>
                             <td className="px-4 py-3">
                               <Input
@@ -442,7 +461,11 @@ export default function MemoVoucherPage() {
 
                 <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
                   <Link href="/vouchers">
-                    <Button type="button" variant="outline" className="border-gray-200">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="border-gray-200"
+                    >
                       Cancel
                     </Button>
                   </Link>
@@ -463,4 +486,3 @@ export default function MemoVoucherPage() {
     </AuthGuard>
   );
 }
-

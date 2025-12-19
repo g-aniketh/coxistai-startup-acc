@@ -149,7 +149,9 @@ export class AlertsService {
         message,
         currentValue: metrics.runway,
         thresholdValue: new Decimal(6),
-        recommendations: JSON.parse(JSON.stringify(recommendations)) as Prisma.InputJsonValue,
+        recommendations: JSON.parse(
+          JSON.stringify(recommendations)
+        ) as Prisma.InputJsonValue,
       },
     });
   }
@@ -157,7 +159,10 @@ export class AlertsService {
   /**
    * Check burn rate changes
    */
-  private static async checkBurnRate(startupId: string, metrics: CashflowMetric) {
+  private static async checkBurnRate(
+    startupId: string,
+    metrics: CashflowMetric
+  ) {
     // Get previous month's metrics
     const previousMetrics = await prisma.cashflowMetric.findFirst({
       where: {
@@ -198,7 +203,9 @@ export class AlertsService {
           )}% to $${currentBurn.toLocaleString()}/month.`,
           currentValue: new Decimal(currentBurn),
           thresholdValue: new Decimal(previousBurn),
-          recommendations: JSON.parse(JSON.stringify(recommendations)) as Prisma.InputJsonValue,
+          recommendations: JSON.parse(
+            JSON.stringify(recommendations)
+          ) as Prisma.InputJsonValue,
         },
       });
     } else if (burnChange < -15) {
@@ -223,7 +230,10 @@ export class AlertsService {
   /**
    * Check if cash balance is critically low
    */
-  private static async checkCashLow(startupId: string, metrics: CashflowMetric) {
+  private static async checkCashLow(
+    startupId: string,
+    metrics: CashflowMetric
+  ) {
     const cashBalance = metrics.cashBalance.toNumber();
     const burnRate = metrics.burnRate.toNumber();
 
@@ -247,7 +257,9 @@ export class AlertsService {
           )} months remaining at current burn.`,
           currentValue: new Decimal(cashBalance),
           thresholdValue: new Decimal(burnRate * 3),
-          recommendations: JSON.parse(JSON.stringify(recommendations)) as Prisma.InputJsonValue,
+          recommendations: JSON.parse(
+            JSON.stringify(recommendations)
+          ) as Prisma.InputJsonValue,
         },
       });
     }
@@ -281,7 +293,9 @@ export class AlertsService {
           } customers this period.`,
           currentValue: new Decimal(churnRate),
           thresholdValue: new Decimal(5),
-          recommendations: JSON.parse(JSON.stringify(recommendations)) as Prisma.InputJsonValue,
+          recommendations: JSON.parse(
+            JSON.stringify(recommendations)
+          ) as Prisma.InputJsonValue,
         },
       });
     }
@@ -290,7 +304,10 @@ export class AlertsService {
   /**
    * Check for financial anomalies
    */
-  private static async checkAnomalies(startupId: string, metrics: CashflowMetric) {
+  private static async checkAnomalies(
+    startupId: string,
+    metrics: CashflowMetric
+  ) {
     const history = await prisma.cashflowMetric.findMany({
       where: { startupId },
       orderBy: { periodStart: "asc" },
@@ -361,7 +378,9 @@ export class AlertsService {
   /**
    * Get AI recommendations for runway issues
    */
-  private static async getRunwayRecommendations(metrics: CashflowMetric): Promise<Recommendation[]> {
+  private static async getRunwayRecommendations(
+    metrics: CashflowMetric
+  ): Promise<Recommendation[]> {
     if (!openai) {
       console.warn(
         "OpenAI service not available. Returning default recommendations."
@@ -519,7 +538,9 @@ Respond in JSON format:
   /**
    * Get AI recommendations for low cash
    */
-  private static async getCashLowRecommendations(metrics: CashflowMetric): Promise<Recommendation[]> {
+  private static async getCashLowRecommendations(
+    metrics: CashflowMetric
+  ): Promise<Recommendation[]> {
     return [
       {
         action: "Immediately freeze all non-essential spending",
@@ -542,7 +563,9 @@ Respond in JSON format:
   /**
    * Get AI recommendations for churn
    */
-  private static async getChurnRecommendations(metrics: CashflowMetric): Promise<Recommendation[]> {
+  private static async getChurnRecommendations(
+    metrics: CashflowMetric
+  ): Promise<Recommendation[]> {
     return [
       {
         action: "Conduct exit interviews with churned customers",

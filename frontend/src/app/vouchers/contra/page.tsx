@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { apiClient, Ledger } from "@/lib/api";
 import { format } from "date-fns";
 import { ArrowLeft, Save } from "lucide-react";
@@ -163,7 +170,9 @@ export default function ContraVoucherPage() {
 
           <Card className="rounded-2xl shadow-lg border-0 bg-white">
             <CardHeader>
-              <CardTitle className="text-lg text-[#2C2C2C]">Contra Details</CardTitle>
+              <CardTitle className="text-lg text-[#2C2C2C]">
+                Contra Details
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -188,49 +197,56 @@ export default function ContraVoucherPage() {
                     <Label htmlFor="sourceLedgerId" className="text-[#2C2C2C]">
                       Source (CASH/BANK) *
                     </Label>
-                    <select
-                      id="sourceLedgerId"
+                    <Select
                       value={form.sourceLedgerId}
-                      onChange={(e) =>
-                        setForm({ ...form, sourceLedgerId: e.target.value })
+                      onValueChange={(value) =>
+                        setForm({ ...form, sourceLedgerId: value })
                       }
-                      className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-[#2C2C2C] focus:outline-none focus:ring-2 focus:ring-[#607c47] focus:border-transparent"
                       required
                     >
-                      <option value="">Select source ledger</option>
-                      {cashBankLedgers.map((ledger) => (
-                        <option key={ledger.id} value={ledger.id}>
-                          {ledger.name}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select source ledger" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {cashBankLedgers.map((ledger) => (
+                          <SelectItem key={ledger.id} value={ledger.id}>
+                            {ledger.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="destinationLedgerId" className="text-[#2C2C2C]">
+                    <Label
+                      htmlFor="destinationLedgerId"
+                      className="text-[#2C2C2C]"
+                    >
                       Destination (CASH/BANK) *
                     </Label>
-                    <select
-                      id="destinationLedgerId"
+                    <Select
                       value={form.destinationLedgerId}
-                      onChange={(e) =>
+                      onValueChange={(value) =>
                         setForm({
                           ...form,
-                          destinationLedgerId: e.target.value,
+                          destinationLedgerId: value,
                         })
                       }
-                      className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-[#2C2C2C] focus:outline-none focus:ring-2 focus:ring-[#607c47] focus:border-transparent"
                       required
                     >
-                      <option value="">Select destination ledger</option>
-                      {cashBankLedgers
-                        .filter((l) => l.id !== form.sourceLedgerId)
-                        .map((ledger) => (
-                          <option key={ledger.id} value={ledger.id}>
-                            {ledger.name}
-                          </option>
-                        ))}
-                    </select>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select destination ledger" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {cashBankLedgers
+                          .filter((l) => l.id !== form.sourceLedgerId)
+                          .map((ledger) => (
+                            <SelectItem key={ledger.id} value={ledger.id}>
+                              {ledger.name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
@@ -270,7 +286,11 @@ export default function ContraVoucherPage() {
 
                 <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
                   <Link href="/vouchers">
-                    <Button type="button" variant="outline" className="border-gray-200">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="border-gray-200"
+                    >
                       Cancel
                     </Button>
                   </Link>

@@ -46,12 +46,18 @@ export class AnalyticsService {
       // Calculate basic metrics
       const totalRevenue = transactions
         .filter((t: TransactionWithAccount) => Number(t.amount) > 0)
-        .reduce((sum: number, t: TransactionWithAccount) => sum + Number(t.amount), 0);
+        .reduce(
+          (sum: number, t: TransactionWithAccount) => sum + Number(t.amount),
+          0
+        );
 
       const totalExpenses = Math.abs(
         transactions
           .filter((t: TransactionWithAccount) => Number(t.amount) < 0)
-          .reduce((sum: number, t: TransactionWithAccount) => sum + Number(t.amount), 0)
+          .reduce(
+            (sum: number, t: TransactionWithAccount) => sum + Number(t.amount),
+            0
+          )
       );
 
       const netIncome = totalRevenue - totalExpenses;
@@ -88,7 +94,8 @@ export class AnalyticsService {
       });
 
       const totalBalance = accounts.reduce(
-        (sum: Decimal, acc: Prisma.MockBankAccountGetPayload<{}>) => sum.add(acc.balance),
+        (sum: Decimal, acc: Prisma.MockBankAccountGetPayload<{}>) =>
+          sum.add(acc.balance),
         new Decimal(0)
       );
 
@@ -96,11 +103,13 @@ export class AnalyticsService {
         success: true,
         data: {
           totalBalance,
-          accounts: accounts.map((acc: Prisma.MockBankAccountGetPayload<{}>) => ({
-            id: acc.id,
-            name: acc.accountName,
-            balance: new Decimal(acc.balance),
-          })),
+          accounts: accounts.map(
+            (acc: Prisma.MockBankAccountGetPayload<{}>) => ({
+              id: acc.id,
+              name: acc.accountName,
+              balance: new Decimal(acc.balance),
+            })
+          ),
         },
       };
     } catch (error) {
@@ -133,7 +142,10 @@ export class AnalyticsService {
     }
   }
 
-  static async createCashflowMetric(startupId: string, data: CashflowMetricInput) {
+  static async createCashflowMetric(
+    startupId: string,
+    data: CashflowMetricInput
+  ) {
     try {
       const metric = await prisma.cashflowMetric.create({
         data: {
@@ -236,7 +248,8 @@ export class AnalyticsService {
       });
 
       const totalBalance = accounts.reduce(
-        (sum: number, acc: Prisma.MockBankAccountGetPayload<{}>) => sum + Number(acc.balance),
+        (sum: number, acc: Prisma.MockBankAccountGetPayload<{}>) =>
+          sum + Number(acc.balance),
         0
       );
 

@@ -290,7 +290,10 @@ interface DepreciationEntry {
 export async function runDepreciation(
   startupId: string,
   input: DepreciationRunInput
-): Promise<{ voucher: VoucherWithRelations; depreciationEntries: DepreciationEntry[] }> {
+): Promise<{
+  voucher: VoucherWithRelations;
+  depreciationEntries: DepreciationEntry[];
+}> {
   const asOnDate = new Date(input.asOnDate);
 
   // Get fixed asset ledgers

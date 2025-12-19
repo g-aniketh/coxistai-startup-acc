@@ -49,9 +49,11 @@ export default function AIInsightsPage() {
         toast.error(response.message || "Failed to generate insights");
       }
     } catch (error) {
-      const message = error instanceof Error 
-        ? error.message 
-        : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to generate insights";
+      const message =
+        error instanceof Error
+          ? error.message
+          : (error as { response?: { data?: { message?: string } } })?.response
+              ?.data?.message || "Failed to generate insights";
       toast.error(message);
     } finally {
       setLoading(false);
@@ -108,7 +110,9 @@ export default function AIInsightsPage() {
                     Total Balance
                   </p>
                   <h3 className="text-2xl font-bold">
-                    ${insights.keyMetrics?.totalBalance.toLocaleString() ?? "N/A"}
+                    $
+                    {insights.keyMetrics?.totalBalance.toLocaleString() ??
+                      "N/A"}
                   </h3>
                 </Card>
                 <Card className="p-6">
@@ -116,7 +120,8 @@ export default function AIInsightsPage() {
                     Monthly Burn
                   </p>
                   <h3 className="text-2xl font-bold text-red-500">
-                    ${insights.keyMetrics?.monthlyBurn.toLocaleString() ?? "N/A"}
+                    $
+                    {insights.keyMetrics?.monthlyBurn.toLocaleString() ?? "N/A"}
                   </h3>
                 </Card>
                 <Card className="p-6">
@@ -124,7 +129,9 @@ export default function AIInsightsPage() {
                     Monthly Revenue
                   </p>
                   <h3 className="text-2xl font-bold text-green-500">
-                    ${insights.keyMetrics?.monthlyRevenue.toLocaleString() ?? "N/A"}
+                    $
+                    {insights.keyMetrics?.monthlyRevenue.toLocaleString() ??
+                      "N/A"}
                   </h3>
                 </Card>
                 <Card className="p-6">

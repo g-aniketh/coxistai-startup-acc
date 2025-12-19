@@ -135,14 +135,12 @@ Respond in JSON format:
         cashBalance: number;
       }
 
-      const totalProjectedRevenue = (response.forecast as ForecastMonth[]).reduce(
-        (sum: number, m: ForecastMonth) => sum + m.revenue,
-        0
-      );
-      const totalProjectedExpenses = (response.forecast as ForecastMonth[]).reduce(
-        (sum: number, m: ForecastMonth) => sum + m.expenses,
-        0
-      );
+      const totalProjectedRevenue = (
+        response.forecast as ForecastMonth[]
+      ).reduce((sum: number, m: ForecastMonth) => sum + m.revenue, 0);
+      const totalProjectedExpenses = (
+        response.forecast as ForecastMonth[]
+      ).reduce((sum: number, m: ForecastMonth) => sum + m.expenses, 0);
 
       // Store scenario
       const scenario = await prisma.aIScenario.create({
@@ -748,7 +746,10 @@ Please provide a helpful, specific answer based on their actual financial data. 
       );
     } catch (error) {
       console.error("Error in AI chat:", error);
-      const message = error instanceof Error ? error.message : "Failed to generate chat response";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to generate chat response";
       throw new Error(message);
     }
   }

@@ -1,4 +1,9 @@
-import { Prisma, VoucherCategory, VoucherEntryType, GstRegistrationType } from "@prisma/client";
+import {
+  Prisma,
+  VoucherCategory,
+  VoucherEntryType,
+  GstRegistrationType,
+} from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { createVoucher, CreateVoucherInput } from "./vouchers";
 
@@ -217,7 +222,8 @@ export async function importEnhancedTallyData(
               gstin: reg.gstin,
               stateCode: reg.stateCode,
               stateName: reg.stateName || null,
-              registrationType: (reg.registrationType as GstRegistrationType) || "REGULAR",
+              registrationType:
+                (reg.registrationType as GstRegistrationType) || "REGULAR",
               startDate: new Date(),
               isDefault: data.gstData.registrations.length === 1,
               isActive: true,

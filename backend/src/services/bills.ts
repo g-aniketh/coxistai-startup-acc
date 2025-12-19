@@ -742,11 +742,9 @@ export const getBillsAnalytics = async (
   });
 
   // Receivables analytics
-  const receivables = bills.filter(
-    (b) => b.billType === BillType.RECEIVABLE
-  );
+  const receivables = bills.filter((b) => b.billType === BillType.RECEIVABLE);
   const receivablesTotal = receivables.reduce(
-      (sum: Decimal, b) => sum.plus(b.originalAmount),
+    (sum: Decimal, b) => sum.plus(b.originalAmount),
     new Decimal(0)
   );
   const receivablesOutstanding = receivables
@@ -754,15 +752,12 @@ export const getBillsAnalytics = async (
     .reduce((sum, b) => sum.plus(b.outstandingAmount), new Decimal(0));
   const receivablesSettled = receivables
     .filter((b) => b.status === BillStatus.SETTLED)
-    .reduce(
-      (sum: Decimal, b) => sum.plus(b.settledAmount),
-      new Decimal(0)
-    );
+    .reduce((sum: Decimal, b) => sum.plus(b.settledAmount), new Decimal(0));
 
   // Payables analytics
   const payables = bills.filter((b) => b.billType === BillType.PAYABLE);
   const payablesTotal = payables.reduce(
-      (sum: Decimal, b) => sum.plus(b.originalAmount),
+    (sum: Decimal, b) => sum.plus(b.originalAmount),
     new Decimal(0)
   );
   const payablesOutstanding = payables
@@ -770,10 +765,7 @@ export const getBillsAnalytics = async (
     .reduce((sum, b) => sum.plus(b.outstandingAmount), new Decimal(0));
   const payablesSettled = payables
     .filter((b) => b.status === BillStatus.SETTLED)
-    .reduce(
-      (sum: Decimal, b) => sum.plus(b.settledAmount),
-      new Decimal(0)
-    );
+    .reduce((sum: Decimal, b) => sum.plus(b.settledAmount), new Decimal(0));
 
   // Calculate collection/payment rates
   const receivablesCollectionRate = receivablesTotal.gt(0)
@@ -795,9 +787,8 @@ export const getBillsAnalytics = async (
         );
         return sum + Math.max(0, days);
       }, 0) /
-    (receivables.filter(
-      (b) => b.dueDate && b.status !== BillStatus.SETTLED
-    ).length || 1);
+    (receivables.filter((b) => b.dueDate && b.status !== BillStatus.SETTLED)
+      .length || 1);
 
   const payablesAvgDays =
     payables

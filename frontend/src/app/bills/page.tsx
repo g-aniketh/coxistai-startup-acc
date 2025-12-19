@@ -9,6 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   apiClient,
   Bill,
   BillAgingReport,
@@ -1156,8 +1163,10 @@ export default function BillsPage() {
           >
             <DialogContent className="sm:max-w-lg">
               <DialogHeader>
-                <DialogTitle>Settle Bill</DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="text-[#2C2C2C]">
+                  Settle Bill
+                </DialogTitle>
+                <DialogDescription className="text-[#2C2C2C]/70">
                   Link a payment or receipt voucher to settle this bill with
                   precise bill references like TallyPrime.
                 </DialogDescription>
@@ -1177,24 +1186,28 @@ export default function BillsPage() {
 
                   <div className="space-y-2">
                     <Label>Select Voucher *</Label>
-                    <select
+                    <Select
                       value={settleForm.voucherId}
-                      onChange={(event) =>
-                        handleSettleFormChange("voucherId", event.target.value)
+                      onValueChange={(value) =>
+                        handleSettleFormChange("voucherId", value)
                       }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
                       required
+                      disabled={voucherLoading}
                     >
-                      <option value="">Select voucher</option>
-                      {voucherOptions.map((voucher) => (
-                        <option key={voucher.id} value={voucher.id}>
-                          {voucher.voucherNumber} • {voucher.voucherType.name} (
-                          {format(new Date(voucher.date), "dd MMM yyyy")})
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full bg-white border-gray-200 text-[#2C2C2C]">
+                        <SelectValue placeholder="Select voucher" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {voucherOptions.map((voucher) => (
+                          <SelectItem key={voucher.id} value={voucher.id}>
+                            {voucher.voucherNumber} • {voucher.voucherType.name}{" "}
+                            ({format(new Date(voucher.date), "dd MMM yyyy")})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     {voucherLoading && (
-                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <p className="text-xs text-[#2C2C2C]/70 flex items-center gap-1">
                         <Loader2 className="h-3 w-3 animate-spin" />
                         Loading vouchers...
                       </p>
@@ -1203,26 +1216,26 @@ export default function BillsPage() {
 
                   <div className="space-y-2">
                     <Label>Select Voucher Entry *</Label>
-                    <select
+                    <Select
                       value={settleForm.voucherEntryId}
-                      onChange={(event) =>
-                        handleSettleFormChange(
-                          "voucherEntryId",
-                          event.target.value
-                        )
+                      onValueChange={(value) =>
+                        handleSettleFormChange("voucherEntryId", value)
                       }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
                       required
                       disabled={!settleForm.voucherId}
                     >
-                      <option value="">Select entry</option>
-                      {settlementEntries.map((entry) => (
-                        <option key={entry.id} value={entry.id}>
-                          {entry.ledgerName} • {entry.entryType} •{" "}
-                          {formatCurrency(entry.amount)}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full bg-white border-gray-200 text-[#2C2C2C]">
+                        <SelectValue placeholder="Select entry" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {settlementEntries.map((entry) => (
+                          <SelectItem key={entry.id} value={entry.id}>
+                            {entry.ledgerName} • {entry.entryType} •{" "}
+                            {formatCurrency(entry.amount)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">

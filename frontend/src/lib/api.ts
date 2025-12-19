@@ -1682,22 +1682,24 @@ export const apiClient = {
     runScenario: async (
       name: string,
       inputs: Record<string, unknown>
-    ): Promise<ApiResponse<{
-      scenario: string;
-      impact: {
-        cashFlow: number;
-        runway: number;
-        burnRate: number;
-        revenue: number;
-      };
-      projectedRevenue?: number;
-      projectedExpenses?: number;
-      projectedRunway?: number;
-      analysis?: string;
-      insights?: string[];
-      risks: string[];
-      recommendations: string[];
-    }>> => {
+    ): Promise<
+      ApiResponse<{
+        scenario: string;
+        impact: {
+          cashFlow: number;
+          runway: number;
+          burnRate: number;
+          revenue: number;
+        };
+        projectedRevenue?: number;
+        projectedExpenses?: number;
+        projectedRunway?: number;
+        analysis?: string;
+        insights?: string[];
+        risks: string[];
+        recommendations: string[];
+      }>
+    > => {
       const response = await api.post("/ai-cfo/scenario", { name, inputs });
       return response.data;
     },
@@ -2206,7 +2208,9 @@ export const apiClient = {
       return response.data;
     },
 
-    getTrialBalance: async (asOnDate?: string): Promise<ApiResponse<TrialBalanceRow[]>> => {
+    getTrialBalance: async (
+      asOnDate?: string
+    ): Promise<ApiResponse<TrialBalanceRow[]>> => {
       const response = await api.get("/bookkeeping/trial-balance", {
         params: { asOnDate },
       });
@@ -2223,7 +2227,9 @@ export const apiClient = {
       return response.data;
     },
 
-    getBalanceSheet: async (asOnDate?: string): Promise<ApiResponse<BalanceSheetData>> => {
+    getBalanceSheet: async (
+      asOnDate?: string
+    ): Promise<ApiResponse<BalanceSheetData>> => {
       const response = await api.get("/bookkeeping/balance-sheet", {
         params: { asOnDate },
       });
@@ -2325,21 +2331,25 @@ export const apiClient = {
       return response.data;
     },
 
-    createBudget: async (data: BudgetInput): Promise<ApiResponse<{
-      id: string;
-      name: string;
-      description?: string | null;
-      periodStart: string;
-      periodEnd: string;
-      budgetType: "LEDGER" | "GROUP" | "COST_CENTRE";
-      ledgerId?: string | null;
-      ledgerGroupId?: string | null;
-      costCentreId?: string | null;
-      amount: number;
-      currency: string;
-      createdAt: string;
-      updatedAt: string;
-    }>> => {
+    createBudget: async (
+      data: BudgetInput
+    ): Promise<
+      ApiResponse<{
+        id: string;
+        name: string;
+        description?: string | null;
+        periodStart: string;
+        periodEnd: string;
+        budgetType: "LEDGER" | "GROUP" | "COST_CENTRE";
+        ledgerId?: string | null;
+        ledgerGroupId?: string | null;
+        costCentreId?: string | null;
+        amount: number;
+        currency: string;
+        createdAt: string;
+        updatedAt: string;
+      }>
+    > => {
       const response = await api.post("/bookkeeping/budgets", data);
       return response.data;
     },
@@ -2789,35 +2799,43 @@ export const apiClient = {
   // ============================================================================
 
   import: {
-    tally: async (importData: TallyImportPayload): Promise<ApiResponse<{
-      success: boolean;
-      message: string;
-      summary: {
-        totalLedgers: number;
-        totalParties: number;
-        totalTransactions: number;
-        totalDebit: number;
-        totalCredit: number;
-      };
-      errors: string[];
-      warnings: string[];
-    }>> => {
+    tally: async (
+      importData: TallyImportPayload
+    ): Promise<
+      ApiResponse<{
+        success: boolean;
+        message: string;
+        summary: {
+          totalLedgers: number;
+          totalParties: number;
+          totalTransactions: number;
+          totalDebit: number;
+          totalCredit: number;
+        };
+        errors: string[];
+        warnings: string[];
+      }>
+    > => {
       const response = await api.post("/import/tally", importData);
       return response.data;
     },
 
-    tallyEnhanced: async (importData: Record<string, unknown>): Promise<ApiResponse<{
-      success: boolean;
-      message: string;
-      stats: {
-        ledgersCreated: number;
-        partiesCreated: number;
-        vouchersCreated: number;
-        transactionsCreated: number;
-      };
-      errors: string[];
-      warnings: string[];
-    }>> => {
+    tallyEnhanced: async (
+      importData: Record<string, unknown>
+    ): Promise<
+      ApiResponse<{
+        success: boolean;
+        message: string;
+        stats: {
+          ledgersCreated: number;
+          partiesCreated: number;
+          vouchersCreated: number;
+          transactionsCreated: number;
+        };
+        errors: string[];
+        warnings: string[];
+      }>
+    > => {
       const response = await api.post("/import/tally-enhanced", importData);
       return response.data;
     },

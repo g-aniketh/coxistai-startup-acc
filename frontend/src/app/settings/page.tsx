@@ -30,6 +30,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   User,
   Shield,
   Trash2,
@@ -1328,9 +1335,13 @@ export default function SettingsPage() {
           <PlaidLink
             onSuccess={handlePlaidSuccess}
             onError={(e: Error | unknown) => {
-              const errorMessage = (e && typeof e === 'object' && 'display_message' in e && typeof e.display_message === 'string') 
-                ? e.display_message 
-                : "An error occurred.";
+              const errorMessage =
+                e &&
+                typeof e === "object" &&
+                "display_message" in e &&
+                typeof e.display_message === "string"
+                  ? e.display_message
+                  : "An error occurred.";
               toast.error(errorMessage);
             }}
           />
@@ -2432,23 +2443,26 @@ export default function SettingsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="voucherTypeCategory">Category *</Label>
-                    <select
-                      id="voucherTypeCategory"
+                    <Select
                       value={newVoucherType.category}
-                      onChange={(event) =>
+                      onValueChange={(value) =>
                         handleNewVoucherTypeChange(
                           "category",
-                          event.target.value as VoucherCategory
+                          value as VoucherCategory
                         )
                       }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
                     >
-                      {voucherCategoryOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full bg-white border-gray-200 text-[#2C2C2C]">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {voucherCategoryOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="voucherTypeAbbreviation">
@@ -2470,45 +2484,51 @@ export default function SettingsPage() {
                     <Label htmlFor="voucherTypeNumberingMethod">
                       Numbering Method
                     </Label>
-                    <select
-                      id="voucherTypeNumberingMethod"
+                    <Select
                       value={newVoucherType.numberingMethod}
-                      onChange={(event) =>
+                      onValueChange={(value) =>
                         handleNewVoucherTypeChange(
                           "numberingMethod",
-                          event.target.value as VoucherNumberingMethod
+                          value as VoucherNumberingMethod
                         )
                       }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
                     >
-                      {numberingMethodOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full bg-white border-gray-200 text-[#2C2C2C]">
+                        <SelectValue placeholder="Select numbering method" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {numberingMethodOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="voucherTypeNumberingBehavior">
                       Numbering Behaviour
                     </Label>
-                    <select
-                      id="voucherTypeNumberingBehavior"
+                    <Select
                       value={newVoucherType.numberingBehavior}
-                      onChange={(event) =>
+                      onValueChange={(value) =>
                         handleNewVoucherTypeChange(
                           "numberingBehavior",
-                          event.target.value as VoucherNumberingBehavior
+                          value as VoucherNumberingBehavior
                         )
                       }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
                     >
-                      {numberingBehaviorOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full bg-white border-gray-200 text-[#2C2C2C]">
+                        <SelectValue placeholder="Select numbering behavior" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {numberingBehaviorOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="voucherTypePrefix">Prefix</Label>

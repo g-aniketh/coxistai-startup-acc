@@ -165,18 +165,20 @@ export async function exportGstDataToExcel(startupId: string) {
   const workbook = XLSX.utils.book_new();
 
   // GST Registrations sheet
-  const registrationsData = registrations.map((r: Prisma.GstRegistrationGetPayload<{}>) => ({
-    GSTIN: r.gstin,
-    "Legal Name": r.legalName || "",
-    "Trade Name": r.tradeName || "",
-    "Registration Type": r.registrationType,
-    "State Code": r.stateCode,
-    "State Name": r.stateName || "",
-    "Start Date": r.startDate.toISOString().split("T")[0],
-    "End Date": r.endDate?.toISOString().split("T")[0] || "",
-    "Is Default": r.isDefault ? "Yes" : "No",
-    "Is Active": r.isActive ? "Yes" : "No",
-  }));
+  const registrationsData = registrations.map(
+    (r: Prisma.GstRegistrationGetPayload<{}>) => ({
+      GSTIN: r.gstin,
+      "Legal Name": r.legalName || "",
+      "Trade Name": r.tradeName || "",
+      "Registration Type": r.registrationType,
+      "State Code": r.stateCode,
+      "State Name": r.stateName || "",
+      "Start Date": r.startDate.toISOString().split("T")[0],
+      "End Date": r.endDate?.toISOString().split("T")[0] || "",
+      "Is Default": r.isDefault ? "Yes" : "No",
+      "Is Active": r.isActive ? "Yes" : "No",
+    })
+  );
 
   const registrationsSheet = XLSX.utils.json_to_sheet(registrationsData);
   XLSX.utils.book_append_sheet(
@@ -207,13 +209,15 @@ export async function exportGstDataToExcel(startupId: string) {
   }>;
 
   // Ledger Mappings sheet
-  const mappingsData = ledgerMappings.map((lm: LedgerMappingWithRegistration) => ({
-    "Mapping Type": lm.mappingType,
-    "Ledger Name": lm.ledgerName,
-    "Ledger Code": lm.ledgerCode || "",
-    Description: lm.description || "",
-    GSTIN: lm.registration?.gstin || "",
-  }));
+  const mappingsData = ledgerMappings.map(
+    (lm: LedgerMappingWithRegistration) => ({
+      "Mapping Type": lm.mappingType,
+      "Ledger Name": lm.ledgerName,
+      "Ledger Code": lm.ledgerCode || "",
+      Description: lm.description || "",
+      GSTIN: lm.registration?.gstin || "",
+    })
+  );
 
   const mappingsSheet = XLSX.utils.json_to_sheet(mappingsData);
   XLSX.utils.book_append_sheet(workbook, mappingsSheet, "Ledger Mappings");

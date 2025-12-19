@@ -761,7 +761,8 @@ export default function AlertsPage() {
                                   </h4>
                                   <Badge
                                     className={
-                                      anomaly.severity === "medium" || anomaly.severity === "high"
+                                      anomaly.severity === "medium" ||
+                                      anomaly.severity === "high"
                                         ? "bg-yellow-100"
                                         : "bg-blue-100"
                                     }
@@ -855,14 +856,18 @@ export default function AlertsPage() {
                                   <DollarSign className="h-4 w-4 text-gray-500" />
                                   <span className="text-gray-600">
                                     Current:{" "}
-                                    {alert.currentValue !== undefined ? formatCurrency(alert.currentValue) : "N/A"}
+                                    {alert.currentValue !== undefined
+                                      ? formatCurrency(alert.currentValue)
+                                      : "N/A"}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <TrendingUp className="h-4 w-4 text-gray-500" />
                                   <span className="text-gray-600">
                                     Threshold:{" "}
-                                    {alert.thresholdValue !== undefined ? formatCurrency(alert.thresholdValue) : "N/A"}
+                                    {alert.thresholdValue !== undefined
+                                      ? formatCurrency(alert.thresholdValue)
+                                      : "N/A"}
                                   </span>
                                 </div>
                               </div>

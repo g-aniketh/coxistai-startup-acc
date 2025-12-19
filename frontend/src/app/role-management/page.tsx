@@ -132,7 +132,8 @@ export default function RoleManagementPage() {
       }
     } catch (error) {
       console.error("Failed to delete role:", error);
-      const message = error instanceof Error ? error.message : "Failed to delete role";
+      const message =
+        error instanceof Error ? error.message : "Failed to delete role";
       toast.error(message);
     }
   };
@@ -173,7 +174,8 @@ export default function RoleManagementPage() {
       }
     } catch (error) {
       console.error("Failed to delete permission:", error);
-      const message = error instanceof Error ? error.message : "Failed to delete permission";
+      const message =
+        error instanceof Error ? error.message : "Failed to delete permission";
       toast.error(message);
     }
   };
@@ -351,10 +353,10 @@ export default function RoleManagementPage() {
                     </DialogTrigger>
                     <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                       <DialogHeader>
-                        <DialogTitle className="text-[#1f1f1f]">
+                        <DialogTitle className="text-[#2C2C2C]">
                           {selectedRole ? "Edit Role" : "Create New Role"}
                         </DialogTitle>
-                        <DialogDescription className="text-[#1f1f1f]/70">
+                        <DialogDescription className="text-[#2C2C2C]/70">
                           {selectedRole
                             ? "Update role details and permissions"
                             : "Create a new role and assign permissions"}
@@ -571,10 +573,10 @@ export default function RoleManagementPage() {
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle className="text-[#1f1f1f]">
+                        <DialogTitle className="text-[#2C2C2C]">
                           Create New Permission
                         </DialogTitle>
-                        <DialogDescription className="text-[#1f1f1f]/70">
+                        <DialogDescription className="text-[#2C2C2C]/70">
                           Create a new permission that can be assigned to roles
                         </DialogDescription>
                       </DialogHeader>
@@ -823,8 +825,10 @@ export default function RoleManagementPage() {
           >
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Assign Roles to User</DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="text-[#2C2C2C]">
+                  Assign Roles to User
+                </DialogTitle>
+                <DialogDescription className="text-[#2C2C2C]/70">
                   Select roles to assign to {selectedUser?.email}
                 </DialogDescription>
               </DialogHeader>

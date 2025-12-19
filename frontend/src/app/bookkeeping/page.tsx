@@ -2296,8 +2296,8 @@ function BudgetingTab() {
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Budget</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-[#2C2C2C]">Create Budget</DialogTitle>
+            <DialogDescription className="text-[#2C2C2C]/70">
               Define a budget for ledger, group, or cost centre
             </DialogDescription>
           </DialogHeader>
@@ -2348,9 +2348,12 @@ function BudgetingTab() {
               <select
                 value={form.budgetType}
                 onChange={(e) =>
-                  setForm({ 
-                    ...form, 
-                    budgetType: e.target.value as "LEDGER" | "GROUP" | "COST_CENTRE" 
+                  setForm({
+                    ...form,
+                    budgetType: e.target.value as
+                      | "LEDGER"
+                      | "GROUP"
+                      | "COST_CENTRE",
                   })
                 }
                 className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"

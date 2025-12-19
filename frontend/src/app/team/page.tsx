@@ -92,9 +92,11 @@ export default function TeamPage() {
         toast.error(response.message || "Failed to create account");
       }
     } catch (error) {
-      const message = error instanceof Error 
-        ? error.message 
-        : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to create account";
+      const message =
+        error instanceof Error
+          ? error.message
+          : (error as { response?: { data?: { message?: string } } })?.response
+              ?.data?.message || "Failed to create account";
       toast.error(message);
     } finally {
       setInviting(false);
@@ -115,9 +117,11 @@ export default function TeamPage() {
         toast.error(response.message || "Failed to deactivate user");
       }
     } catch (error) {
-      const message = error instanceof Error 
-        ? error.message 
-        : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to deactivate user";
+      const message =
+        error instanceof Error
+          ? error.message
+          : (error as { response?: { data?: { message?: string } } })?.response
+              ?.data?.message || "Failed to deactivate user";
       toast.error(message);
     }
   };
@@ -270,8 +274,10 @@ export default function TeamPage() {
           <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
             <DialogContent className="max-w-lg">
               <DialogHeader>
-                <DialogTitle>Create Team Account</DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="text-[#2C2C2C]">
+                  Create Team Account
+                </DialogTitle>
+                <DialogDescription className="text-[#2C2C2C]/70">
                   Add a teammate and hand them the credentials you generate
                   here.
                 </DialogDescription>
@@ -375,8 +381,10 @@ export default function TeamPage() {
           >
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>Share these credentials</DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="text-[#2C2C2C]">
+                  Share these credentials
+                </DialogTitle>
+                <DialogDescription className="text-[#2C2C2C]/70">
                   Provide the details below to your teammate so they can log in
                   and change their password.
                 </DialogDescription>

@@ -1,4 +1,9 @@
-import { Prisma, LedgerCategory, LedgerBalanceType, VoucherCategory } from "@prisma/client";
+import {
+  Prisma,
+  LedgerCategory,
+  LedgerBalanceType,
+  VoucherCategory,
+} from "@prisma/client";
 import { prisma } from "../lib/prisma";
 
 interface LedgerBalance {

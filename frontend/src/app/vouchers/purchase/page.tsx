@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { apiClient, Ledger, ItemMaster, WarehouseMaster } from "@/lib/api";
 import { format } from "date-fns";
 import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react";
@@ -268,7 +275,9 @@ export default function PurchaseVoucherPage() {
 
           <Card className="rounded-2xl shadow-lg border-0 bg-white">
             <CardHeader>
-              <CardTitle className="text-lg text-[#2C2C2C]">Purchase Invoice Details</CardTitle>
+              <CardTitle className="text-lg text-[#2C2C2C]">
+                Purchase Invoice Details
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -290,25 +299,30 @@ export default function PurchaseVoucherPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="supplierLedgerId" className="text-[#2C2C2C]">
+                    <Label
+                      htmlFor="supplierLedgerId"
+                      className="text-[#2C2C2C]"
+                    >
                       Supplier *
                     </Label>
-                    <select
-                      id="supplierLedgerId"
+                    <Select
                       value={form.supplierLedgerId}
-                      onChange={(e) =>
-                        setForm({ ...form, supplierLedgerId: e.target.value })
+                      onValueChange={(value) =>
+                        setForm({ ...form, supplierLedgerId: value })
                       }
-                      className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-[#2C2C2C] focus:outline-none focus:ring-2 focus:ring-[#607c47] focus:border-transparent"
                       required
                     >
-                      <option value="">Select supplier</option>
-                      {supplierLedgers.map((ledger) => (
-                        <option key={ledger.id} value={ledger.id}>
-                          {ledger.name}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select supplier" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {supplierLedgers.map((ledger) => (
+                          <SelectItem key={ledger.id} value={ledger.id}>
+                            {ledger.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
@@ -340,7 +354,10 @@ export default function PurchaseVoucherPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="placeOfSupplyState" className="text-[#2C2C2C]">
+                    <Label
+                      htmlFor="placeOfSupplyState"
+                      className="text-[#2C2C2C]"
+                    >
                       Place of Supply (State Code)
                     </Label>
                     <Input
@@ -445,47 +462,49 @@ export default function PurchaseVoucherPage() {
                               className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
                             >
                               <td className="px-4 py-3">
-                                <select
+                                <Select
                                   value={line.itemId}
-                                  onChange={(e) =>
-                                    updateLine(index, "itemId", e.target.value)
+                                  onValueChange={(value) =>
+                                    updateLine(index, "itemId", value)
                                   }
-                                  className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-[#2C2C2C] focus:outline-none focus:ring-2 focus:ring-[#607c47] focus:border-transparent"
                                   required
                                 >
-                                  <option value="">Select item</option>
-                                  {items.map((item: ItemMaster) => (
-                                    <option key={item.id} value={item.id}>
-                                      {item.itemName}
-                                    </option>
-                                  ))}
-                                </select>
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select item" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {items.map((item: ItemMaster) => (
+                                      <SelectItem key={item.id} value={item.id}>
+                                        {item.itemName}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
                               </td>
                               <td className="px-4 py-3">
-                                <select
+                                <Select
                                   value={line.warehouseId}
-                                  onChange={(e) =>
-                                    updateLine(
-                                      index,
-                                      "warehouseId",
-                                      e.target.value
-                                    )
+                                  onValueChange={(value) =>
+                                    updateLine(index, "warehouseId", value)
                                   }
-                                  className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-[#2C2C2C] focus:outline-none focus:ring-2 focus:ring-[#607c47] focus:border-transparent"
                                   required
                                 >
-                                  <option value="">Select warehouse</option>
-                                  {warehouses.map(
-                                    (warehouse: WarehouseMaster) => (
-                                      <option
-                                        key={warehouse.id}
-                                        value={warehouse.id}
-                                      >
-                                        {warehouse.name}
-                                      </option>
-                                    )
-                                  )}
-                                </select>
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select warehouse" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {warehouses.map(
+                                      (warehouse: WarehouseMaster) => (
+                                        <SelectItem
+                                          key={warehouse.id}
+                                          value={warehouse.id}
+                                        >
+                                          {warehouse.name}
+                                        </SelectItem>
+                                      )
+                                    )}
+                                  </SelectContent>
+                                </Select>
                               </td>
                               <td className="px-4 py-3">
                                 <Input
@@ -613,7 +632,11 @@ export default function PurchaseVoucherPage() {
 
                 <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
                   <Link href="/vouchers">
-                    <Button type="button" variant="outline" className="border-gray-200">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="border-gray-200"
+                    >
                       Cancel
                     </Button>
                   </Link>

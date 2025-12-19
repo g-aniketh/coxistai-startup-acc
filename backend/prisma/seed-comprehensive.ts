@@ -1164,12 +1164,8 @@ async function main() {
   // Find the correct groups (bootstrapLedgerStructure creates these)
   const cashGroup = ledgerGroups.find((g) => g.name === "Cash-in-hand");
   const bankGroup = ledgerGroups.find((g) => g.name === "Bank Accounts");
-  const customerGroup = ledgerGroups.find(
-    (g) => g.name === "Sundry Debtors"
-  );
-  const supplierGroup = ledgerGroups.find(
-    (g) => g.name === "Sundry Creditors"
-  );
+  const customerGroup = ledgerGroups.find((g) => g.name === "Sundry Debtors");
+  const supplierGroup = ledgerGroups.find((g) => g.name === "Sundry Creditors");
   const salesGroup = ledgerGroups.find((g) => g.name === "Sales Accounts");
   const purchaseGroup = ledgerGroups.find(
     (g) => g.name === "Purchase Accounts"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import AuthGuard from "@/components/auth/AuthGuard";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,10 +8,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { apiClient, ItemMaster } from "@/lib/api";
 import { toast } from "react-hot-toast";
-import { Package, Plus, Edit, Trash2, ArrowLeft } from "lucide-react";
+import {
+  Package,
+  Plus,
+  Edit,
+  Trash2,
+  ArrowLeft,
+  Search,
+  MoreVertical,
+} from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -28,11 +44,18 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 
 export default function ItemsPage() {
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<ItemMaster[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ItemMaster | null>(null);
   const [form, setForm] = useState({
@@ -46,6 +69,18 @@ export default function ItemsPage() {
     description: "",
     isActive: true,
   });
+
+  const filteredItems = useMemo(() => {
+    if (!searchQuery.trim()) return items;
+    const query = searchQuery.toLowerCase();
+    return items.filter(
+      (item) =>
+        item.itemName.toLowerCase().includes(query) ||
+        item.alias?.toLowerCase().includes(query) ||
+        item.hsnSac?.toLowerCase().includes(query) ||
+        item.unit?.toLowerCase().includes(query)
+    );
+  }, [items, searchQuery]);
 
   const loadItems = async () => {
     try {
@@ -188,20 +223,20 @@ export default function ItemsPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <AuthGuard>
-        <MainLayout>
-          <div className="p-4 md:p-8 flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#607c47] mx-auto"></div>
-              <p className="mt-4 text-[#2C2C2C]/70">Loading items...</p>
-            </div>
-          </div>
-        </MainLayout>
-      </AuthGuard>
-    );
-  }
+  const LoadingSkeleton = () => (
+    <div className="space-y-3">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div key={i} className="flex items-center gap-4">
+          <Skeleton className="h-12 flex-1" />
+          <Skeleton className="h-12 w-24" />
+          <Skeleton className="h-12 w-24" />
+          <Skeleton className="h-12 w-24" />
+          <Skeleton className="h-12 w-24" />
+          <Skeleton className="h-12 w-20" />
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <AuthGuard>
@@ -225,135 +260,185 @@ export default function ItemsPage() {
           </div>
 
           <Card className="rounded-2xl shadow-lg border-0 bg-white">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg text-[#2C2C2C]">Items</CardTitle>
+            <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex-1">
+                <CardTitle className="text-lg text-[#2C2C2C] mb-2">
+                  Items
+                </CardTitle>
+                <div className="relative max-w-sm">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#2C2C2C]/50" />
+                  <Input
+                    placeholder="Search items..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 bg-white border-gray-200 text-[#2C2C2C]"
+                  />
+                </div>
+              </div>
               <Button
                 onClick={openCreateDialog}
-                className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                className="bg-[#607c47] hover:bg-[#4a6129] text-white w-full sm:w-auto"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Item
               </Button>
             </CardHeader>
             <CardContent>
-              {items.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-gray-300 p-12 text-center">
+              {loading ? (
+                <LoadingSkeleton />
+              ) : items.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-gray-200 p-12 text-center">
                   <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-sm text-[#2C2C2C]/70">
+                  <p className="text-sm text-[#2C2C2C]/70 mb-4">
                     No items found. Create your first item to get started.
+                  </p>
+                  <Button
+                    onClick={openCreateDialog}
+                    className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Item
+                  </Button>
+                </div>
+              ) : filteredItems.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-gray-200 p-12 text-center">
+                  <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-sm text-[#2C2C2C]/70">
+                    No items match your search query.
                   </p>
                 </div>
               ) : (
                 <div className="border border-gray-200 rounded-xl overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-gray-50 border-b border-gray-200">
-                        <TableHead className="text-[#2C2C2C] font-semibold">
-                          Item Name
-                        </TableHead>
-                        <TableHead className="text-[#2C2C2C] font-semibold">
-                          HSN/SAC
-                        </TableHead>
-                        <TableHead className="text-[#2C2C2C] font-semibold">
-                          Unit
-                        </TableHead>
-                        <TableHead className="text-right text-[#2C2C2C] font-semibold">
-                          Sales Rate
-                        </TableHead>
-                        <TableHead className="text-right text-[#2C2C2C] font-semibold">
-                          Purchase Rate
-                        </TableHead>
-                        <TableHead className="text-right text-[#2C2C2C] font-semibold">
-                          GST %
-                        </TableHead>
-                        <TableHead className="text-center text-[#2C2C2C] font-semibold">
-                          Status
-                        </TableHead>
-                        <TableHead className="text-center text-[#2C2C2C] font-semibold">
-                          Actions
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {items.map((item) => (
-                        <TableRow
-                          key={item.id}
-                          className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
-                        >
-                          <TableCell className="font-medium text-[#2C2C2C]">
-                            {item.itemName}
-                            {item.alias && (
-                              <span className="text-xs text-[#2C2C2C]/60 ml-2">
-                                ({item.alias})
-                              </span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-[#2C2C2C]">
-                            {item.hsnSac || "-"}
-                          </TableCell>
-                          <TableCell className="text-[#2C2C2C]">
-                            {item.unit || "-"}
-                          </TableCell>
-                          <TableCell className="text-right text-[#2C2C2C]">
-                            {item.defaultSalesRate != null &&
-                            typeof item.defaultSalesRate === "number"
-                              ? `₹${Number(item.defaultSalesRate).toFixed(2)}`
-                              : "-"}
-                          </TableCell>
-                          <TableCell className="text-right text-[#2C2C2C]">
-                            {item.defaultPurchaseRate != null &&
-                            typeof item.defaultPurchaseRate === "number"
-                              ? `₹${Number(item.defaultPurchaseRate).toFixed(2)}`
-                              : "-"}
-                          </TableCell>
-                          <TableCell className="text-right text-[#2C2C2C]">
-                            {item.gstRatePercent
-                              ? `${item.gstRatePercent}%`
-                              : "-"}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Badge
-                              variant={item.isActive ? "default" : "secondary"}
-                              className={
-                                item.isActive
-                                  ? "bg-emerald-100 text-emerald-700"
-                                  : "bg-gray-100 text-gray-600"
-                              }
-                            >
-                              {item.isActive ? "Active" : "Inactive"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => openEditDialog(item)}
-                                className="text-[#607c47] hover:text-[#4a6129] hover:bg-[#607c47]/10"
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDelete(item)}
-                                className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-50 border-b border-gray-200">
+                          <TableHead className="text-[#2C2C2C] font-semibold">
+                            Item Name
+                          </TableHead>
+                          <TableHead className="text-[#2C2C2C] font-semibold">
+                            HSN/SAC
+                          </TableHead>
+                          <TableHead className="text-[#2C2C2C] font-semibold">
+                            Unit
+                          </TableHead>
+                          <TableHead className="text-right text-[#2C2C2C] font-semibold">
+                            Sales Rate
+                          </TableHead>
+                          <TableHead className="text-right text-[#2C2C2C] font-semibold">
+                            Purchase Rate
+                          </TableHead>
+                          <TableHead className="text-right text-[#2C2C2C] font-semibold">
+                            GST %
+                          </TableHead>
+                          <TableHead className="text-center text-[#2C2C2C] font-semibold">
+                            Status
+                          </TableHead>
+                          <TableHead className="text-center text-[#2C2C2C] font-semibold">
+                            Actions
+                          </TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredItems.map((item) => (
+                          <TableRow
+                            key={item.id}
+                            className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
+                          >
+                            <TableCell className="font-medium text-[#2C2C2C]">
+                              {item.itemName}
+                              {item.alias && (
+                                <span className="text-xs text-[#2C2C2C]/60 ml-2">
+                                  ({item.alias})
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-[#2C2C2C]">
+                              {item.hsnSac || "-"}
+                            </TableCell>
+                            <TableCell className="text-[#2C2C2C]">
+                              {item.unit || "-"}
+                            </TableCell>
+                            <TableCell className="text-right text-[#2C2C2C]">
+                              {item.defaultSalesRate != null &&
+                              typeof item.defaultSalesRate === "number"
+                                ? `₹${Number(item.defaultSalesRate).toFixed(2)}`
+                                : "-"}
+                            </TableCell>
+                            <TableCell className="text-right text-[#2C2C2C]">
+                              {item.defaultPurchaseRate != null &&
+                              typeof item.defaultPurchaseRate === "number"
+                                ? `₹${Number(item.defaultPurchaseRate).toFixed(2)}`
+                                : "-"}
+                            </TableCell>
+                            <TableCell className="text-right text-[#2C2C2C]">
+                              {item.gstRatePercent
+                                ? `${item.gstRatePercent}%`
+                                : "-"}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Badge
+                                variant={
+                                  item.isActive ? "default" : "secondary"
+                                }
+                                className={
+                                  item.isActive
+                                    ? "bg-emerald-100 text-emerald-700"
+                                    : "bg-gray-100 text-gray-600"
+                                }
+                              >
+                                {item.isActive ? "Active" : "Inactive"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                  align="end"
+                                  className="bg-white"
+                                >
+                                  <DropdownMenuItem
+                                    onClick={() => openEditDialog(item)}
+                                    className="text-[#2C2C2C] cursor-pointer"
+                                  >
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleDelete(item)}
+                                    className="text-red-600 cursor-pointer focus:text-red-600 focus:bg-red-50"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  {searchQuery && (
+                    <div className="mt-4 text-sm text-[#2C2C2C]/70 text-center">
+                      Showing {filteredItems.length} of {items.length} items
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
           </Card>
 
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogContent className="max-w-2xl bg-white">
+            <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle className="text-[#2C2C2C]">
                   {editingItem ? "Edit Item" : "Create Item"}
@@ -424,7 +509,10 @@ export default function ItemsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="defaultSalesRate" className="text-[#2C2C2C]">
+                    <Label
+                      htmlFor="defaultSalesRate"
+                      className="text-[#2C2C2C]"
+                    >
                       Default Sales Rate
                     </Label>
                     <Input
@@ -486,20 +574,23 @@ export default function ItemsPage() {
                       <Label htmlFor="isActive" className="text-[#2C2C2C]">
                         Status
                       </Label>
-                      <select
-                        id="isActive"
+                      <Select
                         value={form.isActive ? "true" : "false"}
-                        onChange={(e) =>
+                        onValueChange={(value) =>
                           setForm({
                             ...form,
-                            isActive: e.target.value === "true",
+                            isActive: value === "true",
                           })
                         }
-                        className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-[#2C2C2C]"
                       >
-                        <option value="true">Active</option>
-                        <option value="false">Inactive</option>
-                      </select>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">Active</SelectItem>
+                          <SelectItem value="false">Inactive</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   )}
                 </div>
@@ -541,4 +632,3 @@ export default function ItemsPage() {
     </AuthGuard>
   );
 }
-

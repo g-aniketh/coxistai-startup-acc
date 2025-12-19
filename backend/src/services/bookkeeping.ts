@@ -315,7 +315,9 @@ export const createLedger = async (startupId: string, input: LedgerInput) => {
       mailingAddress: input.mailingAddress
         ? (input.mailingAddress as Prisma.InputJsonValue)
         : undefined,
-      bankDetails: input.bankDetails ? (input.bankDetails as Prisma.InputJsonValue) : undefined,
+      bankDetails: input.bankDetails
+        ? (input.bankDetails as Prisma.InputJsonValue)
+        : undefined,
       costCenterApplicable: Boolean(input.costCenterApplicable),
       openingBalance:
         input.openingBalance !== undefined && input.openingBalance !== null
@@ -323,7 +325,9 @@ export const createLedger = async (startupId: string, input: LedgerInput) => {
           : undefined,
       openingBalanceType: (input.openingBalanceType ??
         "DEBIT") as LedgerBalanceType,
-      metadata: input.metadata ? (input.metadata as Prisma.InputJsonValue) : undefined,
+      metadata: input.metadata
+        ? (input.metadata as Prisma.InputJsonValue)
+        : undefined,
     },
   });
 };
@@ -375,7 +379,9 @@ export const updateLedger = async (
       mailingAddress: input.mailingAddress
         ? (input.mailingAddress as Prisma.InputJsonValue)
         : undefined,
-      bankDetails: input.bankDetails ? (input.bankDetails as Prisma.InputJsonValue) : undefined,
+      bankDetails: input.bankDetails
+        ? (input.bankDetails as Prisma.InputJsonValue)
+        : undefined,
       costCenterApplicable: input.costCenterApplicable ?? undefined,
       openingBalance:
         input.openingBalance !== undefined && input.openingBalance !== null
@@ -384,7 +390,9 @@ export const updateLedger = async (
       openingBalanceType: input.openingBalanceType
         ? (input.openingBalanceType as LedgerBalanceType)
         : undefined,
-      metadata: input.metadata ? (input.metadata as Prisma.InputJsonValue) : undefined,
+      metadata: input.metadata
+        ? (input.metadata as Prisma.InputJsonValue)
+        : undefined,
     },
   });
 };

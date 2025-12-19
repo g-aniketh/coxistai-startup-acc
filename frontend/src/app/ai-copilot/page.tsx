@@ -114,7 +114,9 @@ export default function AICopilotPage() {
 
   // Scenarios state
   const [scenario, setScenario] = useState("");
-  const [scenarioResult, setScenarioResult] = useState<ScenarioResult | null>(null);
+  const [scenarioResult, setScenarioResult] = useState<ScenarioResult | null>(
+    null
+  );
   const [scenarioLoading, setScenarioLoading] = useState(false);
 
   interface ForecastData {
@@ -940,7 +942,9 @@ export default function AICopilotPage() {
                             <Select
                               value={forecastPeriod}
                               onValueChange={(value: string) =>
-                                setForecastPeriod(value as "3months" | "6months" | "12months")
+                                setForecastPeriod(
+                                  value as "3months" | "6months" | "12months"
+                                )
                               }
                             >
                               <SelectTrigger className="w-[200px] mt-2 bg-white">
@@ -1055,7 +1059,9 @@ export default function AICopilotPage() {
                                   Projected Runway
                                 </div>
                                 <div className="text-lg font-bold text-blue-900">
-                                  {forecastData.runway?.projected.toFixed(1) ?? "N/A"} mo
+                                  {forecastData.runway?.projected.toFixed(1) ??
+                                    "N/A"}{" "}
+                                  mo
                                 </div>
                                 <div className="text-xs text-blue-600">
                                   {forecastData.runway ? (
@@ -1113,7 +1119,8 @@ export default function AICopilotPage() {
                           </CardHeader>
                           <CardContent className="pt-0">
                             <div className="space-y-3">
-                              {forecastData.insights && forecastData.insights.length > 0 ? (
+                              {forecastData.insights &&
+                              forecastData.insights.length > 0 ? (
                                 forecastData.insights.map(
                                   (insight: string, index: number) => (
                                     <div
@@ -1128,7 +1135,9 @@ export default function AICopilotPage() {
                                   )
                                 )
                               ) : (
-                                <p className="text-sm text-gray-500">No insights available</p>
+                                <p className="text-sm text-gray-500">
+                                  No insights available
+                                </p>
                               )}
                             </div>
                           </CardContent>
@@ -1143,7 +1152,8 @@ export default function AICopilotPage() {
                           </CardHeader>
                           <CardContent className="pt-0">
                             <div className="space-y-3">
-                              {forecastData.risks && forecastData.risks.length > 0 ? (
+                              {forecastData.risks &&
+                              forecastData.risks.length > 0 ? (
                                 forecastData.risks.map(
                                   (risk: string, index: number) => (
                                     <div
@@ -1158,7 +1168,9 @@ export default function AICopilotPage() {
                                   )
                                 )
                               ) : (
-                                <p className="text-sm text-gray-500">No risks identified</p>
+                                <p className="text-sm text-gray-500">
+                                  No risks identified
+                                </p>
                               )}
                             </div>
                           </CardContent>
@@ -1175,7 +1187,8 @@ export default function AICopilotPage() {
                         </CardHeader>
                         <CardContent className="pt-0">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {forecastData.recommendations && forecastData.recommendations.length > 0 ? (
+                            {forecastData.recommendations &&
+                            forecastData.recommendations.length > 0 ? (
                               forecastData.recommendations.map(
                                 (rec: string, index: number) => (
                                   <div
@@ -1194,7 +1207,9 @@ export default function AICopilotPage() {
                                 )
                               )
                             ) : (
-                              <p className="text-sm text-gray-500">No recommendations available</p>
+                              <p className="text-sm text-gray-500">
+                                No recommendations available
+                              </p>
                             )}
                           </div>
                         </CardContent>
