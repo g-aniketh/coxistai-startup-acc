@@ -4,6 +4,14 @@ import { Decimal } from "@prisma/client/runtime/library";
 import OpenAI from "openai";
 import { analyzeVoucherAnomalies, VoucherAlert } from "./voucherAI";
 
+type CashflowMetric = Prisma.CashflowMetricGetPayload<{}>;
+
+interface Recommendation {
+  action: string;
+  impact: string;
+  effort: "low" | "medium" | "high";
+}
+
 // Initialize OpenAI only if API key is provided
 let openai: OpenAI | null = null;
 if (process.env.OPENAI_API_KEY) {
@@ -99,7 +107,7 @@ export class AlertsService {
   /**
    * Check runway and generate alert if critical
    */
-  private static async checkRunway(startupId: string, metrics: any) {
+  private static async checkRunway(startupId: string, metrics: CashflowMetric) {
     const runway = metrics.runway.toNumber();
 
     if (runway <= 0) {
@@ -141,7 +149,7 @@ export class AlertsService {
         message,
         currentValue: metrics.runway,
         thresholdValue: new Decimal(6),
-        recommendations,
+        recommendations: JSON.parse(JSON.stringify(recommendations)) as Prisma.InputJsonValue,
       },
     });
   }
@@ -149,7 +157,7 @@ export class AlertsService {
   /**
    * Check burn rate changes
    */
-  private static async checkBurnRate(startupId: string, metrics: any) {
+  private static async checkBurnRate(startupId: string, metrics: CashflowMetric) {
     // Get previous month's metrics
     const previousMetrics = await prisma.cashflowMetric.findFirst({
       where: {
@@ -190,7 +198,7 @@ export class AlertsService {
           )}% to $${currentBurn.toLocaleString()}/month.`,
           currentValue: new Decimal(currentBurn),
           thresholdValue: new Decimal(previousBurn),
-          recommendations,
+          recommendations: JSON.parse(JSON.stringify(recommendations)) as Prisma.InputJsonValue,
         },
       });
     } else if (burnChange < -15) {
@@ -215,7 +223,7 @@ export class AlertsService {
   /**
    * Check if cash balance is critically low
    */
-  private static async checkCashLow(startupId: string, metrics: any) {
+  private static async checkCashLow(startupId: string, metrics: CashflowMetric) {
     const cashBalance = metrics.cashBalance.toNumber();
     const burnRate = metrics.burnRate.toNumber();
 
@@ -239,7 +247,7 @@ export class AlertsService {
           )} months remaining at current burn.`,
           currentValue: new Decimal(cashBalance),
           thresholdValue: new Decimal(burnRate * 3),
-          recommendations,
+          recommendations: JSON.parse(JSON.stringify(recommendations)) as Prisma.InputJsonValue,
         },
       });
     }
@@ -248,7 +256,7 @@ export class AlertsService {
   /**
    * Check customer churn
    */
-  private static async checkChurn(startupId: string, metrics: any) {
+  private static async checkChurn(startupId: string, metrics: CashflowMetric) {
     if (metrics.activeCustomers === 0) {
       return;
     }
@@ -273,7 +281,7 @@ export class AlertsService {
           } customers this period.`,
           currentValue: new Decimal(churnRate),
           thresholdValue: new Decimal(5),
-          recommendations,
+          recommendations: JSON.parse(JSON.stringify(recommendations)) as Prisma.InputJsonValue,
         },
       });
     }
@@ -282,7 +290,7 @@ export class AlertsService {
   /**
    * Check for financial anomalies
    */
-  private static async checkAnomalies(startupId: string, metrics: any) {
+  private static async checkAnomalies(startupId: string, metrics: CashflowMetric) {
     const history = await prisma.cashflowMetric.findMany({
       where: { startupId },
       orderBy: { periodStart: "asc" },
@@ -296,12 +304,12 @@ export class AlertsService {
     // Calculate average revenue and expenses
     const avgRevenue =
       history.reduce(
-        (sum: number, m: any) => sum + m.totalRevenue.toNumber(),
+        (sum: number, m: CashflowMetric) => sum + m.totalRevenue.toNumber(),
         0
       ) / history.length;
     const avgExpenses =
       history.reduce(
-        (sum: number, m: any) => sum + m.totalExpenses.toNumber(),
+        (sum: number, m: CashflowMetric) => sum + m.totalExpenses.toNumber(),
         0
       ) / history.length;
 
@@ -353,7 +361,7 @@ export class AlertsService {
   /**
    * Get AI recommendations for runway issues
    */
-  private static async getRunwayRecommendations(metrics: any): Promise<any[]> {
+  private static async getRunwayRecommendations(metrics: CashflowMetric): Promise<Recommendation[]> {
     if (!openai) {
       console.warn(
         "OpenAI service not available. Returning default recommendations."
@@ -440,9 +448,9 @@ Respond in JSON format:
    * Get AI recommendations for burn rate issues
    */
   private static async getBurnRateRecommendations(
-    metrics: any,
+    metrics: CashflowMetric,
     burnChange: number
-  ): Promise<any[]> {
+  ): Promise<Recommendation[]> {
     if (!openai) {
       console.warn(
         "OpenAI service not available. Returning default recommendations."
@@ -511,7 +519,7 @@ Respond in JSON format:
   /**
    * Get AI recommendations for low cash
    */
-  private static async getCashLowRecommendations(metrics: any): Promise<any[]> {
+  private static async getCashLowRecommendations(metrics: CashflowMetric): Promise<Recommendation[]> {
     return [
       {
         action: "Immediately freeze all non-essential spending",
@@ -534,7 +542,7 @@ Respond in JSON format:
   /**
    * Get AI recommendations for churn
    */
-  private static async getChurnRecommendations(metrics: any): Promise<any[]> {
+  private static async getChurnRecommendations(metrics: CashflowMetric): Promise<Recommendation[]> {
     return [
       {
         action: "Conduct exit interviews with churned customers",
@@ -558,7 +566,7 @@ Respond in JSON format:
    * Get all alerts for a tenant
    */
   static async getAlerts(startupId: string, includeRead: boolean = false) {
-    const where: any = { startupId, isDismissed: false };
+    const where: Prisma.AlertWhereInput = { startupId, isDismissed: false };
 
     if (!includeRead) {
       where.isRead = false;
@@ -604,9 +612,9 @@ Respond in JSON format:
 
     return {
       total: alerts.length,
-      critical: alerts.filter((a: any) => a.severity === "critical").length,
-      warning: alerts.filter((a: any) => a.severity === "warning").length,
-      info: alerts.filter((a: any) => a.severity === "info").length,
+      critical: alerts.filter((a) => a.severity === "critical").length,
+      warning: alerts.filter((a) => a.severity === "warning").length,
+      info: alerts.filter((a) => a.severity === "info").length,
     };
   }
 }

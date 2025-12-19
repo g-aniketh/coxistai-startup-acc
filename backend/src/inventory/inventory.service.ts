@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -157,49 +157,51 @@ export const simulateSale = async (
   const totalPrice = Number(product.price) * Number(quantitySold);
 
   // Use a transaction to ensure atomicity
-  const result = await prisma.$transaction(async (tx: any) => {
-    // Create transaction (CREDIT for income)
-    const transaction = await tx.transaction.create({
-      data: {
-        amount: Number(totalPrice),
-        type: "CREDIT",
-        description: `Sale of ${quantitySold}x ${product.name}`,
-        startupId,
-        accountId,
-        date: new Date(),
-      },
-    });
+  const result = await prisma.$transaction(
+    async (tx: Prisma.TransactionClient) => {
+      // Create transaction (CREDIT for income)
+      const transaction = await tx.transaction.create({
+        data: {
+          amount: Number(totalPrice),
+          type: "CREDIT",
+          description: `Sale of ${quantitySold}x ${product.name}`,
+          startupId,
+          accountId,
+          date: new Date(),
+        },
+      });
 
-    // Create sale record
-    const sale = await tx.sale.create({
-      data: {
-        quantitySold: Number(quantitySold),
-        totalPrice: Number(totalPrice),
-        startupId,
-        productId,
-        transactionId: transaction.id,
-        saleDate: new Date(),
-      },
-    });
+      // Create sale record
+      const sale = await tx.sale.create({
+        data: {
+          quantitySold: Number(quantitySold),
+          totalPrice: Number(totalPrice),
+          startupId,
+          productId,
+          transactionId: transaction.id,
+          saleDate: new Date(),
+        },
+      });
 
-    // Update product quantity
-    const updatedProduct = await tx.product.update({
-      where: { id: productId },
-      data: {
-        quantity: Number(product.quantity) - Number(quantitySold),
-      },
-    });
+      // Update product quantity
+      const updatedProduct = await tx.product.update({
+        where: { id: productId },
+        data: {
+          quantity: Number(product.quantity) - Number(quantitySold),
+        },
+      });
 
-    // Update account balance atomically (sales are CREDIT/income)
-    await tx.mockBankAccount.update({
-      where: { id: accountId },
-      data: {
-        balance: { increment: Number(totalPrice) },
-      },
-    });
+      // Update account balance atomically (sales are CREDIT/income)
+      await tx.mockBankAccount.update({
+        where: { id: accountId },
+        data: {
+          balance: { increment: Number(totalPrice) },
+        },
+      });
 
-    return { sale, transaction, product: updatedProduct };
-  });
+      return { sale, transaction, product: updatedProduct };
+    }
+  );
 
   return result;
 };

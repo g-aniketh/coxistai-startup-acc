@@ -32,6 +32,8 @@ import roleManagementRoutes from "./routes/roleManagement";
 import voucherAIRoutes from "./routes/voucherAI";
 import partyRoutes from "./routes/party";
 import bookkeepingRoutes from "./routes/bookkeeping";
+import itemsRoutes from "./routes/items";
+import warehousesRoutes from "./routes/warehouses";
 import { TransactionSyncService } from "./services/transactionSync";
 import { startJobs } from "./jobs";
 
@@ -449,6 +451,8 @@ v1Router.use("/admin", roleManagementRoutes);
 v1Router.use("/voucher-ai", authenticateToken, voucherAIRoutes);
 v1Router.use("/parties", authenticateToken, partyRoutes);
 v1Router.use("/bookkeeping", authenticateToken, bookkeepingRoutes);
+v1Router.use("/items", authenticateToken, itemsRoutes);
+v1Router.use("/warehouses", authenticateToken, warehousesRoutes);
 
 // Mount v1 routes
 app.use("/api/v1", v1Router);

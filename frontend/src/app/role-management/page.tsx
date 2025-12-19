@@ -76,9 +76,10 @@ export default function RoleManagementPage() {
         apiClient.userRoles.list(),
       ]);
 
-      if (rolesRes.success) setRoles(rolesRes.data);
-      if (permissionsRes.success) setPermissions(permissionsRes.data);
-      if (usersRes.success) setUsers(usersRes.data);
+      if (rolesRes.success && rolesRes.data) setRoles(rolesRes.data);
+      if (permissionsRes.success && permissionsRes.data)
+        setPermissions(permissionsRes.data);
+      if (usersRes.success && usersRes.data) setUsers(usersRes.data);
     } catch (error) {
       console.error("Failed to load data:", error);
       toast.error("Failed to load role management data");
@@ -129,9 +130,10 @@ export default function RoleManagementPage() {
         toast.success("Role deleted successfully");
         loadData();
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to delete role:", error);
-      toast.error(error.response?.data?.message || "Failed to delete role");
+      const message = error instanceof Error ? error.message : "Failed to delete role";
+      toast.error(message);
     }
   };
 
@@ -169,11 +171,10 @@ export default function RoleManagementPage() {
         toast.success("Permission deleted successfully");
         loadData();
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to delete permission:", error);
-      toast.error(
-        error.response?.data?.message || "Failed to delete permission"
-      );
+      const message = error instanceof Error ? error.message : "Failed to delete permission";
+      toast.error(message);
     }
   };
 

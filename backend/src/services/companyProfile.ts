@@ -89,7 +89,7 @@ export const upsertCompanyProfile = async (
     .map((address) => address.id)
     .filter((id): id is string => Boolean(id));
 
-  return prisma.$transaction(async (tx: any) => {
+  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const existingProfile = await tx.companyProfile.findUnique({
       where: { startupId },
       include: { addresses: true },
@@ -158,7 +158,7 @@ export const upsertCompanyProfile = async (
     for (const [index, address] of sanitizedAddresses.entries()) {
       const { id, ...addressData } = address;
 
-      const createData: any = {
+      const createData: Prisma.CompanyAddressUncheckedCreateInput = {
         profileId: existingProfile.id,
         label: addressData.label ?? null,
         line1: addressData.line1,

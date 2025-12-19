@@ -32,7 +32,18 @@ router.get("/", async (req: AuthRequest, res: Response) => {
       offset,
     } = req.query;
 
-    const filters: any = {};
+    interface AuditLogFilters {
+      entityType?: AuditEntityType;
+      entityId?: string;
+      action?: AuditAction;
+      userId?: string;
+      fromDate?: string;
+      toDate?: string;
+      limit?: number;
+      offset?: number;
+    }
+
+    const filters: AuditLogFilters = {};
     if (
       entityType &&
       typeof entityType === "string" &&

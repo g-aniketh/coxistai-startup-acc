@@ -14,6 +14,8 @@ import {
   AuditLogSummary,
   AuditAction,
   AuditEntityType,
+  ExceptionReport,
+  ExceptionReportItem,
 } from "@/lib/api";
 import { toast } from "react-hot-toast";
 import { FileText, Filter, User, AlertTriangle } from "lucide-react";
@@ -55,7 +57,7 @@ export default function AuditLogPage() {
   const [total, setTotal] = useState(0);
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [showDetails, setShowDetails] = useState(false);
-  const [exceptionReports, setExceptionReports] = useState<any>(null);
+  const [exceptionReports, setExceptionReports] = useState<ExceptionReport | null>(null);
   const [exceptionLoading, setExceptionLoading] = useState(false);
   const [exceptionAsOnDate, setExceptionAsOnDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -106,7 +108,7 @@ export default function AuditLogPage() {
         asOnDate: exceptionAsOnDate || undefined,
       });
       if (response.success) {
-        setExceptionReports(response.data);
+        setExceptionReports(response.data ?? null);
       }
     } catch (error) {
       console.error("Failed to load exception reports:", error);
@@ -654,7 +656,7 @@ export default function AuditLogPage() {
                 </DialogContent>
               </Dialog>
 
-              {activeTab === "exceptions" && (
+              {(activeTab as AuditTabType) === "exceptions" && (
                 <div className="space-y-6">
                   <Card className="rounded-2xl border border-gray-100 shadow-sm bg-white">
                     <CardHeader>
@@ -741,7 +743,7 @@ export default function AuditLogPage() {
                                 </TableHeader>
                                 <TableBody>
                                   {exceptionReports.exceptions.map(
-                                    (exception: any, idx: number) => (
+                                    (exception: ExceptionReportItem, idx) => (
                                       <TableRow key={idx}>
                                         <TableCell>
                                           <Badge

@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { authenticateToken } from "../middleware/auth";
+import { prisma } from "../lib/prisma";
 import {
   listVoucherTypes,
   createVoucherType,
@@ -11,6 +12,8 @@ import {
   createVoucher,
   listVouchers,
   createReversingJournal,
+  postVoucherById,
+  cancelVoucherById,
 } from "../services/vouchers";
 import {
   VoucherCategory,
@@ -92,6 +95,15 @@ router.post("/", async (req: Request, res: Response) => {
       reference,
       narration,
       entries,
+      inventoryLines,
+      partyLedgerId,
+      paymentMode,
+      placeOfSupplyState,
+      originalInvoiceId,
+      billingName,
+      billingAddress,
+      customerGstin,
+      autoPost,
       createdById,
     } = req.body;
 
@@ -101,32 +113,98 @@ router.post("/", async (req: Request, res: Response) => {
         .json({ success: false, message: "Voucher type is required" });
     }
 
-    if (!Array.isArray(entries) || entries.length < 2) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Voucher entries are required" });
+    // Validate that either entries or inventoryLines are provided
+    if (
+      (!entries || !Array.isArray(entries) || entries.length === 0) &&
+      (!inventoryLines ||
+        !Array.isArray(inventoryLines) ||
+        inventoryLines.length === 0)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Voucher must have either entries or inventory lines",
+      });
     }
 
-    const normalizedEntries = entries.map((entry: any) => ({
-      ledgerName: entry.ledgerName,
-      ledgerCode: entry.ledgerCode,
-      entryType: entry.entryType as VoucherEntryType,
-      amount: Number(entry.amount),
-      narration: entry.narration,
-      costCenterName: entry.costCenterName,
-      costCategory: entry.costCategory,
-      billReferences: Array.isArray(entry.billReferences)
-        ? entry.billReferences.map((bill: any) => ({
-            reference: bill.reference,
-            amount: Number(bill.amount),
-            referenceType: bill.referenceType as
-              | VoucherBillReferenceType
-              | undefined,
-            dueDate: bill.dueDate,
-            remarks: bill.remarks,
-          }))
-        : undefined,
-    }));
+    // For journal vouchers, entries are required
+    if (entries && Array.isArray(entries) && entries.length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: "Journal vouchers require at least two entries",
+      });
+    }
+
+    interface EntryInput {
+      ledgerName: string;
+      ledgerCode?: string;
+      entryType: string;
+      amount: number;
+      narration?: string;
+      costCenterName?: string;
+      costCategory?: string;
+      billReferences?: Array<{
+        reference: string;
+        amount: number;
+        referenceType?: string;
+        dueDate?: string;
+        remarks?: string;
+      }>;
+    }
+
+    const normalizedEntries = entries
+      ? entries.map(
+          (entry: EntryInput) => ({
+            ledgerName: entry.ledgerName,
+            ledgerCode: entry.ledgerCode,
+            entryType: entry.entryType as VoucherEntryType,
+            amount: Number(entry.amount),
+            narration: entry.narration,
+            costCenterName: entry.costCenterName,
+            costCategory: entry.costCategory,
+            billReferences: Array.isArray(entry.billReferences)
+              ? entry.billReferences.map((bill) => ({
+                  reference: bill.reference,
+                  amount: Number(bill.amount),
+                  referenceType: bill.referenceType as
+                    | VoucherBillReferenceType
+                    | undefined,
+                  dueDate: bill.dueDate,
+                  remarks: bill.remarks,
+                }))
+              : undefined,
+          })
+        )
+      : undefined;
+
+    interface InventoryLineInput {
+      itemId: string;
+      warehouseId: string;
+      quantity: number;
+      rate: number;
+      discountAmount?: number;
+      gstRatePercent?: number;
+      batchNumber?: string;
+      narration?: string;
+    }
+
+    const normalizedInventoryLines = inventoryLines
+      ? inventoryLines.map(
+          (line: InventoryLineInput) => ({
+            itemId: line.itemId,
+            warehouseId: line.warehouseId,
+            quantity: Number(line.quantity),
+            rate: Number(line.rate),
+            discountAmount: line.discountAmount
+              ? Number(line.discountAmount)
+              : undefined,
+            gstRatePercent: line.gstRatePercent
+              ? Number(line.gstRatePercent)
+              : undefined,
+            batchNumber: line.batchNumber,
+            narration: line.narration,
+          })
+        )
+      : undefined;
 
     const voucher = await createVoucher(startupId, {
       voucherTypeId,
@@ -135,6 +213,15 @@ router.post("/", async (req: Request, res: Response) => {
       reference,
       narration,
       entries: normalizedEntries,
+      inventoryLines: normalizedInventoryLines,
+      partyLedgerId,
+      paymentMode,
+      placeOfSupplyState,
+      originalInvoiceId,
+      billingName,
+      billingAddress,
+      customerGstin,
+      autoPost: Boolean(autoPost),
       createdById: createdById ?? req.user?.userId,
     });
 
@@ -198,13 +285,11 @@ router.post("/types", async (req: Request, res: Response) => {
       allowDuplicateNumbers,
     });
 
-    return res
-      .status(201)
-      .json({
-        success: true,
-        data: voucherType,
-        message: "Voucher type created",
-      });
+    return res.status(201).json({
+      success: true,
+      data: voucherType,
+      message: "Voucher type created",
+    });
   } catch (error) {
     console.error("Create voucher type error:", error);
     return res.status(400).json({
@@ -277,13 +362,11 @@ router.post(
         voucherTypeId,
         req.body
       );
-      return res
-        .status(201)
-        .json({
-          success: true,
-          data: series,
-          message: "Numbering series created",
-        });
+      return res.status(201).json({
+        success: true,
+        data: series,
+        message: "Numbering series created",
+      });
     } catch (error) {
       console.error("Create numbering series error:", error);
       return res.status(400).json({
@@ -325,6 +408,120 @@ router.post(
           error instanceof Error
             ? error.message
             : "Failed to generate voucher number",
+      });
+    }
+  }
+);
+
+// Post a draft voucher
+router.post("/:voucherId/post", async (req: Request, res: Response) => {
+  try {
+    const startupId = req.user?.startupId;
+    if (!startupId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
+    }
+
+    const { voucherId } = req.params;
+
+    const result = await postVoucherById(
+      startupId,
+      voucherId,
+      req.user?.userId
+    );
+
+    return res.json({
+      success: true,
+      data: result,
+      message: "Voucher posted successfully",
+    });
+  } catch (error) {
+    console.error("Post voucher error:", error);
+    return res.status(400).json({
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Failed to post voucher",
+    });
+  }
+});
+
+// Cancel a posted voucher
+router.post("/:voucherId/cancel", async (req: Request, res: Response) => {
+  try {
+    const startupId = req.user?.startupId;
+    if (!startupId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Startup context is required" });
+    }
+
+    const { voucherId } = req.params;
+
+    await cancelVoucherById(startupId, voucherId, req.user?.userId);
+
+    return res.json({
+      success: true,
+      message: "Voucher cancelled successfully",
+    });
+  } catch (error) {
+    console.error("Cancel voucher error:", error);
+    return res.status(400).json({
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Failed to cancel voucher",
+    });
+  }
+});
+
+// Get inventory lines for a voucher
+router.get(
+  "/:voucherId/inventory-lines",
+  async (req: Request, res: Response) => {
+    try {
+      const startupId = req.user?.startupId;
+      if (!startupId) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Startup context is required" });
+      }
+
+      const { voucherId } = req.params;
+
+      const voucher = await prisma.voucher.findFirst({
+        where: {
+          id: voucherId,
+          startupId,
+        },
+        include: {
+          inventoryLines: {
+            include: {
+              item: true,
+              warehouse: true,
+            },
+          },
+        },
+      });
+
+      if (!voucher) {
+        return res.status(404).json({
+          success: false,
+          message: "Voucher not found",
+        });
+      }
+
+      return res.json({
+        success: true,
+        data: voucher.inventoryLines || [],
+      });
+    } catch (error) {
+      console.error("Get inventory lines error:", error);
+      return res.status(500).json({
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch inventory lines",
       });
     }
   }

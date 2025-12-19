@@ -1,6 +1,32 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, VoucherCategory } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import OpenAI from "openai";
+
+// Type definitions for voucher queries
+type VoucherWithEntries = Prisma.VoucherGetPayload<{
+  include: {
+    voucherType: true;
+    entries: true;
+  };
+}>;
+
+type VoucherWithType = Prisma.VoucherGetPayload<{
+  include: {
+    voucherType: true;
+  };
+}>;
+
+type VoucherWithFullDetails = Prisma.VoucherGetPayload<{
+  include: {
+    voucherType: true;
+    entries: {
+      include: {
+        costCenter: true;
+        costCategoryRef: true;
+      };
+    };
+  };
+}>;
 
 // Initialize OpenAI only if API key is provided
 let openai: OpenAI | null = null;
@@ -26,7 +52,7 @@ export interface VoucherAlert {
   message: string;
   voucherIds: string[];
   recommendations?: string[];
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export interface VoucherVariance {
@@ -88,7 +114,7 @@ export async function analyzeVoucherAnomalies(
   }
 
   // 1. Check for unusually large transactions
-  const amounts = vouchers.map((v: any) => v.totalAmount.toNumber());
+  const amounts = vouchers.map((v) => v.totalAmount.toNumber());
   const avgAmount =
     amounts.reduce((a: number, b: number) => a + b, 0) / amounts.length;
   const stdDev = Math.sqrt(
@@ -100,7 +126,7 @@ export async function analyzeVoucherAnomalies(
   const threshold = avgAmount + 3 * stdDev; // 3 standard deviations
 
   const largeVouchers = vouchers.filter(
-    (v: any) => v.totalAmount.toNumber() > threshold
+    (v) => v.totalAmount.toNumber() > threshold
   );
   if (largeVouchers.length > 0) {
     alerts.push({
@@ -112,7 +138,7 @@ export async function analyzeVoucherAnomalies(
       } voucher(s) with amounts significantly above average (${avgAmount.toFixed(
         2
       )}).`,
-      voucherIds: largeVouchers.map((v: any) => v.id),
+      voucherIds: largeVouchers.map((v) => v.id),
       recommendations: [
         "Review these transactions for accuracy",
         "Verify authorization for large amounts",
@@ -121,7 +147,7 @@ export async function analyzeVoucherAnomalies(
       metadata: {
         averageAmount: avgAmount,
         threshold,
-        largeVouchers: largeVouchers.map((v: any) => ({
+        largeVouchers: largeVouchers.map((v) => ({
           id: v.id,
           number: v.voucherNumber,
           amount: v.totalAmount.toNumber(),
@@ -133,7 +159,7 @@ export async function analyzeVoucherAnomalies(
 
   // 2. Check for duplicate voucher numbers
   const voucherNumbers = new Map<string, string[]>();
-  vouchers.forEach((v: any) => {
+  vouchers.forEach((v) => {
     const key = `${v.voucherTypeId}-${v.voucherNumber}`;
     if (!voucherNumbers.has(key)) {
       voucherNumbers.set(key, []);
@@ -167,13 +193,13 @@ export async function analyzeVoucherAnomalies(
   }
 
   // 3. Check for unbalanced vouchers (shouldn't happen, but check anyway)
-  const unbalancedVouchers = vouchers.filter((v: any) => {
+  const unbalancedVouchers = vouchers.filter((v) => {
     const totalDebit = v.entries
-      .filter((e: any) => e.entryType === "DEBIT")
-      .reduce((sum: number, e: any) => sum + e.amount.toNumber(), 0);
+      .filter((e) => e.entryType === "DEBIT")
+      .reduce((sum: number, e) => sum + e.amount.toNumber(), 0);
     const totalCredit = v.entries
-      .filter((e: any) => e.entryType === "CREDIT")
-      .reduce((sum: number, e: any) => sum + e.amount.toNumber(), 0);
+      .filter((e) => e.entryType === "CREDIT")
+      .reduce((sum: number, e) => sum + e.amount.toNumber(), 0);
     return Math.abs(totalDebit - totalCredit) > 0.01; // Allow for rounding
   });
 
@@ -183,7 +209,7 @@ export async function analyzeVoucherAnomalies(
       severity: "critical",
       title: "Unbalanced Vouchers Detected",
       message: `Found ${unbalancedVouchers.length} unbalanced voucher(s). Debit and credit totals do not match.`,
-      voucherIds: unbalancedVouchers.map((v: any) => v.id),
+      voucherIds: unbalancedVouchers.map((v) => v.id),
       recommendations: [
         "Review and correct unbalanced vouchers immediately",
         "Check voucher entry amounts",
@@ -193,9 +219,9 @@ export async function analyzeVoucherAnomalies(
   }
 
   // 4. Check for vouchers with missing or unusual ledger entries
-  const vouchersWithIssues = vouchers.filter((v: any) => {
+  const vouchersWithIssues = vouchers.filter((v) => {
     if (v.entries.length < 2) return true;
-    if (v.entries.some((e: any) => !e.ledgerName || e.ledgerName.trim() === ""))
+    if (v.entries.some((e) => !e.ledgerName || e.ledgerName.trim() === ""))
       return true;
     return false;
   });
@@ -206,7 +232,7 @@ export async function analyzeVoucherAnomalies(
       severity: "warning",
       title: "Vouchers with Incomplete Data",
       message: `Found ${vouchersWithIssues.length} voucher(s) with missing or invalid ledger entries.`,
-      voucherIds: vouchersWithIssues.map((v: any) => v.id),
+      voucherIds: vouchersWithIssues.map((v) => v.id),
       recommendations: [
         "Complete missing ledger information",
         "Review voucher entry requirements",
@@ -221,11 +247,11 @@ export async function analyzeVoucherAnomalies(
       const voucherSummary = {
         totalVouchers: vouchers.length,
         totalAmount: vouchers.reduce(
-          (sum: number, v: any) => sum + v.totalAmount.toNumber(),
+          (sum: number, v) => sum + v.totalAmount.toNumber(),
           0
         ),
         byType: vouchers.reduce(
-          (acc: any, v: any) => {
+          (acc: Record<string, number>, v) => {
             const type = v.voucherType.name;
             acc[type] = (acc[type] || 0) + 1;
             return acc;
@@ -369,7 +395,7 @@ export async function detectVoucherVariances(
 
     // Group by voucher type/category
     const byCategory = vouchers.reduce(
-      (acc: any, v: any) => {
+      (acc: Record<string, VoucherWithType[]>, v) => {
         const category = v.voucherType.category;
         if (!acc[category]) {
           acc[category] = [];
@@ -377,13 +403,13 @@ export async function detectVoucherVariances(
         acc[category].push(v);
         return acc;
       },
-      {} as Record<string, typeof vouchers>
+      {} as Record<string, VoucherWithType[]>
     );
 
     // Calculate expected vs actual for each category
     for (const [category, categoryVouchers] of Object.entries(byCategory)) {
-      const actual = (categoryVouchers as any[]).reduce(
-        (sum: number, v: any) => sum + v.totalAmount.toNumber(),
+      const actual = categoryVouchers.reduce(
+        (sum: number, v) => sum + v.totalAmount.toNumber(),
         0
       );
 
@@ -403,12 +429,12 @@ export async function detectVoucherVariances(
                 lte: prevPeriod.end,
               },
               voucherType: {
-                category: category as any,
+                category: category as VoucherCategory,
               },
             },
           });
           previousTotal += prevVouchers.reduce(
-            (sum: number, v: any) => sum + v.totalAmount.toNumber(),
+            (sum: number, v) => sum + v.totalAmount.toNumber(),
             0
           );
         }
@@ -426,7 +452,7 @@ export async function detectVoucherVariances(
             actual,
             variance,
             variancePercent,
-            vouchers: (categoryVouchers as any[]).map((v: any) => ({
+            vouchers: categoryVouchers.map((v) => ({
               id: v.id,
               voucherNumber: v.voucherNumber,
               date: v.date.toISOString(),
@@ -463,27 +489,27 @@ export async function generateVoucherInsights(
     };
   }
 
-  const where: any = {
+  const whereClause: Prisma.VoucherWhereInput = {
     startupId,
   };
 
   if (fromDate || toDate) {
-    where.date = {};
+    whereClause.date = {};
     if (fromDate) {
-      where.date.gte = fromDate;
+      whereClause.date.gte = fromDate;
     }
     if (toDate) {
-      where.date.lte = toDate;
+      whereClause.date.lte = toDate;
     }
   } else {
     // Default to last 90 days
     const ninetyDaysAgo = new Date();
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-    where.date = { gte: ninetyDaysAgo };
+    whereClause.date = { gte: ninetyDaysAgo };
   }
 
   const vouchers = await prisma.voucher.findMany({
-    where,
+    where: whereClause,
     include: {
       voucherType: true,
       entries: {
@@ -509,11 +535,11 @@ export async function generateVoucherInsights(
   const summary = {
     totalVouchers: vouchers.length,
     totalAmount: vouchers.reduce(
-      (sum: number, v: any) => sum + v.totalAmount.toNumber(),
+      (sum: number, v) => sum + v.totalAmount.toNumber(),
       0
     ),
     byType: vouchers.reduce(
-      (acc: any, v: any) => {
+      (acc: Record<string, { count: number; total: number }>, v) => {
         const type = v.voucherType.name;
         acc[type] = {
           count: (acc[type]?.count || 0) + 1,
@@ -524,7 +550,7 @@ export async function generateVoucherInsights(
       {} as Record<string, { count: number; total: number }>
     ),
     byCategory: vouchers.reduce(
-      (acc: any, v: any) => {
+      (acc: Record<string, number>, v) => {
         const category = v.voucherType.category;
         acc[category] = (acc[category] || 0) + v.totalAmount.toNumber();
         return acc;
@@ -536,9 +562,9 @@ export async function generateVoucherInsights(
       to: vouchers[0].date.toISOString().split("T")[0],
     },
     topLedgers: vouchers
-      .flatMap((v: any) => v.entries)
+      .flatMap((v) => v.entries)
       .reduce(
-        (acc: any, e: any) => {
+        (acc: Record<string, number>, e) => {
           acc[e.ledgerName] = (acc[e.ledgerName] || 0) + e.amount.toNumber();
           return acc;
         },
@@ -547,9 +573,9 @@ export async function generateVoucherInsights(
   };
 
   const topLedgers = Object.entries(summary.topLedgers)
-    .sort(([, a], [, b]: any) => (b as any) - (a as any))
+    .sort(([, a], [, b]) => b - a)
     .slice(0, 10)
-    .map(([name, amount]) => `${name}: ${(amount as any).toFixed(2)}`);
+    .map(([name, amount]) => `${name}: ${amount.toFixed(2)}`);
 
   const prompt = `Analyze this accounting voucher data and provide comprehensive insights:
 
@@ -561,15 +587,13 @@ Vouchers by Type:
 ${Object.entries(summary.byType)
   .map(
     ([type, data]) =>
-      `  ${type}: ${(data as any).count} vouchers, ${(
-        data as any
-      ).total.toFixed(2)} total`
+      `  ${type}: ${data.count} vouchers, ${data.total.toFixed(2)} total`
   )
   .join("\n")}
 
 Amounts by Category:
 ${Object.entries(summary.byCategory)
-  .map(([cat, amount]) => `  ${cat}: ${(amount as any).toFixed(2)}`)
+  .map(([cat, amount]) => `  ${cat}: ${amount.toFixed(2)}`)
   .join("\n")}
 
 Top Ledgers by Amount:

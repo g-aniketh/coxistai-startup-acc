@@ -23,9 +23,44 @@ export interface CostCenterInput {
   status?: "active" | "inactive";
 }
 
-const buildCategoryTree = (categories: Array<any>) => {
-  const map = new Map<string, any>();
-  const roots: any[] = [];
+interface CostCenterNode {
+  id: string;
+  name: string;
+  code: string | null;
+  description: string | null;
+  parentId: string | null;
+  isBillable: boolean;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+  parent: { id: string; name: string } | null;
+}
+
+interface CostCategoryNode {
+  id: string;
+  name: string;
+  description: string | null;
+  parentId: string | null;
+  isPrimary: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  costCenters: CostCenterNode[];
+  children: CostCategoryNode[];
+}
+
+type CostCategoryWithCenters = Prisma.CostCategoryGetPayload<{
+  include: {
+    costCenters: {
+      include: {
+        parent: { select: { id: true; name: true } };
+      };
+    };
+  };
+}>;
+
+const buildCategoryTree = (categories: CostCategoryWithCenters[]): CostCategoryNode[] => {
+  const map = new Map<string, CostCategoryNode>();
+  const roots: CostCategoryNode[] = [];
 
   categories.forEach((category) => {
     map.set(category.id, {
@@ -36,7 +71,7 @@ const buildCategoryTree = (categories: Array<any>) => {
       isPrimary: category.isPrimary,
       createdAt: category.createdAt,
       updatedAt: category.updatedAt,
-      costCenters: category.costCenters.map((center: any) => ({
+      costCenters: category.costCenters.map((center) => ({
         id: center.id,
         name: center.name,
         code: center.code,
@@ -50,7 +85,7 @@ const buildCategoryTree = (categories: Array<any>) => {
           ? { id: center.parent.id, name: center.parent.name }
           : null,
       })),
-      children: [] as any[],
+      children: [],
     });
   });
 
@@ -486,7 +521,7 @@ export const updateInterestProfile = async (
     throw new Error("Interest profile not found");
   }
 
-  const data: any = {};
+  const data: Prisma.InterestProfileUpdateInput = {};
 
   if (input.name !== undefined) {
     if (!input.name.trim()) {

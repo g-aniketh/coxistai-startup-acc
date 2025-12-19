@@ -2,6 +2,28 @@ import { Prisma, BillType, BillStatus } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 import { prisma } from "../lib/prisma";
 
+// Type for bill with relations
+type BillWithRelations = Prisma.BillGetPayload<{
+  include: {
+    voucher: {
+      include: {
+        voucherType: true;
+      };
+    };
+    voucherEntry: true;
+    settlements: {
+      include: {
+        voucher: {
+          include: {
+            voucherType: true;
+          };
+        };
+        voucherEntry: true;
+      };
+    };
+  };
+}>;
+
 export interface CreateBillInput {
   billType: BillType;
   billNumber: string;
@@ -152,7 +174,7 @@ export const settleBill = async (startupId: string, input: SettleBillInput) => {
     remarks,
   } = input;
 
-  return prisma.$transaction(async (tx: any) => {
+  return prisma.$transaction(async (tx) => {
     // Verify bill exists and belongs to startup
     const bill = await tx.bill.findFirst({
       where: { id: billId, startupId },
@@ -180,7 +202,7 @@ export const settleBill = async (startupId: string, input: SettleBillInput) => {
       throw new Error("Voucher not found or does not belong to your startup");
     }
 
-    const entry = voucher.entries.find((e: any) => e.id === voucherEntryId);
+    const entry = voucher.entries.find((e) => e.id === voucherEntryId);
     if (!entry) {
       throw new Error("Voucher entry not found");
     }
@@ -430,7 +452,7 @@ export const getBillAgingReport = async (
     summary: {
       totalBills: bills.length,
       totalOutstanding: bills.reduce(
-        (sum: Decimal, bill: any) => sum.plus(bill.outstandingAmount),
+        (sum: Decimal, bill) => sum.plus(bill.outstandingAmount),
         new Decimal(0)
       ),
     },
@@ -456,7 +478,7 @@ export const getBillAgingReport = async (
         amount: Number(agingBuckets.over90.amount),
       },
     },
-    bills: bills.map((bill: any) => ({
+    bills: bills.map((bill) => ({
       id: bill.id,
       billNumber: bill.billNumber,
       billType: bill.billType,
@@ -577,7 +599,7 @@ export const getBillReminders = async (
 
   const now = new Date();
   const reminders = bills
-    .filter((bill: any) => {
+    .filter((bill) => {
       const dueDate = bill.dueDate || bill.billDate;
       const daysUntilDue = Math.floor(
         (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
@@ -592,7 +614,7 @@ export const getBillReminders = async (
         (daysUntilDue >= 0 && daysUntilDue <= daysBeforeReminder)
       );
     })
-    .map((bill: any) => {
+    .map((bill) => {
       const dueDate = bill.dueDate || bill.billDate;
       const daysUntilDue = Math.floor(
         (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
@@ -666,9 +688,9 @@ export const getBillCashFlowProjections = async (
     });
 
     const receivablesExpected = monthBills
-      .filter((b: any) => b.billType === BillType.RECEIVABLE)
+      .filter((b) => b.billType === BillType.RECEIVABLE)
       .reduce(
-        (sum: Decimal, b: any) => sum.plus(b.outstandingAmount),
+        (sum: Decimal, b) => sum.plus(b.outstandingAmount),
         new Decimal(0)
       );
 
@@ -721,35 +743,35 @@ export const getBillsAnalytics = async (
 
   // Receivables analytics
   const receivables = bills.filter(
-    (b: any) => b.billType === BillType.RECEIVABLE
+    (b) => b.billType === BillType.RECEIVABLE
   );
   const receivablesTotal = receivables.reduce(
-    (sum: Decimal, b: any) => sum.plus(b.originalAmount),
+      (sum: Decimal, b) => sum.plus(b.originalAmount),
     new Decimal(0)
   );
   const receivablesOutstanding = receivables
-    .filter((b: any) => b.status !== BillStatus.SETTLED)
+    .filter((b) => b.status !== BillStatus.SETTLED)
     .reduce((sum, b) => sum.plus(b.outstandingAmount), new Decimal(0));
   const receivablesSettled = receivables
-    .filter((b: any) => b.status === BillStatus.SETTLED)
+    .filter((b) => b.status === BillStatus.SETTLED)
     .reduce(
-      (sum: Decimal, b: any) => sum.plus(b.settledAmount),
+      (sum: Decimal, b) => sum.plus(b.settledAmount),
       new Decimal(0)
     );
 
   // Payables analytics
-  const payables = bills.filter((b: any) => b.billType === BillType.PAYABLE);
+  const payables = bills.filter((b) => b.billType === BillType.PAYABLE);
   const payablesTotal = payables.reduce(
-    (sum: Decimal, b: any) => sum.plus(b.originalAmount),
+      (sum: Decimal, b) => sum.plus(b.originalAmount),
     new Decimal(0)
   );
   const payablesOutstanding = payables
-    .filter((b: any) => b.status !== BillStatus.SETTLED)
+    .filter((b) => b.status !== BillStatus.SETTLED)
     .reduce((sum, b) => sum.plus(b.outstandingAmount), new Decimal(0));
   const payablesSettled = payables
-    .filter((b: any) => b.status === BillStatus.SETTLED)
+    .filter((b) => b.status === BillStatus.SETTLED)
     .reduce(
-      (sum: Decimal, b: any) => sum.plus(b.settledAmount),
+      (sum: Decimal, b) => sum.plus(b.settledAmount),
       new Decimal(0)
     );
 
@@ -774,7 +796,7 @@ export const getBillsAnalytics = async (
         return sum + Math.max(0, days);
       }, 0) /
     (receivables.filter(
-      (b: any) => b.dueDate && b.status !== BillStatus.SETTLED
+      (b) => b.dueDate && b.status !== BillStatus.SETTLED
     ).length || 1);
 
   const payablesAvgDays =
@@ -787,7 +809,7 @@ export const getBillsAnalytics = async (
         );
         return sum + Math.max(0, days);
       }, 0) /
-    (payables.filter((b: any) => b.dueDate && b.status !== BillStatus.SETTLED)
+    (payables.filter((b) => b.dueDate && b.status !== BillStatus.SETTLED)
       .length || 1);
 
   return {

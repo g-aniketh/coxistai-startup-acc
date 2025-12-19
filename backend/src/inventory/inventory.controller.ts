@@ -118,7 +118,12 @@ export const updateProductController = async (
     const { productId } = req.params;
     const { name, quantity, price } = req.body;
 
-    const updateData: any = {};
+    interface UpdateProductData {
+      name?: string;
+      quantity?: number;
+      price?: number;
+    }
+    const updateData: UpdateProductData = {};
     if (name !== undefined) updateData.name = name;
     if (quantity !== undefined) {
       if (typeof quantity !== "number" || quantity < 0) {

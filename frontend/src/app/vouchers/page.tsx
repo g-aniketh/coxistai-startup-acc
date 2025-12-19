@@ -17,8 +17,18 @@ import {
   Voucher,
 } from "@/lib/api";
 import { format } from "date-fns";
-import { Plus, Receipt, Trash2 } from "lucide-react";
+import {
+  Plus,
+  Receipt,
+  Trash2,
+  FileText,
+  ArrowRight,
+  CheckCircle,
+  XCircle,
+  Clock,
+} from "lucide-react";
 import { toast } from "react-hot-toast";
+import Link from "next/link";
 
 type BillReferenceForm = {
   reference: string;
@@ -321,15 +331,69 @@ export default function VouchersPage() {
             </div>
           </div>
 
+          {/* Quick Actions - Type-Specific Forms */}
+          <Card className="rounded-2xl shadow-lg border-0 bg-white">
+            <CardHeader>
+              <CardTitle className="text-lg text-[#2C2C2C]">
+                Quick Create - Type-Specific Forms
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Use dedicated forms for each voucher type with automatic posting
+                rules
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                <Link href="/vouchers/payment">
+                  <Button variant="outline" className="w-full">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Payment
+                  </Button>
+                </Link>
+                <Link href="/vouchers/receipt">
+                  <Button variant="outline" className="w-full">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Receipt
+                  </Button>
+                </Link>
+                <Link href="/vouchers/contra">
+                  <Button variant="outline" className="w-full">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Contra
+                  </Button>
+                </Link>
+                <Link href="/vouchers/journal">
+                  <Button variant="outline" className="w-full">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Journal
+                  </Button>
+                </Link>
+                <Link href="/vouchers/sales">
+                  <Button variant="outline" className="w-full">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Sales
+                  </Button>
+                </Link>
+                <Link href="/vouchers/purchase">
+                  <Button variant="outline" className="w-full">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Purchase
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <Card className="xl:col-span-2 rounded-2xl shadow-lg border-0 bg-white">
               <CardHeader className="flex flex-col gap-2">
                 <CardTitle className="text-lg text-[#2C2C2C]">
-                  Create Voucher
+                  Create Voucher (Manual Entry)
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
                   Select the voucher type, enter ledger lines, and ensure the
-                  voucher remains balanced.
+                  voucher remains balanced. For type-specific forms, use the
+                  quick actions above.
                 </p>
               </CardHeader>
               <CardContent>
@@ -789,38 +853,106 @@ export default function VouchersPage() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {vouchers.map((voucher) => (
-                      <div
-                        key={voucher.id}
-                        className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-2"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-semibold text-[#2C2C2C]">
-                              {voucher.voucherNumber}
-                            </p>
+                    {vouchers.map((voucher) => {
+                      const getStatusBadge = (status: string) => {
+                        switch (status) {
+                          case "POSTED":
+                            return (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">
+                                <CheckCircle className="h-3 w-3" />
+                                Posted
+                              </span>
+                            );
+                          case "DRAFT":
+                            return (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-700">
+                                <Clock className="h-3 w-3" />
+                                Draft
+                              </span>
+                            );
+                          case "CANCELLED":
+                            return (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-700">
+                                <XCircle className="h-3 w-3" />
+                                Cancelled
+                              </span>
+                            );
+                          default:
+                            return null;
+                        }
+                      };
+
+                      return (
+                        <div
+                          key={voucher.id}
+                          className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-2"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-semibold text-[#2C2C2C]">
+                                  {voucher.voucherNumber}
+                                </p>
+                                {getStatusBadge(voucher.status)}
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                {voucher.voucherType.name} •{" "}
+                                {format(new Date(voucher.date), "dd MMM yyyy")}
+                              </p>
+                            </div>
+                            <div className="text-sm font-semibold text-[#607c47]">
+                              ₹{Number(voucher.totalAmount ?? 0).toFixed(2)}
+                            </div>
+                          </div>
+                          {voucher.narration && (
                             <p className="text-xs text-muted-foreground">
-                              {voucher.voucherType.name} •{" "}
-                              {format(new Date(voucher.date), "dd MMM yyyy")}
+                              {voucher.narration}
                             </p>
-                          </div>
-                          <div className="text-sm font-semibold text-[#607c47]">
-                            ₹{Number(voucher.totalAmount ?? 0).toFixed(2)}
+                          )}
+                          <div className="flex items-center justify-between">
+                            <div className="text-xs text-muted-foreground">
+                              {voucher.entries.length} entries
+                              {voucher.inventoryLines &&
+                                voucher.inventoryLines.length > 0 && (
+                                  <> • {voucher.inventoryLines.length} items</>
+                                )}
+                              {voucher.numberingSeries && (
+                                <> • Series: {voucher.numberingSeries.name}</>
+                              )}
+                            </div>
+                            {voucher.status === "DRAFT" && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={async () => {
+                                  try {
+                                    const res = await apiClient.vouchers.post(
+                                      voucher.id
+                                    );
+                                    if (res.success) {
+                                      toast.success(
+                                        "Voucher posted successfully"
+                                      );
+                                      await loadVoucherData();
+                                    } else {
+                                      toast.error(
+                                        res.error || "Failed to post voucher"
+                                      );
+                                    }
+                                  } catch (error) {
+                                    console.error("Post voucher error:", error);
+                                    toast.error("Failed to post voucher");
+                                  }
+                                }}
+                              >
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                Post
+                              </Button>
+                            )}
                           </div>
                         </div>
-                        {voucher.narration && (
-                          <p className="text-xs text-muted-foreground">
-                            {voucher.narration}
-                          </p>
-                        )}
-                        <div className="text-xs text-muted-foreground">
-                          {voucher.entries.length} entries •{" "}
-                          {voucher.numberingSeries
-                            ? `Series: ${voucher.numberingSeries.name}`
-                            : "Default series"}
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>

@@ -313,9 +313,9 @@ export const createLedger = async (startupId: string, input: LedgerInput) => {
       panNumber: input.panNumber,
       gstNumber: input.gstNumber,
       mailingAddress: input.mailingAddress
-        ? (input.mailingAddress as any)
+        ? (input.mailingAddress as Prisma.InputJsonValue)
         : undefined,
-      bankDetails: input.bankDetails ? (input.bankDetails as any) : undefined,
+      bankDetails: input.bankDetails ? (input.bankDetails as Prisma.InputJsonValue) : undefined,
       costCenterApplicable: Boolean(input.costCenterApplicable),
       openingBalance:
         input.openingBalance !== undefined && input.openingBalance !== null
@@ -323,7 +323,7 @@ export const createLedger = async (startupId: string, input: LedgerInput) => {
           : undefined,
       openingBalanceType: (input.openingBalanceType ??
         "DEBIT") as LedgerBalanceType,
-      metadata: input.metadata ? (input.metadata as any) : undefined,
+      metadata: input.metadata ? (input.metadata as Prisma.InputJsonValue) : undefined,
     },
   });
 };
@@ -373,9 +373,9 @@ export const updateLedger = async (
       panNumber: input.panNumber ?? undefined,
       gstNumber: input.gstNumber ?? undefined,
       mailingAddress: input.mailingAddress
-        ? (input.mailingAddress as any)
+        ? (input.mailingAddress as Prisma.InputJsonValue)
         : undefined,
-      bankDetails: input.bankDetails ? (input.bankDetails as any) : undefined,
+      bankDetails: input.bankDetails ? (input.bankDetails as Prisma.InputJsonValue) : undefined,
       costCenterApplicable: input.costCenterApplicable ?? undefined,
       openingBalance:
         input.openingBalance !== undefined && input.openingBalance !== null
@@ -384,7 +384,7 @@ export const updateLedger = async (
       openingBalanceType: input.openingBalanceType
         ? (input.openingBalanceType as LedgerBalanceType)
         : undefined,
-      metadata: input.metadata ? (input.metadata as any) : undefined,
+      metadata: input.metadata ? (input.metadata as Prisma.InputJsonValue) : undefined,
     },
   });
 };

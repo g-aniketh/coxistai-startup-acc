@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "react-hot-toast";
 import AuthGuard from "@/components/auth/AuthGuard";
 import MainLayout from "@/components/layout/MainLayout";
 import {
@@ -47,9 +48,10 @@ import {
   LedgerBalanceTypeCode,
   LedgerCategoryCode,
   LedgerGroup,
+  TrialBalanceRow,
+  BalanceSheetItem,
 } from "@/lib/api";
 import { cn, formatCurrency } from "@/lib/utils";
-import { toast } from "react-hot-toast";
 import {
   Dialog,
   DialogContent,
@@ -1379,7 +1381,7 @@ const BookkeepingPage = () => {
 // Trial Balance Tab Component
 function TrialBalanceTab() {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<TrialBalanceRow[]>([]);
   const [asOnDate, setAsOnDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -1389,7 +1391,7 @@ function TrialBalanceTab() {
     try {
       const response = await apiClient.bookkeeping.getTrialBalance(asOnDate);
       if (response.success) {
-        setData(response.data || []);
+        setData(response.data ?? []);
       }
     } catch (error) {
       console.error("Failed to load trial balance:", error);
@@ -1465,9 +1467,17 @@ function TrialBalanceTab() {
 }
 
 // Profit & Loss Tab Component
+type ProfitLossData = {
+  trading?: Array<{ name: string; amount: number }>;
+  indirectExpenses?: Array<{ name: string; amount: number }>;
+  indirectIncomes?: Array<{ name: string; amount: number }>;
+  netProfit?: number;
+  grossProfit?: number;
+};
+
 function ProfitLossTab() {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<ProfitLossData | null>(null);
   const [fromDate, setFromDate] = useState(
     new Date(new Date().getFullYear(), 0, 1).toISOString().split("T")[0]
   );
@@ -1481,7 +1491,7 @@ function ProfitLossTab() {
         toDate,
       });
       if (response.success) {
-        setData(response.data);
+        setData(response.data ?? null);
       }
     } catch (error) {
       console.error("Failed to load P&L:", error);
@@ -1533,7 +1543,7 @@ function ProfitLossTab() {
                 <h3 className="font-semibold mb-2">Trading Account</h3>
                 <Table>
                   <TableBody>
-                    {data.trading?.map((item: any, idx: number) => (
+                    {data.trading?.map((item, idx) => (
                       <TableRow key={idx}>
                         <TableCell>{item.name}</TableCell>
                         <TableCell className="text-right">
@@ -1544,7 +1554,7 @@ function ProfitLossTab() {
                     <TableRow className="font-bold bg-gray-50">
                       <TableCell>Gross Profit</TableCell>
                       <TableCell className="text-right">
-                        {formatCurrency(data.grossProfit)}
+                        {formatCurrency(data.grossProfit ?? 0)}
                       </TableCell>
                     </TableRow>
                   </TableBody>
@@ -1554,7 +1564,7 @@ function ProfitLossTab() {
                 <h3 className="font-semibold mb-2">Profit & Loss Account</h3>
                 <Table>
                   <TableBody>
-                    {data.indirectExpenses?.map((item: any, idx: number) => (
+                    {data.indirectExpenses?.map((item, idx) => (
                       <TableRow key={idx}>
                         <TableCell>{item.name}</TableCell>
                         <TableCell className="text-right">
@@ -1562,7 +1572,7 @@ function ProfitLossTab() {
                         </TableCell>
                       </TableRow>
                     ))}
-                    {data.indirectIncomes?.map((item: any, idx: number) => (
+                    {data.indirectIncomes?.map((item, idx) => (
                       <TableRow key={idx}>
                         <TableCell>{item.name}</TableCell>
                         <TableCell className="text-right">
@@ -1573,7 +1583,7 @@ function ProfitLossTab() {
                     <TableRow className="font-bold bg-gray-50">
                       <TableCell>Net Profit / Loss</TableCell>
                       <TableCell className="text-right">
-                        {formatCurrency(data.netProfit)}
+                        {formatCurrency(data.netProfit ?? 0)}
                       </TableCell>
                     </TableRow>
                   </TableBody>
@@ -1588,9 +1598,17 @@ function ProfitLossTab() {
 }
 
 // Balance Sheet Tab Component
+type BalanceSheetData = {
+  assets?: Array<{ name: string; amount: number }>;
+  liabilities?: Array<{ name: string; amount: number }>;
+  capital?: Array<{ name: string; amount: number }>;
+  totalAssets?: number;
+  totalLiabilities?: number;
+};
+
 function BalanceSheetTab() {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<BalanceSheetData | null>(null);
   const [asOnDate, setAsOnDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -1600,7 +1618,7 @@ function BalanceSheetTab() {
     try {
       const response = await apiClient.bookkeeping.getBalanceSheet(asOnDate);
       if (response.success) {
-        setData(response.data);
+        setData(response.data ?? null);
       }
     } catch (error) {
       console.error("Failed to load balance sheet:", error);
@@ -1644,7 +1662,7 @@ function BalanceSheetTab() {
                 <h3 className="font-semibold mb-2">Liabilities & Capital</h3>
                 <Table>
                   <TableBody>
-                    {data.liabilities?.map((item: any, idx: number) => (
+                    {data.liabilities?.map((item, idx) => (
                       <TableRow key={idx}>
                         <TableCell>{item.name}</TableCell>
                         <TableCell className="text-right">
@@ -1652,7 +1670,7 @@ function BalanceSheetTab() {
                         </TableCell>
                       </TableRow>
                     ))}
-                    {data.capital?.map((item: any, idx: number) => (
+                    {data.capital?.map((item, idx) => (
                       <TableRow key={idx}>
                         <TableCell>{item.name}</TableCell>
                         <TableCell className="text-right">
@@ -1664,9 +1682,10 @@ function BalanceSheetTab() {
                       <TableCell>Total Liabilities & Capital</TableCell>
                       <TableCell className="text-right">
                         {formatCurrency(
-                          data.totalLiabilities +
+                          (data.totalLiabilities ?? 0) +
                             (data.capital?.reduce(
-                              (sum: number, c: any) => sum + c.amount,
+                              (sum: number, c: { amount: number }) =>
+                                sum + c.amount,
                               0
                             ) || 0)
                         )}
@@ -1679,7 +1698,7 @@ function BalanceSheetTab() {
                 <h3 className="font-semibold mb-2">Assets</h3>
                 <Table>
                   <TableBody>
-                    {data.assets?.map((item: any, idx: number) => (
+                    {data?.assets?.map((item, idx) => (
                       <TableRow key={idx}>
                         <TableCell>{item.name}</TableCell>
                         <TableCell className="text-right">
@@ -1690,7 +1709,7 @@ function BalanceSheetTab() {
                     <TableRow className="font-bold bg-gray-50">
                       <TableCell>Total Assets</TableCell>
                       <TableCell className="text-right">
-                        {formatCurrency(data.totalAssets)}
+                        {formatCurrency(data.totalAssets ?? 0)}
                       </TableCell>
                     </TableRow>
                   </TableBody>
@@ -1705,9 +1724,23 @@ function BalanceSheetTab() {
 }
 
 // Cash Flow Tab Component
+type CashFlowItem = {
+  description: string;
+  amount: number;
+};
+
+type CashFlowData = {
+  openingBalance?: number;
+  operating?: CashFlowItem[];
+  investing?: CashFlowItem[];
+  financing?: CashFlowItem[];
+  netCashFlow?: number;
+  closingBalance?: number;
+};
+
 function CashFlowTab() {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<CashFlowData | null>(null);
   const [fromDate, setFromDate] = useState(
     new Date(new Date().getFullYear(), 0, 1).toISOString().split("T")[0]
   );
@@ -1721,7 +1754,7 @@ function CashFlowTab() {
         toDate,
       });
       if (response.success) {
-        setData(response.data);
+        setData(response.data ?? null);
       }
     } catch (error) {
       console.error("Failed to load cash flow:", error);
@@ -1771,15 +1804,15 @@ function CashFlowTab() {
             <div className="space-y-6">
               <div>
                 <p className="text-sm text-gray-600">
-                  Opening Balance: {formatCurrency(data.openingBalance)}
+                  Opening Balance: {formatCurrency(data.openingBalance ?? 0)}
                 </p>
               </div>
-              {data.operating?.length > 0 && (
+              {data.operating && data.operating.length > 0 && (
                 <div>
                   <h3 className="font-semibold mb-2">Operating Activities</h3>
                   <Table>
                     <TableBody>
-                      {data.operating.map((item: any, idx: number) => (
+                      {data.operating.map((item, idx) => (
                         <TableRow key={idx}>
                           <TableCell>{item.description}</TableCell>
                           <TableCell className="text-right">
@@ -1791,12 +1824,12 @@ function CashFlowTab() {
                   </Table>
                 </div>
               )}
-              {data.investing?.length > 0 && (
+              {data.investing && data.investing.length > 0 && (
                 <div>
                   <h3 className="font-semibold mb-2">Investing Activities</h3>
                   <Table>
                     <TableBody>
-                      {data.investing.map((item: any, idx: number) => (
+                      {data.investing.map((item, idx) => (
                         <TableRow key={idx}>
                           <TableCell>{item.description}</TableCell>
                           <TableCell className="text-right">
@@ -1808,12 +1841,12 @@ function CashFlowTab() {
                   </Table>
                 </div>
               )}
-              {data.financing?.length > 0 && (
+              {data.financing && data.financing.length > 0 && (
                 <div>
                   <h3 className="font-semibold mb-2">Financing Activities</h3>
                   <Table>
                     <TableBody>
-                      {data.financing.map((item: any, idx: number) => (
+                      {data.financing.map((item, idx) => (
                         <TableRow key={idx}>
                           <TableCell>{item.description}</TableCell>
                           <TableCell className="text-right">
@@ -1827,10 +1860,10 @@ function CashFlowTab() {
               )}
               <div className="pt-4 border-t">
                 <p className="text-sm">
-                  Net Cash Flow: {formatCurrency(data.netCashFlow)}
+                  Net Cash Flow: {formatCurrency(data.netCashFlow ?? 0)}
                 </p>
                 <p className="text-sm font-semibold">
-                  Closing Balance: {formatCurrency(data.closingBalance)}
+                  Closing Balance: {formatCurrency(data.closingBalance ?? 0)}
                 </p>
               </div>
             </div>
@@ -1842,9 +1875,29 @@ function CashFlowTab() {
 }
 
 // Financial Ratios Tab Component
+type FinancialRatios = {
+  liquidity?: {
+    currentRatio?: number;
+    quickRatio?: number;
+  };
+  profitability?: {
+    grossProfitMargin?: number;
+    netProfitMargin?: number;
+    returnOnAssets?: number;
+  };
+  efficiency?: {
+    assetTurnover?: number;
+    inventoryTurnover?: number;
+  };
+  leverage?: {
+    debtToEquity?: number;
+    debtRatio?: number;
+  };
+};
+
 function RatiosTab() {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<FinancialRatios | null>(null);
   const [asOnDate, setAsOnDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -1854,7 +1907,7 @@ function RatiosTab() {
     try {
       const response = await apiClient.bookkeeping.getFinancialRatios(asOnDate);
       if (response.success) {
-        setData(response.data);
+        setData(response.data ?? null);
       }
     } catch (error) {
       console.error("Failed to load ratios:", error);
@@ -2295,7 +2348,10 @@ function BudgetingTab() {
               <select
                 value={form.budgetType}
                 onChange={(e) =>
-                  setForm({ ...form, budgetType: e.target.value as any })
+                  setForm({ 
+                    ...form, 
+                    budgetType: e.target.value as "LEDGER" | "GROUP" | "COST_CENTRE" 
+                  })
                 }
                 className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
                 required
@@ -2594,6 +2650,589 @@ function YearEndTab() {
           </CardContent>
         </Card>
       </div>
+    </div>
+  );
+}
+
+// Cash Book Tab Component
+function CashBookTab() {
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<
+    Array<{
+      date: string;
+      voucherNumber: string;
+      narration: string;
+      debit: number;
+      credit: number;
+      balance: number;
+    }>
+  >([]);
+  const [fromDate, setFromDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const [toDate, setToDate] = useState(new Date().toISOString().split("T")[0]);
+
+  const loadCashBook = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.bookkeeping.getCashBook({
+        fromDate,
+        toDate,
+      });
+      if (response.success && response.data) {
+        setData(Array.isArray(response.data) ? response.data : []);
+      }
+    } catch (error) {
+      console.error("Failed to load cash book:", error);
+      toast.error("Failed to load cash book");
+    } finally {
+      setLoading(false);
+    }
+  }, [fromDate, toDate]);
+
+  useEffect(() => {
+    loadCashBook();
+  }, [loadCashBook]);
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Cash Book</CardTitle>
+          <CardDescription>View all cash transactions</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 mb-4">
+            <div>
+              <Label>From Date</Label>
+              <Input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>To Date</Label>
+              <Input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+              />
+            </div>
+          </div>
+          {loading ? (
+            <div className="text-center py-8">Loading...</div>
+          ) : data.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No cash transactions found
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Voucher</TableHead>
+                  <TableHead>Narration</TableHead>
+                  <TableHead className="text-right">Debit</TableHead>
+                  <TableHead className="text-right">Credit</TableHead>
+                  <TableHead className="text-right">Balance</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.map((row, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>{row.date}</TableCell>
+                    <TableCell>{row.voucherNumber}</TableCell>
+                    <TableCell>{row.narration}</TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(row.debit)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(row.credit)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(row.balance)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Bank Book Tab Component
+function BankBookTab() {
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<
+    Array<{
+      date: string;
+      voucherNumber: string;
+      narration: string;
+      debit: number;
+      credit: number;
+      balance: number;
+    }>
+  >([]);
+  const [fromDate, setFromDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const [toDate, setToDate] = useState(new Date().toISOString().split("T")[0]);
+
+  const loadBankBook = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.bookkeeping.getBankBook({
+        fromDate,
+        toDate,
+      });
+      if (response.success && response.data) {
+        setData(Array.isArray(response.data) ? response.data : []);
+      }
+    } catch (error) {
+      console.error("Failed to load bank book:", error);
+      toast.error("Failed to load bank book");
+    } finally {
+      setLoading(false);
+    }
+  }, [fromDate, toDate]);
+
+  useEffect(() => {
+    loadBankBook();
+  }, [loadBankBook]);
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Bank Book</CardTitle>
+          <CardDescription>View all bank transactions</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 mb-4">
+            <div>
+              <Label>From Date</Label>
+              <Input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>To Date</Label>
+              <Input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+              />
+            </div>
+          </div>
+          {loading ? (
+            <div className="text-center py-8">Loading...</div>
+          ) : data.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No bank transactions found
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Voucher</TableHead>
+                  <TableHead>Narration</TableHead>
+                  <TableHead className="text-right">Debit</TableHead>
+                  <TableHead className="text-right">Credit</TableHead>
+                  <TableHead className="text-right">Balance</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.map((row, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>{row.date}</TableCell>
+                    <TableCell>{row.voucherNumber}</TableCell>
+                    <TableCell>{row.narration}</TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(row.debit)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(row.credit)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(row.balance)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Day Book Tab Component
+function DayBookTab() {
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<
+    Array<{
+      voucherNumber: string;
+      voucherType: string;
+      date: string;
+      narration: string;
+      debit: number;
+      credit: number;
+    }>
+  >([]);
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+
+  const loadDayBook = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.bookkeeping.getDayBook(date);
+      if (response.success && response.data) {
+        setData(Array.isArray(response.data) ? response.data : []);
+      }
+    } catch (error) {
+      console.error("Failed to load day book:", error);
+      toast.error("Failed to load day book");
+    } finally {
+      setLoading(false);
+    }
+  }, [date]);
+
+  useEffect(() => {
+    loadDayBook();
+  }, [loadDayBook]);
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Day Book</CardTitle>
+          <CardDescription>
+            View all vouchers for a specific day
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4">
+            <Label>Date</Label>
+            <Input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="max-w-xs"
+            />
+          </div>
+          {loading ? (
+            <div className="text-center py-8">Loading...</div>
+          ) : data.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No vouchers found for this date
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Voucher Number</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Narration</TableHead>
+                  <TableHead className="text-right">Debit</TableHead>
+                  <TableHead className="text-right">Credit</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.map((row, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>{row.voucherNumber}</TableCell>
+                    <TableCell>{row.voucherType}</TableCell>
+                    <TableCell>{row.narration}</TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(row.debit)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(row.credit)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Ledger Book Tab Component
+function LedgerBookTab() {
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<
+    Array<{
+      date: string;
+      voucherNumber: string;
+      narration: string;
+      debit: number;
+      credit: number;
+      balance: number;
+    }>
+  >([]);
+  const [ledgerId, setLedgerId] = useState<string>("");
+  const [ledgers, setLedgers] = useState<Ledger[]>([]);
+  const [fromDate, setFromDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const [toDate, setToDate] = useState(new Date().toISOString().split("T")[0]);
+
+  useEffect(() => {
+    const loadLedgers = async () => {
+      try {
+        const response = await apiClient.bookkeeping.listLedgers();
+        if (response.success && response.data) {
+          setLedgers(response.data);
+        }
+      } catch (error) {
+        console.error("Failed to load ledgers:", error);
+      }
+    };
+    loadLedgers();
+  }, []);
+
+  const loadLedgerBook = useCallback(async () => {
+    if (!ledgerId) return;
+    setLoading(true);
+    try {
+      const selectedLedger = ledgers.find((l) => l.id === ledgerId);
+      const response = await apiClient.bookkeeping.getLedgerBook({
+        ledgerName: selectedLedger?.name,
+        fromDate,
+        toDate,
+      });
+      if (response.success && response.data) {
+        setData(Array.isArray(response.data) ? response.data : []);
+      }
+    } catch (error) {
+      console.error("Failed to load ledger book:", error);
+      toast.error("Failed to load ledger book");
+    } finally {
+      setLoading(false);
+    }
+  }, [ledgerId, ledgers, fromDate, toDate]);
+
+  useEffect(() => {
+    if (ledgerId) {
+      loadLedgerBook();
+    }
+  }, [ledgerId, loadLedgerBook]);
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Ledger Book</CardTitle>
+          <CardDescription>
+            View transactions for a specific ledger
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3 mb-4">
+            <div>
+              <Label>Ledger</Label>
+              <Select value={ledgerId} onValueChange={setLedgerId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select ledger" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ledgers.map((ledger) => (
+                    <SelectItem key={ledger.id} value={ledger.id}>
+                      {ledger.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>From Date</Label>
+              <Input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>To Date</Label>
+              <Input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+              />
+            </div>
+          </div>
+          {!ledgerId ? (
+            <div className="text-center py-8 text-gray-500">
+              Please select a ledger
+            </div>
+          ) : loading ? (
+            <div className="text-center py-8">Loading...</div>
+          ) : data.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No transactions found
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Voucher</TableHead>
+                  <TableHead>Narration</TableHead>
+                  <TableHead className="text-right">Debit</TableHead>
+                  <TableHead className="text-right">Credit</TableHead>
+                  <TableHead className="text-right">Balance</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.map((row, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>{row.date}</TableCell>
+                    <TableCell>{row.voucherNumber}</TableCell>
+                    <TableCell>{row.narration}</TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(row.debit)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(row.credit)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(row.balance)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Journals Tab Component
+function JournalsTab() {
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<
+    Array<{
+      voucherNumber: string;
+      date: string;
+      narration: string;
+      entries: Array<{
+        ledgerName: string;
+        debit: number;
+        credit: number;
+      }>;
+    }>
+  >([]);
+  const [fromDate, setFromDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const [toDate, setToDate] = useState(new Date().toISOString().split("T")[0]);
+
+  const loadJournals = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.bookkeeping.getJournals({
+        fromDate,
+        toDate,
+      });
+      if (response.success && response.data) {
+        setData(Array.isArray(response.data) ? response.data : []);
+      }
+    } catch (error) {
+      console.error("Failed to load journals:", error);
+      toast.error("Failed to load journals");
+    } finally {
+      setLoading(false);
+    }
+  }, [fromDate, toDate]);
+
+  useEffect(() => {
+    loadJournals();
+  }, [loadJournals]);
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Journals</CardTitle>
+          <CardDescription>View all journal vouchers</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 mb-4">
+            <div>
+              <Label>From Date</Label>
+              <Input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>To Date</Label>
+              <Input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+              />
+            </div>
+          </div>
+          {loading ? (
+            <div className="text-center py-8">Loading...</div>
+          ) : data.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No journal vouchers found
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {data.map((journal, idx) => (
+                <Card key={idx}>
+                  <CardHeader>
+                    <CardTitle className="text-sm">
+                      {journal.voucherNumber} - {journal.date}
+                    </CardTitle>
+                    <CardDescription>{journal.narration}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Ledger</TableHead>
+                          <TableHead className="text-right">Debit</TableHead>
+                          <TableHead className="text-right">Credit</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {journal.entries.map((entry, entryIdx) => (
+                          <TableRow key={entryIdx}>
+                            <TableCell>{entry.ledgerName}</TableCell>
+                            <TableCell className="text-right">
+                              {formatCurrency(entry.debit)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {formatCurrency(entry.credit)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

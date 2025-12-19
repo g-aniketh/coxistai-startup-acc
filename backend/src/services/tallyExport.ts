@@ -14,7 +14,7 @@ export async function exportVouchersToExcel(
     numberingSeriesId?: string;
   }
 ) {
-  const where: any = {
+  const where: Prisma.VoucherWhereInput = {
     startupId,
   };
 
@@ -54,8 +54,21 @@ export async function exportVouchersToExcel(
   // Create workbook
   const workbook = XLSX.utils.book_new();
 
+  type VoucherWithRelations = Prisma.VoucherGetPayload<{
+    include: {
+      voucherType: true;
+      numberingSeries: true;
+      entries: {
+        include: {
+          costCenter: true;
+          costCategoryRef: true;
+        };
+      };
+    };
+  }>;
+
   // Vouchers sheet
-  const vouchersData = vouchers.map((v: any) => ({
+  const vouchersData = vouchers.map((v: VoucherWithRelations) => ({
     "Voucher Number": v.voucherNumber,
     "Voucher Type": v.voucherType.name,
     "Numbering Series": v.numberingSeries?.name || "",
@@ -69,7 +82,17 @@ export async function exportVouchersToExcel(
   XLSX.utils.book_append_sheet(workbook, vouchersSheet, "Vouchers");
 
   // Voucher Entries sheet
-  const entriesData: any[] = [];
+  const entriesData: Array<{
+    "Voucher Number": string;
+    "Voucher Type": string;
+    "Ledger Name": string;
+    "Ledger Code": string;
+    "Entry Type": string;
+    Amount: string;
+    Narration: string;
+    "Cost Center": string;
+    "Cost Category": string;
+  }> = [];
   for (const voucher of vouchers) {
     for (const entry of voucher.entries) {
       entriesData.push({
@@ -103,7 +126,7 @@ export async function exportLedgersToExcel(startupId: string) {
 
   const workbook = XLSX.utils.book_new();
 
-  const partiesData = parties.map((p: any) => ({
+  const partiesData = parties.map((p: Prisma.PartyMasterGetPayload<{}>) => ({
     Name: p.name,
     Type: p.type,
     Email: p.email || "",
@@ -142,7 +165,7 @@ export async function exportGstDataToExcel(startupId: string) {
   const workbook = XLSX.utils.book_new();
 
   // GST Registrations sheet
-  const registrationsData = registrations.map((r: any) => ({
+  const registrationsData = registrations.map((r: Prisma.GstRegistrationGetPayload<{}>) => ({
     GSTIN: r.gstin,
     "Legal Name": r.legalName || "",
     "Trade Name": r.tradeName || "",
@@ -163,7 +186,7 @@ export async function exportGstDataToExcel(startupId: string) {
   );
 
   // Tax Rates sheet
-  const taxRatesData = taxRates.map((tr: any) => ({
+  const taxRatesData = taxRates.map((tr: Prisma.GstTaxRateGetPayload<{}>) => ({
     "Supply Type": tr.supplyType,
     "HSN/SAC": tr.hsnOrSac || "",
     Description: tr.description || "",

@@ -21,6 +21,7 @@ import {
   InterestCompoundingFrequency,
   Party,
   PartyInput,
+  CostCentreReport,
 } from "@/lib/api";
 import { Badge } from "@/components/ui/Badge";
 import {
@@ -637,10 +638,13 @@ export default function CostManagementPage() {
         await refreshParties();
         setPartyDialogOpen(false);
         resetPartyForm();
-        setPartyInterestForm((prev) => ({
-          ...prev,
-          partyId: response.data.id,
-        }));
+        const partyId = response.data.id;
+        if (partyId) {
+          setPartyInterestForm((prev) => ({
+            ...prev,
+            partyId,
+          }));
+        }
       } else {
         toast.error(response.error || "Failed to create party");
       }
@@ -924,7 +928,7 @@ export default function CostManagementPage() {
 
   const renderCostCentreReportingTab = () => {
     const [reportLoading, setReportLoading] = useState(false);
-    const [reportData, setReportData] = useState<any>(null);
+    const [reportData, setReportData] = useState<CostCentreReport | null>(null);
     const [selectedCostCentre, setSelectedCostCentre] = useState<string>("");
     const [fromDate, setFromDate] = useState(
       new Date(new Date().getFullYear(), 0, 1).toISOString().split("T")[0]
@@ -942,7 +946,7 @@ export default function CostManagementPage() {
           toDate,
         });
         if (response.success) {
-          setReportData(response.data);
+          setReportData(response.data ?? null);
         }
       } catch (error) {
         console.error("Failed to load cost centre report:", error);
@@ -1085,7 +1089,7 @@ export default function CostManagementPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {reportData.centres.map((centre: any, idx: number) => (
+                      {reportData.centres.map((centre, idx) => (
                         <TableRow key={idx}>
                           <TableCell className="font-medium">
                             {centre.costCentreName}

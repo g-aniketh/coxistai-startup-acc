@@ -23,7 +23,25 @@ export const listRoles = async (startupId?: string) => {
     orderBy: { name: "asc" },
   });
 
-  return roles.map(({ users, ...rest }: any) => ({
+  type RoleWithRelations = Prisma.RoleGetPayload<{
+    include: {
+      permissions: {
+        select: {
+          id: true;
+          action: true;
+          subject: true;
+          description: true;
+        };
+      };
+      users: {
+        select: {
+          userId: true;
+        };
+      };
+    };
+  }>;
+
+  return roles.map(({ users, ...rest }: RoleWithRelations) => ({
     ...rest,
     _count: {
       users: users.length,
@@ -131,7 +149,7 @@ export const updateRole = async (
     }
   }
 
-  const updateData: any = {};
+  const updateData: Prisma.RoleUpdateInput = {};
 
   if (name !== undefined) {
     updateData.name = name;

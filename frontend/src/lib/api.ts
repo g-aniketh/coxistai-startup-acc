@@ -287,6 +287,64 @@ export interface VoucherEntry {
   billReferences: VoucherBillReference[];
 }
 
+export type VoucherStatus = "DRAFT" | "POSTED" | "CANCELLED";
+export type PaymentMode =
+  | "CASH"
+  | "BANK_TRANSFER"
+  | "CHEQUE"
+  | "UPI"
+  | "NEFT"
+  | "RTGS"
+  | "OTHER";
+
+export interface InventoryLine {
+  itemId: string;
+  warehouseId: string;
+  quantity: number;
+  rate: number;
+  amount: number;
+  discountAmount?: number;
+  gstRatePercent?: number;
+  batchNumber?: string;
+  narration?: string;
+}
+
+export interface VoucherInventoryLine extends InventoryLine {
+  id: string;
+  voucherId: string;
+  item: ItemMaster;
+  warehouse: WarehouseMaster;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ItemMaster {
+  id: string;
+  startupId: string;
+  itemName: string;
+  alias?: string | null;
+  hsnSac?: string | null;
+  unit?: string | null;
+  defaultSalesRate?: number | null;
+  defaultPurchaseRate?: number | null;
+  gstRatePercent?: number | null;
+  description?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WarehouseMaster {
+  id: string;
+  startupId: string;
+  name: string;
+  alias?: string | null;
+  address?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Voucher {
   id: string;
   startupId: string;
@@ -297,13 +355,27 @@ export interface Voucher {
   reference?: string | null;
   narration?: string | null;
   createdById?: string | null;
+  status: VoucherStatus;
+  partyLedgerId?: string | null;
+  paymentMode?: PaymentMode | null;
+  placeOfSupplyState?: string | null;
+  originalInvoiceId?: string | null;
+  billingName?: string | null;
+  billingAddress?: string | null;
+  customerGstin?: string | null;
   transactionId?: string | null;
   totalAmount: number;
   createdAt: string;
   updatedAt: string;
   voucherType: VoucherType;
   numberingSeries?: VoucherNumberingSeries | null;
+  partyLedger?: {
+    id: string;
+    name: string;
+    ledgerSubtype?: string | null;
+  } | null;
   entries: VoucherEntry[];
+  inventoryLines?: VoucherInventoryLine[];
 }
 
 export interface CreateVoucherRequest {
@@ -313,7 +385,7 @@ export interface CreateVoucherRequest {
   reference?: string;
   narration?: string;
   createdById?: string;
-  entries: Array<{
+  entries?: Array<{
     ledgerName: string;
     ledgerCode?: string;
     entryType: VoucherEntryType;
@@ -329,6 +401,24 @@ export interface CreateVoucherRequest {
       remarks?: string;
     }>;
   }>;
+  inventoryLines?: Array<{
+    itemId: string;
+    warehouseId: string;
+    quantity: number;
+    rate: number;
+    discountAmount?: number;
+    gstRatePercent?: number;
+    batchNumber?: string;
+    narration?: string;
+  }>;
+  partyLedgerId?: string;
+  paymentMode?: PaymentMode;
+  placeOfSupplyState?: string;
+  originalInvoiceId?: string;
+  billingName?: string;
+  billingAddress?: string;
+  customerGstin?: string;
+  autoPost?: boolean;
 }
 
 export type BillType = "RECEIVABLE" | "PAYABLE";
@@ -549,6 +639,19 @@ export interface LedgerGroupInput {
   parentId?: string | null;
 }
 
+export type LedgerSubtype =
+  | "CASH"
+  | "BANK"
+  | "CUSTOMER"
+  | "SUPPLIER"
+  | "SALES"
+  | "PURCHASE"
+  | "TAX_GST_OUTPUT"
+  | "TAX_GST_INPUT"
+  | "EXPENSE"
+  | "INCOME"
+  | "OTHER";
+
 export interface Ledger {
   id: string;
   startupId: string;
@@ -556,6 +659,7 @@ export interface Ledger {
   name: string;
   alias?: string | null;
   description?: string | null;
+  ledgerSubtype?: LedgerSubtype | null;
   inventoryAffectsStock: boolean;
   maintainBillByBill: boolean;
   defaultCreditPeriodDays?: number | null;
@@ -576,6 +680,140 @@ export interface Ledger {
   createdAt: string;
   updatedAt: string;
   group?: LedgerGroup;
+}
+
+export interface TrialBalanceRow {
+  ledgerName: string;
+  groupName?: string;
+  category?: string;
+  debit: number;
+  credit: number;
+  balance: number;
+  balanceType: "DEBIT" | "CREDIT";
+}
+
+export interface PLAccount {
+  name: string;
+  category: string;
+  amount: number;
+}
+
+export interface ProfitLossData {
+  trading: PLAccount[];
+  grossProfit: number;
+  indirectExpenses: PLAccount[];
+  indirectIncomes: PLAccount[];
+  netProfit: number;
+  totalIncome: number;
+  totalExpenses: number;
+}
+
+export interface BalanceSheetItem {
+  name: string;
+  category: string;
+  amount: number;
+}
+
+export interface BalanceSheetData {
+  assets: BalanceSheetItem[];
+  liabilities: BalanceSheetItem[];
+  capital: BalanceSheetItem[];
+  totalAssets: number;
+  totalLiabilities: number;
+  netWorth: number;
+}
+
+export interface CashFlowItem {
+  category: string;
+  description: string;
+  amount: number;
+}
+
+export interface CashFlowData {
+  operating: CashFlowItem[];
+  investing: CashFlowItem[];
+  financing: CashFlowItem[];
+  netCashFlow: number;
+  openingBalance: number;
+  closingBalance: number;
+}
+
+export interface FinancialRatios {
+  liquidity: {
+    currentRatio: number;
+    quickRatio: number;
+  };
+  profitability: {
+    grossProfitMargin: number;
+    netProfitMargin: number;
+    returnOnAssets: number;
+  };
+  efficiency: {
+    assetTurnover: number;
+    inventoryTurnover: number;
+  };
+  leverage: {
+    debtToEquity: number;
+    debtRatio: number;
+  };
+}
+
+export interface CostCentreReportCentre {
+  costCentreId: string;
+  costCentreName: string;
+  directIncome: number;
+  indirectIncome: number;
+  directExpense: number;
+  indirectExpense: number;
+  purchase: number;
+  sales: number;
+  grossProfit: number;
+  netProfit: number;
+  totalIncome: number;
+  totalExpense: number;
+}
+
+export interface CostCentreReport {
+  costCentre: {
+    id: string;
+    name: string;
+    category: string;
+  } | null;
+  period: {
+    fromDate: string;
+    toDate: string;
+  };
+  centres: CostCentreReportCentre[];
+  summary: {
+    totalSales: number;
+    totalPurchase: number;
+    totalDirectIncome: number;
+    totalIndirectIncome: number;
+    totalDirectExpense: number;
+    totalIndirectExpense: number;
+    totalGrossProfit: number;
+    totalNetProfit: number;
+  };
+}
+
+export interface ExceptionReportItem {
+  type: string;
+  ledgerName: string;
+  ledgerId: string;
+  description: string;
+  severity: "WARNING" | "ERROR";
+  amount?: number;
+  expected?: number;
+  actual?: number;
+}
+
+export interface ExceptionReport {
+  summary: {
+    totalExceptions: number;
+    errors: number;
+    warnings: number;
+  };
+  exceptions: ExceptionReportItem[];
 }
 
 export interface LedgerInput {
@@ -1841,6 +2079,11 @@ export const apiClient = {
       return response.data;
     },
 
+    listLedgers: async (): Promise<ApiResponse<Ledger[]>> => {
+      const response = await api.get("/bookkeeping/ledgers");
+      return response.data;
+    },
+
     createLedgerGroup: async (
       data: LedgerGroupInput
     ): Promise<ApiResponse<LedgerGroup>> => {
@@ -1866,11 +2109,6 @@ export const apiClient = {
       return response.data;
     },
 
-    listLedgers: async (): Promise<ApiResponse<Ledger[]>> => {
-      const response = await api.get("/bookkeeping/ledgers");
-      return response.data;
-    },
-
     createLedger: async (data: LedgerInput): Promise<ApiResponse<Ledger>> => {
       const response = await api.post("/bookkeeping/ledgers", data);
       return response.data;
@@ -1889,7 +2127,7 @@ export const apiClient = {
       return response.data;
     },
 
-    getTrialBalance: async (asOnDate?: string): Promise<ApiResponse<any>> => {
+    getTrialBalance: async (asOnDate?: string): Promise<ApiResponse<TrialBalanceRow[]>> => {
       const response = await api.get("/bookkeeping/trial-balance", {
         params: { asOnDate },
       });
@@ -1899,14 +2137,14 @@ export const apiClient = {
     getProfitAndLoss: async (params?: {
       fromDate?: string;
       toDate?: string;
-    }): Promise<ApiResponse<any>> => {
+    }): Promise<ApiResponse<ProfitLossData>> => {
       const response = await api.get("/bookkeeping/profit-loss", {
         params,
       });
       return response.data;
     },
 
-    getBalanceSheet: async (asOnDate?: string): Promise<ApiResponse<any>> => {
+    getBalanceSheet: async (asOnDate?: string): Promise<ApiResponse<BalanceSheetData>> => {
       const response = await api.get("/bookkeeping/balance-sheet", {
         params: { asOnDate },
       });
@@ -1916,7 +2154,7 @@ export const apiClient = {
     getCashFlow: async (params?: {
       fromDate?: string;
       toDate?: string;
-    }): Promise<ApiResponse<any>> => {
+    }): Promise<ApiResponse<CashFlowData>> => {
       const response = await api.get("/bookkeeping/cash-flow", {
         params,
       });
@@ -1925,7 +2163,7 @@ export const apiClient = {
 
     getFinancialRatios: async (
       asOnDate?: string
-    ): Promise<ApiResponse<any>> => {
+    ): Promise<ApiResponse<FinancialRatios>> => {
       const response = await api.get("/bookkeeping/financial-ratios", {
         params: { asOnDate },
       });
@@ -1990,7 +2228,7 @@ export const apiClient = {
 
     getExceptionReports: async (params?: {
       asOnDate?: string;
-    }): Promise<ApiResponse<any>> => {
+    }): Promise<ApiResponse<ExceptionReport>> => {
       const response = await api.get("/bookkeeping/exception-reports", {
         params,
       });
@@ -2001,7 +2239,7 @@ export const apiClient = {
       costCentreId?: string;
       fromDate?: string;
       toDate?: string;
-    }): Promise<ApiResponse<any>> => {
+    }): Promise<ApiResponse<CostCentreReport>> => {
       const response = await api.get("/bookkeeping/cost-centre-pl", {
         params,
       });
@@ -2235,6 +2473,118 @@ export const apiClient = {
       }
     ): Promise<ApiResponse<any>> => {
       const response = await api.post(`/vouchers/${voucherId}/reverse`, params);
+      return response.data;
+    },
+    post: async (voucherId: string): Promise<ApiResponse<any>> => {
+      const response = await api.post(`/vouchers/${voucherId}/post`);
+      return response.data;
+    },
+    cancel: async (voucherId: string): Promise<ApiResponse<any>> => {
+      const response = await api.post(`/vouchers/${voucherId}/cancel`);
+      return response.data;
+    },
+    getInventoryLines: async (
+      voucherId: string
+    ): Promise<ApiResponse<VoucherInventoryLine[]>> => {
+      const response = await api.get(`/vouchers/${voucherId}/inventory-lines`);
+      return response.data;
+    },
+  },
+
+  items: {
+    list: async (): Promise<ApiResponse<ItemMaster[]>> => {
+      const response = await api.get("/items");
+      return response.data;
+    },
+    get: async (itemId: string): Promise<ApiResponse<ItemMaster>> => {
+      const response = await api.get(`/items/${itemId}`);
+      return response.data;
+    },
+    create: async (data: {
+      itemName: string;
+      alias?: string;
+      hsnSac?: string;
+      unit?: string;
+      defaultSalesRate?: number;
+      defaultPurchaseRate?: number;
+      gstRatePercent?: number;
+      description?: string;
+      isActive?: boolean;
+    }): Promise<ApiResponse<ItemMaster>> => {
+      const response = await api.post("/items", data);
+      return response.data;
+    },
+    update: async (
+      itemId: string,
+      data: {
+        itemName?: string;
+        alias?: string;
+        hsnSac?: string;
+        unit?: string;
+        defaultSalesRate?: number;
+        defaultPurchaseRate?: number;
+        gstRatePercent?: number;
+        description?: string;
+        isActive?: boolean;
+      }
+    ): Promise<ApiResponse<ItemMaster>> => {
+      const response = await api.put(`/items/${itemId}`, data);
+      return response.data;
+    },
+    delete: async (itemId: string): Promise<ApiResponse<void>> => {
+      const response = await api.delete(`/items/${itemId}`);
+      return response.data;
+    },
+    getStock: async (
+      itemId: string
+    ): Promise<
+      ApiResponse<{ itemId: string; warehouseId: string; quantity: number }[]>
+    > => {
+      const response = await api.get(`/items/${itemId}/stock`);
+      return response.data;
+    },
+  },
+
+  warehouses: {
+    list: async (): Promise<ApiResponse<WarehouseMaster[]>> => {
+      const response = await api.get("/warehouses");
+      return response.data;
+    },
+    get: async (warehouseId: string): Promise<ApiResponse<WarehouseMaster>> => {
+      const response = await api.get(`/warehouses/${warehouseId}`);
+      return response.data;
+    },
+    create: async (data: {
+      name: string;
+      alias?: string;
+      address?: string;
+      isActive?: boolean;
+    }): Promise<ApiResponse<WarehouseMaster>> => {
+      const response = await api.post("/warehouses", data);
+      return response.data;
+    },
+    update: async (
+      warehouseId: string,
+      data: {
+        name?: string;
+        alias?: string;
+        address?: string;
+        isActive?: boolean;
+      }
+    ): Promise<ApiResponse<WarehouseMaster>> => {
+      const response = await api.put(`/warehouses/${warehouseId}`, data);
+      return response.data;
+    },
+    delete: async (warehouseId: string): Promise<ApiResponse<void>> => {
+      const response = await api.delete(`/warehouses/${warehouseId}`);
+      return response.data;
+    },
+    getStock: async (
+      warehouseId: string
+    ): Promise<
+      ApiResponse<{ itemId: string; itemName: string; quantity: number }[]>
+    > => {
+      const response = await api.get(`/warehouses/${warehouseId}/stock`);
       return response.data;
     },
   },

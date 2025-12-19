@@ -37,13 +37,11 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     }
 
     const party = await createParty(startupId, req.body);
-    return res
-      .status(201)
-      .json({
-        success: true,
-        data: party,
-        message: "Party created successfully",
-      });
+    return res.status(201).json({
+      success: true,
+      data: party,
+      message: "Party created successfully",
+    });
   } catch (error) {
     console.error("Create party error:", error);
     return res.status(400).json({

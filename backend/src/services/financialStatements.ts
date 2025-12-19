@@ -1,4 +1,4 @@
-import { Prisma, LedgerCategory, LedgerBalanceType } from "@prisma/client";
+import { Prisma, LedgerCategory, LedgerBalanceType, VoucherCategory } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 
 interface LedgerBalance {
@@ -22,19 +22,19 @@ interface TrialBalanceEntry {
   credit: number;
 }
 
-interface PLAccount {
+export interface PLAccount {
   name: string;
   category: string;
   amount: number;
 }
 
-interface BalanceSheetItem {
+export interface BalanceSheetItem {
   name: string;
   category: string;
   amount: number;
 }
 
-interface CashFlowItem {
+export interface CashFlowItem {
   category: string;
   description: string;
   amount: number;
@@ -80,7 +80,7 @@ async function calculateLedgerBalances(
   }
 
   // Build date filter for voucher entries
-  const voucherFilters: any = {
+  const voucherFilters: Prisma.VoucherWhereInput = {
     startupId,
   };
   if (fromDate || toDate) {
@@ -101,7 +101,7 @@ async function calculateLedgerBalances(
   for (const voucher of vouchers) {
     for (const entry of voucher.entries) {
       // Find ledger by name (since entries store ledgerName, not ledgerId)
-      const ledger = ledgers.find((l: any) => l.name === entry.ledgerName);
+      const ledger = ledgers.find((l) => l.name === entry.ledgerName);
       if (!ledger) continue;
 
       const balance = balances.get(ledger.id);
@@ -446,7 +446,7 @@ export async function getCashFlow(
 
   for (const voucher of vouchers) {
     for (const entry of voucher.entries) {
-      const ledger = cashLedgers.find((l: any) => l.name === entry.ledgerName);
+      const ledger = cashLedgers.find((l) => l.name === entry.ledgerName);
       if (!ledger) continue;
 
       const amount = Number(entry.amount);
@@ -456,7 +456,7 @@ export async function getCashFlow(
 
       // Categorize based on voucher type and other entry
       const otherEntry = voucher.entries.find(
-        (e: any) => e.ledgerName !== entry.ledgerName
+        (e) => e.ledgerName !== entry.ledgerName
       );
       const category = categorizeCashFlow(
         voucher.voucherType.category,
@@ -495,7 +495,7 @@ export async function getCashFlow(
 
 function categorizeCashFlow(
   voucherCategory: string,
-  otherEntry?: any
+  otherEntry?: { ledgerName: string; entryType: string }
 ): "Operating" | "Investing" | "Financing" {
   // Simplified categorization - can be enhanced
   if (
@@ -688,7 +688,7 @@ export async function getCashBook(
 
   for (const voucher of vouchers) {
     for (const entry of voucher.entries) {
-      const ledger = cashLedgers.find((l: any) => l.name === entry.ledgerName);
+      const ledger = cashLedgers.find((l) => l.name === entry.ledgerName);
       if (!ledger) continue;
 
       const amount = Number(entry.amount);
@@ -754,7 +754,7 @@ export async function getBankBook(
   });
 
   if (bankLedgerName) {
-    bankLedgers = bankLedgers.filter((l: any) => l.name === bankLedgerName);
+    bankLedgers = bankLedgers.filter((l) => l.name === bankLedgerName);
   }
 
   if (bankLedgers.length === 0) {
@@ -873,11 +873,11 @@ export async function getDayBook(
 
   return {
     date,
-    vouchers: vouchers.map((v: any) => ({
+    vouchers: vouchers.map((v) => ({
       voucherNumber: v.voucherNumber,
       voucherType: v.voucherType.name,
-      narration: v.narration,
-      entries: v.entries.map((e: any) => ({
+      narration: v.narration ?? undefined,
+      entries: v.entries.map((e) => ({
         ledgerName: e.ledgerName,
         entryType: e.entryType,
         amount: Number(e.amount),
@@ -1022,15 +1022,20 @@ export async function getJournals(
   const from = fromDate ? new Date(fromDate) : undefined;
   const to = toDate ? new Date(toDate) : new Date();
 
-  const voucherFilters: any = {
+  const voucherFilters: Prisma.VoucherWhereInput = {
     startupId,
     voucherType: {
-      category: journalType as any,
+      category: journalType as VoucherCategory,
     },
-    date: {},
+    ...(from || to
+      ? {
+          date: {
+            ...(from ? { gte: from } : {}),
+            ...(to ? { lte: to } : {}),
+          },
+        }
+      : {}),
   };
-  if (from) voucherFilters.date!.gte = from;
-  if (to) voucherFilters.date!.lte = to;
 
   const vouchers = await prisma.voucher.findMany({
     where: voucherFilters,
@@ -1043,11 +1048,11 @@ export async function getJournals(
 
   return {
     journalType,
-    vouchers: vouchers.map((v: any) => ({
+    vouchers: vouchers.map((v) => ({
       date: v.date.toISOString().split("T")[0],
       voucherNumber: v.voucherNumber,
-      narration: v.narration,
-      entries: v.entries.map((e: any) => ({
+      narration: v.narration ?? undefined,
+      entries: v.entries.map((e) => ({
         ledgerName: e.ledgerName,
         entryType: e.entryType,
         amount: Number(e.amount),

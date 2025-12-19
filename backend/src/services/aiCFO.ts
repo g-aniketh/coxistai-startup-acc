@@ -53,8 +53,10 @@ export class AICFOService {
         throw new Error("Insufficient historical data for forecasting");
       }
 
+      type CashflowMetric = Prisma.CashflowMetricGetPayload<{}>;
+
       // Prepare data for AI
-      const historicalData = history.map((m: any) => ({
+      const historicalData = history.map((m: CashflowMetric) => ({
         month: m.periodStart.toISOString().slice(0, 7),
         revenue: m.totalRevenue.toNumber(),
         expenses: m.totalExpenses.toNumber(),
@@ -125,12 +127,20 @@ Respond in JSON format:
 
       // Calculate summary metrics from forecast
       const lastForecastMonth = response.forecast[response.forecast.length - 1];
-      const totalProjectedRevenue = response.forecast.reduce(
-        (sum: number, m: any) => sum + m.revenue,
+      interface ForecastMonth {
+        month: string;
+        revenue: number;
+        expenses: number;
+        cashflow: number;
+        cashBalance: number;
+      }
+
+      const totalProjectedRevenue = (response.forecast as ForecastMonth[]).reduce(
+        (sum: number, m: ForecastMonth) => sum + m.revenue,
         0
       );
-      const totalProjectedExpenses = response.forecast.reduce(
-        (sum: number, m: any) => sum + m.expenses,
+      const totalProjectedExpenses = (response.forecast as ForecastMonth[]).reduce(
+        (sum: number, m: ForecastMonth) => sum + m.expenses,
         0
       );
 
@@ -365,7 +375,7 @@ Respond in JSON format:
           name: scenarioName,
           description: `What-if analysis: ${scenarioName}`,
           scenarioType: "what_if",
-          inputParameters: inputs as any,
+          inputParameters: inputs as Prisma.InputJsonValue,
           projectedRevenue: new Decimal(projectedRevenue * timeHorizon),
           projectedExpenses: new Decimal(projectedExpenses * timeHorizon),
           projectedCashflow: new Decimal(
@@ -395,9 +405,10 @@ Respond in JSON format:
         viabilityReason: aiResponse.viabilityReason,
         confidence: aiResponse.confidence,
       };
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error running scenario:", error);
-      throw new Error(`Failed to run scenario: ${error.message}`);
+      const message = error instanceof Error ? error.message : "Unknown error";
+      throw new Error(`Failed to run scenario: ${message}`);
     }
   }
 
@@ -433,13 +444,15 @@ Respond in JSON format:
       const latestMetrics = metrics[metrics.length - 1];
       const firstMetrics = metrics[0];
 
+      type CashflowMetric = Prisma.CashflowMetricGetPayload<{}>;
+
       // Calculate period totals
       const totalRevenue = metrics.reduce(
-        (sum: Decimal, m: any) => sum.add(m.totalRevenue),
+        (sum: Decimal, m: CashflowMetric) => sum.add(m.totalRevenue),
         new Decimal(0)
       );
       const totalExpenses = metrics.reduce(
-        (sum: Decimal, m: any) => sum.add(m.totalExpenses),
+        (sum: Decimal, m: CashflowMetric) => sum.add(m.totalExpenses),
         new Decimal(0)
       );
 
@@ -543,9 +556,10 @@ Respond in JSON format:
       });
 
       return update;
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error generating investor update:", error);
-      throw new Error(`Failed to generate investor update: ${error.message}`);
+      const message = error instanceof Error ? error.message : "Unknown error";
+      throw new Error(`Failed to generate investor update: ${message}`);
     }
   }
 
@@ -575,6 +589,8 @@ Respond in JSON format:
         take: 6,
       });
 
+      type CashflowMetric = Prisma.CashflowMetricGetPayload<{}>;
+
       const prompt = `Analyze this startup's financial health and provide actionable insights.
 
 Current Metrics:
@@ -589,7 +605,7 @@ Current Metrics:
 Historical Trend (last ${history.length} months):
 ${history
   .map(
-    (m: any) =>
+    (m: CashflowMetric) =>
       `${m.periodStart.toISOString().slice(0, 7)}: Revenue $${m.totalRevenue.toNumber().toLocaleString()}, Expenses $${m.totalExpenses.toNumber().toLocaleString()}`
   )
   .join("\n")}
@@ -628,9 +644,10 @@ Respond in JSON format:
       );
 
       return response;
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error getting insights:", error);
-      throw new Error(`Failed to get insights: ${error.message}`);
+      const message = error instanceof Error ? error.message : "Unknown error";
+      throw new Error(`Failed to get insights: ${message}`);
     }
   }
 

@@ -104,7 +104,19 @@ router.get("/", async (req: Request, res: Response) => {
       offset,
     } = req.query;
 
-    const filters: any = {};
+    interface BillFilters {
+      billType?: BillType;
+      status?: BillStatus;
+      ledgerName?: string;
+      fromDate?: string;
+      toDate?: string;
+      dueDateFrom?: string;
+      dueDateTo?: string;
+      limit?: number;
+      offset?: number;
+    }
+
+    const filters: BillFilters = {};
     if (billType && typeof billType === "string" && billType in BillType) {
       filters.billType = billType as BillType;
     }

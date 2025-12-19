@@ -52,6 +52,8 @@ model Startup {
   gstTaxRates           GstTaxRate[]
   gstLedgerMappings     GstLedgerMapping[]
   auditLogs             AuditLog[]
+  itemMasters           ItemMaster[]
+  warehouses            WarehouseMaster[]
 }
 
 model User {
@@ -252,6 +254,22 @@ enum VoucherCategory {
   MATERIAL_OUT
 }
 
+enum VoucherStatus {
+  DRAFT
+  POSTED
+  CANCELLED
+}
+
+enum PaymentMode {
+  CASH
+  BANK_TRANSFER
+  CHEQUE
+  UPI
+  NEFT
+  RTGS
+  OTHER
+}
+
 enum VoucherNumberingMethod {
   NONE
   MANUAL
@@ -316,30 +334,42 @@ model VoucherNumberingSeries {
 }
 
 model Voucher {
-  id                String   @id @default(cuid())
-  startupId         String
-  voucherTypeId     String
-  numberingSeriesId String?
-  voucherNumber     String
-  date              DateTime @default(now())
-  reference         String?
-  narration         String?
-  createdById       String?
-  transactionId     String?  @unique
-  totalAmount       Decimal  @default(0)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                 String        @id @default(cuid())
+  startupId          String
+  voucherTypeId      String
+  numberingSeriesId  String?
+  voucherNumber      String
+  date               DateTime      @default(now())
+  reference          String?
+  narration          String?
+  createdById        String?
+  transactionId      String?       @unique
+  totalAmount        Decimal       @default(0)
+  status             VoucherStatus @default(DRAFT)
+  partyLedgerId      String? // For customer/supplier linking
+  paymentMode        PaymentMode?
+  placeOfSupplyState String? // State code for GST calculation
+  originalInvoiceId  String? // For Credit/Debit Notes linking to original invoice
+  billingName        String?
+  billingAddress     String?
+  customerGstin      String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
   startup         Startup                 @relation(fields: [startupId], references: [id], onDelete: Cascade)
   voucherType     VoucherType             @relation(fields: [voucherTypeId], references: [id], onDelete: Cascade)
   numberingSeries VoucherNumberingSeries? @relation(fields: [numberingSeriesId], references: [id], onDelete: SetNull)
   transaction     Transaction?            @relation("TransactionVoucher", fields: [transactionId], references: [id], onDelete: SetNull)
+  partyLedger     Ledger?                 @relation("VoucherPartyLedger", fields: [partyLedgerId], references: [id], onDelete: SetNull)
   entries         VoucherEntry[]
+  inventoryLines  VoucherInventoryLine[]
   bills           Bill[] // Bills created from this voucher
   settlements     BillSettlement[] // Settlements made through this voucher
 
   @@unique([startupId, voucherTypeId, voucherNumber])
   @@index([startupId, date])
+  @@index([startupId, status])
+  @@index([partyLedgerId])
 }
 
 enum VoucherEntryType {
@@ -359,6 +389,7 @@ model VoucherEntry {
   voucherId      String
   ledgerName     String
   ledgerCode     String?
+  ledgerId       String? // Reference to Ledger model for better integrity
   entryType      VoucherEntryType
   amount         Decimal
   narration      String?
@@ -370,6 +401,7 @@ model VoucherEntry {
   updatedAt      DateTime         @updatedAt
 
   voucher         Voucher                @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+  ledger          Ledger?                @relation("VoucherEntryLedger", fields: [ledgerId], references: [id], onDelete: SetNull)
   billReferences  VoucherBillReference[]
   bills           Bill[] // Bills created from this entry
   settlements     BillSettlement[] // Settlements made through this entry
@@ -377,6 +409,7 @@ model VoucherEntry {
   costCategoryRef CostCategory?          @relation("VoucherEntryCostCategory", fields: [costCategoryId], references: [id], onDelete: SetNull)
 
   @@index([voucherId])
+  @@index([ledgerId])
 }
 
 model VoucherBillReference {
@@ -949,6 +982,20 @@ enum LedgerBalanceType {
   CREDIT
 }
 
+enum LedgerSubtype {
+  CASH
+  BANK
+  CUSTOMER
+  SUPPLIER
+  SALES
+  PURCHASE
+  TAX_GST_OUTPUT
+  TAX_GST_INPUT
+  EXPENSE
+  INCOME
+  OTHER
+}
+
 enum InterestComputation {
   NONE
   SIMPLE
@@ -983,6 +1030,7 @@ model Ledger {
   name                    String
   alias                   String?
   description             String?
+  ledgerSubtype           LedgerSubtype? // CASH, BANK, CUSTOMER, SUPPLIER, etc.
   inventoryAffectsStock   Boolean             @default(false)
   maintainBillByBill      Boolean             @default(false)
   defaultCreditPeriodDays Int?
@@ -1003,12 +1051,15 @@ model Ledger {
   createdAt               DateTime            @default(now())
   updatedAt               DateTime            @updatedAt
 
-  startup Startup     @relation(fields: [startupId], references: [id], onDelete: Cascade)
-  group   LedgerGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  startup        Startup        @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  group          LedgerGroup    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  vouchers       Voucher[]      @relation("VoucherPartyLedger")
+  voucherEntries VoucherEntry[] @relation("VoucherEntryLedger")
 
   @@unique([startupId, name])
   @@index([startupId])
   @@index([startupId, groupId])
+  @@index([startupId, ledgerSubtype])
 }
 
 model ImportedTransaction {
@@ -1116,4 +1167,72 @@ model AuditLog {
   @@index([startupId, createdAt])
   @@index([startupId, action])
   @@index([entityType, entityId])
+}
+
+// ============================================================================
+// INVENTORY MASTER MODELS
+// ============================================================================
+
+model ItemMaster {
+  id                  String   @id @default(cuid())
+  startupId           String
+  itemName            String
+  alias               String?
+  hsnSac              String? // HSN for goods, SAC for services
+  unit                String? // e.g., "PCS", "KG", "LTR", "NOS"
+  defaultSalesRate    Decimal? @default(0)
+  defaultPurchaseRate Decimal? @default(0)
+  gstRatePercent      Decimal? @default(0) // Default GST rate for this item
+  description         String?
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  startup        Startup                @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  inventoryLines VoucherInventoryLine[]
+
+  @@unique([startupId, itemName])
+  @@index([startupId])
+  @@index([startupId, hsnSac])
+}
+
+model WarehouseMaster {
+  id        String   @id @default(cuid())
+  startupId String
+  name      String
+  alias     String?
+  address   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  startup        Startup                @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  inventoryLines VoucherInventoryLine[]
+
+  @@unique([startupId, name])
+  @@index([startupId])
+}
+
+model VoucherInventoryLine {
+  id             String   @id @default(cuid())
+  voucherId      String
+  itemId         String
+  warehouseId    String
+  quantity       Decimal
+  rate           Decimal
+  amount         Decimal // quantity * rate - discount
+  discountAmount Decimal? @default(0)
+  gstRatePercent Decimal? // Override item's default GST rate if needed
+  batchNumber    String?
+  narration      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  voucher   Voucher         @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+  item      ItemMaster      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  warehouse WarehouseMaster @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  @@index([voucherId])
+  @@index([itemId])
+  @@index([warehouseId])
 }

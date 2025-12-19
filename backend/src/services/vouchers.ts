@@ -6,9 +6,12 @@ import {
   VoucherEntryType,
   VoucherCategory,
   VoucherNumberingMethod,
+  VoucherStatus,
+  PaymentMode,
 } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { createAuditLog } from "./auditLog";
+import { postVoucher, cancelVoucher } from "./voucherPosting";
 
 export interface VoucherBillReferenceInput {
   reference: string;
@@ -29,14 +32,34 @@ export interface VoucherEntryInput {
   billReferences?: VoucherBillReferenceInput[];
 }
 
+export interface InventoryLineInput {
+  itemId: string;
+  warehouseId: string;
+  quantity: number;
+  rate: number;
+  discountAmount?: number;
+  gstRatePercent?: number;
+  batchNumber?: string;
+  narration?: string;
+}
+
 export interface CreateVoucherInput {
   voucherTypeId: string;
   numberingSeriesId?: string | null;
   date?: string;
   reference?: string;
   narration?: string;
-  entries: VoucherEntryInput[];
+  entries?: VoucherEntryInput[]; // Optional for vouchers with automatic posting
+  inventoryLines?: InventoryLineInput[]; // For sales/purchase vouchers
+  partyLedgerId?: string; // For customer/supplier
+  paymentMode?: PaymentMode;
+  placeOfSupplyState?: string;
+  originalInvoiceId?: string; // For credit/debit notes
+  billingName?: string;
+  billingAddress?: string;
+  customerGstin?: string;
   createdById?: string;
+  autoPost?: boolean; // If true, post immediately after creation
 }
 
 interface VoucherNumberingContext {
@@ -198,27 +221,53 @@ export const createVoucher = async (
   startupId: string,
   payload: CreateVoucherInput
 ) => {
-  const totalAmount = assertBalancedEntries(payload.entries);
+  // Calculate total amount
+  let totalAmount = 0;
 
-  // Check credit limits for all CREDIT entries
-  for (const entry of payload.entries) {
-    if (entry.entryType === "CREDIT") {
-      const limitCheck = await checkCreditLimit(
-        startupId,
-        entry.ledgerName,
-        entry.amount
-      );
-      if (!limitCheck.allowed) {
-        throw new Error(
-          limitCheck.message ||
-            `Credit limit exceeded for ledger: ${entry.ledgerName}`
-        );
+  // For vouchers with inventory lines, calculate from inventory including GST
+  if (payload.inventoryLines && payload.inventoryLines.length > 0) {
+    let itemsSubtotal = 0;
+    let totalTax = 0;
+
+    for (const line of payload.inventoryLines) {
+      const lineAmount = line.quantity * line.rate - (line.discountAmount || 0);
+      itemsSubtotal += lineAmount;
+
+      // Calculate GST if rate is provided
+      const gstRate = line.gstRatePercent || 0;
+      if (gstRate > 0) {
+        const tax = (lineAmount * gstRate) / 100;
+        totalTax += tax;
       }
     }
+
+    totalAmount = itemsSubtotal + totalTax;
+  } else if (payload.entries && payload.entries.length > 0) {
+    // For journal vouchers or manual entry vouchers
+    totalAmount = assertBalancedEntries(payload.entries);
+
+    // Check credit limits for all CREDIT entries
+    for (const entry of payload.entries) {
+      if (entry.entryType === "CREDIT") {
+        const limitCheck = await checkCreditLimit(
+          startupId,
+          entry.ledgerName,
+          entry.amount
+        );
+        if (!limitCheck.allowed) {
+          throw new Error(
+            limitCheck.message ||
+              `Credit limit exceeded for ledger: ${entry.ledgerName}`
+          );
+        }
+      }
+    }
+  } else {
+    throw new Error("Voucher must have either entries or inventory lines");
   }
 
   const voucher = await prisma.$transaction(
-    async (tx: any) => {
+    async (tx: Prisma.TransactionClient) => {
       const voucherType = await tx.voucherType.findFirst({
         where: { id: payload.voucherTypeId, startupId },
         include: { numberingSeries: true },
@@ -287,29 +336,57 @@ export const createVoucher = async (
           narration: payload.narration?.trim() || null,
           createdById: payload.createdById || null,
           totalAmount,
-          entries: {
-            create: payload.entries.map((entry) => ({
-              ledgerName: entry.ledgerName.trim(),
-              ledgerCode: entry.ledgerCode?.trim() || null,
-              entryType: entry.entryType,
-              amount: entry.amount,
-              narration: entry.narration?.trim() || null,
-              costCenterName: entry.costCenterName?.trim() || null,
-              costCategory: entry.costCategory?.trim() || null,
-              billReferences:
-                entry.billReferences && entry.billReferences.length > 0
-                  ? {
-                      create: entry.billReferences.map((bill) => ({
-                        reference: bill.reference.trim(),
-                        amount: bill.amount,
-                        referenceType: bill.referenceType ?? "AGAINST",
-                        dueDate: bill.dueDate ? new Date(bill.dueDate) : null,
-                        remarks: bill.remarks?.trim() || null,
-                      })),
-                    }
-                  : undefined,
-            })),
-          },
+          status: VoucherStatus.DRAFT, // Create as draft by default
+          partyLedgerId: payload.partyLedgerId || null,
+          paymentMode: payload.paymentMode || null,
+          placeOfSupplyState: payload.placeOfSupplyState || null,
+          originalInvoiceId: payload.originalInvoiceId || null,
+          billingName: payload.billingName || null,
+          billingAddress: payload.billingAddress || null,
+          customerGstin: payload.customerGstin || null,
+          entries: payload.entries
+            ? {
+                create: payload.entries.map((entry) => ({
+                  ledgerName: entry.ledgerName.trim(),
+                  ledgerCode: entry.ledgerCode?.trim() || null,
+                  entryType: entry.entryType,
+                  amount: entry.amount,
+                  narration: entry.narration?.trim() || null,
+                  costCenterName: entry.costCenterName?.trim() || null,
+                  costCategory: entry.costCategory?.trim() || null,
+                  billReferences:
+                    entry.billReferences && entry.billReferences.length > 0
+                      ? {
+                          create: entry.billReferences.map((bill) => ({
+                            reference: bill.reference.trim(),
+                            amount: bill.amount,
+                            referenceType: bill.referenceType ?? "AGAINST",
+                            dueDate: bill.dueDate
+                              ? new Date(bill.dueDate)
+                              : null,
+                            remarks: bill.remarks?.trim() || null,
+                          })),
+                        }
+                      : undefined,
+                })),
+              }
+            : undefined,
+          inventoryLines: payload.inventoryLines
+            ? {
+                create: payload.inventoryLines.map((line) => ({
+                  itemId: line.itemId,
+                  warehouseId: line.warehouseId,
+                  quantity: line.quantity,
+                  rate: line.rate,
+                  amount:
+                    line.quantity * line.rate - (line.discountAmount || 0),
+                  discountAmount: line.discountAmount || null,
+                  gstRatePercent: line.gstRatePercent || null,
+                  batchNumber: line.batchNumber || null,
+                  narration: line.narration || null,
+                })),
+              }
+            : undefined,
         },
         include: {
           entries: {
@@ -317,8 +394,15 @@ export const createVoucher = async (
               billReferences: true,
             },
           },
+          inventoryLines: {
+            include: {
+              item: true,
+              warehouse: true,
+            },
+          },
           voucherType: true,
           numberingSeries: true,
+          partyLedger: true,
         },
       });
 
@@ -330,7 +414,7 @@ export const createVoucher = async (
     }
   );
 
-  const simplifiedEntries = voucher.entries.map((entry: any) => ({
+  const simplifiedEntries = voucher.entries.map((entry) => ({
     ledgerName: entry.ledgerName,
     entryType: entry.entryType,
     amount: entry.amount,
@@ -361,7 +445,61 @@ export const createVoucher = async (
     console.warn("Failed to write audit log for voucher", voucher.id, err);
   });
 
+  // Auto-post if requested
+  if (payload.autoPost) {
+    try {
+      await postVoucher(startupId, voucher.id, payload.createdById);
+      // Reload voucher to get updated status
+      const updatedVoucher = await prisma.voucher.findUnique({
+        where: { id: voucher.id },
+        include: {
+          entries: {
+            include: {
+              billReferences: true,
+            },
+          },
+          inventoryLines: {
+            include: {
+              item: true,
+              warehouse: true,
+            },
+          },
+          voucherType: true,
+          numberingSeries: true,
+          partyLedger: true,
+        },
+      });
+      return updatedVoucher || voucher;
+    } catch (error) {
+      console.error("Auto-post failed:", error);
+      // Return voucher as draft if auto-post fails
+      return voucher;
+    }
+  }
+
   return voucher;
+};
+
+/**
+ * Post a draft voucher
+ */
+export const postVoucherById = async (
+  startupId: string,
+  voucherId: string,
+  userId?: string
+) => {
+  return postVoucher(startupId, voucherId, userId);
+};
+
+/**
+ * Cancel a posted voucher
+ */
+export const cancelVoucherById = async (
+  startupId: string,
+  voucherId: string,
+  userId?: string
+) => {
+  return cancelVoucher(startupId, voucherId, userId);
 };
 
 export const listVouchers = async (
@@ -406,9 +544,16 @@ export const listVouchers = async (
     include: {
       voucherType: true,
       numberingSeries: true,
+      partyLedger: true,
       entries: {
         include: {
           billReferences: true,
+        },
+      },
+      inventoryLines: {
+        include: {
+          item: true,
+          warehouse: true,
         },
       },
     },
@@ -469,7 +614,7 @@ export const createReversingJournal = async (
   }
 
   // Build reversing entries (opposite entry types)
-  const reversingEntries = originalVoucher.entries.map((entry: any) => ({
+  const reversingEntries = originalVoucher.entries.map((entry) => ({
     ledgerName: entry.ledgerName,
     ledgerCode: entry.ledgerCode || undefined,
     entryType:

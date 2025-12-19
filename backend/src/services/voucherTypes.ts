@@ -126,7 +126,7 @@ export const createVoucherType = async (
     allowDuplicateNumbers?: boolean;
   }
 ) => {
-  return prisma.$transaction(async (tx: any) => {
+  return prisma.$transaction(async (tx) => {
     const existing = await tx.voucherType.findFirst({
       where: { startupId, name: data.name },
     });
@@ -191,7 +191,7 @@ export const updateVoucherType = async (
     throw new Error("Voucher type not found");
   }
 
-  const updateData: any = {
+  const updateData: Prisma.VoucherTypeUpdateInput = {
     abbreviation: data.abbreviation ?? voucherType.abbreviation,
     numberingMethod: data.numberingMethod ?? voucherType.numberingMethod,
     numberingBehavior: data.numberingBehavior ?? voucherType.numberingBehavior,
@@ -269,7 +269,7 @@ export const getNextVoucherNumber = async (
   voucherTypeId: string,
   numberingSeriesId?: string | null
 ) => {
-  return prisma.$transaction(async (tx: any) => {
+  return prisma.$transaction(async (tx) => {
     if (numberingSeriesId) {
       const series = await tx.voucherNumberingSeries.findFirst({
         where: { id: numberingSeriesId, startupId, voucherTypeId },

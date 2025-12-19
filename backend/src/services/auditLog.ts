@@ -8,9 +8,9 @@ export interface CreateAuditLogInput {
   entityId: string;
   action: AuditAction;
   description?: string;
-  oldValues?: any;
-  newValues?: any;
-  metadata?: any;
+  oldValues?: Record<string, unknown>;
+  newValues?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
   ipAddress?: string;
   userAgent?: string;
 }
@@ -250,10 +250,10 @@ export const getAuditLogSummary = async (
  * Helper function to extract changed fields between old and new objects
  */
 export const getChangedFields = (
-  oldValues: any,
-  newValues: any
-): Record<string, { old: any; new: any }> => {
-  const changes: Record<string, { old: any; new: any }> = {};
+  oldValues?: Record<string, unknown>,
+  newValues?: Record<string, unknown>
+): Record<string, { old: unknown; new: unknown }> => {
+  const changes: Record<string, { old: unknown; new: unknown }> = {};
   const allKeys = new Set([
     ...Object.keys(oldValues || {}),
     ...Object.keys(newValues || {}),

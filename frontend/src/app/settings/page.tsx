@@ -1327,9 +1327,12 @@ export default function SettingsPage() {
           ))}
           <PlaidLink
             onSuccess={handlePlaidSuccess}
-            onError={(e: any) =>
-              toast.error(e.display_message || "An error occurred.")
-            }
+            onError={(e: Error | unknown) => {
+              const errorMessage = (e && typeof e === 'object' && 'display_message' in e && typeof e.display_message === 'string') 
+                ? e.display_message 
+                : "An error occurred.";
+              toast.error(errorMessage);
+            }}
           />
         </div>
       ),

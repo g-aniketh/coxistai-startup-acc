@@ -1,5 +1,6 @@
 import {
   Prisma,
+  PrismaClient,
   GstLedgerMappingType,
   GstRegistrationType,
   GstTaxSupplyType,
@@ -70,7 +71,7 @@ export const createGstRegistration = async (
     throw new Error("Invalid end date");
   }
 
-  return prisma.$transaction(async (tx: any) => {
+  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     if (isDefault) {
       await tx.gstRegistration.updateMany({
         where: { startupId, isDefault: true },
@@ -140,7 +141,7 @@ export const updateGstRegistration = async (
     throw new Error("Invalid end date");
   }
 
-  return prisma.$transaction(async (tx: any) => {
+  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     if (input.isDefault) {
       await tx.gstRegistration.updateMany({
         where: { startupId, isDefault: true, NOT: { id: registrationId } },

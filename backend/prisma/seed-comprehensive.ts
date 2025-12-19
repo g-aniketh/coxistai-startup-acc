@@ -1,4 +1,9 @@
-import { PrismaClient, TransactionType } from "@prisma/client";
+import {
+  PrismaClient,
+  TransactionType,
+  VoucherCategory,
+  LedgerSubtype,
+} from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { DEFAULT_VOUCHER_TYPES } from "../src/services/voucherTypes";
 import { bootstrapLedgerStructure } from "../src/services/bookkeeping";
@@ -435,8 +440,43 @@ async function main() {
   );
   console.log("✓ Seeded feature toggles for all startups");
 
+  // Extended voucher types including all 13 types
+  const extendedVoucherTypes = [
+    ...DEFAULT_VOUCHER_TYPES,
+    {
+      name: "Delivery Note",
+      abbreviation: "DN",
+      category: "DELIVERY_NOTE" as VoucherCategory,
+      prefix: "DN/",
+    },
+    {
+      name: "Receipt Note",
+      abbreviation: "RN",
+      category: "RECEIPT_NOTE" as VoucherCategory,
+      prefix: "RN/",
+    },
+    {
+      name: "Stock Journal",
+      abbreviation: "SJ",
+      category: "STOCK_JOURNAL" as VoucherCategory,
+      prefix: "SJ/",
+    },
+    {
+      name: "Memo Voucher",
+      abbreviation: "MEMO",
+      category: "MEMO" as VoucherCategory,
+      prefix: "MEMO/",
+    },
+    {
+      name: "Reversing Journal",
+      abbreviation: "REV",
+      category: "REVERSING_JOURNAL" as VoucherCategory,
+      prefix: "REV/",
+    },
+  ];
+
   for (const startup of startups) {
-    for (const definition of DEFAULT_VOUCHER_TYPES) {
+    for (const definition of extendedVoucherTypes) {
       const voucherType = await prisma.voucherType.create({
         data: {
           startupId: startup.id,
@@ -1010,6 +1050,463 @@ async function main() {
     },
   });
   console.log("✓ Created 1 investor update for main startup");
+
+  // 13. Create ItemMaster and WarehouseMaster for main startup
+  // (mainStartup already declared above)
+
+  // Create Warehouses
+  const warehouses = await Promise.all([
+    prisma.warehouseMaster.create({
+      data: {
+        startupId: mainStartup.id,
+        name: "Main Warehouse",
+        alias: "WH-001",
+        address: "91 Springboard, Residency Road, Bengaluru",
+        isActive: true,
+      },
+    }),
+    prisma.warehouseMaster.create({
+      data: {
+        startupId: mainStartup.id,
+        name: "Secondary Warehouse",
+        alias: "WH-002",
+        address: "5th Floor, BKC Tech Park, Mumbai",
+        isActive: true,
+      },
+    }),
+    prisma.warehouseMaster.create({
+      data: {
+        startupId: mainStartup.id,
+        name: "Storage Unit",
+        alias: "WH-003",
+        address: "Plot 12, Cyber City, Gurugram",
+        isActive: true,
+      },
+    }),
+  ]);
+  console.log(`✓ Created ${warehouses.length} warehouses for main startup`);
+
+  // Create Items with HSN/SAC, GST rates, and default rates
+  const items = await Promise.all([
+    prisma.itemMaster.create({
+      data: {
+        startupId: mainStartup.id,
+        itemName: "Premium SaaS License",
+        alias: "ITEM-001",
+        hsnSac: "998314", // Software services
+        unit: "License",
+        defaultSalesRate: 24999,
+        defaultPurchaseRate: 0, // Not purchased
+        gstRatePercent: 18,
+        isActive: true,
+      },
+    }),
+    prisma.itemMaster.create({
+      data: {
+        startupId: mainStartup.id,
+        itemName: "API Credits - 10K",
+        alias: "ITEM-002",
+        hsnSac: "998314",
+        unit: "Pack",
+        defaultSalesRate: 4199,
+        defaultPurchaseRate: 0,
+        gstRatePercent: 18,
+        isActive: true,
+      },
+    }),
+    prisma.itemMaster.create({
+      data: {
+        startupId: mainStartup.id,
+        itemName: "Consulting Hours - 5hr Pack",
+        alias: "ITEM-003",
+        hsnSac: "998314",
+        unit: "Pack",
+        defaultSalesRate: 62500,
+        defaultPurchaseRate: 0,
+        gstRatePercent: 18,
+        isActive: true,
+      },
+    }),
+    prisma.itemMaster.create({
+      data: {
+        startupId: mainStartup.id,
+        itemName: "Cloud Server - Monthly",
+        alias: "ITEM-004",
+        hsnSac: "998314",
+        unit: "Month",
+        defaultSalesRate: 15000,
+        defaultPurchaseRate: 8000,
+        gstRatePercent: 18,
+        isActive: true,
+      },
+    }),
+    prisma.itemMaster.create({
+      data: {
+        startupId: mainStartup.id,
+        itemName: "Office Supplies",
+        alias: "ITEM-005",
+        hsnSac: "48201000", // Office supplies
+        unit: "Pack",
+        defaultSalesRate: 0,
+        defaultPurchaseRate: 5000,
+        gstRatePercent: 12,
+        isActive: true,
+      },
+    }),
+  ]);
+  console.log(`✓ Created ${items.length} items for main startup`);
+
+  // 14. Create additional ledgers with proper ledgerSubtype
+  const ledgerGroups = await prisma.ledgerGroup.findMany({
+    where: { startupId: mainStartup.id },
+  });
+
+  const cashGroup = ledgerGroups.find((g) => g.category === "CURRENT_ASSET");
+  const bankGroup = ledgerGroups.find((g) => g.category === "CURRENT_ASSET");
+  const customerGroup = ledgerGroups.find(
+    (g) => g.category === "SUNDRY_DEBTOR"
+  );
+  const supplierGroup = ledgerGroups.find(
+    (g) => g.category === "SUNDRY_CREDITOR"
+  );
+  const salesGroup = ledgerGroups.find((g) => g.category === "DIRECT_INCOME");
+  const purchaseGroup = ledgerGroups.find(
+    (g) => g.category === "DIRECT_EXPENSE"
+  );
+  const gstGroup = ledgerGroups.find((g) => g.category === "CURRENT_LIABILITY");
+
+  // Create CASH ledger
+  if (cashGroup) {
+    await prisma.ledger.create({
+      data: {
+        startupId: mainStartup.id,
+        groupId: cashGroup.id,
+        name: "Cash",
+        ledgerSubtype: LedgerSubtype.CASH,
+        openingBalance: 50000,
+        openingBalanceType: "DEBIT",
+        inventoryAffectsStock: false,
+        maintainBillByBill: false,
+        costCenterApplicable: false,
+        interestComputation: "NONE",
+      },
+    });
+  }
+
+  // Create BANK ledger
+  if (bankGroup) {
+    await prisma.ledger.create({
+      data: {
+        startupId: mainStartup.id,
+        groupId: bankGroup.id,
+        name: "HDFC Bank - Current Account",
+        ledgerSubtype: LedgerSubtype.BANK,
+        openingBalance: 1000000,
+        openingBalanceType: "DEBIT",
+        inventoryAffectsStock: false,
+        maintainBillByBill: false,
+        costCenterApplicable: false,
+        interestComputation: "NONE",
+      },
+    });
+  }
+
+  // Create CUSTOMER ledgers
+  if (customerGroup) {
+    await Promise.all([
+      prisma.ledger.create({
+        data: {
+          startupId: mainStartup.id,
+          groupId: customerGroup.id,
+          name: "ABC Corporation",
+          ledgerSubtype: LedgerSubtype.CUSTOMER,
+          openingBalance: 0,
+          openingBalanceType: "DEBIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: true,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+          creditLimit: 500000,
+        },
+      }),
+      prisma.ledger.create({
+        data: {
+          startupId: mainStartup.id,
+          groupId: customerGroup.id,
+          name: "XYZ Tech Solutions",
+          ledgerSubtype: LedgerSubtype.CUSTOMER,
+          openingBalance: 0,
+          openingBalanceType: "DEBIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: true,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+          creditLimit: 1000000,
+        },
+      }),
+    ]);
+  }
+
+  // Create SUPPLIER ledgers
+  if (supplierGroup) {
+    await Promise.all([
+      prisma.ledger.create({
+        data: {
+          startupId: mainStartup.id,
+          groupId: supplierGroup.id,
+          name: "Cloud Services Provider",
+          ledgerSubtype: LedgerSubtype.SUPPLIER,
+          openingBalance: 0,
+          openingBalanceType: "CREDIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: true,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+        },
+      }),
+      prisma.ledger.create({
+        data: {
+          startupId: mainStartup.id,
+          groupId: supplierGroup.id,
+          name: "Office Supplies Vendor",
+          ledgerSubtype: LedgerSubtype.SUPPLIER,
+          openingBalance: 0,
+          openingBalanceType: "CREDIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: true,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+        },
+      }),
+    ]);
+  }
+
+  // Create SALES ledger
+  if (salesGroup) {
+    await prisma.ledger.create({
+      data: {
+        startupId: mainStartup.id,
+        groupId: salesGroup.id,
+        name: "Sales",
+        ledgerSubtype: LedgerSubtype.SALES,
+        openingBalance: 0,
+        openingBalanceType: "CREDIT",
+        inventoryAffectsStock: false,
+        maintainBillByBill: false,
+        costCenterApplicable: false,
+        interestComputation: "NONE",
+      },
+    });
+  }
+
+  // Create PURCHASE ledger
+  if (purchaseGroup) {
+    await prisma.ledger.create({
+      data: {
+        startupId: mainStartup.id,
+        groupId: purchaseGroup.id,
+        name: "Purchases",
+        ledgerSubtype: LedgerSubtype.PURCHASE,
+        openingBalance: 0,
+        openingBalanceType: "DEBIT",
+        inventoryAffectsStock: false,
+        maintainBillByBill: false,
+        costCenterApplicable: false,
+        interestComputation: "NONE",
+      },
+    });
+  }
+
+  // Create GST ledgers
+  if (gstGroup) {
+    await Promise.all([
+      prisma.ledger.create({
+        data: {
+          startupId: mainStartup.id,
+          groupId: gstGroup.id,
+          name: "GST Output CGST",
+          ledgerSubtype: LedgerSubtype.TAX_GST_OUTPUT,
+          openingBalance: 0,
+          openingBalanceType: "CREDIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: false,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+        },
+      }),
+      prisma.ledger.create({
+        data: {
+          startupId: mainStartup.id,
+          groupId: gstGroup.id,
+          name: "GST Output SGST",
+          ledgerSubtype: LedgerSubtype.TAX_GST_OUTPUT,
+          openingBalance: 0,
+          openingBalanceType: "CREDIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: false,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+        },
+      }),
+      prisma.ledger.create({
+        data: {
+          startupId: mainStartup.id,
+          groupId: gstGroup.id,
+          name: "GST Output IGST",
+          ledgerSubtype: LedgerSubtype.TAX_GST_OUTPUT,
+          openingBalance: 0,
+          openingBalanceType: "CREDIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: false,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+        },
+      }),
+      prisma.ledger.create({
+        data: {
+          startupId: mainStartup.id,
+          groupId: gstGroup.id,
+          name: "GST Input CGST",
+          ledgerSubtype: LedgerSubtype.TAX_GST_INPUT,
+          openingBalance: 0,
+          openingBalanceType: "DEBIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: false,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+        },
+      }),
+      prisma.ledger.create({
+        data: {
+          startupId: mainStartup.id,
+          groupId: gstGroup.id,
+          name: "GST Input SGST",
+          ledgerSubtype: LedgerSubtype.TAX_GST_INPUT,
+          openingBalance: 0,
+          openingBalanceType: "DEBIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: false,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+        },
+      }),
+      prisma.ledger.create({
+        data: {
+          startupId: mainStartup.id,
+          groupId: gstGroup.id,
+          name: "GST Input IGST",
+          ledgerSubtype: LedgerSubtype.TAX_GST_INPUT,
+          openingBalance: 0,
+          openingBalanceType: "DEBIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: false,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+        },
+      }),
+    ]);
+  }
+
+  console.log(
+    "✓ Created additional ledgers with proper subtypes for main startup"
+  );
+
+  // 15. Create GST Registration and Mappings
+  const gstRegistration = await prisma.gstRegistration.create({
+    data: {
+      startupId: mainStartup.id,
+      registrationType: "REGULAR",
+      gstin: "29AABCU9603R1ZX", // Sample GSTIN
+      legalName: "Coxist AI Private Limited",
+      tradeName: "Coxist AI",
+      stateName: "Karnataka",
+      stateCode: "29",
+      startDate: new Date(),
+      isDefault: true,
+      isActive: true,
+    },
+  });
+
+  // Create GST Ledger Mappings
+  const gstLedgers = await prisma.ledger.findMany({
+    where: {
+      startupId: mainStartup.id,
+      ledgerSubtype: {
+        in: [LedgerSubtype.TAX_GST_OUTPUT, LedgerSubtype.TAX_GST_INPUT],
+      },
+    },
+  });
+
+  const cgstOutput = gstLedgers.find((l) => l.name.includes("Output CGST"));
+  const sgstOutput = gstLedgers.find((l) => l.name.includes("Output SGST"));
+  const igstOutput = gstLedgers.find((l) => l.name.includes("Output IGST"));
+  const cgstInput = gstLedgers.find((l) => l.name.includes("Input CGST"));
+  const sgstInput = gstLedgers.find((l) => l.name.includes("Input SGST"));
+  const igstInput = gstLedgers.find((l) => l.name.includes("Input IGST"));
+
+  if (
+    cgstOutput &&
+    sgstOutput &&
+    igstOutput &&
+    cgstInput &&
+    sgstInput &&
+    igstInput
+  ) {
+    await Promise.all([
+      prisma.gstLedgerMapping.create({
+        data: {
+          startupId: mainStartup.id,
+          registrationId: gstRegistration.id,
+          mappingType: "OUTPUT_CGST",
+          ledgerName: cgstOutput.name,
+        },
+      }),
+      prisma.gstLedgerMapping.create({
+        data: {
+          startupId: mainStartup.id,
+          registrationId: gstRegistration.id,
+          mappingType: "OUTPUT_SGST",
+          ledgerName: sgstOutput.name,
+        },
+      }),
+      prisma.gstLedgerMapping.create({
+        data: {
+          startupId: mainStartup.id,
+          registrationId: gstRegistration.id,
+          mappingType: "OUTPUT_IGST",
+          ledgerName: igstOutput.name,
+        },
+      }),
+      prisma.gstLedgerMapping.create({
+        data: {
+          startupId: mainStartup.id,
+          registrationId: gstRegistration.id,
+          mappingType: "INPUT_CGST",
+          ledgerName: cgstInput.name,
+        },
+      }),
+      prisma.gstLedgerMapping.create({
+        data: {
+          startupId: mainStartup.id,
+          registrationId: gstRegistration.id,
+          mappingType: "INPUT_SGST",
+          ledgerName: sgstInput.name,
+        },
+      }),
+      prisma.gstLedgerMapping.create({
+        data: {
+          startupId: mainStartup.id,
+          registrationId: gstRegistration.id,
+          mappingType: "INPUT_IGST",
+          ledgerName: igstInput.name,
+        },
+      }),
+    ]);
+  }
+
+  console.log(
+    "✓ Created GST registration and ledger mappings for main startup"
+  );
 
   console.log("\n✅ Comprehensive seed completed successfully!");
   console.log('\n🔑 Login Credentials (password for all is "password123"):');
