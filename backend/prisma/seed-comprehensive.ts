@@ -1161,54 +1161,119 @@ async function main() {
     where: { startupId: mainStartup.id },
   });
 
-  const cashGroup = ledgerGroups.find((g) => g.category === "CURRENT_ASSET");
-  const bankGroup = ledgerGroups.find((g) => g.category === "CURRENT_ASSET");
+  // Find the correct groups (bootstrapLedgerStructure creates these)
+  const cashGroup = ledgerGroups.find((g) => g.name === "Cash-in-hand");
+  const bankGroup = ledgerGroups.find((g) => g.name === "Bank Accounts");
   const customerGroup = ledgerGroups.find(
-    (g) => g.category === "SUNDRY_DEBTOR"
+    (g) => g.name === "Sundry Debtors"
   );
   const supplierGroup = ledgerGroups.find(
-    (g) => g.category === "SUNDRY_CREDITOR"
+    (g) => g.name === "Sundry Creditors"
   );
-  const salesGroup = ledgerGroups.find((g) => g.category === "DIRECT_INCOME");
+  const salesGroup = ledgerGroups.find((g) => g.name === "Sales Accounts");
   const purchaseGroup = ledgerGroups.find(
-    (g) => g.category === "DIRECT_EXPENSE"
+    (g) => g.name === "Purchase Accounts"
   );
-  const gstGroup = ledgerGroups.find((g) => g.category === "CURRENT_LIABILITY");
+  const gstGroup = ledgerGroups.find((g) => g.name === "Duties & Taxes");
 
-  // Create CASH ledger
+  // Update or create CASH ledger (bootstrapLedgerStructure already creates "Cash")
   if (cashGroup) {
-    await prisma.ledger.create({
-      data: {
+    const existingCash = await prisma.ledger.findFirst({
+      where: {
         startupId: mainStartup.id,
-        groupId: cashGroup.id,
         name: "Cash",
-        ledgerSubtype: LedgerSubtype.CASH,
-        openingBalance: 50000,
-        openingBalanceType: "DEBIT",
-        inventoryAffectsStock: false,
-        maintainBillByBill: false,
-        costCenterApplicable: false,
-        interestComputation: "NONE",
       },
     });
+
+    if (existingCash) {
+      await prisma.ledger.update({
+        where: { id: existingCash.id },
+        data: {
+          ledgerSubtype: LedgerSubtype.CASH,
+          openingBalance: 50000,
+          openingBalanceType: "DEBIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: false,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+        },
+      });
+    } else {
+      await prisma.ledger.create({
+        data: {
+          startupId: mainStartup.id,
+          groupId: cashGroup.id,
+          name: "Cash",
+          ledgerSubtype: LedgerSubtype.CASH,
+          openingBalance: 50000,
+          openingBalanceType: "DEBIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: false,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+        },
+      });
+    }
   }
 
-  // Create BANK ledger
+  // Update or create BANK ledger (bootstrapLedgerStructure creates "Primary Bank", we want "HDFC Bank - Current Account")
   if (bankGroup) {
-    await prisma.ledger.create({
-      data: {
+    // Update existing "Primary Bank" to have proper subtype, or create new "HDFC Bank - Current Account"
+    const existingBank = await prisma.ledger.findFirst({
+      where: {
         startupId: mainStartup.id,
         groupId: bankGroup.id,
-        name: "HDFC Bank - Current Account",
-        ledgerSubtype: LedgerSubtype.BANK,
-        openingBalance: 1000000,
-        openingBalanceType: "DEBIT",
-        inventoryAffectsStock: false,
-        maintainBillByBill: false,
-        costCenterApplicable: false,
-        interestComputation: "NONE",
+        name: "Primary Bank",
       },
     });
+
+    if (existingBank) {
+      // Update existing "Primary Bank" ledger
+      await prisma.ledger.update({
+        where: { id: existingBank.id },
+        data: {
+          name: "HDFC Bank - Current Account",
+          ledgerSubtype: LedgerSubtype.BANK,
+          openingBalance: 1000000,
+          openingBalanceType: "DEBIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: false,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+        },
+      });
+    } else {
+      // Create new bank ledger if "Primary Bank" doesn't exist
+      await prisma.ledger.upsert({
+        where: {
+          startupId_name: {
+            startupId: mainStartup.id,
+            name: "HDFC Bank - Current Account",
+          },
+        },
+        update: {
+          ledgerSubtype: LedgerSubtype.BANK,
+          openingBalance: 1000000,
+          openingBalanceType: "DEBIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: false,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+        },
+        create: {
+          startupId: mainStartup.id,
+          groupId: bankGroup.id,
+          name: "HDFC Bank - Current Account",
+          ledgerSubtype: LedgerSubtype.BANK,
+          openingBalance: 1000000,
+          openingBalanceType: "DEBIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: false,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+        },
+      });
+    }
   }
 
   // Create CUSTOMER ledgers
@@ -1281,40 +1346,84 @@ async function main() {
     ]);
   }
 
-  // Create SALES ledger
+  // Update or create SALES ledger (bootstrapLedgerStructure already creates "Sales")
   if (salesGroup) {
-    await prisma.ledger.create({
-      data: {
+    const existingSales = await prisma.ledger.findFirst({
+      where: {
         startupId: mainStartup.id,
-        groupId: salesGroup.id,
         name: "Sales",
-        ledgerSubtype: LedgerSubtype.SALES,
-        openingBalance: 0,
-        openingBalanceType: "CREDIT",
-        inventoryAffectsStock: false,
-        maintainBillByBill: false,
-        costCenterApplicable: false,
-        interestComputation: "NONE",
       },
     });
+
+    if (existingSales) {
+      await prisma.ledger.update({
+        where: { id: existingSales.id },
+        data: {
+          ledgerSubtype: LedgerSubtype.SALES,
+          openingBalance: 0,
+          openingBalanceType: "CREDIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: false,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+        },
+      });
+    } else {
+      await prisma.ledger.create({
+        data: {
+          startupId: mainStartup.id,
+          groupId: salesGroup.id,
+          name: "Sales",
+          ledgerSubtype: LedgerSubtype.SALES,
+          openingBalance: 0,
+          openingBalanceType: "CREDIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: false,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+        },
+      });
+    }
   }
 
-  // Create PURCHASE ledger
+  // Update or create PURCHASE ledger (bootstrapLedgerStructure already creates "Purchases")
   if (purchaseGroup) {
-    await prisma.ledger.create({
-      data: {
+    const existingPurchases = await prisma.ledger.findFirst({
+      where: {
         startupId: mainStartup.id,
-        groupId: purchaseGroup.id,
         name: "Purchases",
-        ledgerSubtype: LedgerSubtype.PURCHASE,
-        openingBalance: 0,
-        openingBalanceType: "DEBIT",
-        inventoryAffectsStock: false,
-        maintainBillByBill: false,
-        costCenterApplicable: false,
-        interestComputation: "NONE",
       },
     });
+
+    if (existingPurchases) {
+      await prisma.ledger.update({
+        where: { id: existingPurchases.id },
+        data: {
+          ledgerSubtype: LedgerSubtype.PURCHASE,
+          openingBalance: 0,
+          openingBalanceType: "DEBIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: false,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+        },
+      });
+    } else {
+      await prisma.ledger.create({
+        data: {
+          startupId: mainStartup.id,
+          groupId: purchaseGroup.id,
+          name: "Purchases",
+          ledgerSubtype: LedgerSubtype.PURCHASE,
+          openingBalance: 0,
+          openingBalanceType: "DEBIT",
+          inventoryAffectsStock: false,
+          maintainBillByBill: false,
+          costCenterApplicable: false,
+          interestComputation: "NONE",
+        },
+      });
+    }
   }
 
   // Create GST ledgers

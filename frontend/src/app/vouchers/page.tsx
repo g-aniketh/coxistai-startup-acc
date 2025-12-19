@@ -343,43 +343,128 @@ export default function VouchersPage() {
               </p>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                <Link href="/vouchers/payment">
-                  <Button variant="outline" className="w-full">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Payment
-                  </Button>
-                </Link>
-                <Link href="/vouchers/receipt">
-                  <Button variant="outline" className="w-full">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Receipt
-                  </Button>
-                </Link>
-                <Link href="/vouchers/contra">
-                  <Button variant="outline" className="w-full">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Contra
-                  </Button>
-                </Link>
-                <Link href="/vouchers/journal">
-                  <Button variant="outline" className="w-full">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Journal
-                  </Button>
-                </Link>
-                <Link href="/vouchers/sales">
-                  <Button variant="outline" className="w-full">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Sales
-                  </Button>
-                </Link>
-                <Link href="/vouchers/purchase">
-                  <Button variant="outline" className="w-full">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Purchase
-                  </Button>
-                </Link>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-sm font-semibold text-[#2C2C2C] mb-3">
+                    Core Vouchers
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <Link href="/vouchers/payment">
+                      <Button variant="outline" className="w-full border-gray-200">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Payment
+                      </Button>
+                    </Link>
+                    <Link href="/vouchers/receipt">
+                      <Button variant="outline" className="w-full border-gray-200">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Receipt
+                      </Button>
+                    </Link>
+                    <Link href="/vouchers/contra">
+                      <Button variant="outline" className="w-full border-gray-200">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Contra
+                      </Button>
+                    </Link>
+                    <Link href="/vouchers/journal">
+                      <Button variant="outline" className="w-full border-gray-200">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Journal
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-semibold text-[#2C2C2C] mb-3">
+                    Sales & Purchase
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <Link href="/vouchers/sales">
+                      <Button variant="outline" className="w-full border-gray-200">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Sales
+                      </Button>
+                    </Link>
+                    <Link href="/vouchers/purchase">
+                      <Button variant="outline" className="w-full border-gray-200">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Purchase
+                      </Button>
+                    </Link>
+                    <Link href="/vouchers/credit-note">
+                      <Button variant="outline" className="w-full border-gray-200">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Credit Note
+                      </Button>
+                    </Link>
+                    <Link href="/vouchers/debit-note">
+                      <Button variant="outline" className="w-full border-gray-200">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Debit Note
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-semibold text-[#2C2C2C] mb-3">
+                    Inventory Operations
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <Link href="/vouchers/delivery-note">
+                      <Button variant="outline" className="w-full border-gray-200">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Delivery Note
+                      </Button>
+                    </Link>
+                    <Link href="/vouchers/receipt-note">
+                      <Button variant="outline" className="w-full border-gray-200">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Receipt Note
+                      </Button>
+                    </Link>
+                    <Link href="/vouchers/stock-journal">
+                      <Button variant="outline" className="w-full border-gray-200">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Stock Journal
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-semibold text-[#2C2C2C] mb-3">
+                    Advanced & Master Data
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <Link href="/vouchers/memo">
+                      <Button variant="outline" className="w-full border-gray-200">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Memo Voucher
+                      </Button>
+                    </Link>
+                    <Link href="/vouchers/reversing-journal">
+                      <Button variant="outline" className="w-full border-gray-200">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Reversing Journal
+                      </Button>
+                    </Link>
+                    <Link href="/vouchers/items">
+                      <Button variant="outline" className="w-full border-gray-200">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Items
+                      </Button>
+                    </Link>
+                    <Link href="/vouchers/warehouses">
+                      <Button variant="outline" className="w-full border-gray-200">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Warehouses
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>

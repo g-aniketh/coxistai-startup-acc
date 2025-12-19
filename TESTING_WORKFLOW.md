@@ -5,92 +5,146 @@ This document provides a step-by-step workflow to test all implemented features 
 ## Prerequisites
 
 - ✅ Database cleared and schema pushed (`npx prisma db push`)
+- ✅ Seed script run successfully (`npm run db:seed` or `npx tsx prisma/seed-comprehensive.ts`)
 - ✅ Backend server running
 - ✅ Frontend server running
-- ✅ User account created (or will create during testing)
+- ✅ User account available (seed script creates demo accounts)
+
+### 🔑 Pre-seeded Login Credentials
+
+The seed script creates the following demo accounts (password for all: `password123`):
+
+**Main Demo Account (Coxist AI) - Recommended for Testing:**
+- **Admin**: `admin@coxistai.com` - Full access
+- **CFO**: `cfo@coxistai.com` - Financial management access
+- **Accountant**: `accountant@coxistai.com` - Accounting access
+- **Demo User**: `demo@coxistai.com` - **Best for demo with full transaction history**
+
+**Other Demo Accounts:**
+- Coxist AI Cloud: `ceo@coxistai.cloud`
+- Coxist AI Analytics: `ceo@coxistai.analytics`
+- Coxist AI Innovations: `ceo@coxistai.innovations`
+- Coxist AI Ventures: `ceo@coxistai.ventures`
+
+### 📦 Pre-seeded Data
+
+The seed script automatically creates:
+- ✅ **5 Demo Startups** with company profiles, fiscal config, security config, currency config, and feature toggles
+- ✅ **All 13 Voucher Types** with default numbering series (Payment, Receipt, Contra, Journal, Sales, Purchase, Credit Note, Debit Note, Delivery Note, Receipt Note, Stock Journal, Memo, Reversing Journal)
+- ✅ **Chart of Accounts** with ledger groups and default ledgers
+- ✅ **Ledgers** with proper subtypes: Cash, Bank (HDFC), Customers (ABC Corporation, XYZ Tech Solutions), Suppliers (Cloud Services Provider, Office Supplies Vendor), Sales, Purchases, and GST ledgers (Output/Input CGST, SGST, IGST)
+- ✅ **3 Warehouses**: Main Warehouse, Secondary Warehouse, Storage Unit
+- ✅ **5 Items** with HSN/SAC codes and GST rates: Premium SaaS License, API Credits, Consulting Hours, Cloud Server, Office Supplies
+- ✅ **1 GST Registration** (Karnataka, GSTIN: 29AABCU9603R1ZX) with 6 GST ledger mappings
+- ✅ **Mock Bank Accounts** (3 per startup: Main Checking, Business Savings, Stripe Payouts)
+- ✅ **90 days of Transactions** with realistic revenue and expense patterns
+- ✅ **Products and Sales** (3 products, 20 sales records)
+- ✅ **6 months of Cashflow Metrics** with growth trends
+- ✅ **AI Scenarios** (2 scenarios: Hiring engineers, Revenue growth)
+- ✅ **Alerts** (2 alerts: Runway warning, Burn rate info)
+- ✅ **Investor Update** (1 Q4 2024 update)
+- ✅ **Roles and Permissions** (Admin, CFO, Accountant, OperationsManager)
 
 ---
 
 ## Phase 1: Initial Setup & Company Configuration
 
-### Step 1: User Registration/Login
+### Step 1: User Login
 
-1. Navigate to `/login` or `/register`
-2. **If new user**: Register with email, password, first name, last name
-   - This automatically creates a startup and assigns Admin role
-3. **If existing user**: Login with credentials
-4. Verify you land on `/dashboard`
+1. Navigate to `/login`
+2. **Login with pre-seeded account**:
+   - **Recommended**: Use `demo@coxistai.com` / `password123` for the best demo experience
+   - **Alternative**: Use `admin@coxistai.com` / `password123` for admin access
+3. Verify you land on `/dashboard`
+4. **Note**: If you need to test registration, you can register a new account which will create a new startup. However, for testing existing features, use the pre-seeded accounts.
 
 ### Step 2: Company Profile Setup
 
 1. Navigate to **Settings** (`/settings`)
 2. Select the **General** tab and expand the **Company Profile** card:
-   - Fill in company details:
-     - Legal Name: "Test Company Pvt Ltd"
-     - Mailing Name: "Test Company"
-     - Email: "contact@testcompany.com"
-     - Phone: "+91-1234567890"
-   - Add multiple addresses:
+   - **Note**: The seed script already creates a company profile. You can:
+     - **View existing profile**: Verify the pre-seeded company details are displayed
+     - **Update profile**: Modify existing details or add additional addresses
+   - To add more addresses:
      - Click "Add Address"
      - Fill: Address Line 1, City, State, PIN, Country
+     - Mark as Primary, Billing, or Shipping as needed
      - Add 2-3 addresses (Registered, Mailing, Branch)
    - Save changes
-3. **Verify**: Check that all addresses are saved and displayed
+3. **Verify**: Check that all addresses (pre-seeded + newly added) are saved and displayed
 
 ### Step 3: Fiscal Configuration
 
 1. Switch to the **Financial** tab and open **Financial Year & Edit Log**
-2. Configure:
-   - Financial Year Start: `2024-04-01`
-   - Financial Year End: `2025-03-31`
-   - Books Start Date: `2024-04-01`
-   - Allow Backdated Entries: `Yes` (toggle ON)
+2. **Note**: The seed script already creates fiscal configuration. You can:
+   - **View existing config**: Verify the pre-seeded fiscal settings
+   - **Update config**: Modify dates or toggles as needed
+3. Ensure configuration:
+   - Financial Year Start: `2024-04-01` (or verify existing date)
+   - Financial Year End: `2025-03-31` (or verify existing date)
+   - Books Start Date: `2024-04-01` (or verify existing date)
+   - Allow Backdated Entries: `Yes` (toggle ON) - **Important for testing backdated vouchers**
    - Enable Edit Log: `Yes` (toggle ON) - **Important for audit trail testing**
-3. Save changes
+4. Save changes if modified
 
 ### Step 4: Security Settings
 
 1. Switch to the **Security** tab
-2. Configure:
+2. **Note**: The seed script already creates security configuration. You can:
+   - **View existing config**: Verify the pre-seeded security settings
+   - **Update config**: Modify toggles as needed
+3. Configure or verify:
    - Enable **Vault Encryption** for company data (toggle ON and set a vault password if enabling for the first time)
    - Enable **User Access Controls** (toggle ON)
    - Enable **Multi-factor Authentication** for privileged roles (optional, toggle ON when ready)
-3. Save changes
+4. Save changes if modified
 
 ### Step 5: Currency Configuration
 
 1. In the **Financial** tab, open **Base Currency & Formatting**
-2. Configure:
+2. **Note**: The seed script already creates currency configuration (INR, ₹, 2 decimals). You can:
+   - **View existing config**: Verify the pre-seeded currency settings
+   - **Update config**: Modify formatting options as needed
+3. Verify or configure:
    - Base Currency Code: `INR`
    - Currency Symbol: `₹`
    - Decimal Places: `2`
    - Show Amount in Millions: `No`
-3. Save changes
+4. Save changes if modified
 
 ### Step 6: Feature Toggles
 
 1. Switch to the **Billing & Subscription** tab → **Feature Access**
    - Confirm the plan summary shows `Startup (Free Earlybird)` with status `active`
-2. Enable all modules/cards in **Feature Access**:
+2. **Note**: The seed script already enables most features. You can:
+   - **View existing toggles**: Verify the pre-seeded feature access
+   - **Update toggles**: Enable/disable features as needed
+3. Verify or enable all modules/cards in **Feature Access**:
    - ✅ Accounting & Ledgers
    - ✅ Inventory & Stock
    - ✅ Tax & Compliance
-   - ✅ Payroll & HR
+   - ✅ Payroll & HR (may be disabled for starter plans)
    - ✅ AI Insights
    - ✅ Scenario Planning
-   - ✅ Automations
-   - ✅ Vendor Management
+   - ✅ Automations (may be disabled for starter plans)
+   - ✅ Vendor Management (may be disabled for starter plans)
    - ✅ Billing & Invoicing
-3. Save changes
+4. Save changes if modified
 
-### Step 6A: Create a Mock Bank Account
+### Step 6A: Mock Bank Accounts
 
 1. Navigate to **Banking & Payments** (`/banking-payments`)
-2. In the **Mock Bank Accounts** card, click **Add Mock Account**
-3. Complete the two-step wizard:
-   - **Step 1 – Account Details:** Enter a friendly account name (e.g., "Operating Account") and click **Next**
-   - **Step 2 – Opening Balance:** Provide the opening balance, review the summary, and click **Create Account**
-4. **Verify**: The new mock account appears in the table and feeds the CFO dashboard totals
+2. **Note**: The seed script already creates 3 mock bank accounts per startup:
+   - Main Checking Account
+   - Business Savings
+   - Stripe Payouts
+3. **View existing accounts**: Verify the pre-seeded accounts are displayed with their balances
+4. **Optional - Create additional account**:
+   - In the **Mock Bank Accounts** card, click **Add Mock Account**
+   - Complete the two-step wizard:
+     - **Step 1 – Account Details:** Enter a friendly account name (e.g., "Operating Account") and click **Next**
+     - **Step 2 – Opening Balance:** Provide the opening balance, review the summary, and click **Create Account**
+5. **Verify**: All accounts (pre-seeded + newly added) appear in the table and feed the CFO dashboard totals
 
 ---
 
@@ -101,25 +155,32 @@ This document provides a step-by-step workflow to test all implemented features 
 1. Navigate to **Settings** (`/settings`)
 2. Go to the **Financial** tab
 3. Scroll down to the **Voucher Types & Numbering** section
-4. Review default voucher types (Payment, Receipt, Sales, Purchase, Journal, Contra) that are listed
-5. Create a custom voucher type:
-   - Name: "Credit Note" (required)
-   - Category: "Sales" (required - select from dropdown)
-   - Abbreviation: "CN" (optional)
+4. **Note**: The seed script already creates all 13 voucher types with default numbering series:
+   - Payment, Receipt, Sales, Purchase, Journal, Contra
+   - Credit Note, Debit Note
+   - Delivery Note, Receipt Note
+   - Stock Journal, Memo, Reversing Journal
+5. **View existing types**: Verify all voucher types are listed with their configurations
+6. **Optional - Create a custom voucher type**:
+   - Click **Add Voucher Type** button
+   - Name: "Custom Voucher" (required)
+   - Category: Select from dropdown (required)
+   - Abbreviation: "CUST" (optional)
    - Numbering Method: Select from dropdown (e.g., "Automatic", "Manual", etc.)
    - Numbering Behaviour: Select from dropdown
-   - Prefix: "CN/" (optional)
+   - Prefix: "CUST/" (optional)
    - Suffix: (optional)
    - Checkboxes: Allow manual override, Allow duplicate numbers (optional)
-6. Click **Add Voucher Type** button
-7. **Verify**: The new voucher type appears as its own card showing category, next number, and the configured numbering method/behaviour badges
+   - Click **Add Voucher Type** button
+7. **Verify**: All voucher types (pre-seeded + newly added) appear as cards showing category, next number, and the configured numbering method/behaviour badges
 
 ### Step 8: Configure Numbering Series
 
 1. Stay in **Settings** → **Financial** tab → **Voucher Types & Numbering** section
-2. For each voucher type in the list, you can:
+2. **Note**: The seed script already creates a default numbering series for each voucher type. You can:
+   - **View existing series**: Verify the default series for each voucher type
    - **Edit voucher type settings**: Update prefix, suffix, next number, and checkboxes
-   - **Add numbering series**:
+   - **Add additional numbering series**:
      - Scroll to the "Numbering Series" section within each voucher type card
      - Enter Series Name (e.g., "HO-2025")
      - Enter Prefix (optional)
@@ -127,15 +188,56 @@ This document provides a step-by-step workflow to test all implemented features 
      - Click **Add Series** button
    - **Preview next number**: Click "Preview Next Number" or "Preview Next" for a series
 3. Example: For "Payment" voucher type:
-   - Add a series: Name "PAY-2025", Prefix "PAY-", Suffix ""
+   - View the existing "Default" series
+   - Add an additional series: Name "PAY-2025", Prefix "PAY-", Suffix ""
    - Click **Add Series**
-4. **Verify**: Series appear under each voucher type card with their details, and the preview button shows the formatted number that will be used
+4. **Verify**: All series (default + newly added) appear under each voucher type card with their details, and the preview button shows the formatted number that will be used
 
 ---
 
-## Phase 3: Cost Management Setup
+## Phase 3: Inventory & Items Setup
 
-### Step 9: Cost Categories
+### Step 9: View and Manage Warehouses
+
+1. Navigate to **Vouchers** → **Items** or use the Items API (`/api/v1/items`)
+2. **Note**: The seed script already creates 3 warehouses:
+   - Main Warehouse (WH-001) - Bengaluru
+   - Secondary Warehouse (WH-002) - Mumbai
+   - Storage Unit (WH-003) - Gurugram
+3. **View existing warehouses**: Verify all warehouses are listed
+4. **Optional - Create additional warehouse**:
+   - Use API: `POST /api/v1/warehouses` or UI if available
+   - Name: "Regional Warehouse"
+   - Alias: "WH-004"
+   - Address: "Your address"
+   - Mark as Active
+5. **Verify**: All warehouses (pre-seeded + newly added) are available for inventory transactions
+
+### Step 10: View and Manage Items
+
+1. Navigate to **Vouchers** → **Items** or use the Items API (`/api/v1/items`)
+2. **Note**: The seed script already creates 5 items with HSN/SAC codes and GST rates:
+   - Premium SaaS License (HSN: 998314, GST: 18%)
+   - API Credits - 10K (HSN: 998314, GST: 18%)
+   - Consulting Hours - 5hr Pack (HSN: 998314, GST: 18%)
+   - Cloud Server - Monthly (HSN: 998314, GST: 18%)
+   - Office Supplies (HSN: 48201000, GST: 12%)
+3. **View existing items**: Verify all items are listed with their HSN/SAC, GST rates, and default rates
+4. **Optional - Create additional item**:
+   - Use API: `POST /api/v1/items` or UI if available
+   - Item Name: "New Product"
+   - Alias: "ITEM-006"
+   - HSN/SAC: "998314"
+   - Unit: "Unit"
+   - Default Sales Rate: 10000
+   - Default Purchase Rate: 5000
+   - GST Rate: 18%
+   - Mark as Active
+5. **Verify**: All items (pre-seeded + newly added) are available for voucher inventory lines
+
+## Phase 4: Cost Management Setup
+
+### Step 11: Cost Categories
 
 1. Navigate to **Cost Management** (`/cost-management`)
 2. **Cost Categories Tab**:
@@ -149,7 +251,7 @@ This document provides a step-by-step workflow to test all implemented features 
      - Under "Assets": "Fixed Assets", "Current Assets"
 3. Verify hierarchical structure displays correctly
 
-### Step 10: Cost Centers
+### Step 12: Cost Centers
 
 1. Stay in **Cost Management** → **Cost Centers Tab**
 2. Create cost centers:
@@ -164,7 +266,7 @@ This document provides a step-by-step workflow to test all implemented features 
      - Child: "Google Ads", Code: "GOOG-ADS"
      - Child: "Facebook Ads", Code: "FB-ADS"
 
-### Step 11: Interest Profiles
+### Step 13: Interest Profiles
 
 1. Stay in **Cost Management** → **Interest** tab (click on "Interest" tab)
 2. Create interest profiles:
@@ -182,45 +284,61 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 4: Bookkeeping & Ledger Master
+## Phase 5: Bookkeeping & Ledger Master
 
-### Step 12: Ledger Groups (Chart of Accounts)
+### Step 14: Ledger Groups (Chart of Accounts)
 
 1. Navigate to **Bookkeeping** (`/bookkeeping`)
-2. In the **Ledger Groups** panel:
-   - Create sample root groups using the provided dropdowns
-     - Name: "Sundry Debtors", Category: "Current Assets", Parent: "Root Level"
-     - Name: "Sundry Creditors", Category: "Current Liabilities", Parent: "Root Level"
-   - Create sub-groups by selecting a parent from the list (e.g., "Online Customers" under "Sundry Debtors")
-3. Click **Add Group** for each entry
-4. **Verify**:
-   - Newly created groups appear instantly in the Chart of Accounts tree
+2. **Note**: The seed script already creates a complete chart of accounts with ledger groups. You can:
+   - **View existing groups**: Verify the pre-seeded chart of accounts structure
+   - **Create additional groups**: Add more groups as needed
+3. In the **Ledger Groups** panel:
+   - **View existing**: Check groups like Sundry Debtors, Sundry Creditors, etc.
+   - **Create additional sample root groups** using the provided dropdowns:
+     - Name: "New Debtors Group", Category: "Current Assets", Parent: "Root Level"
+     - Name: "New Creditors Group", Category: "Current Liabilities", Parent: "Root Level"
+   - **Create sub-groups** by selecting a parent from the list (e.g., "Online Customers" under "Sundry Debtors")
+4. Click **Add Group** for each new entry
+5. **Verify**:
+   - All groups (pre-seeded + newly created) appear in the Chart of Accounts tree
    - Hierarchy renders correctly (child groups indented, dashed connectors shown)
 
-### Step 13: Ledger Creation
+### Step 15: Ledger Creation
 
 1. Scroll to the **Create Ledger** card
-2. Populate the form with realistic data:
-   - Ledger Name: "Customer ABC"
-   - Under Group: "Sundry Debtors"
-   - Maintain Bill-by-bill: Enabled
-   - Opening Balance: `50000`, Type: `Debit`
-   - Default Credit Period: `30`
-   - Interest Method: Simple, Rate: 12
-   - PAN/GST/Address/Bank sections: fill sample values
-3. Click **Create Ledger**
-4. **Verify**:
+2. **Note**: The seed script already creates several ledgers with proper subtypes:
+   - **Cash**: Cash ledger (₹50,000 opening balance)
+   - **Bank**: HDFC Bank - Current Account (₹10,00,000 opening balance)
+   - **Customers**: ABC Corporation (₹5,00,000 credit limit), XYZ Tech Solutions (₹10,00,000 credit limit)
+   - **Suppliers**: Cloud Services Provider, Office Supplies Vendor
+   - **Sales**: Sales ledger
+   - **Purchases**: Purchases ledger
+   - **GST Ledgers**: Output/Input CGST, SGST, IGST (6 ledgers)
+3. **View existing ledgers**: Verify all pre-seeded ledgers in the **Ledger Register** table
+4. **Create additional ledger**:
+   - Populate the form with realistic data:
+     - Ledger Name: "New Customer XYZ"
+     - Under Group: "Sundry Debtors"
+     - Maintain Bill-by-bill: Enabled
+     - Opening Balance: `50000`, Type: `Debit`
+     - Default Credit Period: `30`
+     - Credit Limit: `200000` (optional)
+     - Interest Method: Simple, Rate: 12
+     - PAN/GST/Address/Bank sections: fill sample values
+   - Click **Create Ledger**
+5. **Verify**:
    - Success toast appears
    - Ledger shows up in the **Ledger Register** table with the selected group, flags, and opening balance
+   - All ledgers (pre-seeded + newly created) are visible
 
-### Step 14: Persistence & Reload
+### Step 16: Persistence & Reload
 
 1. Refresh the page (or navigate away and return to `/bookkeeping`)
 2. **Verify**:
-   - Ledger groups and ledgers created above are fetched from the backend and still visible
+   - All ledger groups and ledgers (pre-seeded + newly created) are fetched from the backend and still visible
    - The Chart of Accounts panel states the correct total count
 
-### Step 15: Validation & Error States
+### Step 17: Validation & Error States
 
 1. Attempt to create a ledger without selecting a group → ensure validation prevents submission
 2. Try deleting a ledger group that still has child groups or ledgers → confirm the API returns a validation error banner
@@ -228,28 +346,35 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 5: GST/Statutory Configuration
+## Phase 6: GST/Statutory Configuration
 
-### Step 16: GST Registrations
+### Step 18: GST Registrations
 
 1. Navigate to **GST** (`/gst`)
 2. **GST Registrations Tab**:
-   - Add registration:
-     - GSTIN: "27AABCU9603R1ZX"
-     - Registration Type: "Regular"
-     - State: "Maharashtra"
-     - Effective From: `2024-04-01`
-   - Add another registration (if multi-state):
-     - GSTIN: "29AABCU9603R1ZY"
+   - **Note**: The seed script already creates 1 GST registration:
+     - GSTIN: "29AABCU9603R1ZX"
      - Registration Type: "Regular"
      - State: "Karnataka"
-3. Save all registrations
+     - State Code: "29"
+     - Legal Name: "Coxist AI Private Limited"
+     - Trade Name: "Coxist AI"
+   - **View existing registration**: Verify the pre-seeded GST registration is displayed
+   - **Optional - Add additional registration** (if multi-state):
+     - Click **Add Registration** or use API
+     - GSTIN: "27AABCU9603R1ZY"
+     - Registration Type: "Regular"
+     - State: "Maharashtra"
+     - State Code: "27"
+     - Effective From: `2024-04-01`
+3. Save all registrations (if adding new ones)
 
-### Step 17: GST Tax Rates
+### Step 19: GST Tax Rates
 
 1. Stay in **GST** → **Tax Rates** tab (click on "Tax Rates" tab)
-2. Click **Create Tax Rate** button
-3. Create tax rates:
+2. **Note**: The seed script does NOT create GST tax rates. You need to create them manually.
+3. Click **Create Tax Rate** button
+4. Create tax rates:
    - **GST 18% Rate:**
      - Registration: Select your GST registration (or leave as "Use default registration")
      - Supply Type: "Goods" (or "Services")
@@ -281,11 +406,20 @@ This document provides a step-by-step workflow to test all implemented features 
 4. Click **Create** (or **Update** if editing) button for each rate
 5. **Verify**: All tax rates appear in the Tax Rates table with correct percentages
 
-### Step 18: GST Ledger Mappings
+### Step 20: GST Ledger Mappings
 
 1. Stay in **GST** → **Mappings** tab (click on "Mappings" tab)
-2. Click **Create Ledger Mapping** button
-3. Create mappings for different tax types:
+2. **Note**: The seed script already creates 6 GST ledger mappings:
+   - Output CGST → "GST Output CGST" ledger
+   - Output SGST → "GST Output SGST" ledger
+   - Output IGST → "GST Output IGST" ledger
+   - Input CGST → "GST Input CGST" ledger
+   - Input SGST → "GST Input SGST" ledger
+   - Input IGST → "GST Input IGST" ledger
+3. **View existing mappings**: Verify all pre-seeded mappings are listed
+4. **Optional - Create additional mappings**:
+   - Click **Create Ledger Mapping** button
+   - Create mappings for different tax types if needed:
    - **Output CGST Ledger:**
      - Registration: Select your GST registration (or leave as "Use default registration")
      - Mapping Type: "Output CGST"
@@ -312,90 +446,250 @@ This document provides a step-by-step workflow to test all implemented features 
      - Mapping Type: "Input IGST"
      - Ledger Name: "Input IGST Credit"
      - Ledger Code: "INPUT-IGST" (optional)
-4. Save each mapping after filling the required fields (Mapping Type and Ledger Name are required; Registration and other fields are optional)
-5. **Verify**: All mappings are listed in the Ledger Mappings table with correct mapping types and ledger names
+5. Save each mapping after filling the required fields (Mapping Type and Ledger Name are required; Registration and other fields are optional)
+6. **Verify**: All mappings (pre-seeded + newly added) are listed in the Ledger Mappings table with correct mapping types and ledger names
 
 ---
 
-## Phase 6: Voucher Entry & Bill-wise Tracking
+## Phase 7: Voucher Entry & Bill-wise Tracking
 
-### Step 19: Create Sales Voucher with Bill Reference
+### Step 21: Create Sales Voucher with Inventory and GST
 
-1. Navigate to **Vouchers** (`/vouchers`)
-2. Click **Create Voucher**
-3. Select voucher type: **Sales**
-4. Fill voucher details:
+**Note**: The application has dedicated UI forms for specific voucher types. Currently implemented:
+- **Payment Voucher**: `/vouchers/payment` - Dedicated form
+- **Receipt Voucher**: `/vouchers/receipt` - Dedicated form
+- **Contra Voucher**: `/vouchers/contra` - Dedicated form
+- **Journal Voucher**: `/vouchers/journal` - Dedicated form
+- **Sales Voucher**: `/vouchers/sales` - Dedicated form with inventory lines and GST
+- **Purchase Voucher**: `/vouchers/purchase` - Dedicated form with inventory lines and GST
+
+Other voucher types (Credit Note, Debit Note, Delivery Note, Receipt Note, Stock Journal, Memo, Reversing Journal) can be created using the main voucher form at `/vouchers`.
+
+### Step 21A: Create Sales Voucher with Inventory and GST
+
+1. Navigate to **Vouchers** → **Sales** (`/vouchers/sales`) - **Use the dedicated Sales form**
+2. **Alternative**: Navigate to **Vouchers** (`/vouchers`) and click "Sales" in Quick Create section
+3. Fill voucher details:
    - Date: Today's date
    - Voucher Number: (Auto-generated from series)
    - Narration: "Sale to Customer ABC"
-5. Add voucher entries:
-   - Entry 1:
-     - Ledger: "Sales Account" (or create new)
-     - Entry Type: "Credit"
-     - Amount: 10,000
-     - Cost Category: "Revenue" → "Sales"
-     - Cost Center: (optional)
-   - Entry 2:
-     - Ledger: "Customer ABC" (create new party ledger)
-     - Entry Type: "Debit"
-     - Amount: 10,000
-     - **Bill Reference**:
-       - Bill Type: "Receivable"
-       - Bill Number: "BILL-001"
-       - Bill Date: Today
-       - Due Date: 30 days from today
-       - Amount: 10,000
-6. Save voucher
-7. **Verify**: Check that bill is created automatically
+   - Customer Ledger: Select "ABC Corporation" (pre-seeded) or create new
+   - Billing Name: "ABC Corporation"
+   - Billing Address: "Customer address"
+   - Customer GSTIN: (optional)
+   - Place of Supply State: "Karnataka" (or select based on customer location)
+4. Add inventory lines:
+   - Click "Add Item" or similar button
+   - Item: Select "Premium SaaS License" (pre-seeded) or another item
+   - Quantity: 2
+   - Rate: 24,999 (default from item, can override)
+   - Warehouse: Select "Main Warehouse" (pre-seeded)
+   - Discount: (optional)
+   - GST Rate: 18% (auto-filled from item, can override)
+   - Line Amount: Auto-calculated (Quantity × Rate - Discount)
+5. **Verify totals**:
+   - Items Subtotal: Sum of all line amounts
+   - Total Tax Amount: Calculated based on GST rates and place of supply
+   - Total Invoice Amount: Items Subtotal + Total Tax
+6. Add bill reference (optional):
+   - Bill Type: "Receivable"
+   - Bill Number: "BILL-001" (or auto-generated)
+   - Bill Date: Today
+   - Due Date: 30 days from today
+   - Amount: Total Invoice Amount
+7. Save voucher
+8. **Verify**:
+   - Voucher is created with status "DRAFT"
+   - Inventory lines are saved
+   - GST amounts are calculated correctly (CGST/SGST for same state, IGST for different state)
+   - Bill is created automatically if bill reference provided
+   - Click "Post Voucher" to post it (changes status to "POSTED" and triggers posting engine)
 
-### Step 20: Create Purchase Voucher with Bill Reference
+### Step 22: Create Purchase Voucher with Inventory and GST
 
-1. Create another voucher: **Purchase**
-2. Fill details:
+1. Navigate to **Vouchers** → **Purchase** (`/vouchers/purchase`) - **Use the dedicated Purchase form**
+2. **Alternative**: Navigate to **Vouchers** (`/vouchers`) and click "Purchase" in Quick Create section
+3. Fill voucher details:
    - Date: Today
    - Narration: "Purchase from Supplier XYZ"
-3. Add entries:
-   - Entry 1: "Purchase Account" (Credit) - 5,000
-   - Entry 2: "Supplier XYZ" (Debit) - 5,000
-     - **Bill Reference**:
-       - Bill Type: "Payable"
-       - Bill Number: "BILL-002"
-       - Due Date: 45 days from today
-       - Amount: 5,000
-4. Save voucher
+   - Supplier Ledger: Select "Cloud Services Provider" (pre-seeded) or create new
+   - Billing Name: "Cloud Services Provider"
+   - Billing Address: "Supplier address"
+   - Supplier GSTIN: (optional)
+   - Place of Supply State: "Karnataka" (or select based on supplier location)
+4. Add inventory lines:
+   - Click "Add Item"
+   - Item: Select "Cloud Server - Monthly" (pre-seeded) or another item
+   - Quantity: 5
+   - Rate: 8,000 (default from item, can override)
+   - Warehouse: Select "Main Warehouse" (pre-seeded)
+   - Discount: (optional)
+   - GST Rate: 18% (auto-filled from item, can override)
+   - Line Amount: Auto-calculated
+5. **Verify totals**:
+   - Items Subtotal: Sum of all line amounts
+   - Total Tax Amount: Calculated based on GST rates and place of supply
+   - Total Invoice Amount: Items Subtotal + Total Tax
+6. Add bill reference (optional):
+   - Bill Type: "Payable"
+   - Bill Number: "BILL-002" (or auto-generated)
+   - Due Date: 45 days from today
+   - Amount: Total Invoice Amount
+7. Save voucher
+8. **Verify**:
+   - Voucher is created with status "DRAFT"
+   - Inventory lines are saved
+   - GST amounts are calculated correctly
+   - Bill is created automatically if bill reference provided
+   - Click "Post Voucher" to post it
 
-### Step 21: Create Payment Voucher (Bill Settlement)
+### Step 23: Create Payment Voucher (Bill Settlement)
 
-1. Create **Payment** voucher
-2. Fill details:
+1. Navigate to **Vouchers** → **Payment** (`/vouchers/payment`) - **Use the dedicated Payment form**
+2. **Alternative**: Navigate to **Vouchers** (`/vouchers`) and click "Payment" in Quick Create section
+3. Fill voucher details:
    - Date: Today
    - Narration: "Payment to Supplier XYZ"
-3. Add entries:
-   - Entry 1: "Bank Account" (Credit) - 3,000
-   - Entry 2: "Supplier XYZ" (Debit) - 3,000
-     - **Bill Reference**: Select existing bill "BILL-002"
-     - Settlement Amount: 3,000
-4. Save voucher
-5. **Verify**: Check that bill status changed to "Partial" or "Settled"
+   - Paid From Ledger: Select "HDFC Bank - Current Account" (pre-seeded) or "Cash" (must be CASH/BANK subtype)
+   - Paid To Ledger: Select "Cloud Services Provider" (pre-seeded) or another supplier (must NOT be CASH/BANK)
+   - Amount: 3,000
+   - Payment Mode: Select from dropdown (Cash, Bank Transfer, Cheque, UPI, NEFT)
+   - Reference Number: (optional)
+4. Add bill reference for settlement:
+   - **Bill Reference**: Select existing bill "BILL-002" (if created in previous step)
+   - Reference Type: "AGAINST" (to settle against existing bill)
+   - Settlement Amount: 3,000
+5. Save voucher
+6. **Verify**:
+   - Voucher is created with status "DRAFT"
+   - Click "Post Voucher" to post it
+   - Check that bill status changed to "Partial" or "Settled" (if bill reference was provided)
 
-### Step 22: Create Receipt Voucher (Bill Settlement)
+### Step 24: Create Receipt Voucher (Bill Settlement)
 
-1. Create **Receipt** voucher
-2. Fill details:
+1. Navigate to **Vouchers** → **Receipt** (`/vouchers/receipt`) - **Use the dedicated Receipt form**
+2. **Alternative**: Navigate to **Vouchers** (`/vouchers`) and click "Receipt" in Quick Create section
+3. Fill voucher details:
    - Date: Today
    - Narration: "Receipt from Customer ABC"
-3. Add entries:
-   - Entry 1: "Bank Account" (Debit) - 5,000
-   - Entry 2: "Customer ABC" (Credit) - 5,000
-     - **Bill Reference**: Select existing bill "BILL-001"
-     - Settlement Amount: 5,000
-4. Save voucher
+   - Received Into Ledger: Select "HDFC Bank - Current Account" (pre-seeded) or "Cash" (must be CASH/BANK subtype)
+   - Received From Ledger: Select "ABC Corporation" (pre-seeded) or another customer (must NOT be CASH/BANK)
+   - Amount: 5,000
+   - Payment Mode: Select from dropdown
+   - Reference Number: (optional)
+4. Add bill reference for settlement:
+   - **Bill Reference**: Select existing bill "BILL-001" (if created in previous step)
+   - Reference Type: "AGAINST" (to settle against existing bill)
+   - Settlement Amount: 5,000
+5. Save voucher
+6. **Verify**:
+   - Voucher is created with status "DRAFT"
+   - Click "Post Voucher" to post it
+   - Check that bill status changed to "Partial" or "Settled" (if bill reference was provided)
+
+### Step 25: Create Other Voucher Types
+
+1. Navigate to **Vouchers** (`/vouchers`) - **Use the main voucher form for other types**
+2. **Create Contra Voucher** (or use `/vouchers/contra`):
+   - Select voucher type: "Contra"
+   - Source Ledger: "Cash" (CASH/BANK) - Select from pre-seeded Cash ledger
+   - Destination Ledger: "HDFC Bank - Current Account" (CASH/BANK) - Select from pre-seeded Bank ledger
+   - Amount: 10,000
+   - Save voucher (creates as DRAFT)
+   - Click "Post Voucher" to post it
+3. **Create Journal Voucher** (or use `/vouchers/journal`):
+   - Select voucher type: "Journal"
+   - Add multiple entries with DR/CR amounts
+   - Ensure total DR = total CR (validation enforced)
+   - Save voucher (creates as DRAFT)
+   - Click "Post Voucher" to post it
+4. **Create Credit Note, Debit Note, Delivery Note, Receipt Note, Stock Journal, Memo, Reversing Journal**:
+   - Use the main voucher form at `/vouchers`
+   - Select the appropriate voucher type
+   - Fill entries as per the voucher type rules
+   - Save voucher (creates as DRAFT)
+   - Click "Post Voucher" to post it
+
+### Step 25A: Test Voucher Posting Engine
+
+1. **Create a Draft Voucher**:
+   - Create any voucher (e.g., Payment, Sales, Purchase)
+   - Save it without posting (status should be "DRAFT")
+2. **Verify Draft State**:
+   - Check that the voucher appears in the list with status "DRAFT"
+   - Verify that ledger balances are NOT affected (draft vouchers don't update balances)
+   - Verify that inventory stock is NOT affected (draft vouchers don't update stock)
+3. **Post the Voucher**:
+   - Click "Post Voucher" button on the draft voucher
+   - **Verify Posting**:
+     - Voucher status changes to "POSTED"
+     - Ledger balances are updated correctly
+     - Inventory stock is updated (for Sales/Purchase/Delivery Note/Receipt Note/Stock Journal)
+     - GST amounts are posted to GST ledgers (for Sales/Purchase)
+     - Bill references are processed (if applicable)
+4. **Test Voucher Cancellation**:
+   - Find a posted voucher
+   - Click "Cancel Voucher" button
+   - **Verify Cancellation**:
+     - Voucher status changes to "CANCELLED"
+     - Ledger balances are reversed
+     - Inventory stock is reversed (if applicable)
+     - GST amounts are reversed (if applicable)
+5. **Test Validation**:
+   - Try to create an unbalanced voucher (DR ≠ CR) → Should fail validation
+   - Try to create a Sales voucher with insufficient stock → Should fail validation
+   - Try to create a Receipt voucher exceeding credit limit → Should fail validation
 
 ---
 
-## Phase 7: Bills Management
+## Phase 8: Inventory Management Testing
 
-### Step 23: View Bills
+### Step 25B: Test Inventory Stock Movements
+
+1. **View Current Stock**:
+   - Navigate to **Vouchers** → **Items** or use API: `GET /api/v1/items/:itemId/stock`
+   - View stock balance for each item across all warehouses
+   - **Note**: Initially, all items have 0 stock (seed script doesn't create opening stock)
+
+2. **Test Stock Increase (Purchase/Receipt Note)**:
+   - Create a **Purchase Voucher** with inventory lines:
+     - Item: "Cloud Server - Monthly"
+     - Quantity: 10
+     - Warehouse: "Main Warehouse"
+   - Post the voucher
+   - **Verify**: Stock for "Cloud Server - Monthly" in "Main Warehouse" increases by 10
+
+3. **Test Stock Decrease (Sales/Delivery Note)**:
+   - Create a **Sales Voucher** with inventory lines:
+     - Item: "Cloud Server - Monthly"
+     - Quantity: 3
+     - Warehouse: "Main Warehouse"
+   - Post the voucher
+   - **Verify**: Stock for "Cloud Server - Monthly" in "Main Warehouse" decreases by 3 (now 7)
+
+4. **Test Stock Movement (Stock Journal)**:
+   - Create a **Stock Journal** voucher:
+     - Source Warehouse: "Main Warehouse"
+     - Destination Warehouse: "Secondary Warehouse"
+     - Item: "Cloud Server - Monthly"
+     - Quantity: 2
+   - Post the voucher
+   - **Verify**: 
+     - Stock in "Main Warehouse" decreases by 2 (now 5)
+     - Stock in "Secondary Warehouse" increases by 2 (now 2)
+
+5. **Test Stock Validation**:
+   - Try to create a Sales voucher with quantity exceeding available stock → Should fail validation
+   - Verify error message indicates insufficient stock
+
+6. **Test Delivery Note and Receipt Note**:
+   - **Delivery Note**: Creates inventory decrease without ledger entries
+   - **Receipt Note**: Creates inventory increase without ledger entries
+   - Create and post these vouchers to verify stock movements
+
+## Phase 10: Bills Management
+
+### Step 26: View Bills
 
 1. Navigate to **Bills** (`/bills`)
 2. View all bills:
@@ -403,7 +697,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Filter by Status: Open / Partial / Settled
 3. Verify bills created from vouchers are listed
 
-### Step 24: Bill Aging Report
+### Step 27: Bill Aging Report
 
 1. Stay in **Bills** page
 2. Navigate to **Aging Report** section
@@ -415,7 +709,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Over 90 days
 4. Verify bills are categorized correctly
 
-### Step 25: Outstanding by Ledger
+### Step 28: Outstanding by Ledger
 
 1. Stay in **Bills** page
 2. Navigate to **Outstanding by Ledger** section
@@ -424,7 +718,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Supplier XYZ: Outstanding amount
 4. Verify calculations are correct
 
-### Step 26: Manual Bill Settlement
+### Step 29: Manual Bill Settlement
 
 1. In **Bills** page, find an open bill
 2. Click **Settle Bill**
@@ -436,9 +730,9 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 8: Cost Management - Interest Assignment
+## Phase 11: Cost Management - Interest Assignment
 
-### Step 27: Assign Interest to Parties
+### Step 30: Assign Interest to Parties
 
 1. Navigate to **Cost Management** (`/cost-management`)
 2. Open the **Party Interest** tab
@@ -455,9 +749,9 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 9: Tally Import/Export
+## Phase 12: Tally Import/Export
 
-### Step 28: Download Tally Import Template
+### Step 31: Download Tally Import Template
 
 1. Navigate to **Import from Tally** (`/tally-import`)
 2. **Template Download Section**:
@@ -470,7 +764,7 @@ This document provides a step-by-step workflow to test all implemented features 
      - Should contain 30+ transactions across all voucher types
      - Should demonstrate real-world Tally export formats
 
-### Step 29: Import Tally Data
+### Step 32: Import Tally Data
 
 1. Stay in **Import from Tally** page
 2. **Import Process**:
@@ -501,9 +795,9 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 10: Audit Log / Edit Trail
+## Phase 13: Audit Log / Edit Trail
 
-### Step 30: View Audit Logs
+### Step 33: View Audit Logs
 
 1. Navigate to **Audit Log** (`/audit-log`)
 2. View summary cards:
@@ -512,7 +806,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Logs by entity type
 3. View recent activity list
 
-### Step 31: Filter Audit Logs
+### Step 34: Filter Audit Logs
 
 1. Stay in **Audit Log** page
 2. Apply filters:
@@ -522,7 +816,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - User: (select specific user)
 3. Verify filtered results
 
-### Step 32: View Entity Audit Trail
+### Step 35: View Entity Audit Trail
 
 1. In **Audit Log** page
 2. Click on a specific log entry
@@ -533,7 +827,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - IP address (if available)
 4. Verify all changes are logged
 
-### Step 33: Test Edit Log Toggle
+### Step 36: Test Edit Log Toggle
 
 1. Go to **Settings** → **Financial** tab → **Financial Year & Edit Log**
 2. Toggle **Enable Edit Log** to `OFF`
@@ -544,9 +838,9 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 11: Role Management
+## Phase 14: Role Management
 
-### Step 34: View Roles
+### Step 37: View Roles
 
 1. Navigate to **Role Management** (`/role-management`)
 2. **Roles Tab**:
@@ -554,7 +848,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - See permission count per role
    - See user count per role
 
-### Step 35: Create Custom Role
+### Step 38: Create Custom Role
 
 1. Stay in **Role Management** → **Roles Tab**
 2. Click **Create Role**
@@ -571,7 +865,7 @@ This document provides a step-by-step workflow to test all implemented features 
      - `gst:read`
 5. Save role
 
-### Step 36: Manage Permissions
+### Step 39: Manage Permissions
 
 1. Go to **Permissions Tab**
 2. View all available permissions
@@ -581,7 +875,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Description: "Export financial reports"
 4. Save permission
 
-### Step 37: Assign Roles to Users
+### Step 40: Assign Roles to Users
 
 1. Go to **User Assignments Tab**
 2. View all users with their roles
@@ -592,7 +886,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Save
 4. **Verify**: User now has the assigned role
 
-### Step 38: Update Role Permissions
+### Step 41: Update Role Permissions
 
 1. Go back to **Roles Tab**
 2. Edit "Finance Manager" role
@@ -602,9 +896,15 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 12: AI Workflows with Voucher Data
+## Phase 15: AI Workflows with Voucher Data
 
-### Step 39: AI Chatbot Interaction
+**Note**: The seed script already creates:
+- ✅ 6 months of Cashflow Metrics with growth trends
+- ✅ 2 AI Scenarios (Hiring engineers, Revenue growth)
+- ✅ 2 Alerts (Runway warning, Burn rate info)
+- ✅ 1 Investor Update (Q4 2024)
+
+### Step 42: AI Chatbot Interaction
 
 1. Navigate to **AI Assistant** (`/ai-assistant`)
 2. The **Chatbot** tab should be active by default
@@ -619,7 +919,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Get insights about vouchers, bills, and other financial data
 6. **Verify**: AI responses are relevant to your actual data
 
-### Step 40: AI Scenarios Analysis
+### Step 43: AI Scenarios Analysis
 
 1. Navigate to **AI Assistant** (`/ai-assistant`)
 2. Click on the **Scenarios** tab
@@ -633,7 +933,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Check recommendations and insights
 5. **Verify**: Analysis uses real voucher and financial data
 
-### Step 41: AI-Powered Insights
+### Step 44: AI-Powered Insights
 
 1. Stay in **AI Assistant** (`/ai-assistant`)
 2. Click on the **Insights** tab
@@ -646,7 +946,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - **Alerts**: Check any financial alerts or warnings
 5. **Verify**: Insights are based on actual vouchers and financial data created
 
-### Step 42: AI Forecasting
+### Step 45: AI Forecasting
 
 1. Navigate to **AI Assistant** (`/ai-assistant`)
 2. Click on the **Forecasting** tab
@@ -662,9 +962,9 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 13: Final Verification
+## Phase 16: Final Verification
 
-### Step 43: Dashboard Verification
+### Step 46: Dashboard Verification
 
 1. Navigate to **Dashboard** (`/dashboard`)
 2. Verify:
@@ -673,7 +973,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Cashflow chart (if applicable)
    - Summary metrics
 
-### Step 44: Data Consistency Check
+### Step 47: Data Consistency Check
 
 1. Cross-verify data across modules:
    - **Vouchers**: Check voucher totals
@@ -683,7 +983,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - **Audit Log**: Verify all changes are logged
 2. Check for any inconsistencies
 
-### Step 45: Tally Import Round-trip
+### Step 48: Tally Import Round-trip
 
 1. Export data from Tally (if you have Tally setup)
 2. Import the exported file using **Import from Tally** (`/tally-import`)
@@ -693,7 +993,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Bill references are maintained
    - GST data is imported if present
 
-### Step 46: Role-Based Access Test
+### Step 49: Role-Based Access Test
 
 1. Create a test user with limited role
 2. Login as that user
@@ -715,10 +1015,20 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ✅ **Voucher Management**
 
-- [x] Voucher types configuration (Settings → Financial tab)
-- [x] Numbering series setup (Settings → Financial tab)
-- [x] Create vouchers (Sales, Purchase, Payment, Receipt, Journal, Contra)
+- [x] Voucher types configuration (Settings → Financial tab) - **13 types pre-seeded**
+- [x] Numbering series setup (Settings → Financial tab) - **Default series pre-seeded**
+- [x] Create vouchers with dedicated forms:
+  - Payment (`/vouchers/payment`)
+  - Receipt (`/vouchers/receipt`)
+  - Contra (`/vouchers/contra`)
+  - Journal (`/vouchers/journal`)
+  - Sales (`/vouchers/sales`) - **With inventory lines and GST**
+  - Purchase (`/vouchers/purchase`) - **With inventory lines and GST**
+- [x] Create other voucher types (Credit Note, Debit Note, Delivery Note, Receipt Note, Stock Journal, Memo, Reversing Journal) via main form
 - [x] Bill-wise references in vouchers
+- [x] Voucher posting engine (Post/Cancel vouchers)
+- [x] Inventory integration in Sales/Purchase vouchers
+- [x] GST calculation and posting
 
 ✅ **Bill Management**
 
@@ -727,10 +1037,17 @@ This document provides a step-by-step workflow to test all implemented features 
 - [x] Aging reports
 - [x] Outstanding by ledger
 
+✅ **Inventory Management**
+
+- [x] Items Master (5 items pre-seeded with HSN/SAC, GST rates, default rates)
+- [x] Warehouses (3 warehouses pre-seeded)
+- [x] Inventory lines in Sales/Purchase vouchers
+- [x] Stock movements (Delivery Note, Receipt Note, Stock Journal)
+
 ✅ **Cost Management**
 
-- [x] Bookkeeping ledger groups & ledger master (via `/bookkeeping`)
-
+- [x] Bookkeeping ledger groups & ledger master (via `/bookkeeping`) - **Chart of accounts pre-seeded**
+- [x] Ledgers with subtypes (Cash, Bank, Customer, Supplier, Sales, Purchase, GST) - **Pre-seeded**
 - [x] Cost categories (hierarchical) - Categories tab
 - [x] Cost centers (hierarchical) - Centers tab
 - [x] Interest profiles - Interest tab
@@ -738,9 +1055,9 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ✅ **GST Configuration**
 
-- [x] GST registrations - Registrations tab
-- [x] Tax rates - Tax Rates tab
-- [x] Ledger mappings - Mappings tab
+- [x] GST registrations - Registrations tab - **1 registration pre-seeded (Karnataka)**
+- [x] Tax rates - Tax Rates tab - **Must be created manually**
+- [x] Ledger mappings - Mappings tab - **6 mappings pre-seeded (Output/Input CGST, SGST, IGST)**
 
 ✅ **Audit Trail**
 
@@ -765,10 +1082,12 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ✅ **AI Workflows**
 
-- [x] AI Chatbot - Interactive chat interface
-- [x] AI Insights - Financial insights and recommendations
-- [x] AI Scenarios - What-if scenario analysis
-- [x] AI Forecasting - Financial forecasting (3/6/12 months)
+- [x] AI Chatbot - Interactive chat interface (`/ai-assistant` → Chatbot tab)
+- [x] AI Insights - Financial insights and recommendations (`/ai-assistant` → Insights tab) - **Uses pre-seeded cashflow metrics**
+- [x] AI Scenarios - What-if scenario analysis (`/ai-assistant` → Scenarios tab) - **2 scenarios pre-seeded**
+- [x] AI Forecasting - Financial forecasting (3/6/12 months) (`/ai-assistant` → Forecasting tab)
+- [x] AI Alerts - Smart alerts (`/alerts`) - **2 alerts pre-seeded**
+- [x] Investor Updates - AI-generated investor reports (`/investor-updates`) - **1 update pre-seeded**
 
 ✅ **Financial Statements & Analytics**
 
@@ -788,9 +1107,9 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 14: Financial Statements & Reports
+## Phase 17: Financial Statements & Reports
 
-### Step 47: Trial Balance
+### Step 50: Trial Balance
 
 1. Navigate to **Bookkeeping** (`/bookkeeping`)
 2. Click on the **Trial Balance** tab
@@ -801,7 +1120,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Verify the total debit equals total credit
 4. **Verify**: All ledgers with balances are listed, and totals match
 
-### Step 48: Profit & Loss Statement
+### Step 51: Profit & Loss Statement
 
 1. Stay in **Bookkeeping** → **Profit & Loss** tab
 2. **Generate P&L**:
@@ -815,7 +1134,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - **Net Profit/Loss**: Verify calculation
 4. **Verify**: All income and expense ledgers are categorized correctly
 
-### Step 49: Balance Sheet
+### Step 52: Balance Sheet
 
 1. Stay in **Bookkeeping** → **Balance Sheet** tab
 2. **Generate Balance Sheet**:
@@ -827,7 +1146,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Verify totals match (Assets = Liabilities + Capital)
 4. **Verify**: All asset, liability, and capital ledgers are properly categorized
 
-### Step 50: Cash Flow Statement
+### Step 53: Cash Flow Statement
 
 1. Stay in **Bookkeeping** → **Cash Flow** tab
 2. **Generate Cash Flow**:
@@ -842,7 +1161,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - **Closing Balance**: Ending cash balance
 4. **Verify**: Cash flows are properly categorized and closing balance = opening + net cash flow
 
-### Step 51: Financial Ratios
+### Step 54: Financial Ratios
 
 1. Stay in **Bookkeeping** → **Financial Ratios** tab
 2. **View Ratios**:
@@ -855,9 +1174,9 @@ This document provides a step-by-step workflow to test all implemented features 
    - **Leverage Ratios**: Debt to Equity, Debt Ratio
 4. **Verify**: All ratios are calculated correctly based on balance sheet and P&L data
 
-## Phase 15: Receivables & Payables Automation
+## Phase 18: Receivables & Payables Automation
 
-### Step 51: Bill Reminders
+### Step 55: Bill Reminders
 
 1. Navigate to **Bills** (`/bills`)
 2. Switch between **Receivables** and **Payables** tabs
@@ -874,7 +1193,7 @@ This document provides a step-by-step workflow to test all implemented features 
      - Are due within 3 days (URGENT)
      - Are due within 7 days (WARNING)
 
-### Step 52: Cash Flow Projections
+### Step 56: Cash Flow Projections
 
 1. In the **Bills** page, scroll to the **Cash Flow Projections** section
 2. **Verify Projections**:
@@ -886,7 +1205,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Projections are based on outstanding bills and their due dates
    - Each month shows expected receivables and payables based on bill due dates
 
-### Step 53: Receivables & Payables Analytics
+### Step 57: Receivables & Payables Analytics
 
 1. In the **Bills** page, scroll to the **Analytics** section
 2. **Verify Receivables Analytics Card**:
@@ -905,9 +1224,9 @@ This document provides a step-by-step workflow to test all implemented features 
 
 ---
 
-## Phase 16: Advanced Books & Registers
+## Phase 19: Advanced Books & Registers
 
-### Step 54: Cash Book
+### Step 58: Cash Book
 
 1. Navigate to **Bookkeeping** (`/bookkeeping`)
 2. Use API endpoint or UI (if implemented) to view Cash Book:
@@ -920,7 +1239,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Closing balance
 4. **Verify**: All cash ledger entries are included and balances are correct
 
-### Step 55: Bank Book
+### Step 59: Bank Book
 
 1. Use API endpoint to view Bank Book:
    - GET `/api/v1/bookkeeping/bank-book?bankLedgerName=BankName&fromDate=YYYY-MM-DD&toDate=YYYY-MM-DD`
@@ -933,7 +1252,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Closing balance
 3. **Verify**: Only transactions for the selected bank are shown
 
-### Step 56: Day Book
+### Step 60: Day Book
 
 1. Use API endpoint to view Day Book:
    - GET `/api/v1/bookkeeping/day-book?date=YYYY-MM-DD`
@@ -944,7 +1263,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - See all entries in each voucher
 3. **Verify**: Only vouchers from the selected date are shown
 
-### Step 57: Ledger Book
+### Step 61: Ledger Book
 
 1. Use API endpoint to view Ledger Book:
    - GET `/api/v1/bookkeeping/ledger-book?ledgerName=LedgerName&fromDate=YYYY-MM-DD&toDate=YYYY-MM-DD`
@@ -957,7 +1276,7 @@ This document provides a step-by-step workflow to test all implemented features 
    - Closing balance
 3. **Verify**: All entries for the selected ledger are shown with correct balances
 
-### Step 58: Journals
+### Step 62: Journals
 
 1. Use API endpoint to view Journals:
    - GET `/api/v1/bookkeeping/journals?journalType=SALES&fromDate=YYYY-MM-DD&toDate=YYYY-MM-DD`
@@ -991,9 +1310,13 @@ If any step fails:
 
 ---
 
-## Phase 16: Ledger Master Enhancements & Credit Limit Enforcement
+## Phase 20: Ledger Master Enhancements & Credit Limit Enforcement
 
-### Step 59: Credit Limit Enforcement
+**Note**: The seed script already creates ledgers with credit limits:
+- ABC Corporation: ₹5,00,000 credit limit
+- XYZ Tech Solutions: ₹10,00,000 credit limit
+
+### Step 63: Credit Limit Enforcement
 
 1. **Setup**:
 
@@ -1014,9 +1337,9 @@ If any step fails:
    - The system should calculate current credit balance before allowing new transactions
    - Credit limits are enforced automatically on voucher posting
 
-## Phase 17: Cost Centre Reporting
+## Phase 21: Cost Centre Reporting
 
-### Step 60: Cost Centre P&L Report
+### Step 64: Cost Centre P&L Report
 
 1. Navigate to **Cost Management** (`/cost-management`)
 2. Switch to the **Cost Centre Reporting** tab
@@ -1036,9 +1359,9 @@ If any step fails:
      - Gross Profit, Net Profit
    - Test with different cost centres and date ranges
 
-## Phase 18: Exception Reports & Audit Compliance
+## Phase 22: Exception Reports & Audit Compliance
 
-### Step 61: Exception Reports
+### Step 65: Exception Reports
 
 1. Navigate to **Audit Log** (`/audit-log`)
 2. Switch to the **Exception Reports** tab
@@ -1056,7 +1379,7 @@ If any step fails:
      - Type, Ledger/Voucher name, Description, Severity (ERROR/WARNING), Amount
    - Test by creating scenarios that trigger exceptions
 
-### Step 62: Exception Scenarios
+### Step 66: Exception Scenarios
 
 1. **Negative Balance Test**:
 
@@ -1074,9 +1397,9 @@ If any step fails:
    - Exceed the limit through transactions
    - Generate exception report - should show CREDIT_LIMIT_EXCEEDED error
 
-## Phase 19: Auxiliary Bookkeeping Tools
+## Phase 23: Auxiliary Bookkeeping Tools
 
-### Step 63: Reversing Journals
+### Step 67: Reversing Journals
 
 1. **Create Original Voucher**:
 
@@ -1099,9 +1422,9 @@ If any step fails:
    - Verify the reversing journal appears in the vouchers list
    - Confirm ledger balances are adjusted correctly
 
-## Phase 20: Budgeting Module
+## Phase 24: Budgeting Module
 
-### Step 64: Budget Creation
+### Step 68: Budget Creation
 
 1. Navigate to **Bookkeeping** (`/bookkeeping`)
 2. Switch to the **Budgeting** tab
@@ -1118,7 +1441,7 @@ If any step fails:
    - Budget should appear in the budgets list
    - Budget shows type, period, and amount
 
-### Step 65: Budget Variance Analytics
+### Step 69: Budget Variance Analytics
 
 1. In the **Budgeting** tab, view the **Variance Analytics**:
    - Summary cards showing:
@@ -1131,7 +1454,7 @@ If any step fails:
    - Variance is the difference between actual and budgeted
    - Variance percentage is calculated
 
-### Step 66: Budget Breach Alerts
+### Step 70: Budget Breach Alerts
 
 1. **View Breaches**:
    - The "Budget Breaches" section shows budgets that have exceeded limits
@@ -1146,9 +1469,9 @@ If any step fails:
    - Create vouchers that exceed the budget
    - Generate breach report - should show the breach
 
-## Phase 21: Year-End Operations
+## Phase 25: Year-End Operations
 
-### Step 67: Generate Closing Entries
+### Step 71: Generate Closing Entries
 
 1. Navigate to **Bookkeeping** (`/bookkeeping`)
 2. Switch to the **Year-End Operations** tab
@@ -1163,7 +1486,7 @@ If any step fails:
    - Net profit/loss is transferred to Capital Account
    - Voucher should appear in vouchers list
 
-### Step 68: Run Depreciation
+### Step 72: Run Depreciation
 
 1. In the **Year-End Operations** tab, go to **Depreciation Run** section
 2. **Run Depreciation**:
@@ -1178,7 +1501,7 @@ If any step fails:
    - Amount calculated based on book value and rate
    - Voucher should appear in vouchers list
 
-### Step 69: Carry Forward Balances
+### Step 73: Carry Forward Balances
 
 1. In the **Year-End Operations** tab, go to **Carry Forward Balances** section
 2. **Carry Forward**:
@@ -1190,5 +1513,62 @@ If any step fails:
    - All ledgers' opening balances are updated
    - Success message confirms the operation
    - Check ledger master to verify updated opening balances
+
+---
+
+## Quick Reference: What's Pre-seeded vs. What to Create
+
+### ✅ Already Created by Seed Script (No Action Needed)
+
+- **5 Demo Startups** with complete company profiles
+- **All 13 Voucher Types** with default numbering series
+- **Complete Chart of Accounts** with ledger groups
+- **Key Ledgers**: Cash (₹50,000), Bank (₹10,00,000), 2 Customers (with credit limits), 2 Suppliers, Sales, Purchases, 6 GST ledgers
+- **3 Warehouses**: Main Warehouse, Secondary Warehouse, Storage Unit
+- **5 Items**: Premium SaaS License, API Credits, Consulting Hours, Cloud Server, Office Supplies (all with HSN/SAC and GST rates)
+- **1 GST Registration**: Karnataka (GSTIN: 29AABCU9603R1ZX) with 6 ledger mappings
+- **3 Mock Bank Accounts** per startup with 90 days of transaction history
+- **3 Products** with 20 sales records
+- **6 months of Cashflow Metrics** with growth trends
+- **2 AI Scenarios**: Hiring engineers, Revenue growth
+- **2 Alerts**: Runway warning, Burn rate info
+- **1 Investor Update**: Q4 2024 report
+- **4 Roles**: Admin, CFO, Accountant, OperationsManager with permissions
+
+### ⚠️ Must Be Created Manually
+
+- **GST Tax Rates**: Create tax rates for different HSN/SAC codes (18%, 12%, 5%, 0%, etc.)
+- **Cost Categories**: Create hierarchical cost categories
+- **Cost Centers**: Create cost centers and assign to categories
+- **Interest Profiles**: Create interest calculation profiles
+- **Party Interest Assignments**: Assign interest profiles to parties
+- **Vouchers**: Create vouchers to test the posting engine
+- **Bills**: Created automatically from vouchers with bill references
+- **Budgets**: Create budgets for variance analysis
+- **Additional Ledgers**: Create more ledgers as needed
+- **Additional Items/Warehouses**: Create more inventory items as needed
+
+### 🎯 Testing Priority
+
+1. **High Priority** (Core Features):
+   - Voucher creation and posting (Sales, Purchase, Payment, Receipt)
+   - Inventory stock movements
+   - GST calculation and posting
+   - Bill creation and settlement
+   - Financial statements (Trial Balance, P&L, Balance Sheet)
+
+2. **Medium Priority** (Advanced Features):
+   - Cost center reporting
+   - Budget variance analysis
+   - Exception reports
+   - Year-end operations
+   - Tally import/export
+
+3. **Low Priority** (Nice-to-Have):
+   - Additional voucher types (Credit Note, Debit Note, etc.)
+   - Interest calculations
+   - Advanced AI scenarios
+
+---
 
 **Happy Testing! 🚀**

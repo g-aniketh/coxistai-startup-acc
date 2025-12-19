@@ -147,8 +147,11 @@ export default function ReceiptVoucherPage() {
     return (
       <AuthGuard>
         <MainLayout>
-          <div className="flex items-center justify-center h-64">
-            <div className="text-gray-500">Loading...</div>
+          <div className="p-4 md:p-8 flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#607c47] mx-auto"></div>
+              <p className="mt-4 text-[#2C2C2C]/70">Loading ledgers...</p>
+            </div>
           </div>
         </MainLayout>
       </AuthGuard>
@@ -158,28 +161,35 @@ export default function ReceiptVoucherPage() {
   return (
     <AuthGuard>
       <MainLayout>
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/vouchers">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back
-                </Button>
-              </Link>
-              <h1 className="text-2xl font-bold">Receipt Voucher</h1>
+        <div className="p-4 md:p-8 space-y-6">
+          <div className="flex items-center gap-4">
+            <Link href="/vouchers">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">
+                Receipt Voucher
+              </h1>
+              <p className="text-sm text-[#2C2C2C]/70">
+                Record incoming payments from customers or other income sources
+              </p>
             </div>
           </div>
 
-          <Card>
+          <Card className="rounded-2xl shadow-lg border-0 bg-white">
             <CardHeader>
-              <CardTitle>Receipt Details</CardTitle>
+              <CardTitle className="text-lg text-[#2C2C2C]">Receipt Details</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="date">Date *</Label>
+                    <Label htmlFor="date" className="text-[#2C2C2C]">
+                      Date *
+                    </Label>
                     <Input
                       id="date"
                       type="date"
@@ -188,11 +198,14 @@ export default function ReceiptVoucherPage() {
                         setForm({ ...form, date: e.target.value })
                       }
                       required
+                      className="bg-white border-gray-200 text-[#2C2C2C]"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="paymentMode">Payment Mode *</Label>
+                    <Label htmlFor="paymentMode" className="text-[#2C2C2C]">
+                      Payment Mode *
+                    </Label>
                     <select
                       id="paymentMode"
                       value={form.paymentMode}
@@ -202,7 +215,7 @@ export default function ReceiptVoucherPage() {
                           paymentMode: e.target.value as PaymentMode,
                         })
                       }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                      className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-[#2C2C2C] focus:outline-none focus:ring-2 focus:ring-[#607c47] focus:border-transparent"
                       required
                     >
                       {paymentModeOptions.map((option) => (
@@ -214,7 +227,7 @@ export default function ReceiptVoucherPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="receivedIntoLedgerId">
+                    <Label htmlFor="receivedIntoLedgerId" className="text-[#2C2C2C]">
                       Received Into (CASH/BANK) *
                     </Label>
                     <select
@@ -226,7 +239,7 @@ export default function ReceiptVoucherPage() {
                           receivedIntoLedgerId: e.target.value,
                         })
                       }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                      className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-[#2C2C2C] focus:outline-none focus:ring-2 focus:ring-[#607c47] focus:border-transparent"
                       required
                     >
                       <option value="">Select cash/bank ledger</option>
@@ -239,7 +252,7 @@ export default function ReceiptVoucherPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="receivedFromLedgerId">
+                    <Label htmlFor="receivedFromLedgerId" className="text-[#2C2C2C]">
                       Received From (Customer/Income) *
                     </Label>
                     <select
@@ -251,7 +264,7 @@ export default function ReceiptVoucherPage() {
                           receivedFromLedgerId: e.target.value,
                         })
                       }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                      className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-[#2C2C2C] focus:outline-none focus:ring-2 focus:ring-[#607c47] focus:border-transparent"
                       required
                     >
                       <option value="">Select ledger</option>
@@ -264,7 +277,9 @@ export default function ReceiptVoucherPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="amount">Amount *</Label>
+                    <Label htmlFor="amount" className="text-[#2C2C2C]">
+                      Amount *
+                    </Label>
                     <Input
                       id="amount"
                       type="number"
@@ -275,11 +290,14 @@ export default function ReceiptVoucherPage() {
                         setForm({ ...form, amount: e.target.value })
                       }
                       required
+                      className="bg-white border-gray-200 text-[#2C2C2C]"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="referenceNumber">Reference Number</Label>
+                    <Label htmlFor="referenceNumber" className="text-[#2C2C2C]">
+                      Reference Number
+                    </Label>
                     <Input
                       id="referenceNumber"
                       value={form.referenceNumber}
@@ -287,12 +305,15 @@ export default function ReceiptVoucherPage() {
                         setForm({ ...form, referenceNumber: e.target.value })
                       }
                       placeholder="Cheque no, UTR, etc."
+                      className="bg-white border-gray-200 text-[#2C2C2C]"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="narration">Narration</Label>
+                  <Label htmlFor="narration" className="text-[#2C2C2C]">
+                    Narration
+                  </Label>
                   <Textarea
                     id="narration"
                     value={form.narration}
@@ -301,16 +322,21 @@ export default function ReceiptVoucherPage() {
                     }
                     rows={3}
                     placeholder="Additional notes..."
+                    className="bg-white border-gray-200 text-[#2C2C2C]"
                   />
                 </div>
 
-                <div className="flex justify-end gap-4">
+                <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
                   <Link href="/vouchers">
-                    <Button type="button" variant="outline">
+                    <Button type="button" variant="outline" className="border-gray-200">
                       Cancel
                     </Button>
                   </Link>
-                  <Button type="submit" disabled={submitting}>
+                  <Button
+                    type="submit"
+                    disabled={submitting}
+                    className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                  >
                     <Save className="h-4 w-4 mr-2" />
                     {submitting ? "Creating..." : "Create & Post"}
                   </Button>

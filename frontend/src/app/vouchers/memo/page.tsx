@@ -15,7 +15,7 @@ import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-type JournalEntry = {
+type MemoEntry = {
   ledgerId: string;
   ledgerName: string;
   drAmount: string;
@@ -23,12 +23,12 @@ type JournalEntry = {
   narration: string;
 };
 
-export default function JournalVoucherPage() {
+export default function MemoVoucherPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [ledgers, setLedgers] = useState<Ledger[]>([]);
-  const [entries, setEntries] = useState<JournalEntry[]>([
+  const [entries, setEntries] = useState<MemoEntry[]>([
     {
       ledgerId: "",
       ledgerName: "",
@@ -89,13 +89,12 @@ export default function JournalVoucherPage() {
 
   const updateEntry = (
     index: number,
-    field: keyof JournalEntry,
+    field: keyof MemoEntry,
     value: string
   ) => {
     const newEntries = [...entries];
     newEntries[index] = { ...newEntries[index], [field]: value };
 
-    // If ledger is selected, update ledger name
     if (field === "ledgerId") {
       const ledger = ledgers.find((l) => l.id === value);
       if (ledger) {
@@ -121,7 +120,7 @@ export default function JournalVoucherPage() {
 
   const removeEntry = (index: number) => {
     if (entries.length <= 2) {
-      toast.error("Journal voucher requires at least two entries");
+      toast.error("Memo voucher requires at least two entries");
       return;
     }
     setEntries(entries.filter((_, i) => i !== index));
@@ -131,7 +130,7 @@ export default function JournalVoucherPage() {
     e.preventDefault();
 
     if (entries.length < 2) {
-      toast.error("Journal voucher requires at least two entries");
+      toast.error("Memo voucher requires at least two entries");
       return;
     }
 
@@ -142,7 +141,6 @@ export default function JournalVoucherPage() {
       return;
     }
 
-    // Validate all entries have ledgers
     for (const entry of entries) {
       if (!entry.ledgerId || !entry.ledgerName) {
         toast.error("All entries must have a ledger selected");
@@ -165,12 +163,11 @@ export default function JournalVoucherPage() {
         throw new Error("Failed to load voucher types");
       }
 
-      const journalType = typesRes.data.find((t) => t.category === "JOURNAL");
-      if (!journalType) {
-        throw new Error("Journal voucher type not found");
+      const memoType = typesRes.data.find((t) => t.category === "MEMO");
+      if (!memoType) {
+        throw new Error("Memo voucher type not found");
       }
 
-      // Build entries array
       const voucherEntries: Array<{
         ledgerName: string;
         entryType: VoucherEntryType;
@@ -198,25 +195,25 @@ export default function JournalVoucherPage() {
       }
 
       const voucherRes = await apiClient.vouchers.create({
-        voucherTypeId: journalType.id,
+        voucherTypeId: memoType.id,
         date: form.date,
         narration: form.narration,
         entries: voucherEntries,
-        autoPost: true,
+        autoPost: false, // Memo vouchers are not posted
       });
 
       if (voucherRes.success) {
-        toast.success("Journal voucher created and posted successfully");
+        toast.success("Memo voucher created (not posted - provisional entry)");
         router.push("/vouchers");
       } else {
-        throw new Error(voucherRes.error || "Failed to create voucher");
+        throw new Error(voucherRes.error || "Failed to create memo voucher");
       }
     } catch (error) {
-      console.error("Create journal voucher error:", error);
+      console.error("Create memo voucher error:", error);
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to create journal voucher"
+          : "Failed to create memo voucher"
       );
     } finally {
       setSubmitting(false);
@@ -251,10 +248,10 @@ export default function JournalVoucherPage() {
             </Link>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">
-                Journal Voucher
+                Memo Voucher
               </h1>
               <p className="text-sm text-[#2C2C2C]/70">
-                Create journal entries with multiple debit and credit lines
+                Create provisional/hypothetical entries (does not affect ledger balances or stock)
               </p>
             </div>
           </div>
@@ -262,7 +259,7 @@ export default function JournalVoucherPage() {
           <Card className="rounded-2xl shadow-lg border-0 bg-white">
             <CardHeader>
               <CardTitle className="text-lg text-[#2C2C2C]">
-                Journal Entries
+                Memo Entries
               </CardTitle>
               <div className="flex items-center gap-4 text-sm mt-2">
                 <span className="text-[#2C2C2C]">
@@ -279,6 +276,9 @@ export default function JournalVoucherPage() {
                   {isBalanced ? "✓ Balanced" : "✗ Not Balanced"}
                 </span>
               </div>
+              <p className="text-xs text-amber-600 mt-2">
+                ⚠️ This is a provisional entry. It will NOT update ledger balances or inventory.
+              </p>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -452,7 +452,7 @@ export default function JournalVoucherPage() {
                     className="bg-[#607c47] hover:bg-[#4a6129] text-white"
                   >
                     <Save className="h-4 w-4 mr-2" />
-                    {submitting ? "Creating..." : "Create & Post"}
+                    {submitting ? "Creating..." : "Create (Draft)"}
                   </Button>
                 </div>
               </form>
@@ -463,3 +463,4 @@ export default function JournalVoucherPage() {
     </AuthGuard>
   );
 }
+

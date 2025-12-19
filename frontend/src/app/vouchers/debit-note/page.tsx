@@ -24,7 +24,7 @@ type InventoryLine = {
   gstRatePercent: string;
 };
 
-export default function PurchaseVoucherPage() {
+export default function DebitNotePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -43,12 +43,14 @@ export default function PurchaseVoucherPage() {
   ]);
   const [form, setForm] = useState({
     supplierLedgerId: "",
+    originalPurchaseId: "",
     supplierName: "",
     supplierAddress: "",
     supplierGstin: "",
     placeOfSupplyState: "",
     date: format(new Date(), "yyyy-MM-dd"),
     reference: "",
+    reason: "",
     narration: "",
   });
 
@@ -67,19 +69,17 @@ export default function PurchaseVoucherPage() {
 
       if (ledgersRes.success && ledgersRes.data) {
         const suppliers = ledgersRes.data.filter(
-          (l: Ledger) => l.ledgerSubtype === "SUPPLIER"
+          (l) => l.ledgerSubtype === "SUPPLIER"
         );
         setSupplierLedgers(suppliers);
       }
 
       if (itemsRes.success && itemsRes.data) {
-        setItems(itemsRes.data.filter((i: ItemMaster) => i.isActive));
+        setItems(itemsRes.data.filter((i) => i.isActive));
       }
 
       if (warehousesRes.success && warehousesRes.data) {
-        setWarehouses(
-          warehousesRes.data.filter((w: WarehouseMaster) => w.isActive)
-        );
+        setWarehouses(warehousesRes.data.filter((w) => w.isActive));
       }
     } catch (error) {
       console.error("Load data error:", error);
@@ -97,7 +97,6 @@ export default function PurchaseVoucherPage() {
     const newLines = [...inventoryLines];
     newLines[index] = { ...newLines[index], [field]: value };
 
-    // Auto-fill rate and GST from item
     if (field === "itemId") {
       const item = items.find((i: ItemMaster) => i.id === value);
       if (item) {
@@ -171,7 +170,6 @@ export default function PurchaseVoucherPage() {
       return;
     }
 
-    // Validate all lines
     for (const line of inventoryLines) {
       if (!line.itemId || !line.warehouseId || !line.quantity || !line.rate) {
         toast.error("Please fill all required fields in item lines");
@@ -186,17 +184,20 @@ export default function PurchaseVoucherPage() {
         throw new Error("Failed to load voucher types");
       }
 
-      const purchaseType = typesRes.data.find((t) => t.category === "PURCHASE");
-      if (!purchaseType) {
-        throw new Error("Purchase voucher type not found");
+      const debitNoteType = typesRes.data.find(
+        (t) => t.category === "DEBIT_NOTE"
+      );
+      if (!debitNoteType) {
+        throw new Error("Debit Note voucher type not found");
       }
 
       const voucherRes = await apiClient.vouchers.create({
-        voucherTypeId: purchaseType.id,
+        voucherTypeId: debitNoteType.id,
         date: form.date,
         reference: form.reference,
-        narration: form.narration,
+        narration: form.narration || form.reason,
         partyLedgerId: form.supplierLedgerId,
+        originalInvoiceId: form.originalPurchaseId || undefined,
         placeOfSupplyState: form.placeOfSupplyState || undefined,
         billingName: form.supplierName || undefined,
         billingAddress: form.supplierAddress || undefined,
@@ -213,17 +214,17 @@ export default function PurchaseVoucherPage() {
       });
 
       if (voucherRes.success) {
-        toast.success("Purchase voucher created and posted successfully");
+        toast.success("Debit Note created and posted successfully");
         router.push("/vouchers");
       } else {
-        throw new Error(voucherRes.error || "Failed to create voucher");
+        throw new Error(voucherRes.error || "Failed to create debit note");
       }
     } catch (error) {
-      console.error("Create purchase voucher error:", error);
+      console.error("Create debit note error:", error);
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to create purchase voucher"
+          : "Failed to create debit note"
       );
     } finally {
       setSubmitting(false);
@@ -258,24 +259,26 @@ export default function PurchaseVoucherPage() {
             </Link>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">
-                Purchase Voucher
+                Debit Note (Purchase Return)
               </h1>
               <p className="text-sm text-[#2C2C2C]/70">
-                Record purchases of goods/services with inventory and GST
+                Record purchase returns with inventory decrease and GST input reversal
               </p>
             </div>
           </div>
 
           <Card className="rounded-2xl shadow-lg border-0 bg-white">
             <CardHeader>
-              <CardTitle className="text-lg text-[#2C2C2C]">Purchase Invoice Details</CardTitle>
+              <CardTitle className="text-lg text-[#2C2C2C]">
+                Debit Note Details
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="date" className="text-[#2C2C2C]">
-                      Invoice Date *
+                      Debit Note Date *
                     </Label>
                     <Input
                       id="date"
@@ -309,6 +312,40 @@ export default function PurchaseVoucherPage() {
                         </option>
                       ))}
                     </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="originalPurchaseId" className="text-[#2C2C2C]">
+                      Original Purchase Invoice Number
+                    </Label>
+                    <Input
+                      id="originalPurchaseId"
+                      value={form.originalPurchaseId}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          originalPurchaseId: e.target.value,
+                        })
+                      }
+                      placeholder="Link to original purchase invoice"
+                      className="bg-white border-gray-200 text-[#2C2C2C]"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="reason" className="text-[#2C2C2C]">
+                      Return Reason *
+                    </Label>
+                    <Input
+                      id="reason"
+                      value={form.reason}
+                      onChange={(e) =>
+                        setForm({ ...form, reason: e.target.value })
+                      }
+                      placeholder="e.g., Defective goods, Wrong item"
+                      required
+                      className="bg-white border-gray-200 text-[#2C2C2C]"
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -347,7 +384,10 @@ export default function PurchaseVoucherPage() {
                       id="placeOfSupplyState"
                       value={form.placeOfSupplyState}
                       onChange={(e) =>
-                        setForm({ ...form, placeOfSupplyState: e.target.value })
+                        setForm({
+                          ...form,
+                          placeOfSupplyState: e.target.value,
+                        })
                       }
                       placeholder="e.g., 09 for UP"
                       className="bg-white border-gray-200 text-[#2C2C2C]"
@@ -364,7 +404,7 @@ export default function PurchaseVoucherPage() {
                       onChange={(e) =>
                         setForm({ ...form, reference: e.target.value })
                       }
-                      placeholder="PO number, etc."
+                      placeholder="Optional reference"
                       className="bg-white border-gray-200 text-[#2C2C2C]"
                     />
                   </div>
@@ -388,7 +428,7 @@ export default function PurchaseVoucherPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <Label className="text-[#2C2C2C] font-semibold">
-                      Item Lines
+                      Return Item Lines
                     </Label>
                     <Button
                       type="button"
@@ -582,7 +622,7 @@ export default function PurchaseVoucherPage() {
                         </span>
                       </div>
                       <div className="flex justify-between text-[#2C2C2C]">
-                        <span>Total Tax:</span>
+                        <span>Total Tax (Reversal):</span>
                         <span className="font-medium">
                           ₹{totals.totalTax.toFixed(2)}
                         </span>
@@ -634,3 +674,4 @@ export default function PurchaseVoucherPage() {
     </AuthGuard>
   );
 }
+

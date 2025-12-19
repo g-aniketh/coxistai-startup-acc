@@ -23,7 +23,7 @@ type JournalEntry = {
   narration: string;
 };
 
-export default function JournalVoucherPage() {
+export default function ReversingJournalPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -46,6 +46,10 @@ export default function JournalVoucherPage() {
   ]);
   const [form, setForm] = useState({
     date: format(new Date(), "yyyy-MM-dd"),
+    reversalDate: format(
+      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      "yyyy-MM-dd"
+    ),
     narration: "",
   });
 
@@ -95,7 +99,6 @@ export default function JournalVoucherPage() {
     const newEntries = [...entries];
     newEntries[index] = { ...newEntries[index], [field]: value };
 
-    // If ledger is selected, update ledger name
     if (field === "ledgerId") {
       const ledger = ledgers.find((l) => l.id === value);
       if (ledger) {
@@ -121,7 +124,7 @@ export default function JournalVoucherPage() {
 
   const removeEntry = (index: number) => {
     if (entries.length <= 2) {
-      toast.error("Journal voucher requires at least two entries");
+      toast.error("Reversing journal requires at least two entries");
       return;
     }
     setEntries(entries.filter((_, i) => i !== index));
@@ -131,7 +134,7 @@ export default function JournalVoucherPage() {
     e.preventDefault();
 
     if (entries.length < 2) {
-      toast.error("Journal voucher requires at least two entries");
+      toast.error("Reversing journal requires at least two entries");
       return;
     }
 
@@ -142,7 +145,13 @@ export default function JournalVoucherPage() {
       return;
     }
 
-    // Validate all entries have ledgers
+    const reversalDate = new Date(form.reversalDate);
+    const effectiveDate = new Date(form.date);
+    if (reversalDate <= effectiveDate) {
+      toast.error("Reversal date must be after the effective date");
+      return;
+    }
+
     for (const entry of entries) {
       if (!entry.ledgerId || !entry.ledgerName) {
         toast.error("All entries must have a ledger selected");
@@ -165,12 +174,13 @@ export default function JournalVoucherPage() {
         throw new Error("Failed to load voucher types");
       }
 
-      const journalType = typesRes.data.find((t) => t.category === "JOURNAL");
-      if (!journalType) {
-        throw new Error("Journal voucher type not found");
+      const reversingJournalType = typesRes.data.find(
+        (t) => t.category === "REVERSING_JOURNAL"
+      );
+      if (!reversingJournalType) {
+        throw new Error("Reversing Journal voucher type not found");
       }
 
-      // Build entries array
       const voucherEntries: Array<{
         ledgerName: string;
         entryType: VoucherEntryType;
@@ -198,25 +208,29 @@ export default function JournalVoucherPage() {
       }
 
       const voucherRes = await apiClient.vouchers.create({
-        voucherTypeId: journalType.id,
+        voucherTypeId: reversingJournalType.id,
         date: form.date,
-        narration: form.narration,
+        narration: form.narration || `Auto-reversing on ${form.reversalDate}`,
         entries: voucherEntries,
         autoPost: true,
       });
 
       if (voucherRes.success) {
-        toast.success("Journal voucher created and posted successfully");
+        toast.success(
+          `Reversing journal created. Will auto-reverse on ${format(new Date(form.reversalDate), "dd MMM yyyy")}`
+        );
         router.push("/vouchers");
       } else {
-        throw new Error(voucherRes.error || "Failed to create voucher");
+        throw new Error(
+          voucherRes.error || "Failed to create reversing journal"
+        );
       }
     } catch (error) {
-      console.error("Create journal voucher error:", error);
+      console.error("Create reversing journal error:", error);
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to create journal voucher"
+          : "Failed to create reversing journal"
       );
     } finally {
       setSubmitting(false);
@@ -251,10 +265,10 @@ export default function JournalVoucherPage() {
             </Link>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">
-                Journal Voucher
+                Reversing Journal
               </h1>
               <p className="text-sm text-[#2C2C2C]/70">
-                Create journal entries with multiple debit and credit lines
+                Create temporary entries that auto-reverse on a specified date
               </p>
             </div>
           </div>
@@ -262,7 +276,7 @@ export default function JournalVoucherPage() {
           <Card className="rounded-2xl shadow-lg border-0 bg-white">
             <CardHeader>
               <CardTitle className="text-lg text-[#2C2C2C]">
-                Journal Entries
+                Reversing Journal Entries
               </CardTitle>
               <div className="flex items-center gap-4 text-sm mt-2">
                 <span className="text-[#2C2C2C]">
@@ -285,7 +299,7 @@ export default function JournalVoucherPage() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="date" className="text-[#2C2C2C]">
-                      Date *
+                      Effective Date *
                     </Label>
                     <Input
                       id="date"
@@ -297,6 +311,25 @@ export default function JournalVoucherPage() {
                       required
                       className="bg-white border-gray-200 text-[#2C2C2C]"
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="reversalDate" className="text-[#2C2C2C]">
+                      Reversal Date *
+                    </Label>
+                    <Input
+                      id="reversalDate"
+                      type="date"
+                      value={form.reversalDate}
+                      onChange={(e) =>
+                        setForm({ ...form, reversalDate: e.target.value })
+                      }
+                      required
+                      className="bg-white border-gray-200 text-[#2C2C2C]"
+                    />
+                    <p className="text-xs text-[#2C2C2C]/70">
+                      Entry will be automatically reversed on this date
+                    </p>
                   </div>
                 </div>
 
@@ -463,3 +496,4 @@ export default function JournalVoucherPage() {
     </AuthGuard>
   );
 }
+

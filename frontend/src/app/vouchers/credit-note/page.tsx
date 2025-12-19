@@ -24,11 +24,11 @@ type InventoryLine = {
   gstRatePercent: string;
 };
 
-export default function PurchaseVoucherPage() {
+export default function CreditNotePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [supplierLedgers, setSupplierLedgers] = useState<Ledger[]>([]);
+  const [customerLedgers, setCustomerLedgers] = useState<Ledger[]>([]);
   const [items, setItems] = useState<ItemMaster[]>([]);
   const [warehouses, setWarehouses] = useState<WarehouseMaster[]>([]);
   const [inventoryLines, setInventoryLines] = useState<InventoryLine[]>([
@@ -42,13 +42,15 @@ export default function PurchaseVoucherPage() {
     },
   ]);
   const [form, setForm] = useState({
-    supplierLedgerId: "",
-    supplierName: "",
-    supplierAddress: "",
-    supplierGstin: "",
+    customerLedgerId: "",
+    originalInvoiceId: "",
+    billingName: "",
+    billingAddress: "",
+    customerGstin: "",
     placeOfSupplyState: "",
     date: format(new Date(), "yyyy-MM-dd"),
     reference: "",
+    reason: "",
     narration: "",
   });
 
@@ -66,20 +68,18 @@ export default function PurchaseVoucherPage() {
       ]);
 
       if (ledgersRes.success && ledgersRes.data) {
-        const suppliers = ledgersRes.data.filter(
-          (l: Ledger) => l.ledgerSubtype === "SUPPLIER"
+        const customers = ledgersRes.data.filter(
+          (l) => l.ledgerSubtype === "CUSTOMER"
         );
-        setSupplierLedgers(suppliers);
+        setCustomerLedgers(customers);
       }
 
       if (itemsRes.success && itemsRes.data) {
-        setItems(itemsRes.data.filter((i: ItemMaster) => i.isActive));
+        setItems(itemsRes.data.filter((i) => i.isActive));
       }
 
       if (warehousesRes.success && warehousesRes.data) {
-        setWarehouses(
-          warehousesRes.data.filter((w: WarehouseMaster) => w.isActive)
-        );
+        setWarehouses(warehousesRes.data.filter((w) => w.isActive));
       }
     } catch (error) {
       console.error("Load data error:", error);
@@ -97,11 +97,10 @@ export default function PurchaseVoucherPage() {
     const newLines = [...inventoryLines];
     newLines[index] = { ...newLines[index], [field]: value };
 
-    // Auto-fill rate and GST from item
     if (field === "itemId") {
       const item = items.find((i: ItemMaster) => i.id === value);
       if (item) {
-        newLines[index].rate = String(item.defaultPurchaseRate || "");
+        newLines[index].rate = String(item.defaultSalesRate || "");
         newLines[index].gstRatePercent = String(item.gstRatePercent || "");
       }
     }
@@ -161,8 +160,8 @@ export default function PurchaseVoucherPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!form.supplierLedgerId) {
-      toast.error("Please select a supplier");
+    if (!form.customerLedgerId) {
+      toast.error("Please select a customer");
       return;
     }
 
@@ -171,7 +170,6 @@ export default function PurchaseVoucherPage() {
       return;
     }
 
-    // Validate all lines
     for (const line of inventoryLines) {
       if (!line.itemId || !line.warehouseId || !line.quantity || !line.rate) {
         toast.error("Please fill all required fields in item lines");
@@ -186,21 +184,24 @@ export default function PurchaseVoucherPage() {
         throw new Error("Failed to load voucher types");
       }
 
-      const purchaseType = typesRes.data.find((t) => t.category === "PURCHASE");
-      if (!purchaseType) {
-        throw new Error("Purchase voucher type not found");
+      const creditNoteType = typesRes.data.find(
+        (t) => t.category === "CREDIT_NOTE"
+      );
+      if (!creditNoteType) {
+        throw new Error("Credit Note voucher type not found");
       }
 
       const voucherRes = await apiClient.vouchers.create({
-        voucherTypeId: purchaseType.id,
+        voucherTypeId: creditNoteType.id,
         date: form.date,
         reference: form.reference,
-        narration: form.narration,
-        partyLedgerId: form.supplierLedgerId,
+        narration: form.narration || form.reason,
+        partyLedgerId: form.customerLedgerId,
+        originalInvoiceId: form.originalInvoiceId || undefined,
         placeOfSupplyState: form.placeOfSupplyState || undefined,
-        billingName: form.supplierName || undefined,
-        billingAddress: form.supplierAddress || undefined,
-        customerGstin: form.supplierGstin || undefined,
+        billingName: form.billingName || undefined,
+        billingAddress: form.billingAddress || undefined,
+        customerGstin: form.customerGstin || undefined,
         inventoryLines: inventoryLines.map((line) => ({
           itemId: line.itemId,
           warehouseId: line.warehouseId,
@@ -213,17 +214,17 @@ export default function PurchaseVoucherPage() {
       });
 
       if (voucherRes.success) {
-        toast.success("Purchase voucher created and posted successfully");
+        toast.success("Credit Note created and posted successfully");
         router.push("/vouchers");
       } else {
-        throw new Error(voucherRes.error || "Failed to create voucher");
+        throw new Error(voucherRes.error || "Failed to create credit note");
       }
     } catch (error) {
-      console.error("Create purchase voucher error:", error);
+      console.error("Create credit note error:", error);
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to create purchase voucher"
+          : "Failed to create credit note"
       );
     } finally {
       setSubmitting(false);
@@ -258,24 +259,26 @@ export default function PurchaseVoucherPage() {
             </Link>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">
-                Purchase Voucher
+                Credit Note (Sales Return)
               </h1>
               <p className="text-sm text-[#2C2C2C]/70">
-                Record purchases of goods/services with inventory and GST
+                Record sales returns with inventory increase and GST reversal
               </p>
             </div>
           </div>
 
           <Card className="rounded-2xl shadow-lg border-0 bg-white">
             <CardHeader>
-              <CardTitle className="text-lg text-[#2C2C2C]">Purchase Invoice Details</CardTitle>
+              <CardTitle className="text-lg text-[#2C2C2C]">
+                Credit Note Details
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="date" className="text-[#2C2C2C]">
-                      Invoice Date *
+                      Credit Note Date *
                     </Label>
                     <Input
                       id="date"
@@ -290,20 +293,20 @@ export default function PurchaseVoucherPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="supplierLedgerId" className="text-[#2C2C2C]">
-                      Supplier *
+                    <Label htmlFor="customerLedgerId" className="text-[#2C2C2C]">
+                      Customer *
                     </Label>
                     <select
-                      id="supplierLedgerId"
-                      value={form.supplierLedgerId}
+                      id="customerLedgerId"
+                      value={form.customerLedgerId}
                       onChange={(e) =>
-                        setForm({ ...form, supplierLedgerId: e.target.value })
+                        setForm({ ...form, customerLedgerId: e.target.value })
                       }
                       className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-[#2C2C2C] focus:outline-none focus:ring-2 focus:ring-[#607c47] focus:border-transparent"
                       required
                     >
-                      <option value="">Select supplier</option>
-                      {supplierLedgers.map((ledger) => (
+                      <option value="">Select customer</option>
+                      {customerLedgers.map((ledger) => (
                         <option key={ledger.id} value={ledger.id}>
                           {ledger.name}
                         </option>
@@ -312,28 +315,59 @@ export default function PurchaseVoucherPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="supplierName" className="text-[#2C2C2C]">
-                      Supplier Name
+                    <Label htmlFor="originalInvoiceId" className="text-[#2C2C2C]">
+                      Original Invoice Number
                     </Label>
                     <Input
-                      id="supplierName"
-                      value={form.supplierName}
+                      id="originalInvoiceId"
+                      value={form.originalInvoiceId}
                       onChange={(e) =>
-                        setForm({ ...form, supplierName: e.target.value })
+                        setForm({ ...form, originalInvoiceId: e.target.value })
+                      }
+                      placeholder="Link to original sales invoice"
+                      className="bg-white border-gray-200 text-[#2C2C2C]"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="reason" className="text-[#2C2C2C]">
+                      Return Reason *
+                    </Label>
+                    <Input
+                      id="reason"
+                      value={form.reason}
+                      onChange={(e) =>
+                        setForm({ ...form, reason: e.target.value })
+                      }
+                      placeholder="e.g., Defective goods, Wrong item"
+                      required
+                      className="bg-white border-gray-200 text-[#2C2C2C]"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="billingName" className="text-[#2C2C2C]">
+                      Billing Name
+                    </Label>
+                    <Input
+                      id="billingName"
+                      value={form.billingName}
+                      onChange={(e) =>
+                        setForm({ ...form, billingName: e.target.value })
                       }
                       className="bg-white border-gray-200 text-[#2C2C2C]"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="supplierGstin" className="text-[#2C2C2C]">
-                      Supplier GSTIN
+                    <Label htmlFor="customerGstin" className="text-[#2C2C2C]">
+                      Customer GSTIN
                     </Label>
                     <Input
-                      id="supplierGstin"
-                      value={form.supplierGstin}
+                      id="customerGstin"
+                      value={form.customerGstin}
                       onChange={(e) =>
-                        setForm({ ...form, supplierGstin: e.target.value })
+                        setForm({ ...form, customerGstin: e.target.value })
                       }
                       className="bg-white border-gray-200 text-[#2C2C2C]"
                     />
@@ -347,7 +381,10 @@ export default function PurchaseVoucherPage() {
                       id="placeOfSupplyState"
                       value={form.placeOfSupplyState}
                       onChange={(e) =>
-                        setForm({ ...form, placeOfSupplyState: e.target.value })
+                        setForm({
+                          ...form,
+                          placeOfSupplyState: e.target.value,
+                        })
                       }
                       placeholder="e.g., 09 for UP"
                       className="bg-white border-gray-200 text-[#2C2C2C]"
@@ -364,21 +401,21 @@ export default function PurchaseVoucherPage() {
                       onChange={(e) =>
                         setForm({ ...form, reference: e.target.value })
                       }
-                      placeholder="PO number, etc."
+                      placeholder="Optional reference"
                       className="bg-white border-gray-200 text-[#2C2C2C]"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="supplierAddress" className="text-[#2C2C2C]">
-                    Supplier Address
+                  <Label htmlFor="billingAddress" className="text-[#2C2C2C]">
+                    Billing Address
                   </Label>
                   <Textarea
-                    id="supplierAddress"
-                    value={form.supplierAddress}
+                    id="billingAddress"
+                    value={form.billingAddress}
                     onChange={(e) =>
-                      setForm({ ...form, supplierAddress: e.target.value })
+                      setForm({ ...form, billingAddress: e.target.value })
                     }
                     rows={2}
                     className="bg-white border-gray-200 text-[#2C2C2C]"
@@ -388,7 +425,7 @@ export default function PurchaseVoucherPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <Label className="text-[#2C2C2C] font-semibold">
-                      Item Lines
+                      Return Item Lines
                     </Label>
                     <Button
                       type="button"
@@ -582,7 +619,7 @@ export default function PurchaseVoucherPage() {
                         </span>
                       </div>
                       <div className="flex justify-between text-[#2C2C2C]">
-                        <span>Total Tax:</span>
+                        <span>Total Tax (Reversal):</span>
                         <span className="font-medium">
                           ₹{totals.totalTax.toFixed(2)}
                         </span>
@@ -634,3 +671,4 @@ export default function PurchaseVoucherPage() {
     </AuthGuard>
   );
 }
+

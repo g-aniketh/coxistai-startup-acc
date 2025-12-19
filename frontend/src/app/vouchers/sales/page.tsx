@@ -235,8 +235,11 @@ export default function SalesVoucherPage() {
     return (
       <AuthGuard>
         <MainLayout>
-          <div className="flex items-center justify-center h-64">
-            <div className="text-gray-500">Loading...</div>
+          <div className="p-4 md:p-8 flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#607c47] mx-auto"></div>
+              <p className="mt-4 text-[#2C2C2C]/70">Loading data...</p>
+            </div>
           </div>
         </MainLayout>
       </AuthGuard>
@@ -246,28 +249,35 @@ export default function SalesVoucherPage() {
   return (
     <AuthGuard>
       <MainLayout>
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/vouchers">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back
-                </Button>
-              </Link>
-              <h1 className="text-2xl font-bold">Sales Voucher (Invoice)</h1>
+        <div className="p-4 md:p-8 space-y-6">
+          <div className="flex items-center gap-4">
+            <Link href="/vouchers">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">
+                Sales Voucher (Invoice)
+              </h1>
+              <p className="text-sm text-[#2C2C2C]/70">
+                Record sales of goods/services with inventory and GST
+              </p>
             </div>
           </div>
 
-          <Card>
+          <Card className="rounded-2xl shadow-lg border-0 bg-white">
             <CardHeader>
-              <CardTitle>Sales Invoice Details</CardTitle>
+              <CardTitle className="text-lg text-[#2C2C2C]">Sales Invoice Details</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="date">Invoice Date *</Label>
+                    <Label htmlFor="date" className="text-[#2C2C2C]">
+                      Invoice Date *
+                    </Label>
                     <Input
                       id="date"
                       type="date"
@@ -276,18 +286,21 @@ export default function SalesVoucherPage() {
                         setForm({ ...form, date: e.target.value })
                       }
                       required
+                      className="bg-white border-gray-200 text-[#2C2C2C]"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="customerLedgerId">Customer *</Label>
+                    <Label htmlFor="customerLedgerId" className="text-[#2C2C2C]">
+                      Customer *
+                    </Label>
                     <select
                       id="customerLedgerId"
                       value={form.customerLedgerId}
                       onChange={(e) =>
                         setForm({ ...form, customerLedgerId: e.target.value })
                       }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                      className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-[#2C2C2C] focus:outline-none focus:ring-2 focus:ring-[#607c47] focus:border-transparent"
                       required
                     >
                       <option value="">Select customer</option>
@@ -300,29 +313,35 @@ export default function SalesVoucherPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="billingName">Billing Name</Label>
+                    <Label htmlFor="billingName" className="text-[#2C2C2C]">
+                      Billing Name
+                    </Label>
                     <Input
                       id="billingName"
                       value={form.billingName}
                       onChange={(e) =>
                         setForm({ ...form, billingName: e.target.value })
                       }
+                      className="bg-white border-gray-200 text-[#2C2C2C]"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="customerGstin">Customer GSTIN</Label>
+                    <Label htmlFor="customerGstin" className="text-[#2C2C2C]">
+                      Customer GSTIN
+                    </Label>
                     <Input
                       id="customerGstin"
                       value={form.customerGstin}
                       onChange={(e) =>
                         setForm({ ...form, customerGstin: e.target.value })
                       }
+                      className="bg-white border-gray-200 text-[#2C2C2C]"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="placeOfSupplyState">
+                    <Label htmlFor="placeOfSupplyState" className="text-[#2C2C2C]">
                       Place of Supply (State Code)
                     </Label>
                     <Input
@@ -332,11 +351,14 @@ export default function SalesVoucherPage() {
                         setForm({ ...form, placeOfSupplyState: e.target.value })
                       }
                       placeholder="e.g., 09 for UP"
+                      className="bg-white border-gray-200 text-[#2C2C2C]"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="reference">Reference</Label>
+                    <Label htmlFor="reference" className="text-[#2C2C2C]">
+                      Reference
+                    </Label>
                     <Input
                       id="reference"
                       value={form.reference}
@@ -344,12 +366,15 @@ export default function SalesVoucherPage() {
                         setForm({ ...form, reference: e.target.value })
                       }
                       placeholder="PO number, etc."
+                      className="bg-white border-gray-200 text-[#2C2C2C]"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="billingAddress">Billing Address</Label>
+                  <Label htmlFor="billingAddress" className="text-[#2C2C2C]">
+                    Billing Address
+                  </Label>
                   <Textarea
                     id="billingAddress"
                     value={form.billingAddress}
@@ -357,49 +382,53 @@ export default function SalesVoucherPage() {
                       setForm({ ...form, billingAddress: e.target.value })
                     }
                     rows={2}
+                    className="bg-white border-gray-200 text-[#2C2C2C]"
                   />
                 </div>
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <Label>Item Lines</Label>
+                    <Label className="text-[#2C2C2C] font-semibold">
+                      Item Lines
+                    </Label>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
                       onClick={addLine}
+                      className="border-gray-200"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Add Item
                     </Button>
                   </div>
 
-                  <div className="border rounded-lg overflow-x-auto">
+                  <div className="border border-gray-200 rounded-xl overflow-x-auto">
                     <table className="w-full min-w-[800px]">
-                      <thead className="bg-gray-50">
+                      <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
-                          <th className="px-4 py-2 text-left text-sm font-medium">
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-[#2C2C2C]">
                             Item
                           </th>
-                          <th className="px-4 py-2 text-left text-sm font-medium">
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-[#2C2C2C]">
                             Warehouse
                           </th>
-                          <th className="px-4 py-2 text-right text-sm font-medium">
+                          <th className="px-4 py-3 text-right text-sm font-semibold text-[#2C2C2C]">
                             Qty
                           </th>
-                          <th className="px-4 py-2 text-right text-sm font-medium">
+                          <th className="px-4 py-3 text-right text-sm font-semibold text-[#2C2C2C]">
                             Rate
                           </th>
-                          <th className="px-4 py-2 text-right text-sm font-medium">
+                          <th className="px-4 py-3 text-right text-sm font-semibold text-[#2C2C2C]">
                             Discount
                           </th>
-                          <th className="px-4 py-2 text-right text-sm font-medium">
+                          <th className="px-4 py-3 text-right text-sm font-semibold text-[#2C2C2C]">
                             GST %
                           </th>
-                          <th className="px-4 py-2 text-right text-sm font-medium">
+                          <th className="px-4 py-3 text-right text-sm font-semibold text-[#2C2C2C]">
                             Amount
                           </th>
-                          <th className="px-4 py-2 text-center text-sm font-medium w-20">
+                          <th className="px-4 py-3 text-center text-sm font-semibold text-[#2C2C2C] w-20">
                             Action
                           </th>
                         </tr>
@@ -412,14 +441,17 @@ export default function SalesVoucherPage() {
                           const amount = quantity * rate - discount;
 
                           return (
-                            <tr key={index} className="border-t">
-                              <td className="px-4 py-2">
+                            <tr
+                              key={index}
+                              className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
+                            >
+                              <td className="px-4 py-3">
                                 <select
                                   value={line.itemId}
                                   onChange={(e) =>
                                     updateLine(index, "itemId", e.target.value)
                                   }
-                                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                                  className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-[#2C2C2C] focus:outline-none focus:ring-2 focus:ring-[#607c47] focus:border-transparent"
                                   required
                                 >
                                   <option value="">Select item</option>
@@ -430,7 +462,7 @@ export default function SalesVoucherPage() {
                                   ))}
                                 </select>
                               </td>
-                              <td className="px-4 py-2">
+                              <td className="px-4 py-3">
                                 <select
                                   value={line.warehouseId}
                                   onChange={(e) =>
@@ -440,7 +472,7 @@ export default function SalesVoucherPage() {
                                       e.target.value
                                     )
                                   }
-                                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                                  className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-[#2C2C2C] focus:outline-none focus:ring-2 focus:ring-[#607c47] focus:border-transparent"
                                   required
                                 >
                                   <option value="">Select warehouse</option>
@@ -456,7 +488,7 @@ export default function SalesVoucherPage() {
                                   )}
                                 </select>
                               </td>
-                              <td className="px-4 py-2">
+                              <td className="px-4 py-3">
                                 <Input
                                   type="number"
                                   step="0.01"
@@ -469,11 +501,11 @@ export default function SalesVoucherPage() {
                                       e.target.value
                                     )
                                   }
-                                  className="text-right w-24"
+                                  className="text-right w-24 bg-white border-gray-200 text-[#2C2C2C]"
                                   required
                                 />
                               </td>
-                              <td className="px-4 py-2">
+                              <td className="px-4 py-3">
                                 <Input
                                   type="number"
                                   step="0.01"
@@ -482,11 +514,11 @@ export default function SalesVoucherPage() {
                                   onChange={(e) =>
                                     updateLine(index, "rate", e.target.value)
                                   }
-                                  className="text-right w-24"
+                                  className="text-right w-24 bg-white border-gray-200 text-[#2C2C2C]"
                                   required
                                 />
                               </td>
-                              <td className="px-4 py-2">
+                              <td className="px-4 py-3">
                                 <Input
                                   type="number"
                                   step="0.01"
@@ -499,10 +531,10 @@ export default function SalesVoucherPage() {
                                       e.target.value
                                     )
                                   }
-                                  className="text-right w-24"
+                                  className="text-right w-24 bg-white border-gray-200 text-[#2C2C2C]"
                                 />
                               </td>
-                              <td className="px-4 py-2">
+                              <td className="px-4 py-3">
                                 <Input
                                   type="number"
                                   step="0.01"
@@ -516,21 +548,22 @@ export default function SalesVoucherPage() {
                                       e.target.value
                                     )
                                   }
-                                  className="text-right w-20"
+                                  className="text-right w-20 bg-white border-gray-200 text-[#2C2C2C]"
                                 />
                               </td>
-                              <td className="px-4 py-2 text-right font-medium">
+                              <td className="px-4 py-3 text-right font-medium text-[#2C2C2C]">
                                 ₹{amount.toFixed(2)}
                               </td>
-                              <td className="px-4 py-2 text-center">
+                              <td className="px-4 py-3 text-center">
                                 {inventoryLines.length > 1 && (
                                   <Button
                                     type="button"
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => removeLine(index)}
+                                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
                                   >
-                                    <Trash2 className="h-4 w-4 text-red-500" />
+                                    <Trash2 className="h-4 w-4" />
                                   </Button>
                                 )}
                               </td>
@@ -543,19 +576,19 @@ export default function SalesVoucherPage() {
 
                   <div className="flex justify-end">
                     <div className="w-64 space-y-2">
-                      <div className="flex justify-between">
+                      <div className="flex justify-between text-[#2C2C2C]">
                         <span>Items Subtotal:</span>
                         <span className="font-medium">
                           ₹{totals.itemsSubtotal.toFixed(2)}
                         </span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between text-[#2C2C2C]">
                         <span>Total Tax:</span>
                         <span className="font-medium">
                           ₹{totals.totalTax.toFixed(2)}
                         </span>
                       </div>
-                      <div className="flex justify-between border-t pt-2 text-lg font-bold">
+                      <div className="flex justify-between border-t border-gray-200 pt-2 text-lg font-bold text-[#2C2C2C]">
                         <span>Grand Total:</span>
                         <span>₹{totals.grandTotal.toFixed(2)}</span>
                       </div>
@@ -564,7 +597,9 @@ export default function SalesVoucherPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="narration">Narration</Label>
+                  <Label htmlFor="narration" className="text-[#2C2C2C]">
+                    Narration
+                  </Label>
                   <Textarea
                     id="narration"
                     value={form.narration}
@@ -573,16 +608,21 @@ export default function SalesVoucherPage() {
                     }
                     rows={3}
                     placeholder="Additional notes..."
+                    className="bg-white border-gray-200 text-[#2C2C2C]"
                   />
                 </div>
 
-                <div className="flex justify-end gap-4">
+                <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
                   <Link href="/vouchers">
-                    <Button type="button" variant="outline">
+                    <Button type="button" variant="outline" className="border-gray-200">
                       Cancel
                     </Button>
                   </Link>
-                  <Button type="submit" disabled={submitting}>
+                  <Button
+                    type="submit"
+                    disabled={submitting}
+                    className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                  >
                     <Save className="h-4 w-4 mr-2" />
                     {submitting ? "Creating..." : "Create & Post"}
                   </Button>
