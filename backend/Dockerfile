@@ -5,7 +5,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Install dependencies for Prisma and native modules
-RUN apk add --no-cache openssl curl
+RUN apk add --no-cache openssl curl wget
 
 # Copy package files
 COPY package*.json ./
@@ -28,6 +28,10 @@ RUN npm prune --production
 
 # Expose port
 EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost:3001/api/v1/health || exit 1
 
 # Start the application
 CMD ["npm", "start"]
