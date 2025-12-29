@@ -29,6 +29,7 @@ Thumbs.db
 # Environment variables
 .env
 .env.*
+production.env
 
 # Prisma
 /prisma/migrations

@@ -1270,38 +1270,48 @@ export default function SettingsPage() {
       icon: <User className="h-5 w-5 text-[#607c47]" />,
       title: "Account Information",
       content: (
-        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-[#2C2C2C]">
-          <div>
-            <dt className="text-sm font-medium text-[#2C2C2C]/70">Email</dt>
-            <dd className="mt-1 text-base font-semibold text-[#2C2C2C]">
-              {user?.email}
-            </dd>
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <dt className="text-xs font-medium text-[#2C2C2C]/60 uppercase tracking-wide">
+                Email
+              </dt>
+              <dd className="text-base font-semibold text-[#2C2C2C] break-all">
+                {user?.email}
+              </dd>
+            </div>
+            <div className="space-y-1.5">
+              <dt className="text-xs font-medium text-[#2C2C2C]/60 uppercase tracking-wide">
+                Role
+              </dt>
+              <dd className="text-base font-semibold text-[#2C2C2C] capitalize">
+                {user?.roles.join(", ")}
+              </dd>
+            </div>
+            <div className="space-y-1.5">
+              <dt className="text-xs font-medium text-[#2C2C2C]/60 uppercase tracking-wide">
+                Organization
+              </dt>
+              <dd className="text-base font-semibold text-[#2C2C2C]">
+                {user?.startup?.name}
+              </dd>
+            </div>
+            <div className="space-y-1.5">
+              <dt className="text-xs font-medium text-[#2C2C2C]/60 uppercase tracking-wide">
+                Member Since
+              </dt>
+              <dd className="text-base font-semibold text-[#2C2C2C]">
+                {user?.createdAt
+                  ? new Date(user.createdAt).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })
+                  : "N/A"}
+              </dd>
+            </div>
           </div>
-          <div>
-            <dt className="text-sm font-medium text-[#2C2C2C]/70">Role</dt>
-            <dd className="mt-1 text-base font-semibold text-[#2C2C2C] capitalize">
-              {user?.roles.join(", ")}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-sm font-medium text-[#2C2C2C]/70">
-              Organization
-            </dt>
-            <dd className="mt-1 text-base font-semibold text-[#2C2C2C]">
-              {user?.startup?.name}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-sm font-medium text-[#2C2C2C]/70">
-              Member Since
-            </dt>
-            <dd className="mt-1 text-base font-semibold text-[#2C2C2C]">
-              {user?.createdAt
-                ? new Date(user.createdAt).toLocaleDateString()
-                : "N/A"}
-            </dd>
-          </div>
-        </dl>
+        </div>
       ),
     },
     {
@@ -1309,42 +1319,51 @@ export default function SettingsPage() {
       title: "Connections",
       content: (
         <div className="space-y-4">
-          {plaidItems.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-            >
-              <div>
-                <p className="font-semibold text-[#2C2C2C]">
-                  {item.institutionName || "Bank Account"}
-                </p>
-                <p className="text-xs text-[#2C2C2C]/70">
-                  {item.accounts?.length || 0} accounts
-                </p>
-              </div>
-              <Button
-                onClick={() => handleDisconnectBank(item.id)}
-                variant="ghost"
-                size="sm"
-                className="text-xs text-red-500 hover:text-red-600"
+          {plaidItems.length > 0 ? (
+            plaidItems.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-[#607c47]/30 hover:shadow-md transition-all duration-200"
               >
-                <Trash2 className="h-3 w-3 mr-1" /> Disconnect
-              </Button>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-[#2C2C2C] text-base truncate">
+                    {item.institutionName || "Bank Account"}
+                  </p>
+                  <p className="text-sm text-[#2C2C2C]/60 mt-0.5">
+                    {item.accounts?.length || 0}{" "}
+                    {item.accounts?.length === 1 ? "account" : "accounts"}
+                  </p>
+                </div>
+                <Button
+                  onClick={() => handleDisconnectBank(item.id)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-red-500 hover:text-red-600 hover:bg-red-50 ml-3 flex-shrink-0"
+                >
+                  <Trash2 className="h-4 w-4 mr-1.5" /> Disconnect
+                </Button>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-8 text-[#2C2C2C]/50">
+              <p className="text-sm">No bank accounts connected</p>
             </div>
-          ))}
-          <PlaidLink
-            onSuccess={handlePlaidSuccess}
-            onError={(e: Error | unknown) => {
-              const errorMessage =
-                e &&
-                typeof e === "object" &&
-                "display_message" in e &&
-                typeof e.display_message === "string"
-                  ? e.display_message
-                  : "An error occurred.";
-              toast.error(errorMessage);
-            }}
-          />
+          )}
+          <div className="pt-2">
+            <PlaidLink
+              onSuccess={handlePlaidSuccess}
+              onError={(e: Error | unknown) => {
+                const errorMessage =
+                  e &&
+                  typeof e === "object" &&
+                  "display_message" in e &&
+                  typeof e.display_message === "string"
+                    ? e.display_message
+                    : "An error occurred.";
+                toast.error(errorMessage);
+              }}
+            />
+          </div>
         </div>
       ),
     },
@@ -1396,18 +1415,18 @@ export default function SettingsPage() {
           </div>
 
           {activeTab === "general" && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {sections.map((section) => (
                 <Card
                   key={section.title}
-                  className="rounded-2xl shadow-lg border-0 bg-white"
+                  className="rounded-2xl shadow-lg border border-gray-200 bg-white hover:shadow-xl transition-shadow duration-200"
                 >
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg font-bold text-[#2C2C2C]">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2.5 text-lg font-bold text-[#2C2C2C]">
                       {section.icon} {section.title}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>{section.content}</CardContent>
+                  <CardContent className="pt-0">{section.content}</CardContent>
                 </Card>
               ))}
             </div>

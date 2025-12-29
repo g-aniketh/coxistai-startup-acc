@@ -63,7 +63,7 @@ export default function PlaidLink({
       <button
         onClick={handlePlaidLink}
         disabled={loading || !isAuthenticated}
-        className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-gray-300 transition-colors"
+        className="flex items-center justify-center w-8 h-8 rounded-full bg-[#607c47] text-white hover:bg-[#607c47]/90 disabled:bg-gray-300 transition-colors shadow-sm hover:shadow-md"
         aria-label="Connect bank account"
       >
         <PlusIcon className="w-5 h-5" />
@@ -75,7 +75,7 @@ export default function PlaidLink({
     <button
       onClick={handlePlaidLink}
       disabled={loading || !isAuthenticated}
-      className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-300"
+      className="inline-flex items-center justify-center w-full px-4 py-2.5 border-2 border-[#607c47] text-sm font-semibold rounded-xl text-white bg-[#607c47] hover:bg-[#607c47]/90 focus:outline-none focus:ring-2 focus:ring-[#607c47]/40 focus:ring-offset-2 disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500 transition-all duration-200 shadow-sm hover:shadow-md"
     >
       <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
       {loading ? "Connecting..." : "Connect Bank Account"}
