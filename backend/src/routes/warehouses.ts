@@ -2,6 +2,8 @@ import { Router, Request, Response } from "express";
 import { authenticateToken } from "../middleware/auth";
 import { prisma } from "../lib/prisma";
 import { getWarehouseStockSummary } from "../services/inventoryPosting";
+import { createAuditLog } from "../services/auditLog";
+import { AuditAction, AuditEntityType } from "@prisma/client";
 
 const router = Router();
 
@@ -98,6 +100,24 @@ router.post("/", async (req: Request, res: Response) => {
       },
     });
 
+    // Create audit log
+    createAuditLog({
+      startupId,
+      userId: req.user?.userId,
+      entityType: AuditEntityType.PRODUCT, // Using PRODUCT as closest match
+      entityId: warehouse.id,
+      action: AuditAction.CREATE,
+      description: `Warehouse "${warehouse.name}" created`,
+      newValues: {
+        name: warehouse.name,
+        alias: warehouse.alias,
+        address: warehouse.address,
+        isActive: warehouse.isActive,
+      },
+    }).catch((err) => {
+      console.warn("Failed to write audit log for warehouse create", err);
+    });
+
     return res.status(201).json({
       success: true,
       data: warehouse,
@@ -146,6 +166,13 @@ router.put("/:warehouseId", async (req: Request, res: Response) => {
       });
     }
 
+    const oldValues = {
+      name: warehouse.name,
+      alias: warehouse.alias,
+      address: warehouse.address,
+      isActive: warehouse.isActive,
+    };
+
     const updatedWarehouse = await prisma.warehouseMaster.update({
       where: { id: warehouseId },
       data: {
@@ -154,6 +181,25 @@ router.put("/:warehouseId", async (req: Request, res: Response) => {
         address: address !== undefined ? address?.trim() || null : undefined,
         isActive: isActive !== undefined ? Boolean(isActive) : undefined,
       },
+    });
+
+    // Create audit log
+    createAuditLog({
+      startupId,
+      userId: req.user?.userId,
+      entityType: AuditEntityType.PRODUCT, // Using PRODUCT as closest match
+      entityId: warehouse.id,
+      action: AuditAction.UPDATE,
+      description: `Warehouse "${warehouse.name}" updated`,
+      oldValues,
+      newValues: {
+        name: updatedWarehouse.name,
+        alias: updatedWarehouse.alias,
+        address: updatedWarehouse.address,
+        isActive: updatedWarehouse.isActive,
+      },
+    }).catch((err) => {
+      console.warn("Failed to write audit log for warehouse update", err);
     });
 
     return res.json({
@@ -199,6 +245,24 @@ router.delete("/:warehouseId", async (req: Request, res: Response) => {
 
     await prisma.warehouseMaster.delete({
       where: { id: warehouseId },
+    });
+
+    // Create audit log
+    createAuditLog({
+      startupId,
+      userId: req.user?.userId,
+      entityType: AuditEntityType.PRODUCT, // Using PRODUCT as closest match
+      entityId: warehouse.id,
+      action: AuditAction.DELETE,
+      description: `Warehouse "${warehouse.name}" deleted`,
+      oldValues: {
+        name: warehouse.name,
+        alias: warehouse.alias,
+        address: warehouse.address,
+        isActive: warehouse.isActive,
+      },
+    }).catch((err) => {
+      console.warn("Failed to write audit log for warehouse delete", err);
     });
 
     return res.json({

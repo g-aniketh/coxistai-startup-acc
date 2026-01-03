@@ -1268,6 +1268,11 @@ export interface TallyImportPayload {
     totalDebit: number;
     totalCredit: number;
   };
+  financialMetrics?: {
+    runway?: number;
+    burnRate?: number;
+    monthlyRevenue?: number;
+  };
   errors: string[];
   warnings: string[];
 }

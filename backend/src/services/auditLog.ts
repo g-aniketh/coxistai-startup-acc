@@ -41,6 +41,7 @@ export const createAuditLog = async (input: CreateAuditLogInput) => {
 
   // If explicit config disables edit log, skip (except for critical actions)
   const criticalActions: AuditAction[] = [
+    AuditAction.CREATE,
     AuditAction.DELETE,
     AuditAction.APPROVE,
     AuditAction.REJECT,

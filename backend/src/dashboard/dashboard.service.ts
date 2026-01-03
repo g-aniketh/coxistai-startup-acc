@@ -13,7 +13,27 @@ export const getDashboardSummary = async (startupId: string) => {
     0
   );
 
-  // Calculate monthly burn rate (last 3 months)
+  // Check for imported financial metrics (prefer these over calculated values)
+  const now = new Date();
+  const periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+  const importedMetrics = await prisma.cashflowMetric.findFirst({
+    where: {
+      startupId: startupId,
+      periodStart: {
+        lte: periodEnd,
+      },
+      periodEnd: {
+        gte: periodStart,
+      },
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
+  });
+
+  // Calculate monthly burn rate (last 3 months) - fallback if no imported metrics
   const threeMonthsAgo = new Date();
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
 
@@ -40,11 +60,20 @@ export const getDashboardSummary = async (startupId: string) => {
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const netCashflow = income - expenses;
-  const monthlyBurn = expenses / 3;
-  const monthlyRevenue = income / 3;
+  
+  // Use imported metrics if available, otherwise calculate
+  const monthlyBurn = importedMetrics && importedMetrics.burnRate > 0
+    ? Number(importedMetrics.burnRate)
+    : expenses / 3;
+  
+  const monthlyRevenue = importedMetrics && importedMetrics.mrr > 0
+    ? Number(importedMetrics.mrr)
+    : income / 3;
 
-  // Calculate runway (in months)
-  const runwayMonths = monthlyBurn > 0 ? totalBalance / monthlyBurn : Infinity;
+  // Calculate runway (in months) - use imported if available, otherwise calculate
+  const runwayMonths = importedMetrics && importedMetrics.runway > 0
+    ? Number(importedMetrics.runway)
+    : (monthlyBurn > 0 ? totalBalance / monthlyBurn : Infinity);
 
   // Get product inventory stats
   const products = await prisma.product.findMany({

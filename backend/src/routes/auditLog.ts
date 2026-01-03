@@ -77,8 +77,10 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 
     return res.json({
       success: true,
-      data: result.logs,
-      total: result.total,
+      data: {
+        data: result.logs,
+        total: result.total,
+      },
     });
   } catch (error) {
     console.error("List audit logs error:", error);

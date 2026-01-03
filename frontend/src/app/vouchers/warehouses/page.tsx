@@ -25,6 +25,7 @@ import {
   ArrowLeft,
   Search,
   MoreVertical,
+  Loader2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -59,6 +60,8 @@ export default function WarehousesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingWarehouse, setEditingWarehouse] =
     useState<WarehouseMaster | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "",
     alias: "",
@@ -130,7 +133,10 @@ export default function WarehousesPage() {
       return;
     }
 
+    if (submitting) return;
+
     try {
+      setSubmitting(true);
       if (editingWarehouse) {
         const res = await apiClient.warehouses.update(editingWarehouse.id, {
           name: form.name.trim(),
@@ -164,6 +170,8 @@ export default function WarehousesPage() {
     } catch (error) {
       console.error("Submit warehouse error:", error);
       toast.error("Failed to save warehouse");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -172,7 +180,10 @@ export default function WarehousesPage() {
       return;
     }
 
+    if (deleting === warehouse.id) return;
+
     try {
+      setDeleting(warehouse.id);
       const res = await apiClient.warehouses.delete(warehouse.id);
       if (res.success) {
         toast.success("Warehouse deleted successfully");
@@ -183,6 +194,8 @@ export default function WarehousesPage() {
     } catch (error) {
       console.error("Delete warehouse error:", error);
       toast.error("Failed to delete warehouse");
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -190,10 +203,10 @@ export default function WarehousesPage() {
     <div className="space-y-3">
       {[1, 2, 3, 4].map((i) => (
         <div key={i} className="flex items-center gap-4">
-          <Skeleton className="h-12 flex-1" />
-          <Skeleton className="h-12 w-32" />
-          <Skeleton className="h-12 w-24" />
-          <Skeleton className="h-12 w-20" />
+          <Skeleton className="h-12 flex-1 bg-gray-200" />
+          <Skeleton className="h-12 w-32 bg-gray-200" />
+          <Skeleton className="h-12 w-24 bg-gray-200" />
+          <Skeleton className="h-12 w-20 bg-gray-200" />
         </div>
       ))}
     </div>
@@ -345,9 +358,14 @@ export default function WarehousesPage() {
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={() => handleDelete(warehouse)}
-                                    className="text-red-600 cursor-pointer focus:text-red-600 focus:bg-red-50"
+                                    disabled={deleting === warehouse.id}
+                                    className="text-red-600 cursor-pointer focus:text-red-600 focus:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
                                   >
-                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    {deleting === warehouse.id ? (
+                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                    )}
                                     Delete
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -463,9 +481,17 @@ export default function WarehousesPage() {
                 </Button>
                 <Button
                   onClick={handleSubmit}
-                  className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                  disabled={submitting}
+                  className="bg-[#607c47] hover:bg-[#4a6129] text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {editingWarehouse ? "Update" : "Create"}
+                  {submitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      {editingWarehouse ? "Updating..." : "Creating..."}
+                    </>
+                  ) : (
+                    editingWarehouse ? "Update" : "Create"
+                  )}
                 </Button>
               </DialogFooter>
             </DialogContent>

@@ -178,7 +178,7 @@ router.post("/ledgers", async (req: AuthRequest, res) => {
         .json({ success: false, message: "Startup context is required" });
     }
 
-    const created = await createLedger(startupId, req.body);
+    const created = await createLedger(startupId, req.body, req.user?.userId);
     return res.status(201).json({
       success: true,
       data: created,
@@ -206,7 +206,8 @@ router.put("/ledgers/:ledgerId", async (req: AuthRequest, res) => {
     const updated = await updateLedger(
       startupId,
       req.params.ledgerId,
-      req.body
+      req.body,
+      req.user?.userId
     );
     return res.json({
       success: true,

@@ -3,9 +3,12 @@ import {
   LedgerCategory,
   InterestComputation,
   LedgerBalanceType,
+  AuditAction,
+  AuditEntityType,
 } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 import { prisma } from "../lib/prisma";
+import { createAuditLog } from "./auditLog";
 
 type ChartGroupDefinition = {
   name: string;
@@ -160,7 +163,7 @@ export const createLedgerGroup = async (
     parentId = parent.id;
   }
 
-  return prisma.ledgerGroup.create({
+  const group = await prisma.ledgerGroup.create({
     data: {
       startupId,
       name: normalizedName,
@@ -170,6 +173,24 @@ export const createLedgerGroup = async (
       parentId,
     },
   });
+
+  // Create audit log
+  createAuditLog({
+    startupId,
+    entityType: AuditEntityType.TRANSACTION, // Using TRANSACTION as closest match
+    entityId: group.id,
+    action: AuditAction.CREATE,
+    description: `Ledger group "${group.name}" created`,
+    newValues: {
+      name: group.name,
+      code: group.code,
+      category: group.category,
+    },
+  }).catch((err) => {
+    console.warn("Failed to write audit log for ledger group create", err);
+  });
+
+  return group;
 };
 
 export const updateLedgerGroup = async (
@@ -209,7 +230,14 @@ export const updateLedgerGroup = async (
     }
   }
 
-  return prisma.ledgerGroup.update({
+  const oldValues = {
+    name: group.name,
+    code: group.code,
+    category: group.category,
+    description: group.description,
+  };
+
+  const updatedGroup = await prisma.ledgerGroup.update({
     where: { id: groupId },
     data: {
       name: data.name,
@@ -219,6 +247,26 @@ export const updateLedgerGroup = async (
       parentId,
     },
   });
+
+  // Create audit log
+  createAuditLog({
+    startupId,
+    entityType: AuditEntityType.TRANSACTION, // Using TRANSACTION as closest match
+    entityId: group.id,
+    action: AuditAction.UPDATE,
+    description: `Ledger group "${group.name}" updated`,
+    oldValues,
+    newValues: {
+      name: updatedGroup.name,
+      code: updatedGroup.code,
+      category: updatedGroup.category,
+      description: updatedGroup.description,
+    },
+  }).catch((err) => {
+    console.warn("Failed to write audit log for ledger group update", err);
+  });
+
+  return updatedGroup;
 };
 
 export const deleteLedgerGroup = async (startupId: string, groupId: string) => {
@@ -235,9 +283,31 @@ export const deleteLedgerGroup = async (startupId: string, groupId: string) => {
     );
   }
 
+  const group = await prisma.ledgerGroup.findUnique({
+    where: { id: groupId },
+  });
+
   await prisma.ledgerGroup.delete({
     where: { id: groupId },
   });
+
+  // Create audit log
+  if (group) {
+    createAuditLog({
+      startupId,
+      entityType: AuditEntityType.TRANSACTION, // Using TRANSACTION as closest match
+      entityId: group.id,
+      action: AuditAction.DELETE,
+      description: `Ledger group "${group.name}" deleted`,
+      oldValues: {
+        name: group.name,
+        code: group.code,
+        category: group.category,
+      },
+    }).catch((err) => {
+      console.warn("Failed to write audit log for ledger group delete", err);
+    });
+  }
 };
 
 export const listLedgers = async (startupId: string) => {
@@ -282,10 +352,14 @@ const ensureGroupOwnership = async (startupId: string, groupId: string) => {
   }
 };
 
-export const createLedger = async (startupId: string, input: LedgerInput) => {
+export const createLedger = async (
+  startupId: string,
+  input: LedgerInput,
+  userId?: string
+) => {
   await ensureGroupOwnership(startupId, input.groupId);
 
-  return prisma.ledger.create({
+  const ledger = await prisma.ledger.create({
     data: {
       startupId,
       groupId: input.groupId,
@@ -335,7 +409,8 @@ export const createLedger = async (startupId: string, input: LedgerInput) => {
 export const updateLedger = async (
   startupId: string,
   ledgerId: string,
-  input: Partial<LedgerInput>
+  input: Partial<LedgerInput>,
+  userId?: string
 ) => {
   const ledger = await prisma.ledger.findFirst({
     where: { id: ledgerId, startupId },
@@ -348,7 +423,13 @@ export const updateLedger = async (
     await ensureGroupOwnership(startupId, input.groupId);
   }
 
-  return prisma.ledger.update({
+  const oldValues = {
+    name: ledger.name,
+    alias: ledger.alias,
+    groupId: ledger.groupId,
+  };
+
+  const updatedLedger = await prisma.ledger.update({
     where: { id: ledgerId },
     data: {
       groupId: input.groupId ?? undefined,
@@ -407,5 +488,21 @@ export const deleteLedger = async (startupId: string, ledgerId: string) => {
 
   await prisma.ledger.delete({
     where: { id: ledgerId },
+  });
+
+  // Create audit log
+  createAuditLog({
+    startupId,
+    entityType: AuditEntityType.TRANSACTION, // Using TRANSACTION as closest match
+    entityId: ledger.id,
+    action: AuditAction.DELETE,
+    description: `Ledger "${ledger.name}" deleted`,
+    oldValues: {
+      name: ledger.name,
+      alias: ledger.alias,
+      groupId: ledger.groupId,
+    },
+  }).catch((err) => {
+    console.warn("Failed to write audit log for ledger delete", err);
   });
 };

@@ -238,7 +238,8 @@ export default function DashboardPage() {
                     router.push("/financial-dashboard?tab=statistics")
                   }
                 />
-                <StatCard
+                {/* Temporarily hidden */}
+                {/* <StatCard
                   title="Runway"
                   value={
                     summary?.financial.runwayMonths
@@ -250,8 +251,9 @@ export default function DashboardPage() {
                   onClick={() =>
                     router.push("/financial-dashboard?tab=statistics")
                   }
-                />
-                <StatCard
+                /> */}
+                {/* Temporarily hidden */}
+                {/* <StatCard
                   title="Burn Rate"
                   value={
                     summary
@@ -264,7 +266,7 @@ export default function DashboardPage() {
                   onClick={() =>
                     router.push("/financial-dashboard?tab=statistics")
                   }
-                />
+                /> */}
               </div>
 
               {/* AI CFO Insights Row */}
@@ -297,7 +299,8 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50">
+                {/* Temporarily hidden */}
+                {/* <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50">
                   <CardHeader className="pb-3">
                     <div className="flex items-center gap-2">
                       <div className="p-2 bg-green-100 rounded-lg">
@@ -323,9 +326,10 @@ export default function DashboardPage() {
                       Optimal runway: 18 months
                     </div>
                   </CardContent>
-                </Card>
+                </Card> */}
 
-                <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-orange-50 to-red-50">
+                {/* Temporarily hidden - AI Alert with Runway Status */}
+                {/* <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-orange-50 to-red-50">
                   <CardHeader className="pb-3">
                     <div className="flex items-center gap-2">
                       <div className="p-2 bg-orange-100 rounded-lg">
@@ -352,7 +356,7 @@ export default function DashboardPage() {
                         : "Healthy runway"}
                     </div>
                   </CardContent>
-                </Card>
+                </Card> */}
               </div>
 
               {/* Cashflow Chart */}

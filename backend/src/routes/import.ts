@@ -2,6 +2,8 @@ import { Router, Request, Response } from "express";
 import { authenticateToken, AuthRequest } from "../middleware/auth";
 import { prisma } from "../lib/prisma";
 import { importEnhancedTallyData } from "../services/tallyImport";
+import { createAuditLog } from "../services/auditLog";
+import { AuditAction, AuditEntityType } from "@prisma/client";
 import {
   exportVouchersToExcel,
   exportLedgersToExcel,
@@ -58,6 +60,11 @@ interface TallyImportPayload {
     dateRange: { from: string; to: string };
     totalDebit: number;
     totalCredit: number;
+  };
+  financialMetrics?: {
+    runway?: number;
+    burnRate?: number;
+    monthlyRevenue?: number;
   };
   errors: string[];
   warnings: string[];
@@ -280,6 +287,55 @@ router.post(
         }
       }
 
+      // Save financial metrics if provided
+      if (importData.financialMetrics) {
+        console.log("💰 Saving financial metrics...");
+        const metrics = importData.financialMetrics;
+        const now = new Date();
+        const periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+        // Check if a CashflowMetric already exists for this period
+        const existingMetric = await prisma.cashflowMetric.findFirst({
+          where: {
+            startupId: startupId,
+            periodStart: {
+              lte: periodEnd,
+            },
+            periodEnd: {
+              gte: periodStart,
+            },
+          },
+        });
+
+        if (existingMetric) {
+          // Update existing metric
+          await prisma.cashflowMetric.update({
+            where: { id: existingMetric.id },
+            data: {
+              runway: metrics.runway !== undefined ? metrics.runway : existingMetric.runway,
+              burnRate: metrics.burnRate !== undefined ? metrics.burnRate : existingMetric.burnRate,
+              mrr: metrics.monthlyRevenue !== undefined ? metrics.monthlyRevenue : existingMetric.mrr,
+            },
+          });
+          console.log("✅ Updated existing financial metrics");
+        } else {
+          // Create new metric
+          await prisma.cashflowMetric.create({
+            data: {
+              startupId: startupId,
+              periodStart: periodStart,
+              periodEnd: periodEnd,
+              runway: metrics.runway || 0,
+              burnRate: metrics.burnRate || 0,
+              mrr: metrics.monthlyRevenue || 0,
+              totalRevenue: metrics.monthlyRevenue || 0,
+            },
+          });
+          console.log("✅ Created new financial metrics");
+        }
+      }
+
       console.log("📝 Creating import history...");
       // Create import history record
       await prisma.importHistory.create({
@@ -294,6 +350,24 @@ router.post(
           summary: JSON.stringify(importStats),
           startupId: startupId,
         },
+      });
+
+      // Create audit log for import
+      createAuditLog({
+        startupId,
+        userId: userId,
+        entityType: AuditEntityType.TRANSACTION,
+        entityId: `import-${Date.now()}`,
+        action: AuditAction.CREATE,
+        description: `Tally import completed: ${importStats.ledgersCreated} ledgers, ${importStats.partiesCreated} parties, ${importStats.transactionsCreated} transactions`,
+        metadata: {
+          totalLedgers: importStats.ledgersCreated,
+          totalParties: importStats.partiesCreated,
+          totalTransactions: importStats.transactionsCreated,
+          totalAmount: importStats.totalAmountImported,
+        },
+      }).catch((err) => {
+        console.warn("Failed to write audit log for Tally import", err);
       });
 
       console.log("✅ Import completed successfully!");

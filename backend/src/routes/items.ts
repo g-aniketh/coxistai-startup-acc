@@ -2,6 +2,8 @@ import { Router, Request, Response } from "express";
 import { authenticateToken } from "../middleware/auth";
 import { prisma } from "../lib/prisma";
 import { getItemStockSummary } from "../services/inventoryPosting";
+import { createAuditLog } from "../services/auditLog";
+import { AuditAction, AuditEntityType } from "@prisma/client";
 
 const router = Router();
 
@@ -113,6 +115,28 @@ router.post("/", async (req: Request, res: Response) => {
       },
     });
 
+    // Create audit log
+    createAuditLog({
+      startupId,
+      userId: req.user?.userId,
+      entityType: AuditEntityType.PRODUCT, // Using PRODUCT as closest match
+      entityId: item.id,
+      action: AuditAction.CREATE,
+      description: `Item "${item.itemName}" created`,
+      newValues: {
+        itemName: item.itemName,
+        alias: item.alias,
+        hsnSac: item.hsnSac,
+        unit: item.unit,
+        defaultSalesRate: item.defaultSalesRate,
+        defaultPurchaseRate: item.defaultPurchaseRate,
+        gstRatePercent: item.gstRatePercent,
+        isActive: item.isActive,
+      },
+    }).catch((err) => {
+      console.warn("Failed to write audit log for item create", err);
+    });
+
     return res.status(201).json({
       success: true,
       data: item,
@@ -170,6 +194,17 @@ router.put("/:itemId", async (req: Request, res: Response) => {
       });
     }
 
+    const oldValues = {
+      itemName: item.itemName,
+      alias: item.alias,
+      hsnSac: item.hsnSac,
+      unit: item.unit,
+      defaultSalesRate: item.defaultSalesRate,
+      defaultPurchaseRate: item.defaultPurchaseRate,
+      gstRatePercent: item.gstRatePercent,
+      isActive: item.isActive,
+    };
+
     const updatedItem = await prisma.itemMaster.update({
       where: { id: itemId },
       data: {
@@ -189,6 +224,29 @@ router.put("/:itemId", async (req: Request, res: Response) => {
           description !== undefined ? description?.trim() || null : undefined,
         isActive: isActive !== undefined ? Boolean(isActive) : undefined,
       },
+    });
+
+    // Create audit log
+    createAuditLog({
+      startupId,
+      userId: req.user?.userId,
+      entityType: AuditEntityType.PRODUCT, // Using PRODUCT as closest match
+      entityId: item.id,
+      action: AuditAction.UPDATE,
+      description: `Item "${item.itemName}" updated`,
+      oldValues,
+      newValues: {
+        itemName: updatedItem.itemName,
+        alias: updatedItem.alias,
+        hsnSac: updatedItem.hsnSac,
+        unit: updatedItem.unit,
+        defaultSalesRate: updatedItem.defaultSalesRate,
+        defaultPurchaseRate: updatedItem.defaultPurchaseRate,
+        gstRatePercent: updatedItem.gstRatePercent,
+        isActive: updatedItem.isActive,
+      },
+    }).catch((err) => {
+      console.warn("Failed to write audit log for item update", err);
     });
 
     return res.json({
@@ -233,6 +291,28 @@ router.delete("/:itemId", async (req: Request, res: Response) => {
 
     await prisma.itemMaster.delete({
       where: { id: itemId },
+    });
+
+    // Create audit log
+    createAuditLog({
+      startupId,
+      userId: req.user?.userId,
+      entityType: AuditEntityType.PRODUCT, // Using PRODUCT as closest match
+      entityId: item.id,
+      action: AuditAction.DELETE,
+      description: `Item "${item.itemName}" deleted`,
+      oldValues: {
+        itemName: item.itemName,
+        alias: item.alias,
+        hsnSac: item.hsnSac,
+        unit: item.unit,
+        defaultSalesRate: item.defaultSalesRate,
+        defaultPurchaseRate: item.defaultPurchaseRate,
+        gstRatePercent: item.gstRatePercent,
+        isActive: item.isActive,
+      },
+    }).catch((err) => {
+      console.warn("Failed to write audit log for item delete", err);
     });
 
     return res.json({

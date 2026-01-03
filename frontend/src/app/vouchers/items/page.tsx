@@ -25,6 +25,7 @@ import {
   ArrowLeft,
   Search,
   MoreVertical,
+  Loader2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -58,6 +59,8 @@ export default function ItemsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ItemMaster | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [form, setForm] = useState({
     itemName: "",
     alias: "",
@@ -145,7 +148,10 @@ export default function ItemsPage() {
       return;
     }
 
+    if (submitting) return;
+
     try {
+      setSubmitting(true);
       if (editingItem) {
         const res = await apiClient.items.update(editingItem.id, {
           itemName: form.itemName.trim(),
@@ -201,6 +207,8 @@ export default function ItemsPage() {
     } catch (error) {
       console.error("Submit item error:", error);
       toast.error("Failed to save item");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -209,7 +217,10 @@ export default function ItemsPage() {
       return;
     }
 
+    if (deleting === item.id) return;
+
     try {
+      setDeleting(item.id);
       const res = await apiClient.items.delete(item.id);
       if (res.success) {
         toast.success("Item deleted successfully");
@@ -220,6 +231,8 @@ export default function ItemsPage() {
     } catch (error) {
       console.error("Delete item error:", error);
       toast.error("Failed to delete item");
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -227,12 +240,12 @@ export default function ItemsPage() {
     <div className="space-y-3">
       {[1, 2, 3, 4, 5].map((i) => (
         <div key={i} className="flex items-center gap-4">
-          <Skeleton className="h-12 flex-1" />
-          <Skeleton className="h-12 w-24" />
-          <Skeleton className="h-12 w-24" />
-          <Skeleton className="h-12 w-24" />
-          <Skeleton className="h-12 w-24" />
-          <Skeleton className="h-12 w-20" />
+          <Skeleton className="h-12 flex-1 bg-gray-200" />
+          <Skeleton className="h-12 w-24 bg-gray-200" />
+          <Skeleton className="h-12 w-24 bg-gray-200" />
+          <Skeleton className="h-12 w-24 bg-gray-200" />
+          <Skeleton className="h-12 w-24 bg-gray-200" />
+          <Skeleton className="h-12 w-20 bg-gray-200" />
         </div>
       ))}
     </div>
@@ -414,9 +427,14 @@ export default function ItemsPage() {
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={() => handleDelete(item)}
-                                    className="text-red-600 cursor-pointer focus:text-red-600 focus:bg-red-50"
+                                    disabled={deleting === item.id}
+                                    className="text-red-600 cursor-pointer focus:text-red-600 focus:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
                                   >
-                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    {deleting === item.id ? (
+                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                    )}
                                     Delete
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -620,9 +638,17 @@ export default function ItemsPage() {
                 </Button>
                 <Button
                   onClick={handleSubmit}
-                  className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                  disabled={submitting}
+                  className="bg-[#607c47] hover:bg-[#4a6129] text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {editingItem ? "Update" : "Create"}
+                  {submitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      {editingItem ? "Updating..." : "Creating..."}
+                    </>
+                  ) : (
+                    editingItem ? "Update" : "Create"
+                  )}
                 </Button>
               </DialogFooter>
             </DialogContent>

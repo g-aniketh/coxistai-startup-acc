@@ -53,6 +53,11 @@ export interface TallyImportData {
     totalDebit: number;
     totalCredit: number;
   };
+  financialMetrics?: {
+    runway?: number; // Months of runway
+    burnRate?: number; // Monthly burn rate
+    monthlyRevenue?: number; // Monthly revenue
+  };
   errors: string[];
   warnings: string[];
 }
@@ -78,6 +83,7 @@ export async function parseTallyExcel(file: File): Promise<TallyImportData> {
             totalDebit: 0,
             totalCredit: 0,
           },
+          financialMetrics: undefined,
           errors: [],
           warnings: [],
         };
@@ -97,6 +103,12 @@ export async function parseTallyExcel(file: File): Promise<TallyImportData> {
         }
         if (workbook.SheetNames.includes("Transactions")) {
           parseTransactionSheet(workbook.Sheets["Transactions"], result);
+        }
+        if (workbook.SheetNames.includes("Financial Metrics")) {
+          result.financialMetrics = parseFinancialMetricsSheet(
+            workbook.Sheets["Financial Metrics"],
+            result
+          );
         }
 
         // Calculate summary
@@ -327,6 +339,46 @@ function formatDate(dateValue: any): string {
   }
 
   return new Date().toISOString().split("T")[0];
+}
+
+// Parse Financial Metrics sheet
+function parseFinancialMetricsSheet(
+  sheet: XLSX.WorkSheet,
+  result: TallyImportData
+): TallyImportData["financialMetrics"] {
+  const rows = XLSX.utils.sheet_to_json(sheet);
+  const metrics: TallyImportData["financialMetrics"] = {};
+
+  interface RawRow {
+    [key: string]: any;
+  }
+
+  (rows as RawRow[]).forEach((row, index) => {
+    try {
+      const metricName = (row["Metric"] || row["Metric Name"] || "").toString().trim();
+      const value = parseFloat(row["Value"] || row["Amount"] || "0") || 0;
+
+      if (!metricName) {
+        result.warnings.push(`Row ${index + 1}: Missing metric name`);
+        return;
+      }
+
+      const metricLower = metricName.toLowerCase();
+      if (metricLower.includes("runway")) {
+        metrics.runway = value;
+      } else if (metricLower.includes("burn") || metricLower.includes("burn rate")) {
+        metrics.burnRate = value;
+      } else if (metricLower.includes("revenue") || metricLower.includes("monthly revenue")) {
+        metrics.monthlyRevenue = value;
+      }
+    } catch (error) {
+      result.warnings.push(
+        `Row ${index + 1}: Error parsing financial metric - ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  });
+
+  return Object.keys(metrics).length > 0 ? metrics : undefined;
 }
 
 // Validate the parsed data
@@ -950,6 +1002,25 @@ export function generateTallySampleTemplate(): XLSX.WorkBook {
     },
   ];
 
+  // Financial Metrics Data
+  const financialMetricsData = [
+    {
+      Metric: "Runway",
+      Value: 8.2,
+      Description: "Months of runway based on current burn rate",
+    },
+    {
+      Metric: "Burn Rate",
+      Value: 290000,
+      Description: "Monthly burn rate in INR",
+    },
+    {
+      Metric: "Monthly Revenue",
+      Value: 450000,
+      Description: "Monthly revenue in INR",
+    },
+  ];
+
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(
     wb,
@@ -965,6 +1036,11 @@ export function generateTallySampleTemplate(): XLSX.WorkBook {
     wb,
     XLSX.utils.json_to_sheet(transactionData),
     "Transactions"
+  );
+  XLSX.utils.book_append_sheet(
+    wb,
+    XLSX.utils.json_to_sheet(financialMetricsData),
+    "Financial Metrics"
   );
 
   return wb;
