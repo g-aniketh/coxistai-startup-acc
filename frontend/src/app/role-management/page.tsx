@@ -17,7 +17,7 @@ import {
   UserWithRoles,
 } from "@/lib/api";
 import { toast } from "react-hot-toast";
-import { Users, Shield, Key, Plus, Edit, Trash2, Save, X } from "lucide-react";
+import { Users, Shield, Key, Plus, Edit, Trash2, Save, X, Loader2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -48,6 +48,11 @@ export default function RoleManagementPage() {
   const [showPermissionDialog, setShowPermissionDialog] = useState(false);
   const [showUserRoleDialog, setShowUserRoleDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserWithRoles | null>(null);
+  const [savingRole, setSavingRole] = useState(false);
+  const [deletingRole, setDeletingRole] = useState<string | null>(null);
+  const [creatingPermission, setCreatingPermission] = useState(false);
+  const [deletingPermission, setDeletingPermission] = useState<string | null>(null);
+  const [savingUserRoles, setSavingUserRoles] = useState(false);
 
   // Role form state
   const [roleForm, setRoleForm] = useState<RoleInput>({
@@ -89,24 +94,32 @@ export default function RoleManagementPage() {
   };
 
   const handleCreateRole = async () => {
+    if (savingRole) return;
+    
     try {
+      setSavingRole(true);
       const response = await apiClient.roles.create(roleForm);
       if (response.success) {
         toast.success("Role created successfully");
         setShowRoleDialog(false);
         setRoleForm({ name: "", description: "", permissionIds: [] });
         loadData();
+      } else {
+        toast.error(response.message || response.error || "Failed to create role");
       }
     } catch (error) {
       console.error("Failed to create role:", error);
       toast.error("Failed to create role");
+    } finally {
+      setSavingRole(false);
     }
   };
 
   const handleUpdateRole = async () => {
-    if (!selectedRole) return;
+    if (!selectedRole || savingRole) return;
 
     try {
+      setSavingRole(true);
       const response = await apiClient.roles.update(selectedRole.id, roleForm);
       if (response.success) {
         toast.success("Role updated successfully");
@@ -114,27 +127,37 @@ export default function RoleManagementPage() {
         setSelectedRole(null);
         setRoleForm({ name: "", description: "", permissionIds: [] });
         loadData();
+      } else {
+        toast.error(response.message || response.error || "Failed to update role");
       }
     } catch (error) {
       console.error("Failed to update role:", error);
       toast.error("Failed to update role");
+    } finally {
+      setSavingRole(false);
     }
   };
 
   const handleDeleteRole = async (roleId: string) => {
     if (!confirm("Are you sure you want to delete this role?")) return;
+    if (deletingRole === roleId) return;
 
     try {
+      setDeletingRole(roleId);
       const response = await apiClient.roles.delete(roleId);
       if (response.success) {
         toast.success("Role deleted successfully");
         loadData();
+      } else {
+        toast.error(response.message || response.error || "Failed to delete role");
       }
     } catch (error) {
       console.error("Failed to delete role:", error);
       const message =
         error instanceof Error ? error.message : "Failed to delete role";
       toast.error(message);
+    } finally {
+      setDeletingRole(null);
     }
   };
 
@@ -149,49 +172,69 @@ export default function RoleManagementPage() {
   };
 
   const handleCreatePermission = async () => {
+    if (creatingPermission) return;
+
     try {
+      setCreatingPermission(true);
       const response = await apiClient.permissions.create(permissionForm);
       if (response.success) {
         toast.success("Permission created successfully");
         setShowPermissionDialog(false);
         setPermissionForm({ action: "", subject: "", description: "" });
         loadData();
+      } else {
+        toast.error(response.message || response.error || "Failed to create permission");
       }
     } catch (error) {
       console.error("Failed to create permission:", error);
       toast.error("Failed to create permission");
+    } finally {
+      setCreatingPermission(false);
     }
   };
 
   const handleDeletePermission = async (permissionId: string) => {
     if (!confirm("Are you sure you want to delete this permission?")) return;
+    if (deletingPermission === permissionId) return;
 
     try {
+      setDeletingPermission(permissionId);
       const response = await apiClient.permissions.delete(permissionId);
       if (response.success) {
         toast.success("Permission deleted successfully");
         loadData();
+      } else {
+        toast.error(response.message || response.error || "Failed to delete permission");
       }
     } catch (error) {
       console.error("Failed to delete permission:", error);
       const message =
         error instanceof Error ? error.message : "Failed to delete permission";
       toast.error(message);
+    } finally {
+      setDeletingPermission(null);
     }
   };
 
   const handleSetUserRoles = async (userId: string, roleIds: string[]) => {
+    if (savingUserRoles) return;
+
     try {
+      setSavingUserRoles(true);
       const response = await apiClient.userRoles.set(userId, roleIds);
       if (response.success) {
         toast.success("User roles updated successfully");
         setShowUserRoleDialog(false);
         setSelectedUser(null);
         loadData();
+      } else {
+        toast.error(response.message || response.error || "Failed to update user roles");
       }
     } catch (error) {
       console.error("Failed to update user roles:", error);
       toast.error("Failed to update user roles");
+    } finally {
+      setSavingUserRoles(false);
     }
   };
 
@@ -351,8 +394,8 @@ export default function RoleManagementPage() {
                         Create Role
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                      <DialogHeader>
+                    <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+                      <DialogHeader className="flex-shrink-0">
                         <DialogTitle className="text-[#2C2C2C]">
                           {selectedRole ? "Edit Role" : "Create New Role"}
                         </DialogTitle>
@@ -362,7 +405,7 @@ export default function RoleManagementPage() {
                             : "Create a new role and assign permissions"}
                         </DialogDescription>
                       </DialogHeader>
-                      <div className="space-y-4">
+                      <div className="space-y-4 flex-1 overflow-y-auto pr-2 dialog-scrollbar">
                         <div>
                           <Label htmlFor="roleName">Role Name</Label>
                           <Input
@@ -393,7 +436,7 @@ export default function RoleManagementPage() {
                         </div>
                         <div>
                           <Label>Permissions</Label>
-                          <div className="mt-2 space-y-4 max-h-96 overflow-y-auto border rounded p-4">
+                          <div className="mt-2 space-y-4 max-h-64 overflow-y-auto border rounded p-4 bg-gray-50/50 dialog-scrollbar">
                             {Object.entries(groupedPermissions).map(
                               ([subject, perms]) => (
                                 <div key={subject} className="space-y-2">
@@ -430,32 +473,39 @@ export default function RoleManagementPage() {
                             )}
                           </div>
                         </div>
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              setShowRoleDialog(false);
-                              setSelectedRole(null);
-                              setRoleForm({
-                                name: "",
-                                description: "",
-                                permissionIds: [],
-                              });
-                            }}
-                            className="border-gray-200"
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            onClick={
-                              selectedRole ? handleUpdateRole : handleCreateRole
-                            }
-                            disabled={!roleForm.name}
-                            className="bg-[#607c47] hover:bg-[#4a6129] text-white"
-                          >
-                            {selectedRole ? "Update" : "Create"}
-                          </Button>
-                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2 flex-shrink-0 pt-4 border-t">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setShowRoleDialog(false);
+                            setSelectedRole(null);
+                            setRoleForm({
+                              name: "",
+                              description: "",
+                              permissionIds: [],
+                            });
+                          }}
+                          className="border-gray-200"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={
+                            selectedRole ? handleUpdateRole : handleCreateRole
+                          }
+                          disabled={!roleForm.name || savingRole}
+                          className="bg-[#607c47] hover:bg-[#4a6129] text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {savingRole ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              {selectedRole ? "Updating..." : "Creating..."}
+                            </>
+                          ) : (
+                            selectedRole ? "Update" : "Create"
+                          )}
+                        </Button>
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -529,9 +579,14 @@ export default function RoleManagementPage() {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleDeleteRole(role.id)}
-                                    className="border-red-200 text-red-600"
+                                    disabled={deletingRole === role.id}
+                                    className="border-red-200 text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
                                   >
-                                    <Trash2 className="h-4 w-4" />
+                                    {deletingRole === role.id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="h-4 w-4" />
+                                    )}
                                   </Button>
                                 </div>
                               </TableCell>
@@ -571,8 +626,8 @@ export default function RoleManagementPage() {
                         Create Permission
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
+                    <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
+                      <DialogHeader className="flex-shrink-0">
                         <DialogTitle className="text-[#2C2C2C]">
                           Create New Permission
                         </DialogTitle>
@@ -580,7 +635,7 @@ export default function RoleManagementPage() {
                           Create a new permission that can be assigned to roles
                         </DialogDescription>
                       </DialogHeader>
-                      <div className="space-y-4">
+                      <div className="space-y-4 flex-1 overflow-y-auto pr-2 dialog-scrollbar">
                         <div>
                           <Label htmlFor="permAction">Action</Label>
                           <Input
@@ -623,24 +678,31 @@ export default function RoleManagementPage() {
                             placeholder="Describe what this permission allows"
                           />
                         </div>
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => setShowPermissionDialog(false)}
-                            className="border-gray-200"
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            onClick={handleCreatePermission}
-                            disabled={
-                              !permissionForm.action || !permissionForm.subject
-                            }
-                            className="bg-[#607c47] hover:bg-[#4a6129] text-white"
-                          >
-                            Create
-                          </Button>
-                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2 flex-shrink-0 pt-4 border-t">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowPermissionDialog(false)}
+                          className="border-gray-200"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleCreatePermission}
+                          disabled={
+                            !permissionForm.action || !permissionForm.subject || creatingPermission
+                          }
+                          className="bg-[#607c47] hover:bg-[#4a6129] text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {creatingPermission ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Creating...
+                            </>
+                          ) : (
+                            "Create"
+                          )}
+                        </Button>
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -696,9 +758,14 @@ export default function RoleManagementPage() {
                                       onClick={() =>
                                         handleDeletePermission(perm.id)
                                       }
-                                      className="border-red-200 text-red-600"
+                                      disabled={deletingPermission === perm.id}
+                                      className="border-red-200 text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                      <Trash2 className="h-4 w-4" />
+                                      {deletingPermission === perm.id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <Trash2 className="h-4 w-4" />
+                                      )}
                                     </Button>
                                   </div>
                                 </div>
@@ -823,8 +890,8 @@ export default function RoleManagementPage() {
             open={showUserRoleDialog}
             onOpenChange={setShowUserRoleDialog}
           >
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
+            <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+              <DialogHeader className="flex-shrink-0">
                 <DialogTitle className="text-[#2C2C2C]">
                   Assign Roles to User
                 </DialogTitle>
@@ -833,7 +900,7 @@ export default function RoleManagementPage() {
                 </DialogDescription>
               </DialogHeader>
               {selectedUser && (
-                <div className="space-y-4">
+                <div className="space-y-4 flex-1 overflow-y-auto pr-2 dialog-scrollbar">
                   <div className="space-y-2">
                     {roles.map((role) => (
                       <div
@@ -849,46 +916,56 @@ export default function RoleManagementPage() {
                         />
                         <Label
                           htmlFor={`role-${role.id}`}
-                          className="text-sm font-normal cursor-pointer flex-1"
+                          className="text-sm font-normal cursor-pointer flex-1 text-[#1f1f1f]"
                         >
                           {role.name}
                           {role.description && (
-                            <span className="text-gray-500 ml-2">
+                            <span className="text-[#1f1f1f]/70 ml-2">
                               - {role.description}
                             </span>
                           )}
                         </Label>
-                        <Badge variant="outline">
+                        <Badge variant="outline" className="border-gray-200 text-[#1f1f1f]">
                           {role.permissions.length} permissions
                         </Badge>
                       </div>
                     ))}
                   </div>
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setShowUserRoleDialog(false);
-                        setSelectedUser(null);
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        if (selectedUser) {
-                          handleSetUserRoles(
-                            selectedUser.id,
-                            selectedUser.roles.map((ur) => ur.role.id)
-                          );
-                        }
-                      }}
-                    >
-                      Save
-                    </Button>
-                  </div>
                 </div>
               )}
+              <div className="flex justify-end gap-2 flex-shrink-0 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowUserRoleDialog(false);
+                    setSelectedUser(null);
+                  }}
+                  className="border-gray-200"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (selectedUser) {
+                      handleSetUserRoles(
+                        selectedUser.id,
+                        selectedUser.roles.map((ur) => ur.role.id)
+                      );
+                    }
+                  }}
+                  disabled={savingUserRoles}
+                  className="bg-[#607c47] hover:bg-[#4a6129] text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {savingUserRoles ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save"
+                  )}
+                </Button>
+              </div>
             </DialogContent>
           </Dialog>
         </div>

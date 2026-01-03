@@ -141,21 +141,7 @@ export const createTeamMemberController = async (
       return;
     }
 
-    // Validate role
-    const validRoles = [
-      "Accountant",
-      "CTO",
-      "Sales Lead",
-      "Operations Manager",
-    ];
-    if (!validRoles.includes(roleName)) {
-      res.status(400).json({
-        success: false,
-        message: `Invalid role. Must be one of: ${validRoles.join(", ")}`,
-      });
-      return;
-    }
-
+    // Role validation is handled by the service (checks if role exists in database)
     const newUser = await authService.createTeamMember(adminUserId, startupId, {
       email,
       password,

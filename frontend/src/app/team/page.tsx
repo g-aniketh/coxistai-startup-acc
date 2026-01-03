@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiClient, TeamMember } from "@/lib/api";
+import { apiClient, TeamMember, Role } from "@/lib/api";
 import { usePermissions } from "@/hooks/usePermissions";
 import AuthGuard from "@/components/auth/AuthGuard";
 import MainLayout from "@/components/layout/MainLayout";
@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/Badge";
-import { Users, UserPlus, Mail, Shield, Ban, Copy } from "lucide-react";
+import { Users, UserPlus, Mail, Shield, Ban, Copy, CheckCircle, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function TeamPage() {
@@ -37,13 +37,17 @@ export default function TeamPage() {
     email: string;
     tempPassword: string;
   } | null>(null);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loadingRoles, setLoadingRoles] = useState(true);
   const [inviteForm, setInviteForm] = useState({
     email: "",
-    roleName: "Accountant",
+    roleName: "",
     firstName: "",
     lastName: "",
   });
   const [inviting, setInviting] = useState(false);
+  const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
+  const [reactivatingId, setReactivatingId] = useState<string | null>(null);
 
   const canManageTeam = can("manage", "team");
 
@@ -61,8 +65,32 @@ export default function TeamPage() {
     }
   };
 
+  const loadRoles = async () => {
+    try {
+      setLoadingRoles(true);
+      const response = await apiClient.roles.list();
+      if (response.success && response.data) {
+        const rolesData = response.data;
+        setRoles(rolesData);
+        // Set default role if available
+        if (rolesData.length > 0 && !inviteForm.roleName) {
+          setInviteForm((prev) => ({
+            ...prev,
+            roleName: rolesData[0].name,
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load roles:", error);
+      toast.error("Failed to load roles");
+    } finally {
+      setLoadingRoles(false);
+    }
+  };
+
   useEffect(() => {
     loadTeamMembers();
+    loadRoles();
   }, []);
 
   const handleInvite = async (e: React.FormEvent) => {
@@ -73,7 +101,7 @@ export default function TeamPage() {
       const response = await apiClient.team.invite(inviteForm);
       if (response.success) {
         toast.success("Account created successfully");
-        if (response.data?.tempPassword) {
+        if (response.data?.tempPassword && response.data?.email) {
           setCreatedCredentials({
             email: response.data.email,
             tempPassword: response.data.tempPassword,
@@ -82,7 +110,7 @@ export default function TeamPage() {
         }
         setInviteForm({
           email: "",
-          roleName: "Accountant",
+          roleName: roles.length > 0 ? roles[0].name : "",
           firstName: "",
           lastName: "",
         });
@@ -108,6 +136,7 @@ export default function TeamPage() {
       return;
     }
 
+    setDeactivatingId(userId);
     try {
       const response = await apiClient.team.deactivate(userId);
       if (response.success) {
@@ -123,6 +152,34 @@ export default function TeamPage() {
           : (error as { response?: { data?: { message?: string } } })?.response
               ?.data?.message || "Failed to deactivate user";
       toast.error(message);
+    } finally {
+      setDeactivatingId(null);
+    }
+  };
+
+  const handleReactivate = async (userId: string, email: string) => {
+    if (!confirm(`Are you sure you want to reactivate ${email}?`)) {
+      return;
+    }
+
+    setReactivatingId(userId);
+    try {
+      const response = await apiClient.team.reactivate(userId);
+      if (response.success) {
+        toast.success("User reactivated successfully");
+        loadTeamMembers();
+      } else {
+        toast.error(response.message || "Failed to reactivate user");
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : (error as { response?: { data?: { message?: string } } })?.response
+              ?.data?.message || "Failed to reactivate user";
+      toast.error(message);
+    } finally {
+      setReactivatingId(null);
     }
   };
 
@@ -249,21 +306,55 @@ export default function TeamPage() {
                       </p>
                     </div>
 
-                    {canManageTeam &&
-                      member.isActive &&
-                      !member.roles.includes("Admin") && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            handleDeactivate(member.id, member.email)
-                          }
-                          className="w-full mt-2 border-red-200 text-red-600"
-                        >
-                          <Ban className="h-4 w-4 mr-2" />
-                          Deactivate
-                        </Button>
-                      )}
+                    {canManageTeam && !member.roles.includes("Admin") && (
+                      <div className="w-full mt-2">
+                        {member.isActive ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              handleDeactivate(member.id, member.email)
+                            }
+                            disabled={deactivatingId === member.id || reactivatingId !== null}
+                            className="w-full border-gray-200 text-[#1f1f1f] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {deactivatingId === member.id ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Deactivating...
+                              </>
+                            ) : (
+                              <>
+                                <Ban className="h-4 w-4 mr-2" />
+                                Deactivate
+                              </>
+                            )}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              handleReactivate(member.id, member.email)
+                            }
+                            disabled={reactivatingId === member.id || deactivatingId !== null}
+                            className="w-full border-[#607c47] text-[#607c47] hover:bg-[#607c47]/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {reactivatingId === member.id ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Reactivating...
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Reactivate
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </Card>
               ))
@@ -336,17 +427,17 @@ export default function TeamPage() {
                     onValueChange={(value) =>
                       setInviteForm({ ...inviteForm, roleName: value })
                     }
+                    disabled={loadingRoles || roles.length === 0}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select role" />
+                      <SelectValue placeholder={loadingRoles ? "Loading roles..." : roles.length === 0 ? "No roles available" : "Select role"} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Accountant">Accountant</SelectItem>
-                      <SelectItem value="CTO">CTO</SelectItem>
-                      <SelectItem value="Sales Lead">Sales Lead</SelectItem>
-                      <SelectItem value="Operations Manager">
-                        Operations Manager
-                      </SelectItem>
+                      {roles.map((role) => (
+                        <SelectItem key={role.id} value={role.name}>
+                          {role.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-[#1f1f1f]/60 mt-1">
@@ -366,8 +457,8 @@ export default function TeamPage() {
                   </Button>
                   <Button
                     type="submit"
-                    disabled={inviting}
-                    className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                    disabled={inviting || !inviteForm.roleName || loadingRoles}
+                    className="bg-[#607c47] hover:bg-[#4a6129] text-white disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {inviting ? "Creating..." : "Create Account"}
                   </Button>
@@ -403,11 +494,17 @@ export default function TeamPage() {
                         variant="outline"
                         size="sm"
                         className="border-gray-200"
-                        onClick={() =>
-                          navigator.clipboard.writeText(
-                            createdCredentials.email
-                          )
-                        }
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(
+                              createdCredentials.email
+                            );
+                            toast.success("Email copied to clipboard");
+                          } catch (error) {
+                            console.error("Failed to copy:", error);
+                            toast.error("Failed to copy email");
+                          }
+                        }}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
@@ -425,11 +522,17 @@ export default function TeamPage() {
                         variant="outline"
                         size="sm"
                         className="border-gray-200"
-                        onClick={() =>
-                          navigator.clipboard.writeText(
-                            createdCredentials.tempPassword
-                          )
-                        }
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(
+                              createdCredentials.tempPassword
+                            );
+                            toast.success("Password copied to clipboard");
+                          } catch (error) {
+                            console.error("Failed to copy:", error);
+                            toast.error("Failed to copy password");
+                          }
+                        }}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>

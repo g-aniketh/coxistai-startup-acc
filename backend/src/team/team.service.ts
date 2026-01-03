@@ -307,3 +307,39 @@ export const deactivateUser = async (
 
   return { success: true };
 };
+
+export const reactivateUser = async (
+  adminUserId: string,
+  startupId: string,
+  userId: string
+) => {
+  // Verify admin belongs to startup
+  const adminUser = await prisma.user.findUnique({
+    where: { id: adminUserId },
+  });
+
+  if (!adminUser || adminUser.startupId !== startupId) {
+    throw new Error("Unauthorized");
+  }
+
+  // Verify target user belongs to same startup
+  const targetUser = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!targetUser || targetUser.startupId !== startupId) {
+    throw new Error("User not found or does not belong to your startup");
+  }
+
+  // Don't allow reactivating yourself (shouldn't be needed, but safety check)
+  if (adminUserId === userId) {
+    throw new Error("Cannot reactivate yourself");
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { isActive: true },
+  });
+
+  return { success: true };
+};

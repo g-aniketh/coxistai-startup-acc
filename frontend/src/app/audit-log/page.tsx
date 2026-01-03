@@ -185,14 +185,14 @@ export default function AuditLogPage() {
   return (
     <AuthGuard requireAuth={true}>
       <MainLayout>
-        <div className="p-4 md:p-8 space-y-8 bg-[#f6f7fb] min-h-full">
-          <div className="flex items-center gap-3">
+        <div className="p-6 md:p-8 lg:p-10 space-y-6 bg-[#f6f7fb] min-h-full">
+          <div className="flex items-center gap-4 pb-2">
             <FileText className="h-9 w-9 text-[#607c47]" />
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-[#1f1f1f]">
                 Audit Log
               </h1>
-              <p className="text-sm text-[#1f1f1f]/70">
+              <p className="text-sm text-[#1f1f1f]/70 mt-1">
                 Track all changes and activities in your system
               </p>
             </div>
@@ -230,24 +230,24 @@ export default function AuditLogPage() {
               {summary && (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <Card className="rounded-2xl border border-gray-100 shadow-sm bg-white">
-                    <CardHeader className="pb-2">
+                    <CardHeader className="pb-3 px-5 pt-5">
                       <CardTitle className="text-sm font-medium text-[#1f1f1f]/60">
                         Total Logs
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="px-5 pb-5">
                       <div className="text-3xl font-semibold text-[#1f1f1f]">
                         {summary.totalLogs}
                       </div>
                     </CardContent>
                   </Card>
                   <Card className="rounded-2xl border border-gray-100 shadow-sm bg-white">
-                    <CardHeader className="pb-2">
+                    <CardHeader className="pb-3 px-5 pt-5">
                       <CardTitle className="text-sm font-medium text-[#1f1f1f]/60">
                         Creates
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="px-5 pb-5">
                       <div className="text-3xl font-semibold text-emerald-600">
                         {summary.byAction.find(
                           (a) => a.action === AuditAction.CREATE
@@ -256,12 +256,12 @@ export default function AuditLogPage() {
                     </CardContent>
                   </Card>
                   <Card className="rounded-2xl border border-gray-100 shadow-sm bg-white">
-                    <CardHeader className="pb-2">
+                    <CardHeader className="pb-3 px-5 pt-5">
                       <CardTitle className="text-sm font-medium text-[#1f1f1f]/60">
                         Updates
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="px-5 pb-5">
                       <div className="text-3xl font-semibold text-blue-600">
                         {summary.byAction.find(
                           (a) => a.action === AuditAction.UPDATE
@@ -270,12 +270,12 @@ export default function AuditLogPage() {
                     </CardContent>
                   </Card>
                   <Card className="rounded-2xl border border-gray-100 shadow-sm bg-white">
-                    <CardHeader className="pb-2">
+                    <CardHeader className="pb-3 px-5 pt-5">
                       <CardTitle className="text-sm font-medium text-[#1f1f1f]/60">
                         Deletes
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="px-5 pb-5">
                       <div className="text-3xl font-semibold text-red-500">
                         {summary.byAction.find(
                           (a) => a.action === AuditAction.DELETE
@@ -288,18 +288,18 @@ export default function AuditLogPage() {
 
               {/* Filters */}
               <Card className="rounded-3xl border border-gray-100 shadow-sm bg-white">
-                <CardHeader>
+                <CardHeader className="px-6 pt-6 pb-4">
                   <CardTitle className="flex items-center gap-2 text-[#1f1f1f]">
                     <Filter className="h-5 w-5 text-[#607c47]" />
                     Filters
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
+                <CardContent className="px-6 pb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+                    <div className="space-y-2">
                       <Label
                         htmlFor="entityType"
-                        className="text-xs text-[#1f1f1f]/70"
+                        className="text-sm font-medium text-[#1f1f1f]/70"
                       >
                         Entity Type
                       </Label>
@@ -327,10 +327,10 @@ export default function AuditLogPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div>
+                    <div className="space-y-2">
                       <Label
                         htmlFor="action"
-                        className="text-xs text-[#1f1f1f]/70"
+                        className="text-sm font-medium text-[#1f1f1f]/70"
                       >
                         Action
                       </Label>
@@ -356,10 +356,10 @@ export default function AuditLogPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div>
+                    <div className="space-y-2">
                       <Label
                         htmlFor="fromDate"
-                        className="text-xs text-[#1f1f1f]/70"
+                        className="text-sm font-medium text-[#1f1f1f]/70"
                       >
                         From Date
                       </Label>
@@ -375,10 +375,10 @@ export default function AuditLogPage() {
                         }
                       />
                     </div>
-                    <div>
+                    <div className="space-y-2">
                       <Label
                         htmlFor="toDate"
-                        className="text-xs text-[#1f1f1f]/70"
+                        className="text-sm font-medium text-[#1f1f1f]/70"
                       >
                         To Date
                       </Label>
@@ -400,45 +400,45 @@ export default function AuditLogPage() {
 
               {/* Audit Logs Table */}
               <Card className="rounded-3xl border border-gray-100 shadow-lg bg-white">
-                <CardHeader>
-                  <CardTitle className="text-[#1f1f1f]">
+                <CardHeader className="px-6 pt-6 pb-4">
+                  <CardTitle className="text-lg font-semibold text-[#1f1f1f]">
                     Audit Logs ({total})
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-6 pb-6">
                   {loading ? (
-                    <div className="text-center py-8 text-[#1f1f1f]/60">
+                    <div className="text-center py-12 text-[#1f1f1f]/60">
                       Loading...
                     </div>
                   ) : logs.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-12 text-gray-500">
                       No audit logs found
                     </div>
                   ) : (
                     <div className="overflow-x-auto border border-gray-100 rounded-2xl">
                       <Table>
                         <TableHeader>
-                          <TableRow>
-                            <TableHead>Date & Time</TableHead>
-                            <TableHead>User</TableHead>
-                            <TableHead>Action</TableHead>
-                            <TableHead>Entity Type</TableHead>
-                            <TableHead>Entity ID</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead>Actions</TableHead>
+                          <TableRow className="bg-gray-50/50">
+                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">Date & Time</TableHead>
+                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">User</TableHead>
+                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">Action</TableHead>
+                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">Entity Type</TableHead>
+                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">Entity ID</TableHead>
+                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">Description</TableHead>
+                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {logs.map((log) => (
-                            <TableRow key={log.id} className="hover:bg-gray-50">
-                              <TableCell className="text-sm text-[#1f1f1f]">
+                            <TableRow key={log.id} className="hover:bg-gray-50/50">
+                              <TableCell className="px-4 py-3 text-sm text-[#1f1f1f]">
                                 {formatDate(log.createdAt)}
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="px-4 py-3">
                                 {log.user ? (
                                   <div className="flex items-center gap-2">
                                     <User className="h-4 w-4 text-[#1f1f1f]/50" />
-                                    <span className="text-[#1f1f1f]">
+                                    <span className="text-sm text-[#1f1f1f]">
                                       {log.user.firstName || ""}{" "}
                                       {log.user.lastName || ""}
                                       {!log.user.firstName &&
@@ -447,29 +447,29 @@ export default function AuditLogPage() {
                                     </span>
                                   </div>
                                 ) : (
-                                  <span className="text-gray-400">System</span>
+                                  <span className="text-sm text-gray-400">System</span>
                                 )}
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="px-4 py-3">
                                 <Badge className={getActionColor(log.action)}>
                                   {log.action}
                                 </Badge>
                               </TableCell>
-                              <TableCell className="text-[#1f1f1f]/80">
+                              <TableCell className="px-4 py-3 text-sm text-[#1f1f1f]/80">
                                 {getEntityTypeLabel(log.entityType)}
                               </TableCell>
-                              <TableCell className="font-mono text-xs text-[#607c47]">
+                              <TableCell className="px-4 py-3 font-mono text-xs text-[#607c47]">
                                 {log.entityId}
                               </TableCell>
-                              <TableCell className="max-w-xs truncate text-[#1f1f1f]/70">
+                              <TableCell className="px-4 py-3 max-w-xs truncate text-sm text-[#1f1f1f]/70">
                                 {log.description || "-"}
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="px-4 py-3">
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => viewDetails(log)}
-                                  className="text-[#607c47]"
+                                  className="text-[#607c47] hover:bg-[#607c47]/10"
                                 >
                                   View Details
                                 </Button>

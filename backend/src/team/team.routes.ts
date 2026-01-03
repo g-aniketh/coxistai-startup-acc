@@ -5,6 +5,7 @@ import {
   getTeamMembersController,
   updateUserRoleController,
   deactivateUserController,
+  reactivateUserController,
 } from "./team.controller";
 
 const router = Router();
@@ -39,6 +40,14 @@ router.post(
   authenticateToken,
   checkPermission({ action: "manage", subject: "team" }),
   deactivateUserController
+);
+
+// Reactivate a user
+router.post(
+  "/:userId/reactivate",
+  authenticateToken,
+  checkPermission({ action: "manage", subject: "team" }),
+  reactivateUserController
 );
 
 export default router;

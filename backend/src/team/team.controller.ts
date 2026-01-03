@@ -29,21 +29,7 @@ export const inviteTeamMemberController = async (
       return;
     }
 
-    // Valid roles (excluding Admin)
-    const validRoles = [
-      "Accountant",
-      "CTO",
-      "Sales Lead",
-      "Operations Manager",
-    ];
-    if (!validRoles.includes(roleName)) {
-      res.status(400).json({
-        success: false,
-        message: `Invalid role. Must be one of: ${validRoles.join(", ")}`,
-      });
-      return;
-    }
-
+    // Role validation is handled by the service (checks if role exists in database)
     const result = await teamService.inviteTeamMember(adminUserId, startupId, {
       email,
       roleName,
@@ -127,21 +113,7 @@ export const updateUserRoleController = async (
       return;
     }
 
-    const validRoles = [
-      "Accountant",
-      "CTO",
-      "Sales Lead",
-      "Operations Manager",
-      "Admin",
-    ];
-    if (!validRoles.includes(roleName)) {
-      res.status(400).json({
-        success: false,
-        message: `Invalid role. Must be one of: ${validRoles.join(", ")}`,
-      });
-      return;
-    }
-
+    // Role validation is handled by the service (checks if role exists in database)
     const updatedUser = await teamService.updateUserRole(
       adminUserId,
       startupId,
@@ -201,6 +173,43 @@ export const deactivateUserController = async (
     if (
       errorMessage.includes("Unauthorized") ||
       errorMessage.includes("Cannot deactivate")
+    ) {
+      res.status(403).json({
+        success: false,
+        message: errorMessage,
+      });
+      return;
+    }
+
+    res.status(400).json({
+      success: false,
+      message: errorMessage,
+    });
+  }
+};
+
+export const reactivateUserController = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const { userId: adminUserId, startupId } = req.user!;
+    const { userId } = req.params;
+
+    await teamService.reactivateUser(adminUserId, startupId, userId);
+
+    res.json({
+      success: true,
+      message: "User reactivated successfully",
+    });
+  } catch (error) {
+    console.error("Reactivate user error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
+    if (
+      errorMessage.includes("Unauthorized") ||
+      errorMessage.includes("Cannot reactivate")
     ) {
       res.status(403).json({
         success: false,

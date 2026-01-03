@@ -120,6 +120,29 @@
   background: oklch(0.3 0.02 230);
 }
 
+/* Custom scrollbar for dialogs - light theme */
+.dialog-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.dialog-scrollbar::-webkit-scrollbar-track {
+  background: oklch(0.96 0.01 230);
+  border-radius: 4px;
+}
+.dialog-scrollbar::-webkit-scrollbar-thumb {
+  background: oklch(0.75 0.02 230);
+  border-radius: 4px;
+  border: 2px solid oklch(0.96 0.01 230);
+}
+.dialog-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.65 0.02 230);
+}
+
+/* Firefox scrollbar for dialogs */
+.dialog-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.75 0.02 230) oklch(0.96 0.01 230);
+}
+
 /* Animations from React Bits Integration */
 @keyframes gradient {
   0% {

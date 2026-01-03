@@ -1902,6 +1902,11 @@ export const apiClient = {
       const response = await api.post(`/team/${userId}/deactivate`);
       return response.data;
     },
+
+    reactivate: async (userId: string): Promise<ApiResponse> => {
+      const response = await api.post(`/team/${userId}/reactivate`);
+      return response.data;
+    },
   },
 
   // ============================================================================
