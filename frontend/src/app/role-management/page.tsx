@@ -17,7 +17,17 @@ import {
   UserWithRoles,
 } from "@/lib/api";
 import { toast } from "react-hot-toast";
-import { Users, Shield, Key, Plus, Edit, Trash2, Save, X, Loader2 } from "lucide-react";
+import {
+  Users,
+  Shield,
+  Key,
+  Plus,
+  Edit,
+  Trash2,
+  Save,
+  X,
+  Loader2,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -51,7 +61,9 @@ export default function RoleManagementPage() {
   const [savingRole, setSavingRole] = useState(false);
   const [deletingRole, setDeletingRole] = useState<string | null>(null);
   const [creatingPermission, setCreatingPermission] = useState(false);
-  const [deletingPermission, setDeletingPermission] = useState<string | null>(null);
+  const [deletingPermission, setDeletingPermission] = useState<string | null>(
+    null
+  );
   const [savingUserRoles, setSavingUserRoles] = useState(false);
 
   // Role form state
@@ -95,7 +107,7 @@ export default function RoleManagementPage() {
 
   const handleCreateRole = async () => {
     if (savingRole) return;
-    
+
     try {
       setSavingRole(true);
       const response = await apiClient.roles.create(roleForm);
@@ -105,7 +117,9 @@ export default function RoleManagementPage() {
         setRoleForm({ name: "", description: "", permissionIds: [] });
         loadData();
       } else {
-        toast.error(response.message || response.error || "Failed to create role");
+        toast.error(
+          response.message || response.error || "Failed to create role"
+        );
       }
     } catch (error) {
       console.error("Failed to create role:", error);
@@ -128,7 +142,9 @@ export default function RoleManagementPage() {
         setRoleForm({ name: "", description: "", permissionIds: [] });
         loadData();
       } else {
-        toast.error(response.message || response.error || "Failed to update role");
+        toast.error(
+          response.message || response.error || "Failed to update role"
+        );
       }
     } catch (error) {
       console.error("Failed to update role:", error);
@@ -149,7 +165,9 @@ export default function RoleManagementPage() {
         toast.success("Role deleted successfully");
         loadData();
       } else {
-        toast.error(response.message || response.error || "Failed to delete role");
+        toast.error(
+          response.message || response.error || "Failed to delete role"
+        );
       }
     } catch (error) {
       console.error("Failed to delete role:", error);
@@ -183,7 +201,9 @@ export default function RoleManagementPage() {
         setPermissionForm({ action: "", subject: "", description: "" });
         loadData();
       } else {
-        toast.error(response.message || response.error || "Failed to create permission");
+        toast.error(
+          response.message || response.error || "Failed to create permission"
+        );
       }
     } catch (error) {
       console.error("Failed to create permission:", error);
@@ -204,7 +224,9 @@ export default function RoleManagementPage() {
         toast.success("Permission deleted successfully");
         loadData();
       } else {
-        toast.error(response.message || response.error || "Failed to delete permission");
+        toast.error(
+          response.message || response.error || "Failed to delete permission"
+        );
       }
     } catch (error) {
       console.error("Failed to delete permission:", error);
@@ -228,7 +250,9 @@ export default function RoleManagementPage() {
         setSelectedUser(null);
         loadData();
       } else {
-        toast.error(response.message || response.error || "Failed to update user roles");
+        toast.error(
+          response.message || response.error || "Failed to update user roles"
+        );
       }
     } catch (error) {
       console.error("Failed to update user roles:", error);
@@ -311,7 +335,7 @@ export default function RoleManagementPage() {
   return (
     <AuthGuard requireAuth={true}>
       <MainLayout>
-        <div className="p-4 md:p-8 space-y-8">
+        <div className="p-4 md:p-8 space-y-8 pb-32">
           <div className="flex items-center gap-3">
             <Shield className="h-9 w-9 text-[#607c47]" />
             <div>
@@ -502,8 +526,10 @@ export default function RoleManagementPage() {
                               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                               {selectedRole ? "Updating..." : "Creating..."}
                             </>
+                          ) : selectedRole ? (
+                            "Update"
                           ) : (
-                            selectedRole ? "Update" : "Create"
+                            "Create"
                           )}
                         </Button>
                       </div>
@@ -690,7 +716,9 @@ export default function RoleManagementPage() {
                         <Button
                           onClick={handleCreatePermission}
                           disabled={
-                            !permissionForm.action || !permissionForm.subject || creatingPermission
+                            !permissionForm.action ||
+                            !permissionForm.subject ||
+                            creatingPermission
                           }
                           className="bg-[#607c47] hover:bg-[#4a6129] text-white disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -925,7 +953,10 @@ export default function RoleManagementPage() {
                             </span>
                           )}
                         </Label>
-                        <Badge variant="outline" className="border-gray-200 text-[#1f1f1f]">
+                        <Badge
+                          variant="outline"
+                          className="border-gray-200 text-[#1f1f1f]"
+                        >
                           {role.permissions.length} permissions
                         </Badge>
                       </div>

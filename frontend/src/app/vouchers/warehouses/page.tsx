@@ -215,7 +215,7 @@ export default function WarehousesPage() {
   return (
     <AuthGuard>
       <MainLayout>
-        <div className="p-4 md:p-8 space-y-6">
+        <div className="p-4 md:p-8 space-y-6 pb-32">
           <div className="flex items-center gap-4">
             <Link href="/vouchers">
               <Button variant="ghost" size="sm">
@@ -489,8 +489,10 @@ export default function WarehousesPage() {
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       {editingWarehouse ? "Updating..." : "Creating..."}
                     </>
+                  ) : editingWarehouse ? (
+                    "Update"
                   ) : (
-                    editingWarehouse ? "Update" : "Create"
+                    "Create"
                   )}
                 </Button>
               </DialogFooter>

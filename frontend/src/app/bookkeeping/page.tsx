@@ -631,7 +631,7 @@ const BookkeepingPage = () => {
       <MainLayout>
         <div className="bg-gray-50 min-h-screen">
           <div className="flex-1 overflow-y-auto custom-scrollbar">
-            <div className="p-4 md:p-8 space-y-6">
+            <div className="p-4 md:p-8 space-y-6 pb-32">
               {/* Header */}
               <div className="space-y-2">
                 <p className="text-sm uppercase tracking-wide text-[#607c47] font-semibold">

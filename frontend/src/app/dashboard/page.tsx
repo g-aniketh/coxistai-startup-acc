@@ -126,7 +126,7 @@ export default function DashboardPage() {
         <div className="h-screen">
           {/* Main Content - Full Width */}
           <div className="overflow-y-auto custom-scrollbar h-full">
-            <div className="p-4 md:p-8 space-y-4 md:space-y-6 w-full px-4 md:px-8 lg:px-16">
+            <div className="p-4 md:p-8 space-y-4 md:space-y-6 w-full px-4 md:px-8 lg:px-16 pb-32">
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>

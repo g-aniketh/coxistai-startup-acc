@@ -355,7 +355,9 @@ function parseFinancialMetricsSheet(
 
   (rows as RawRow[]).forEach((row, index) => {
     try {
-      const metricName = (row["Metric"] || row["Metric Name"] || "").toString().trim();
+      const metricName = (row["Metric"] || row["Metric Name"] || "")
+        .toString()
+        .trim();
       const value = parseFloat(row["Value"] || row["Amount"] || "0") || 0;
 
       if (!metricName) {
@@ -366,9 +368,15 @@ function parseFinancialMetricsSheet(
       const metricLower = metricName.toLowerCase();
       if (metricLower.includes("runway")) {
         metrics.runway = value;
-      } else if (metricLower.includes("burn") || metricLower.includes("burn rate")) {
+      } else if (
+        metricLower.includes("burn") ||
+        metricLower.includes("burn rate")
+      ) {
         metrics.burnRate = value;
-      } else if (metricLower.includes("revenue") || metricLower.includes("monthly revenue")) {
+      } else if (
+        metricLower.includes("revenue") ||
+        metricLower.includes("monthly revenue")
+      ) {
         metrics.monthlyRevenue = value;
       }
     } catch (error) {

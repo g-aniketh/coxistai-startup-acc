@@ -413,7 +413,7 @@ export default function BillsPage() {
   return (
     <AuthGuard requireAuth>
       <MainLayout>
-        <div className="p-4 md:p-8 space-y-6">
+        <div className="p-4 md:p-8 space-y-6 pb-32">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center gap-3">
               <HandCoins className="h-10 w-10 text-[#2C2C2C]" />

@@ -254,7 +254,7 @@ export default function ItemsPage() {
   return (
     <AuthGuard>
       <MainLayout>
-        <div className="p-4 md:p-8 space-y-6">
+        <div className="p-4 md:p-8 space-y-6 pb-32">
           <div className="flex items-center gap-4">
             <Link href="/vouchers">
               <Button variant="ghost" size="sm">
@@ -646,8 +646,10 @@ export default function ItemsPage() {
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       {editingItem ? "Updating..." : "Creating..."}
                     </>
+                  ) : editingItem ? (
+                    "Update"
                   ) : (
-                    editingItem ? "Update" : "Create"
+                    "Create"
                   )}
                 </Button>
               </DialogFooter>

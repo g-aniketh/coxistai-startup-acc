@@ -313,9 +313,18 @@ router.post(
           await prisma.cashflowMetric.update({
             where: { id: existingMetric.id },
             data: {
-              runway: metrics.runway !== undefined ? metrics.runway : existingMetric.runway,
-              burnRate: metrics.burnRate !== undefined ? metrics.burnRate : existingMetric.burnRate,
-              mrr: metrics.monthlyRevenue !== undefined ? metrics.monthlyRevenue : existingMetric.mrr,
+              runway:
+                metrics.runway !== undefined
+                  ? metrics.runway
+                  : existingMetric.runway,
+              burnRate:
+                metrics.burnRate !== undefined
+                  ? metrics.burnRate
+                  : existingMetric.burnRate,
+              mrr:
+                metrics.monthlyRevenue !== undefined
+                  ? metrics.monthlyRevenue
+                  : existingMetric.mrr,
             },
           });
           console.log("✅ Updated existing financial metrics");

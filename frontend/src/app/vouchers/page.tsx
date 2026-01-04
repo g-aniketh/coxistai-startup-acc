@@ -341,7 +341,7 @@ export default function VouchersPage() {
   return (
     <AuthGuard requireAuth={true}>
       <MainLayout>
-        <div className="p-6 md:p-8 lg:p-10 space-y-6 bg-[#f6f7fb] min-h-full">
+        <div className="p-6 md:p-8 lg:p-10 space-y-6 bg-[#f6f7fb] min-h-full pb-32">
           <div className="flex items-center gap-4 pb-2">
             <Receipt className="h-8 w-8 text-[#607c47]" />
             <div>
@@ -645,7 +645,12 @@ export default function VouchersPage() {
                 <form className="space-y-6" onSubmit={handleSubmit}>
                   <div className="grid gap-5 md:grid-cols-3">
                     <div className="space-y-2.5">
-                      <Label htmlFor="voucherTypeId" className="text-sm font-medium text-[#2C2C2C]">Voucher Type *</Label>
+                      <Label
+                        htmlFor="voucherTypeId"
+                        className="text-sm font-medium text-[#2C2C2C]"
+                      >
+                        Voucher Type *
+                      </Label>
                       <Select
                         value={form.voucherTypeId}
                         onValueChange={handleTypeChange}
@@ -665,7 +670,10 @@ export default function VouchersPage() {
                     </div>
 
                     <div className="space-y-2.5">
-                      <Label htmlFor="numberingSeriesId" className="text-sm font-medium text-[#2C2C2C]">
+                      <Label
+                        htmlFor="numberingSeriesId"
+                        className="text-sm font-medium text-[#2C2C2C]"
+                      >
                         Numbering Series
                       </Label>
                       <Select
@@ -694,7 +702,12 @@ export default function VouchersPage() {
                     </div>
 
                     <div className="space-y-2.5">
-                      <Label htmlFor="voucherDate" className="text-sm font-medium text-[#2C2C2C]">Date</Label>
+                      <Label
+                        htmlFor="voucherDate"
+                        className="text-sm font-medium text-[#2C2C2C]"
+                      >
+                        Date
+                      </Label>
                       <Input
                         id="voucherDate"
                         type="date"
@@ -711,7 +724,12 @@ export default function VouchersPage() {
 
                   <div className="grid gap-5 md:grid-cols-2">
                     <div className="space-y-2.5">
-                      <Label htmlFor="voucherReference" className="text-sm font-medium text-[#2C2C2C]">Reference</Label>
+                      <Label
+                        htmlFor="voucherReference"
+                        className="text-sm font-medium text-[#2C2C2C]"
+                      >
+                        Reference
+                      </Label>
                       <Input
                         id="voucherReference"
                         value={form.reference ?? ""}
@@ -725,7 +743,12 @@ export default function VouchersPage() {
                       />
                     </div>
                     <div className="space-y-2.5">
-                      <Label htmlFor="voucherNarration" className="text-sm font-medium text-[#2C2C2C]">Narration</Label>
+                      <Label
+                        htmlFor="voucherNarration"
+                        className="text-sm font-medium text-[#2C2C2C]"
+                      >
+                        Narration
+                      </Label>
                       <Textarea
                         id="voucherNarration"
                         value={form.narration ?? ""}
@@ -803,7 +826,9 @@ export default function VouchersPage() {
 
                         <div className="grid gap-4 md:grid-cols-3">
                           <div className="space-y-2.5 md:col-span-2">
-                            <Label className="text-sm font-medium text-[#2C2C2C]">Ledger Name *</Label>
+                            <Label className="text-sm font-medium text-[#2C2C2C]">
+                              Ledger Name *
+                            </Label>
                             <Input
                               value={entry.ledgerName}
                               onChange={(event) =>
@@ -817,7 +842,9 @@ export default function VouchersPage() {
                             />
                           </div>
                           <div className="space-y-2.5">
-                            <Label className="text-sm font-medium text-[#2C2C2C]">Ledger Code</Label>
+                            <Label className="text-sm font-medium text-[#2C2C2C]">
+                              Ledger Code
+                            </Label>
                             <Input
                               value={entry.ledgerCode}
                               onChange={(event) =>
@@ -830,7 +857,9 @@ export default function VouchersPage() {
                             />
                           </div>
                           <div className="space-y-2.5">
-                            <Label className="text-sm font-medium text-[#2C2C2C]">Type</Label>
+                            <Label className="text-sm font-medium text-[#2C2C2C]">
+                              Type
+                            </Label>
                             <Select
                               value={entry.entryType}
                               onValueChange={(value) =>
@@ -850,7 +879,9 @@ export default function VouchersPage() {
                             </Select>
                           </div>
                           <div className="space-y-2.5">
-                            <Label className="text-sm font-medium text-[#2C2C2C]">Amount *</Label>
+                            <Label className="text-sm font-medium text-[#2C2C2C]">
+                              Amount *
+                            </Label>
                             <Input
                               type="number"
                               min="0"
@@ -867,7 +898,9 @@ export default function VouchersPage() {
                             />
                           </div>
                           <div className="space-y-2.5">
-                            <Label className="text-sm font-medium text-[#2C2C2C]">Narration</Label>
+                            <Label className="text-sm font-medium text-[#2C2C2C]">
+                              Narration
+                            </Label>
                             <Input
                               value={entry.narration}
                               onChange={(event) =>
@@ -880,7 +913,9 @@ export default function VouchersPage() {
                             />
                           </div>
                           <div className="space-y-2.5">
-                            <Label className="text-sm font-medium text-[#2C2C2C]">Cost Center</Label>
+                            <Label className="text-sm font-medium text-[#2C2C2C]">
+                              Cost Center
+                            </Label>
                             <Input
                               value={entry.costCenterName}
                               onChange={(event) =>
@@ -893,7 +928,9 @@ export default function VouchersPage() {
                             />
                           </div>
                           <div className="space-y-2.5">
-                            <Label className="text-sm font-medium text-[#2C2C2C]">Cost Category</Label>
+                            <Label className="text-sm font-medium text-[#2C2C2C]">
+                              Cost Category
+                            </Label>
                             <Input
                               value={entry.costCategory}
                               onChange={(event) =>

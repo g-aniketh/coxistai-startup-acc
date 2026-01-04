@@ -24,7 +24,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/Badge";
-import { Users, UserPlus, Mail, Shield, Ban, Copy, CheckCircle, Loader2 } from "lucide-react";
+import {
+  Users,
+  UserPlus,
+  Mail,
+  Shield,
+  Ban,
+  Copy,
+  CheckCircle,
+  Loader2,
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function TeamPage() {
@@ -203,7 +212,7 @@ export default function TeamPage() {
   return (
     <AuthGuard requireAuth={true}>
       <MainLayout>
-        <div className="p-6 md:p-8 space-y-6 bg-[#f6f7fb] min-h-full">
+        <div className="p-6 md:p-8 space-y-6 bg-[#f6f7fb] min-h-full pb-32">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -315,7 +324,10 @@ export default function TeamPage() {
                             onClick={() =>
                               handleDeactivate(member.id, member.email)
                             }
-                            disabled={deactivatingId === member.id || reactivatingId !== null}
+                            disabled={
+                              deactivatingId === member.id ||
+                              reactivatingId !== null
+                            }
                             className="w-full border-gray-200 text-[#1f1f1f] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {deactivatingId === member.id ? (
@@ -337,7 +349,10 @@ export default function TeamPage() {
                             onClick={() =>
                               handleReactivate(member.id, member.email)
                             }
-                            disabled={reactivatingId === member.id || deactivatingId !== null}
+                            disabled={
+                              reactivatingId === member.id ||
+                              deactivatingId !== null
+                            }
                             className="w-full border-[#607c47] text-[#607c47] hover:bg-[#607c47]/10 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {reactivatingId === member.id ? (
@@ -430,7 +445,15 @@ export default function TeamPage() {
                     disabled={loadingRoles || roles.length === 0}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder={loadingRoles ? "Loading roles..." : roles.length === 0 ? "No roles available" : "Select role"} />
+                      <SelectValue
+                        placeholder={
+                          loadingRoles
+                            ? "Loading roles..."
+                            : roles.length === 0
+                              ? "No roles available"
+                              : "Select role"
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {roles.map((role) => (

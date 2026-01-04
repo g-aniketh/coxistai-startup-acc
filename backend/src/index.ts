@@ -491,7 +491,7 @@ const server = app.listen(PORT, () => {
   const host = process.env.HOST || "localhost";
   const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
   const baseUrl = `${protocol}://${host}:${PORT}`;
-  
+
   console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
   console.log(`📍 Health check: ${baseUrl}/api/v1/health`);
   console.log(`📍 API Documentation: ${baseUrl}/api/v1/docs`);

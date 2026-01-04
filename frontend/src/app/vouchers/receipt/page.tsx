@@ -168,7 +168,7 @@ export default function ReceiptVoucherPage() {
   return (
     <AuthGuard>
       <MainLayout>
-        <div className="p-4 md:p-8 space-y-6">
+        <div className="p-4 md:p-8 space-y-6 pb-32">
           <div className="flex items-center gap-4">
             <Link href="/vouchers">
               <Button variant="ghost" size="sm">

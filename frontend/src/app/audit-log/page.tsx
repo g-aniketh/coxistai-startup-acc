@@ -185,7 +185,7 @@ export default function AuditLogPage() {
   return (
     <AuthGuard requireAuth={true}>
       <MainLayout>
-        <div className="p-6 md:p-8 lg:p-10 space-y-6 bg-[#f6f7fb] min-h-full">
+        <div className="p-6 md:p-8 lg:p-10 space-y-6 bg-[#f6f7fb] min-h-full pb-32">
           <div className="flex items-center gap-4 pb-2">
             <FileText className="h-9 w-9 text-[#607c47]" />
             <div>
@@ -419,18 +419,35 @@ export default function AuditLogPage() {
                       <Table>
                         <TableHeader>
                           <TableRow className="bg-gray-50/50">
-                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">Date & Time</TableHead>
-                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">User</TableHead>
-                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">Action</TableHead>
-                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">Entity Type</TableHead>
-                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">Entity ID</TableHead>
-                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">Description</TableHead>
-                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">Actions</TableHead>
+                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">
+                              Date & Time
+                            </TableHead>
+                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">
+                              User
+                            </TableHead>
+                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">
+                              Action
+                            </TableHead>
+                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">
+                              Entity Type
+                            </TableHead>
+                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">
+                              Entity ID
+                            </TableHead>
+                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">
+                              Description
+                            </TableHead>
+                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">
+                              Actions
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {logs.map((log) => (
-                            <TableRow key={log.id} className="hover:bg-gray-50/50">
+                            <TableRow
+                              key={log.id}
+                              className="hover:bg-gray-50/50"
+                            >
                               <TableCell className="px-4 py-3 text-sm text-[#1f1f1f]">
                                 {formatDate(log.createdAt)}
                               </TableCell>
@@ -447,7 +464,9 @@ export default function AuditLogPage() {
                                     </span>
                                   </div>
                                 ) : (
-                                  <span className="text-sm text-gray-400">System</span>
+                                  <span className="text-sm text-gray-400">
+                                    System
+                                  </span>
                                 )}
                               </TableCell>
                               <TableCell className="px-4 py-3">

@@ -1259,7 +1259,7 @@ export default function CostManagementPage() {
   return (
     <AuthGuard requireAuth={true}>
       <MainLayout>
-        <div className="p-4 md:p-8 space-y-6">
+        <div className="p-4 md:p-8 space-y-6 pb-32">
           <div className="flex items-center gap-3">
             <Settings className="h-8 w-8 text-[#2C2C2C]" />
             <div>

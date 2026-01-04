@@ -178,7 +178,7 @@ export default function TallyImportPage() {
     return (
       <AuthGuard requireAuth={true}>
         <MainLayout>
-          <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto bg-white min-h-screen">
+          <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto bg-white min-h-screen pb-32">
             {/* Header */}
             <div className="space-y-2">
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
@@ -359,7 +359,7 @@ export default function TallyImportPage() {
     return (
       <AuthGuard requireAuth={true}>
         <MainLayout>
-          <div className="p-4 md:p-8 space-y-6 max-w-6xl mx-auto bg-white min-h-screen">
+          <div className="p-4 md:p-8 space-y-6 max-w-6xl mx-auto bg-white min-h-screen pb-32">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>

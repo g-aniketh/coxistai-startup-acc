@@ -60,20 +60,25 @@ export const getDashboardSummary = async (startupId: string) => {
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const netCashflow = income - expenses;
-  
+
   // Use imported metrics if available, otherwise calculate
-  const monthlyBurn = importedMetrics && importedMetrics.burnRate > 0
-    ? Number(importedMetrics.burnRate)
-    : expenses / 3;
-  
-  const monthlyRevenue = importedMetrics && importedMetrics.mrr > 0
-    ? Number(importedMetrics.mrr)
-    : income / 3;
+  const monthlyBurn =
+    importedMetrics && Number(importedMetrics.burnRate) > 0
+      ? Number(importedMetrics.burnRate)
+      : expenses / 3;
+
+  const monthlyRevenue =
+    importedMetrics && Number(importedMetrics.mrr) > 0
+      ? Number(importedMetrics.mrr)
+      : income / 3;
 
   // Calculate runway (in months) - use imported if available, otherwise calculate
-  const runwayMonths = importedMetrics && importedMetrics.runway > 0
-    ? Number(importedMetrics.runway)
-    : (monthlyBurn > 0 ? totalBalance / monthlyBurn : Infinity);
+  const runwayMonths =
+    importedMetrics && Number(importedMetrics.runway) > 0
+      ? Number(importedMetrics.runway)
+      : monthlyBurn > 0
+        ? totalBalance / monthlyBurn
+        : Infinity;
 
   // Get product inventory stats
   const products = await prisma.product.findMany({
