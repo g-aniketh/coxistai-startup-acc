@@ -3,11 +3,19 @@ import {
   TransactionType,
   VoucherCategory,
   LedgerSubtype,
+  InterestCalculationMode,
+  InterestCompoundingFrequency,
+  GstRegistrationType,
+  GstTaxType,
+  GstTaxApplicableOn,
+  InterestComputation,
 } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { DEFAULT_VOUCHER_TYPES } from "../src/services/voucherTypes";
 import { bootstrapLedgerStructure } from "../src/services/bookkeeping";
 import { createCustomer } from "../src/services/customers";
+import { createGstTaxRate } from "../src/services/gst";
+import { createVoucher } from "../src/services/vouchers";
 
 const prisma = new PrismaClient();
 
@@ -1012,7 +1020,7 @@ async function main() {
           inventoryAffectsStock: false,
           maintainBillByBill: false,
           costCenterApplicable: false,
-          interestComputation: "NONE",
+          interestComputation: InterestComputation.NONE,
         },
       });
     } else {
@@ -1027,7 +1035,7 @@ async function main() {
           inventoryAffectsStock: false,
           maintainBillByBill: false,
           costCenterApplicable: false,
-          interestComputation: "NONE",
+          interestComputation: InterestComputation.NONE,
         },
       });
     }
@@ -1056,7 +1064,7 @@ async function main() {
           inventoryAffectsStock: false,
           maintainBillByBill: false,
           costCenterApplicable: false,
-          interestComputation: "NONE",
+          interestComputation: InterestComputation.NONE,
         },
       });
     } else {
@@ -1075,7 +1083,7 @@ async function main() {
           inventoryAffectsStock: false,
           maintainBillByBill: false,
           costCenterApplicable: false,
-          interestComputation: "NONE",
+          interestComputation: InterestComputation.NONE,
         },
         create: {
           startupId: mainStartup.id,
@@ -1087,47 +1095,14 @@ async function main() {
           inventoryAffectsStock: false,
           maintainBillByBill: false,
           costCenterApplicable: false,
-          interestComputation: "NONE",
+          interestComputation: InterestComputation.NONE,
         },
       });
     }
   }
 
-  // Create CUSTOMER ledgers
-  if (customerGroup) {
-    await Promise.all([
-      prisma.ledger.create({
-        data: {
-          startupId: mainStartup.id,
-          groupId: customerGroup.id,
-          name: "ABC Corporation",
-          ledgerSubtype: LedgerSubtype.CUSTOMER,
-          openingBalance: 0,
-          openingBalanceType: "DEBIT",
-          inventoryAffectsStock: false,
-          maintainBillByBill: true,
-          costCenterApplicable: false,
-          interestComputation: "NONE",
-          creditLimit: 500000,
-        },
-      }),
-      prisma.ledger.create({
-        data: {
-          startupId: mainStartup.id,
-          groupId: customerGroup.id,
-          name: "XYZ Tech Solutions",
-          ledgerSubtype: LedgerSubtype.CUSTOMER,
-          openingBalance: 0,
-          openingBalanceType: "DEBIT",
-          inventoryAffectsStock: false,
-          maintainBillByBill: true,
-          costCenterApplicable: false,
-          interestComputation: "NONE",
-          creditLimit: 1000000,
-        },
-      }),
-    ]);
-  }
+  // Note: Customer ledgers are auto-created when customers are created via createCustomer()
+  // No need to manually create them here to avoid duplicate ledger name conflicts
 
   // Create SUPPLIER ledgers
   if (supplierGroup) {
@@ -1143,7 +1118,7 @@ async function main() {
           inventoryAffectsStock: false,
           maintainBillByBill: true,
           costCenterApplicable: false,
-          interestComputation: "NONE",
+          interestComputation: InterestComputation.NONE,
         },
       }),
       prisma.ledger.create({
@@ -1157,7 +1132,7 @@ async function main() {
           inventoryAffectsStock: false,
           maintainBillByBill: true,
           costCenterApplicable: false,
-          interestComputation: "NONE",
+          interestComputation: InterestComputation.NONE,
         },
       }),
     ]);
@@ -1182,7 +1157,7 @@ async function main() {
           inventoryAffectsStock: false,
           maintainBillByBill: false,
           costCenterApplicable: false,
-          interestComputation: "NONE",
+          interestComputation: InterestComputation.NONE,
         },
       });
     } else {
@@ -1197,7 +1172,7 @@ async function main() {
           inventoryAffectsStock: false,
           maintainBillByBill: false,
           costCenterApplicable: false,
-          interestComputation: "NONE",
+          interestComputation: InterestComputation.NONE,
         },
       });
     }
@@ -1222,7 +1197,7 @@ async function main() {
           inventoryAffectsStock: false,
           maintainBillByBill: false,
           costCenterApplicable: false,
-          interestComputation: "NONE",
+          interestComputation: InterestComputation.NONE,
         },
       });
     } else {
@@ -1237,7 +1212,7 @@ async function main() {
           inventoryAffectsStock: false,
           maintainBillByBill: false,
           costCenterApplicable: false,
-          interestComputation: "NONE",
+          interestComputation: InterestComputation.NONE,
         },
       });
     }
@@ -1257,7 +1232,7 @@ async function main() {
           inventoryAffectsStock: false,
           maintainBillByBill: false,
           costCenterApplicable: false,
-          interestComputation: "NONE",
+          interestComputation: InterestComputation.NONE,
         },
       }),
       prisma.ledger.create({
@@ -1271,7 +1246,7 @@ async function main() {
           inventoryAffectsStock: false,
           maintainBillByBill: false,
           costCenterApplicable: false,
-          interestComputation: "NONE",
+          interestComputation: InterestComputation.NONE,
         },
       }),
       prisma.ledger.create({
@@ -1285,7 +1260,7 @@ async function main() {
           inventoryAffectsStock: false,
           maintainBillByBill: false,
           costCenterApplicable: false,
-          interestComputation: "NONE",
+          interestComputation: InterestComputation.NONE,
         },
       }),
       prisma.ledger.create({
@@ -1299,7 +1274,7 @@ async function main() {
           inventoryAffectsStock: false,
           maintainBillByBill: false,
           costCenterApplicable: false,
-          interestComputation: "NONE",
+          interestComputation: InterestComputation.NONE,
         },
       }),
       prisma.ledger.create({
@@ -1313,7 +1288,7 @@ async function main() {
           inventoryAffectsStock: false,
           maintainBillByBill: false,
           costCenterApplicable: false,
-          interestComputation: "NONE",
+          interestComputation: InterestComputation.NONE,
         },
       }),
       prisma.ledger.create({
@@ -1327,7 +1302,7 @@ async function main() {
           inventoryAffectsStock: false,
           maintainBillByBill: false,
           costCenterApplicable: false,
-          interestComputation: "NONE",
+          interestComputation: InterestComputation.NONE,
         },
       }),
     ]);
@@ -1341,7 +1316,7 @@ async function main() {
   const gstRegistration = await prisma.gstRegistration.create({
     data: {
       startupId: mainStartup.id,
-      registrationType: "REGULAR",
+      registrationType: GstRegistrationType.REGULAR,
       gstin: "29AABCU9603R1ZX", // Sample GSTIN
       legalName: "Coxist AI Private Limited",
       tradeName: "Coxist AI",
@@ -1433,6 +1408,99 @@ async function main() {
   console.log(
     "✓ Created GST registration and ledger mappings for main startup"
   );
+
+  // 15.1. Create GST Tax Rates (all standard slabs)
+  const gstTaxRates = [
+    {
+      taxName: "GST 0%",
+      gstRate: 0,
+      supplyType: "GOODS" as const,
+      hsnOrSac: "General",
+      description: "Zero-rated goods and services",
+      taxType: GstTaxType.ZERO_RATED,
+      applicableOn: GstTaxApplicableOn.BOTH,
+      reverseCharge: false,
+      isActive: true,
+    },
+    {
+      taxName: "GST 5%",
+      gstRate: 5,
+      supplyType: "GOODS" as const,
+      hsnOrSac: "General",
+      description: "Standard 5% GST slab",
+      taxType: GstTaxType.REGULAR,
+      applicableOn: GstTaxApplicableOn.BOTH,
+      reverseCharge: false,
+      isActive: true,
+    },
+    {
+      taxName: "GST 12%",
+      gstRate: 12,
+      supplyType: "GOODS" as const,
+      hsnOrSac: "General",
+      description: "Standard 12% GST slab",
+      taxType: GstTaxType.REGULAR,
+      applicableOn: GstTaxApplicableOn.BOTH,
+      reverseCharge: false,
+      isActive: true,
+    },
+    {
+      taxName: "GST 18%",
+      gstRate: 18,
+      supplyType: "GOODS" as const,
+      hsnOrSac: "General",
+      description: "Standard 18% GST slab (most common)",
+      taxType: GstTaxType.REGULAR,
+      applicableOn: GstTaxApplicableOn.BOTH,
+      reverseCharge: false,
+      isActive: true,
+    },
+    {
+      taxName: "GST 28%",
+      gstRate: 28,
+      supplyType: "GOODS" as const,
+      hsnOrSac: "General",
+      description: "Standard 28% GST slab (luxury items)",
+      taxType: GstTaxType.REGULAR,
+      applicableOn: GstTaxApplicableOn.BOTH,
+      reverseCharge: false,
+      isActive: true,
+    },
+    {
+      taxName: "GST 18% - Reverse Charge",
+      gstRate: 18,
+      supplyType: "GOODS" as const,
+      hsnOrSac: "General",
+      description: "18% GST with reverse charge mechanism",
+      taxType: GstTaxType.REGULAR,
+      applicableOn: GstTaxApplicableOn.PURCHASE,
+      reverseCharge: true,
+      isActive: true,
+    },
+    {
+      taxName: "GST Exempt",
+      gstRate: 0,
+      supplyType: "GOODS" as const,
+      hsnOrSac: "General",
+      description: "Exempt from GST",
+      taxType: GstTaxType.EXEMPT,
+      applicableOn: GstTaxApplicableOn.BOTH,
+      reverseCharge: false,
+      isActive: true,
+    },
+  ];
+
+  for (const taxRate of gstTaxRates) {
+    try {
+      await createGstTaxRate(mainStartup.id, {
+        registrationId: gstRegistration.id,
+        ...taxRate,
+      });
+    } catch (error) {
+      console.warn(`Failed to create tax rate ${taxRate.taxName}:`, error);
+    }
+  }
+  console.log("✓ Created GST tax rates for main startup");
 
   // 16. Create 10 customers for each startup
   const customerData = [
@@ -1604,6 +1672,367 @@ async function main() {
     }
   }
   console.log("✓ Created 10 customers for each startup");
+
+  // 17. Create Cost Categories and Cost Centers
+  const costCategories = await Promise.all([
+    prisma.costCategory.create({
+      data: {
+        startupId: mainStartup.id,
+        name: "Sales & Marketing",
+        description: "All sales and marketing related expenses",
+      },
+    }),
+    prisma.costCategory.create({
+      data: {
+        startupId: mainStartup.id,
+        name: "Operations",
+        description: "Day-to-day operational expenses",
+      },
+    }),
+    prisma.costCategory.create({
+      data: {
+        startupId: mainStartup.id,
+        name: "Technology",
+        description: "IT infrastructure and software costs",
+      },
+    }),
+    prisma.costCategory.create({
+      data: {
+        startupId: mainStartup.id,
+        name: "Human Resources",
+        description: "HR and employee-related expenses",
+      },
+    }),
+    prisma.costCategory.create({
+      data: {
+        startupId: mainStartup.id,
+        name: "Administration",
+        description: "General administrative expenses",
+      },
+    }),
+  ]);
+
+  const costCenters = await Promise.all([
+    prisma.costCenter.create({
+      data: {
+        startupId: mainStartup.id,
+        name: "Sales Department",
+        description: "Sales team cost center",
+        categoryId: costCategories[0].id,
+      },
+    }),
+    prisma.costCenter.create({
+      data: {
+        startupId: mainStartup.id,
+        name: "Marketing Department",
+        description: "Marketing team cost center",
+        categoryId: costCategories[0].id,
+      },
+    }),
+    prisma.costCenter.create({
+      data: {
+        startupId: mainStartup.id,
+        name: "Engineering",
+        description: "Engineering team cost center",
+        categoryId: costCategories[2].id,
+      },
+    }),
+    prisma.costCenter.create({
+      data: {
+        startupId: mainStartup.id,
+        name: "Customer Support",
+        description: "Customer support team cost center",
+        categoryId: costCategories[1].id,
+      },
+    }),
+  ]);
+
+  console.log("✓ Created cost categories and cost centers for main startup");
+
+  // 18. Create Interest Profiles
+  const interestProfiles = await Promise.all([
+    prisma.interestProfile.create({
+      data: {
+        startupId: mainStartup.id,
+        name: "Standard Customer Interest",
+        description: "Standard interest rate for customers",
+        calculationMode: InterestCalculationMode.SIMPLE,
+        rate: 12.0, // 12% per annum
+        compoundingFrequency: InterestCompoundingFrequency.NONE,
+        calculateFromDueDate: true,
+      },
+    }),
+    prisma.interestProfile.create({
+      data: {
+        startupId: mainStartup.id,
+        name: "High Risk Customer Interest",
+        description: "Higher interest rate for high-risk customers",
+        calculationMode: InterestCalculationMode.SIMPLE,
+        rate: 18.0, // 18% per annum
+        compoundingFrequency: InterestCompoundingFrequency.NONE,
+        calculateFromDueDate: true,
+      },
+    }),
+    prisma.interestProfile.create({
+      data: {
+        startupId: mainStartup.id,
+        name: "Supplier Interest",
+        description: "Interest rate for supplier payments",
+        calculationMode: InterestCalculationMode.SIMPLE,
+        rate: 10.0, // 10% per annum
+        compoundingFrequency: InterestCompoundingFrequency.NONE,
+        calculateFromDueDate: true,
+      },
+    }),
+  ]);
+
+  console.log("✓ Created interest profiles for main startup");
+
+  // 20. Create Vouchers with GST (Sales, Purchase, Payment, Receipt)
+  // Get voucher types
+  const salesVoucherType = await prisma.voucherType.findFirst({
+    where: {
+      startupId: mainStartup.id,
+      category: VoucherCategory.SALES,
+    },
+  });
+
+  const purchaseVoucherType = await prisma.voucherType.findFirst({
+    where: {
+      startupId: mainStartup.id,
+      category: VoucherCategory.PURCHASE,
+    },
+  });
+
+  const paymentVoucherType = await prisma.voucherType.findFirst({
+    where: {
+      startupId: mainStartup.id,
+      category: VoucherCategory.PAYMENT,
+    },
+  });
+
+  const receiptVoucherType = await prisma.voucherType.findFirst({
+    where: {
+      startupId: mainStartup.id,
+      category: VoucherCategory.RECEIPT,
+    },
+  });
+
+  // Get customers and suppliers
+  const customers = await prisma.customer.findMany({
+    where: { startupId: mainStartup.id },
+    take: 5,
+  });
+
+  const suppliers = await prisma.ledger.findMany({
+    where: {
+      startupId: mainStartup.id,
+      ledgerSubtype: LedgerSubtype.SUPPLIER,
+    },
+    take: 2,
+  });
+
+  // Note: items and warehouses are already created earlier in the seed script
+  // We'll use the first 3 items and first warehouse that were created
+
+  // Get bank account
+  const bankAccount = await prisma.ledger.findFirst({
+    where: {
+      startupId: mainStartup.id,
+      ledgerSubtype: LedgerSubtype.BANK,
+    },
+  });
+
+  // Get sales ledger
+  const salesLedger = await prisma.ledger.findFirst({
+    where: {
+      startupId: mainStartup.id,
+      ledgerSubtype: LedgerSubtype.SALES,
+    },
+  });
+
+  // Get purchase ledger
+  const purchaseLedger = await prisma.ledger.findFirst({
+    where: {
+      startupId: mainStartup.id,
+      ledgerSubtype: LedgerSubtype.PURCHASE,
+    },
+  });
+
+  // Use items and warehouses created earlier (around line 913 and 881)
+  const voucherWarehouse = warehouses[0]; // Use first warehouse
+
+  // IMPORTANT: Create Purchase Vouchers FIRST to add stock, then create Sales vouchers
+  // Create Purchase Vouchers with GST (these add stock to warehouses)
+  // Create purchase vouchers for ALL items to ensure every item has stock
+  if (purchaseVoucherType && suppliers.length > 0 && items.length > 0 && voucherWarehouse && purchaseLedger && bankAccount) {
+    for (const item of items) {
+      const numPurchases = 3 + Math.floor(Math.random() * 3); // 3-5 purchases per item
+      
+      for (let i = 0; i < numPurchases; i++) {
+        const supplier = suppliers[Math.floor(Math.random() * suppliers.length)];
+        const warehouse = voucherWarehouse;
+
+      try {
+        // Create larger quantities to ensure enough stock for sales
+        const quantity = 20 + Math.floor(Math.random() * 30); // 20-50 units
+        const rate = 5000 + Math.random() * 20000;
+        const gstRate = [5, 12, 18][Math.floor(Math.random() * 3)];
+
+        // Use earlier dates for purchases (so stock exists before sales)
+        const voucherDate = new Date();
+        voucherDate.setDate(voucherDate.getDate() - (90 + Math.floor(Math.random() * 30))); // 90-120 days ago
+
+        await createVoucher(mainStartup.id, {
+          voucherTypeId: purchaseVoucherType.id,
+          date: voucherDate.toISOString().split("T")[0],
+          narration: `Purchase from ${supplier.name}`,
+          partyLedgerId: supplier.id,
+          inventoryLines: [
+            {
+              itemId: item.id,
+              warehouseId: warehouse.id,
+              quantity,
+              rate,
+              gstRatePercent: gstRate,
+            },
+          ],
+          autoPost: true,
+        });
+      } catch (error) {
+        console.warn(`Failed to create purchase voucher for ${item.itemName}:`, error);
+      }
+      }
+    }
+    console.log("✓ Created purchase vouchers with GST for main startup");
+  }
+
+  // Create Sales Vouchers with GST (these consume stock)
+  // Use all items for sales vouchers since they all have stock now
+  if (salesVoucherType && customers.length > 0 && items.length > 0 && voucherWarehouse && salesLedger && bankAccount) {
+    for (let i = 0; i < 5; i++) {
+      const customer = customers[i % customers.length];
+      const item = items[i % items.length]; // Use all items, cycling through
+      const warehouse = voucherWarehouse;
+      const customerLedger = await prisma.ledger.findFirst({
+        where: {
+          startupId: mainStartup.id,
+          name: customer.customerName,
+        },
+      });
+
+      if (customerLedger) {
+        try {
+          // Use smaller quantities for sales (to ensure stock is available)
+          const quantity = Math.floor(Math.random() * 3) + 1; // 1-3 units
+          const rate = 10000 + Math.random() * 50000;
+          const gstRate = [0, 5, 12, 18, 28][Math.floor(Math.random() * 5)];
+
+          // Use more recent dates for sales (after purchases)
+          const voucherDate = new Date();
+          voucherDate.setDate(voucherDate.getDate() - Math.floor(Math.random() * 30)); // 0-30 days ago
+
+          await createVoucher(mainStartup.id, {
+            voucherTypeId: salesVoucherType.id,
+            date: voucherDate.toISOString().split("T")[0],
+            narration: `Sale to ${customer.customerName}`,
+            partyLedgerId: customerLedger.id,
+            inventoryLines: [
+              {
+                itemId: item.id,
+                warehouseId: warehouse.id,
+                quantity,
+                rate,
+                gstRatePercent: gstRate,
+              },
+            ],
+            autoPost: true,
+          });
+        } catch (error) {
+          console.warn(`Failed to create sales voucher ${i + 1}:`, error);
+        }
+      }
+    }
+    console.log("✓ Created sales vouchers with GST for main startup");
+  }
+
+  // Create Payment Vouchers
+  if (paymentVoucherType && suppliers.length > 0 && bankAccount) {
+    for (let i = 0; i < 3; i++) {
+      const supplier = suppliers[i % suppliers.length];
+
+      try {
+        const amount = 10000 + Math.random() * 50000;
+        const voucherDate = new Date();
+        voucherDate.setDate(voucherDate.getDate() - Math.floor(Math.random() * 60));
+
+        await createVoucher(mainStartup.id, {
+          voucherTypeId: paymentVoucherType.id,
+          date: voucherDate.toISOString().split("T")[0],
+          narration: `Payment to ${supplier.name}`,
+          entries: [
+            {
+              ledgerName: supplier.name,
+              entryType: "DEBIT",
+              amount,
+            },
+            {
+              ledgerName: bankAccount.name,
+              entryType: "CREDIT",
+              amount,
+            },
+          ],
+          autoPost: true,
+        });
+      } catch (error) {
+        console.warn(`Failed to create payment voucher ${i + 1}:`, error);
+      }
+    }
+    console.log("✓ Created payment vouchers for main startup");
+  }
+
+  // Create Receipt Vouchers
+  if (receiptVoucherType && customers.length > 0 && bankAccount) {
+    for (let i = 0; i < 5; i++) {
+      const customer = customers[i % customers.length];
+      const customerLedger = await prisma.ledger.findFirst({
+        where: {
+          startupId: mainStartup.id,
+          name: customer.customerName,
+        },
+      });
+
+      if (customerLedger) {
+        try {
+          const amount = 20000 + Math.random() * 100000;
+          const voucherDate = new Date();
+          voucherDate.setDate(voucherDate.getDate() - Math.floor(Math.random() * 60));
+
+          await createVoucher(mainStartup.id, {
+            voucherTypeId: receiptVoucherType.id,
+            date: voucherDate.toISOString().split("T")[0],
+            narration: `Receipt from ${customer.customerName}`,
+            entries: [
+              {
+                ledgerName: bankAccount.name,
+                entryType: "DEBIT",
+                amount,
+              },
+              {
+                ledgerName: customerLedger.name,
+                entryType: "CREDIT",
+                amount,
+              },
+            ],
+            autoPost: true,
+          });
+        } catch (error) {
+          console.warn(`Failed to create receipt voucher ${i + 1}:`, error);
+        }
+      }
+    }
+    console.log("✓ Created receipt vouchers for main startup");
+  }
 
   console.log("\n✅ Comprehensive seed completed successfully!");
   console.log('\n🔑 Login Credentials (password for all is "password123"):');

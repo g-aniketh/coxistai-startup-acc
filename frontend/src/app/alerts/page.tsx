@@ -938,15 +938,6 @@ export default function AlertsPage() {
                           <span className="text-xs text-gray-500">
                             {new Date(alert.createdAt).toLocaleString()}
                           </span>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="border-gray-300 text-[#2C2C2C]"
-                            >
-                              View Details
-                            </Button>
-                          </div>
                         </div>
                       </CardContent>
                     </Card>

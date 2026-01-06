@@ -27,9 +27,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} h-full`}
+      suppressHydrationWarning
+    >
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full bg-background text-foreground`}
+        className="antialiased h-full bg-background text-foreground"
+        suppressHydrationWarning
       >
         <ThemeProvider defaultTheme="light" storageKey="coxistai-theme">
           <AuthProvider>

@@ -14,11 +14,9 @@ import {
   AuditLogSummary,
   AuditAction,
   AuditEntityType,
-  ExceptionReport,
-  ExceptionReportItem,
 } from "@/lib/api";
 import { toast } from "react-hot-toast";
-import { FileText, Filter, User, AlertTriangle } from "lucide-react";
+import { FileText, Filter, User } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -43,10 +41,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-type AuditTabType = "logs" | "exceptions";
-
 export default function AuditLogPage() {
-  const [activeTab, setActiveTab] = useState<AuditTabType>("logs");
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [summary, setSummary] = useState<AuditLogSummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,12 +52,6 @@ export default function AuditLogPage() {
   const [total, setTotal] = useState(0);
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [showDetails, setShowDetails] = useState(false);
-  const [exceptionReports, setExceptionReports] =
-    useState<ExceptionReport | null>(null);
-  const [exceptionLoading, setExceptionLoading] = useState(false);
-  const [exceptionAsOnDate, setExceptionAsOnDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
 
   const loadLogs = useCallback(async () => {
     try {
@@ -102,31 +91,10 @@ export default function AuditLogPage() {
     }
   }, [filters.fromDate, filters.toDate]);
 
-  const loadExceptionReports = useCallback(async () => {
-    try {
-      setExceptionLoading(true);
-      const response = await apiClient.bookkeeping.getExceptionReports({
-        asOnDate: exceptionAsOnDate || undefined,
-      });
-      if (response.success) {
-        setExceptionReports(response.data ?? null);
-      }
-    } catch (error) {
-      console.error("Failed to load exception reports:", error);
-      toast.error("Failed to load exception reports");
-    } finally {
-      setExceptionLoading(false);
-    }
-  }, [exceptionAsOnDate]);
-
   useEffect(() => {
-    if (activeTab === "logs") {
-      loadLogs();
-      loadSummary();
-    } else if (activeTab === "exceptions") {
-      loadExceptionReports();
-    }
-  }, [loadLogs, loadSummary, loadExceptionReports, activeTab]);
+    loadLogs();
+    loadSummary();
+  }, [loadLogs, loadSummary]);
 
   const handleFilterChange = <K extends keyof AuditLogFilters>(
     key: K,
@@ -198,34 +166,7 @@ export default function AuditLogPage() {
             </div>
           </div>
 
-          {/* Tabs */}
-          <div className="flex gap-2 border-b border-gray-200">
-            <button
-              onClick={() => setActiveTab("logs")}
-              className={`px-4 py-2 border-b-2 transition-colors ${
-                activeTab === "logs"
-                  ? "border-[#607c47] text-[#607c47] font-medium"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <FileText className="h-4 w-4 inline mr-2" />
-              Audit Logs
-            </button>
-            <button
-              onClick={() => setActiveTab("exceptions")}
-              className={`px-4 py-2 border-b-2 transition-colors ${
-                activeTab === "exceptions"
-                  ? "border-[#607c47] text-[#607c47] font-medium"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <AlertTriangle className="h-4 w-4 inline mr-2" />
-              Exception Reports
-            </button>
-          </div>
-
-          {activeTab === "logs" && (
-            <>
+          <>
               {/* Summary Cards */}
               {summary && (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -432,9 +373,6 @@ export default function AuditLogPage() {
                               Entity Type
                             </TableHead>
                             <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">
-                              Entity ID
-                            </TableHead>
-                            <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">
                               Description
                             </TableHead>
                             <TableHead className="px-4 py-3 text-sm font-semibold text-[#1f1f1f]">
@@ -476,9 +414,6 @@ export default function AuditLogPage() {
                               </TableCell>
                               <TableCell className="px-4 py-3 text-sm text-[#1f1f1f]/80">
                                 {getEntityTypeLabel(log.entityType)}
-                              </TableCell>
-                              <TableCell className="px-4 py-3 font-mono text-xs text-[#607c47]">
-                                {log.entityId}
                               </TableCell>
                               <TableCell className="px-4 py-3 max-w-xs truncate text-sm text-[#1f1f1f]/70">
                                 {log.description || "-"}
@@ -600,14 +535,6 @@ export default function AuditLogPage() {
                             {getEntityTypeLabel(selectedLog.entityType)}
                           </p>
                         </div>
-                        <div>
-                          <Label className="text-xs text-gray-500">
-                            Entity ID
-                          </Label>
-                          <p className="text-xs font-mono">
-                            {selectedLog.entityId}
-                          </p>
-                        </div>
                         {selectedLog.description && (
                           <div>
                             <Label className="text-xs text-gray-500">
@@ -640,193 +567,26 @@ export default function AuditLogPage() {
                         </div>
                       )}
 
-                      {selectedLog.metadata && (
+                      {selectedLog.metadata && Object.keys(selectedLog.metadata).length > 0 && (
                         <div>
                           <Label className="text-xs text-gray-500">
-                            Metadata
+                            Additional Information
                           </Label>
-                          <pre className="mt-1 p-3 bg-gray-50 rounded text-xs overflow-x-auto">
-                            {JSON.stringify(selectedLog.metadata, null, 2)}
-                          </pre>
-                        </div>
-                      )}
-
-                      {(selectedLog.ipAddress || selectedLog.userAgent) && (
-                        <div className="grid grid-cols-2 gap-4">
-                          {selectedLog.ipAddress && (
-                            <div>
-                              <Label className="text-xs text-gray-500">
-                                IP Address
-                              </Label>
-                              <p className="text-xs font-mono">
-                                {selectedLog.ipAddress}
-                              </p>
-                            </div>
-                          )}
-                          {selectedLog.userAgent && (
-                            <div>
-                              <Label className="text-xs text-gray-500">
-                                User Agent
-                              </Label>
-                              <p className="text-xs">{selectedLog.userAgent}</p>
-                            </div>
-                          )}
+                          <div className="mt-1 p-3 bg-gray-50 rounded text-xs">
+                            {Object.entries(selectedLog.metadata).map(([key, value]) => (
+                              <div key={key} className="mb-1">
+                                <span className="font-medium">{key}:</span>{" "}
+                                <span>{String(value)}</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
                   )}
                 </DialogContent>
               </Dialog>
-
-              {(activeTab as AuditTabType) === "exceptions" && (
-                <div className="space-y-6">
-                  <Card className="rounded-2xl border border-gray-100 shadow-sm bg-white">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-[#1f1f1f]">
-                        <AlertTriangle className="h-5 w-5 text-amber-500" />
-                        Exception Reports
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex gap-4 mb-6">
-                        <div className="flex-1">
-                          <Label>As On Date</Label>
-                          <Input
-                            type="date"
-                            value={exceptionAsOnDate}
-                            onChange={(e) =>
-                              setExceptionAsOnDate(e.target.value)
-                            }
-                            className="mt-1"
-                          />
-                        </div>
-                        <div className="flex items-end">
-                          <Button
-                            onClick={loadExceptionReports}
-                            disabled={exceptionLoading}
-                          >
-                            Generate Report
-                          </Button>
-                        </div>
-                      </div>
-
-                      {exceptionLoading ? (
-                        <div className="text-center py-12">Loading...</div>
-                      ) : exceptionReports ? (
-                        <div className="space-y-6">
-                          {exceptionReports.summary && (
-                            <div className="grid grid-cols-3 gap-4">
-                              <Card>
-                                <CardContent className="pt-6">
-                                  <div className="text-sm text-muted-foreground">
-                                    Total Exceptions
-                                  </div>
-                                  <div className="text-2xl font-semibold text-[#2C2C2C]">
-                                    {exceptionReports.summary.totalExceptions}
-                                  </div>
-                                </CardContent>
-                              </Card>
-                              <Card>
-                                <CardContent className="pt-6">
-                                  <div className="text-sm text-muted-foreground">
-                                    Errors
-                                  </div>
-                                  <div className="text-2xl font-semibold text-red-600">
-                                    {exceptionReports.summary.errors}
-                                  </div>
-                                </CardContent>
-                              </Card>
-                              <Card>
-                                <CardContent className="pt-6">
-                                  <div className="text-sm text-muted-foreground">
-                                    Warnings
-                                  </div>
-                                  <div className="text-2xl font-semibold text-amber-600">
-                                    {exceptionReports.summary.warnings}
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </div>
-                          )}
-
-                          {exceptionReports.exceptions &&
-                            exceptionReports.exceptions.length > 0 && (
-                              <Table>
-                                <TableHeader>
-                                  <TableRow>
-                                    <TableHead>Type</TableHead>
-                                    <TableHead>Ledger/Voucher</TableHead>
-                                    <TableHead>Description</TableHead>
-                                    <TableHead>Severity</TableHead>
-                                    <TableHead className="text-right">
-                                      Amount
-                                    </TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {exceptionReports.exceptions.map(
-                                    (exception: ExceptionReportItem, idx) => (
-                                      <TableRow key={idx}>
-                                        <TableCell>
-                                          <Badge
-                                            className={
-                                              exception.severity === "ERROR"
-                                                ? "bg-red-100 text-red-700"
-                                                : "bg-yellow-100 text-yellow-700"
-                                            }
-                                          >
-                                            {exception.type}
-                                          </Badge>
-                                        </TableCell>
-                                        <TableCell className="font-medium">
-                                          {exception.ledgerName}
-                                        </TableCell>
-                                        <TableCell className="text-sm text-muted-foreground">
-                                          {exception.description}
-                                        </TableCell>
-                                        <TableCell>
-                                          <Badge
-                                            className={
-                                              exception.severity === "ERROR"
-                                                ? "bg-red-100 text-red-700"
-                                                : "bg-yellow-100 text-yellow-700"
-                                            }
-                                          >
-                                            {exception.severity}
-                                          </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                          {exception.amount
-                                            ? formatCurrency(exception.amount)
-                                            : "—"}
-                                        </TableCell>
-                                      </TableRow>
-                                    )
-                                  )}
-                                </TableBody>
-                              </Table>
-                            )}
-
-                          {(!exceptionReports.exceptions ||
-                            exceptionReports.exceptions.length === 0) && (
-                            <div className="text-center py-12 text-muted-foreground">
-                              No exceptions found. All balances and vouchers are
-                              balanced.
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-center py-12 text-muted-foreground">
-                          Select a date and click "Generate Report" to view
-                          exception reports
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
             </>
-          )}
         </div>
       </MainLayout>
     </AuthGuard>

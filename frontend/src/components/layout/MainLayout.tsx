@@ -55,7 +55,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
       </div>
 
       {/* Floating Chatbot Widget - Hidden on AI assistant page */}
-      {shouldShowChatbot && <FloatingChatbot />}
+      {shouldShowChatbot && (
+        <FloatingChatbot sidebarCollapsed={isSidebarCollapsed} />
+      )}
     </div>
   );
 }

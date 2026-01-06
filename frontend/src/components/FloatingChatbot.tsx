@@ -213,7 +213,13 @@ const parseMarkdown = (text: string) => {
   return parts;
 };
 
-export default function FloatingChatbot() {
+interface FloatingChatbotProps {
+  sidebarCollapsed?: boolean;
+}
+
+export default function FloatingChatbot({
+  sidebarCollapsed = false,
+}: FloatingChatbotProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
@@ -472,9 +478,14 @@ export default function FloatingChatbot() {
     setIsMinimized(!isMinimized);
   };
 
+  // Calculate left position based on sidebar state
+  // Sidebar: w-64 (256px) when expanded, w-20 (80px) when collapsed
+  // Add 24px (6 * 4px) margin
+  const leftPosition = sidebarCollapsed ? "lg:left-[104px]" : "lg:left-[280px]";
+
   if (!isOpen) {
     return (
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className={`fixed bottom-6 left-6 ${leftPosition} z-50`}>
         <button
           onClick={toggleOpen}
           className="flex items-center gap-3 bg-gradient-to-br from-blue-600 to-indigo-600 text-white px-6 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
@@ -490,7 +501,7 @@ export default function FloatingChatbot() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 w-[380px]">
+    <div className={`fixed bottom-6 left-6 ${leftPosition} z-50 w-[380px]`}>
       <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col transition-all duration-300">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 flex items-center justify-between">

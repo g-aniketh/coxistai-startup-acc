@@ -86,13 +86,23 @@ const SUPPLY_TYPES: Array<{ value: GstTaxSupplyType; label: string }> = [
 const TAX_PERCENT_FIELDS: Array<{
   key: keyof Pick<
     GstTaxRateInput,
-    "cgstRate" | "sgstRate" | "igstRate" | "cessRate"
+    "gstRate" | "cgstRate" | "sgstRate" | "igstRate" | "cessRate"
   >;
   label: string;
+  helper?: string;
 }> = [
-  { key: "cgstRate", label: "CGST (%)" },
-  { key: "sgstRate", label: "SGST (%)" },
-  { key: "igstRate", label: "IGST (%)" },
+  { key: "gstRate", label: "Total GST (%)", helper: "Overall GST slab rate" },
+  {
+    key: "cgstRate",
+    label: "CGST (%)",
+    helper: "Auto-split from total for intra-state supplies",
+  },
+  {
+    key: "sgstRate",
+    label: "SGST (%)",
+    helper: "Auto-split from total for intra-state supplies",
+  },
+  { key: "igstRate", label: "IGST (%)", helper: "For inter-state supplies" },
   { key: "cessRate", label: "Cess (%)" },
 ];
 
@@ -172,13 +182,18 @@ export default function GstManagementPage() {
   const [editingTaxRate, setEditingTaxRate] = useState<GstTaxRate | null>(null);
   const [taxForm, setTaxForm] = useState<GstTaxRateInput>({
     registrationId: "",
+    taxName: "",
     supplyType: "GOODS",
     hsnOrSac: "",
     description: "",
+    gstRate: 0,
     cgstRate: 0,
     sgstRate: 0,
     igstRate: 0,
     cessRate: 0,
+    taxType: "REGULAR",
+    reverseCharge: false,
+    applicableOn: "BOTH",
     effectiveFrom: null,
     effectiveTo: null,
     isActive: true,
@@ -355,13 +370,18 @@ export default function GstManagementPage() {
       setEditingTaxRate(taxRate);
       setTaxForm({
         registrationId: taxRate.registrationId || "",
+        taxName: taxRate.taxName || "",
         supplyType: taxRate.supplyType,
         hsnOrSac: taxRate.hsnOrSac || "",
         description: taxRate.description || "",
+        gstRate: taxRate.gstRate,
         cgstRate: taxRate.cgstRate,
         sgstRate: taxRate.sgstRate,
         igstRate: taxRate.igstRate,
         cessRate: taxRate.cessRate,
+        taxType: taxRate.taxType,
+        reverseCharge: taxRate.reverseCharge,
+        applicableOn: taxRate.applicableOn,
         effectiveFrom: taxRate.effectiveFrom
           ? taxRate.effectiveFrom.substring(0, 10)
           : null,
@@ -1107,25 +1127,29 @@ export default function GstManagementPage() {
 
           {/* Tax Rate Dialog */}
           <Dialog open={taxDialogOpen} onOpenChange={setTaxDialogOpen}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-3xl">
               <DialogHeader>
                 <DialogTitle className="text-[#2C2C2C]">
                   {editingTaxRate ? "Edit Tax Rate" : "Create Tax Rate"}
                 </DialogTitle>
                 <DialogDescription className="text-[#2C2C2C]/70">
-                  Configure GST rate splits for HSN/SAC to automate voucher
-                  postings.
+                  Configure GST slabs and splits. Total GST is auto-split into
+                  CGST/SGST for intra-state supplies; IGST applies for
+                  inter-state.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>Registration</Label>
                   <Select
-                    value={taxForm.registrationId || ""}
+                    // Use a sentinel value for "use default" instead of empty string,
+                    // since Radix Select requires non-empty item values.
+                    value={taxForm.registrationId || "__default__"}
                     onValueChange={(value) =>
                       setTaxForm({
                         ...taxForm,
-                        registrationId: value || "",
+                        registrationId:
+                          value === "__default__" ? "" : value,
                       })
                     }
                   >
@@ -1133,7 +1157,9 @@ export default function GstManagementPage() {
                       <SelectValue placeholder="Use default registration" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Use default registration</SelectItem>
+                      <SelectItem value="__default__">
+                        Use default registration
+                      </SelectItem>
                       {registrations.map((reg) => (
                         <SelectItem key={reg.id} value={reg.id}>
                           {reg.gstin}
@@ -1141,6 +1167,43 @@ export default function GstManagementPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Tax Name</Label>
+                    <Input
+                      value={taxForm.taxName || ""}
+                      onChange={(e) =>
+                        setTaxForm({ ...taxForm, taxName: e.target.value })
+                      }
+                      placeholder='e.g. "GST 18%"'
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Tax Type</Label>
+                    <Select
+                      value={taxForm.taxType || "REGULAR"}
+                      onValueChange={(value) =>
+                        setTaxForm({
+                          ...taxForm,
+                          taxType: value as GstTaxRateInput["taxType"],
+                        })
+                      }
+                    >
+                      <SelectTrigger className="w-full bg-white border-gray-200 text-[#2C2C2C]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="REGULAR">Regular</SelectItem>
+                        <SelectItem value="EXEMPT">Exempt</SelectItem>
+                        <SelectItem value="NIL">Nil Rated (0%)</SelectItem>
+                        <SelectItem value="ZERO_RATED">
+                          Zero Rated (exports)
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -1188,22 +1251,111 @@ export default function GstManagementPage() {
 
                 <div className="grid grid-cols-4 gap-4">
                   {TAX_PERCENT_FIELDS.map((field) => (
-                    <div key={field.key} className="space-y-2">
+                    <div key={field.key} className="space-y-1">
                       <Label>{field.label}</Label>
                       <Input
                         type="number"
                         step="0.01"
                         min="0"
                         value={taxForm[field.key] ?? 0}
-                        onChange={(e) =>
-                          setTaxForm({
+                        onChange={(e) => {
+                          const raw =
+                            e.target.value === ""
+                              ? undefined
+                              : Number(e.target.value);
+                          const updated: GstTaxRateInput = {
                             ...taxForm,
-                            [field.key]: Number(e.target.value),
-                          })
-                        }
+                            [field.key]: raw,
+                          };
+
+                          if (field.key === "gstRate" && raw !== undefined) {
+                            const half = raw / 2;
+                            if (
+                              (taxForm.cgstRate ?? 0) === 0 &&
+                              (taxForm.sgstRate ?? 0) === 0 &&
+                              (taxForm.igstRate ?? 0) === 0
+                            ) {
+                              updated.cgstRate = half;
+                              updated.sgstRate = half;
+                              updated.igstRate = 0;
+                            }
+                          }
+
+                          setTaxForm(updated);
+                        }}
                       />
+                      {field.helper && (
+                        <p className="text-xs text-muted-foreground">
+                          {field.helper}
+                        </p>
+                      )}
                     </div>
                   ))}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Applicable On</Label>
+                    <Select
+                      value={taxForm.applicableOn || "BOTH"}
+                      onValueChange={(value) =>
+                        setTaxForm({
+                          ...taxForm,
+                          applicableOn:
+                            value as GstTaxRateInput["applicableOn"],
+                        })
+                      }
+                    >
+                      <SelectTrigger className="w-full bg-white border-gray-200 text-[#2C2C2C]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="SALES">Sales</SelectItem>
+                        <SelectItem value="PURCHASE">Purchase</SelectItem>
+                        <SelectItem value="BOTH">Both</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Reverse Charge (RCM)</Label>
+                    <Select
+                      value={taxForm.reverseCharge ? "YES" : "NO"}
+                      onValueChange={(value) =>
+                        setTaxForm({
+                          ...taxForm,
+                          reverseCharge: value === "YES",
+                        })
+                      }
+                    >
+                      <SelectTrigger className="w-full bg-white border-gray-200 text-[#2C2C2C]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="NO">No</SelectItem>
+                        <SelectItem value="YES">Yes</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Status</Label>
+                    <Select
+                      value={taxForm.isActive ? "ACTIVE" : "INACTIVE"}
+                      onValueChange={(value) =>
+                        setTaxForm({
+                          ...taxForm,
+                          isActive: value === "ACTIVE",
+                        })
+                      }
+                    >
+                      <SelectTrigger className="w-full bg-white border-gray-200 text-[#2C2C2C]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ACTIVE">Active</SelectItem>
+                        <SelectItem value="INACTIVE">Inactive</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -1233,21 +1385,6 @@ export default function GstManagementPage() {
                       }
                     />
                   </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="taxActive"
-                    checked={taxForm.isActive ?? true}
-                    onChange={(e) =>
-                      setTaxForm({ ...taxForm, isActive: e.target.checked })
-                    }
-                    className="rounded border-gray-300"
-                  />
-                  <Label htmlFor="taxActive" className="cursor-pointer">
-                    Active
-                  </Label>
                 </div>
 
                 <div className="flex justify-end gap-2">

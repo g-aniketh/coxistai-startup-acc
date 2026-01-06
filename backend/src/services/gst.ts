@@ -1,6 +1,5 @@
 import {
   Prisma,
-  PrismaClient,
   GstLedgerMappingType,
   GstRegistrationType,
   GstTaxSupplyType,
@@ -224,13 +223,20 @@ export const deleteGstRegistration = async (
 
 export interface GstTaxRateInput {
   registrationId?: string | null;
+  taxName?: string;
   supplyType?: GstTaxSupplyType;
   hsnOrSac?: string;
   description?: string;
+  // Total GST percentage for the slab
+  gstRate?: number;
+  // Component rates (optional overrides, mainly for reference / export)
   cgstRate?: number;
   sgstRate?: number;
   igstRate?: number;
   cessRate?: number;
+  taxType?: "REGULAR" | "EXEMPT" | "NIL" | "ZERO_RATED";
+  reverseCharge?: boolean;
+  applicableOn?: "SALES" | "PURCHASE" | "BOTH";
   effectiveFrom?: string | null;
   effectiveTo?: string | null;
   isActive?: boolean;
@@ -288,21 +294,47 @@ export const createGstTaxRate = async (
     throw new Error("Invalid effective to date");
   }
 
+  // Derive component splits if only total gstRate is provided
+  const gstRate = input.gstRate ?? 0;
+  const hasComponentOverride =
+    input.cgstRate !== undefined ||
+    input.sgstRate !== undefined ||
+    input.igstRate !== undefined;
+
+  let cgstRate = input.cgstRate ?? 0;
+  let sgstRate = input.sgstRate ?? 0;
+  let igstRate = input.igstRate ?? 0;
+
+  if (!hasComponentOverride && gstRate > 0) {
+    // Default assumption: intra-state split (half CGST + half SGST)
+    const half = gstRate / 2;
+    cgstRate = half;
+    sgstRate = half;
+    igstRate = 0;
+  }
+
+  const createData = {
+    startupId,
+    registrationId: input.registrationId || null,
+    taxName: input.taxName?.trim() || null,
+    supplyType: input.supplyType ?? "GOODS",
+    hsnOrSac: input.hsnOrSac?.trim() || null,
+    description: input.description?.trim() || null,
+    gstRate: new Decimal(gstRate),
+    cgstRate: new Decimal(cgstRate),
+    sgstRate: new Decimal(sgstRate),
+    igstRate: new Decimal(igstRate),
+    cessRate: new Decimal(input.cessRate ?? 0),
+    taxType: (input.taxType ?? "REGULAR") as "REGULAR" | "EXEMPT" | "NIL" | "ZERO_RATED",
+    reverseCharge: input.reverseCharge ?? false,
+    applicableOn: (input.applicableOn ?? "BOTH") as "SALES" | "PURCHASE" | "BOTH",
+    effectiveFrom,
+    effectiveTo,
+    isActive: input.isActive ?? true,
+  };
+
   return prisma.gstTaxRate.create({
-    data: {
-      startupId,
-      registrationId: input.registrationId || null,
-      supplyType: input.supplyType ?? "GOODS",
-      hsnOrSac: input.hsnOrSac?.trim() || null,
-      description: input.description?.trim() || null,
-      cgstRate: new Decimal(input.cgstRate ?? 0),
-      sgstRate: new Decimal(input.sgstRate ?? 0),
-      igstRate: new Decimal(input.igstRate ?? 0),
-      cessRate: new Decimal(input.cessRate ?? 0),
-      effectiveFrom,
-      effectiveTo,
-      isActive: input.isActive ?? true,
-    },
+    data: createData as unknown as Prisma.GstTaxRateUncheckedCreateInput,
   });
 };
 
@@ -348,14 +380,36 @@ export const updateGstTaxRate = async (
     throw new Error("Invalid effective to date");
   }
 
-  return prisma.gstTaxRate.update({
-    where: { id: taxRateId },
-    data: {
+  const gstRate = input.gstRate ?? undefined;
+  const hasComponentOverride =
+    input.cgstRate !== undefined ||
+    input.sgstRate !== undefined ||
+    input.igstRate !== undefined;
+
+  let cgstRate =
+    input.cgstRate !== undefined ? input.cgstRate : taxRate.cgstRate.toNumber();
+  let sgstRate =
+    input.sgstRate !== undefined ? input.sgstRate : taxRate.sgstRate.toNumber();
+  let igstRate =
+    input.igstRate !== undefined ? input.igstRate : taxRate.igstRate.toNumber();
+
+  if (gstRate !== undefined && !hasComponentOverride) {
+    const half = gstRate / 2;
+    cgstRate = half;
+    sgstRate = half;
+    igstRate = 0;
+  }
+
+  const updateData = {
       registrationId:
         input.registrationId !== undefined
           ? input.registrationId || null
           : taxRate.registrationId,
       supplyType: input.supplyType ?? taxRate.supplyType,
+      taxName:
+        input.taxName !== undefined
+          ? input.taxName?.trim() || null
+          : (taxRate as { taxName?: string | null }).taxName ?? null,
       hsnOrSac:
         input.hsnOrSac !== undefined
           ? input.hsnOrSac?.trim() || null
@@ -364,26 +418,35 @@ export const updateGstTaxRate = async (
         input.description !== undefined
           ? input.description?.trim() || null
           : taxRate.description,
-      cgstRate:
-        input.cgstRate !== undefined
-          ? new Decimal(input.cgstRate)
-          : taxRate.cgstRate,
-      sgstRate:
-        input.sgstRate !== undefined
-          ? new Decimal(input.sgstRate)
-          : taxRate.sgstRate,
-      igstRate:
-        input.igstRate !== undefined
-          ? new Decimal(input.igstRate)
-          : taxRate.igstRate,
+      gstRate:
+        gstRate !== undefined ? new Decimal(gstRate) : (taxRate as { gstRate?: Decimal }).gstRate ?? new Decimal(0),
+      cgstRate: new Decimal(cgstRate),
+      sgstRate: new Decimal(sgstRate),
+      igstRate: new Decimal(igstRate),
       cessRate:
         input.cessRate !== undefined
           ? new Decimal(input.cessRate)
           : taxRate.cessRate,
       effectiveFrom,
       effectiveTo,
+      taxType:
+        input.taxType !== undefined
+          ? (input.taxType as "REGULAR" | "EXEMPT" | "NIL" | "ZERO_RATED")
+          : (taxRate as { taxType?: "REGULAR" | "EXEMPT" | "NIL" | "ZERO_RATED" }).taxType ?? "REGULAR",
+      reverseCharge:
+        input.reverseCharge !== undefined
+          ? input.reverseCharge
+          : (taxRate as { reverseCharge?: boolean }).reverseCharge ?? false,
+      applicableOn:
+        input.applicableOn !== undefined
+          ? (input.applicableOn as "SALES" | "PURCHASE" | "BOTH")
+          : (taxRate as { applicableOn?: "SALES" | "PURCHASE" | "BOTH" }).applicableOn ?? "BOTH",
       isActive: input.isActive ?? taxRate.isActive,
-    },
+  };
+
+  return prisma.gstTaxRate.update({
+    where: { id: taxRateId },
+    data: updateData as unknown as Prisma.GstTaxRateUncheckedUpdateInput,
   });
 };
 

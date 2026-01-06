@@ -622,6 +622,19 @@ enum GstTaxSupplyType {
   SERVICES
 }
 
+enum GstTaxType {
+  REGULAR
+  EXEMPT
+  NIL
+  ZERO_RATED
+}
+
+enum GstTaxApplicableOn {
+  SALES
+  PURCHASE
+  BOTH
+}
+
 enum GstLedgerMappingType {
   OUTPUT_CGST
   OUTPUT_SGST
@@ -661,21 +674,30 @@ model GstRegistration {
 }
 
 model GstTaxRate {
-  id             String           @id @default(cuid())
+  id             String             @id @default(cuid())
   startupId      String
   registrationId String?
-  supplyType     GstTaxSupplyType @default(GOODS)
+  // Human friendly tax name e.g. "GST 18%"
+  taxName        String?
+  supplyType     GstTaxSupplyType   @default(GOODS)
   hsnOrSac       String?
   description    String?
-  cgstRate       Decimal          @default(0)
-  sgstRate       Decimal          @default(0)
-  igstRate       Decimal          @default(0)
-  cessRate       Decimal          @default(0)
+  // Total GST percentage for this slab (for reference)
+  gstRate        Decimal            @default(0)
+  // Component percentages stored for reporting / export
+  cgstRate       Decimal            @default(0)
+  sgstRate       Decimal            @default(0)
+  igstRate       Decimal            @default(0)
+  cessRate       Decimal            @default(0)
+  // Classification and applicability
+  taxType        GstTaxType         @default(REGULAR)
+  reverseCharge  Boolean            @default(false)
+  applicableOn   GstTaxApplicableOn @default(BOTH)
   effectiveFrom  DateTime?
   effectiveTo    DateTime?
-  isActive       Boolean          @default(true)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  isActive       Boolean            @default(true)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 
   startup      Startup          @relation(fields: [startupId], references: [id], onDelete: Cascade)
   registration GstRegistration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)

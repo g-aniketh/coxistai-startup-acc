@@ -383,7 +383,8 @@ export default function SalesVoucherPage() {
                             </SelectItem>
                           ))
                         ) : (
-                          <SelectItem value="" disabled>
+                          // Use a non-empty sentinel value for disabled item to satisfy Radix Select
+                          <SelectItem value="__no_customers__" disabled>
                             No customers available
                           </SelectItem>
                         )}
