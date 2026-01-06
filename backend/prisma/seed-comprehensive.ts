@@ -7,6 +7,7 @@ import {
 import bcrypt from "bcryptjs";
 import { DEFAULT_VOUCHER_TYPES } from "../src/services/voucherTypes";
 import { bootstrapLedgerStructure } from "../src/services/bookkeeping";
+import { createCustomer } from "../src/services/customers";
 
 const prisma = new PrismaClient();
 
@@ -153,7 +154,7 @@ async function main() {
   const roleMap = new Map(createdRoles.map((r) => [r.name, r]));
   console.log("✓ Created roles and assigned permissions");
 
-  // 4. Create 5 demo startups for comprehensive demo
+  // 4. Create 2 demo startups (demo and admin accounts)
   const startups = await Promise.all([
     prisma.startup.create({
       data: {
@@ -165,38 +166,14 @@ async function main() {
     }),
     prisma.startup.create({
       data: {
-        name: "Coxist AI Cloud",
+        name: "Coxist AI Admin",
         subscriptionPlan: "pro",
         subscriptionStatus: "active",
-        trialEndsAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
-      },
-    }),
-    prisma.startup.create({
-      data: {
-        name: "Coxist AI Analytics",
-        subscriptionPlan: "enterprise",
-        subscriptionStatus: "active",
-        trialEndsAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
-      },
-    }),
-    prisma.startup.create({
-      data: {
-        name: "Coxist AI Innovations",
-        subscriptionPlan: "starter",
-        subscriptionStatus: "active",
-        trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      },
-    }),
-    prisma.startup.create({
-      data: {
-        name: "Coxist AI Ventures",
-        subscriptionPlan: "pro_trial",
-        subscriptionStatus: "active",
-        trialEndsAt: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
+        trialEndsAt: null,
       },
     }),
   ]);
-  console.log("✓ Created 5 demo startups");
+  console.log("✓ Created 2 demo startups");
 
   await Promise.all(
     startups.map((startup) => bootstrapLedgerStructure(startup.id))
@@ -229,95 +206,26 @@ async function main() {
       },
     },
     {
-      displayName: "Coxist AI Cloud",
-      legalName: "Coxist AI Cloud Private Limited",
-      mailingName: "Coxist AI Cloud",
+      displayName: "Coxist AI Admin",
+      legalName: "Coxist AI Admin Private Limited",
+      mailingName: "Coxist AI Admin",
       country: "India",
-      state: "Maharashtra",
-      city: "Mumbai",
-      postalCode: "400001",
-      phone: "+91-22-4500-7788",
-      email: "contact@coxistaicloud.com",
-      website: "https://cloud.coxistai.com",
+      state: "Karnataka",
+      city: "Bengaluru",
+      postalCode: "560001",
+      phone: "+91-80-4000-5678",
+      email: "admin@coxistai.com",
+      website: "https://www.coxistai.com",
       address: {
-        label: "Registered Office",
-        line1: "5th Floor, BKC Tech Park",
-        city: "Mumbai",
-        state: "Maharashtra",
+        label: "Headquarters",
+        line1: "91 Springboard, Residency Road",
+        city: "Bengaluru",
+        state: "Karnataka",
         country: "India",
-        postalCode: "400051",
-        isPrimary: true,
-        isBilling: true,
-        isShipping: true,
-      },
-    },
-    {
-      displayName: "Coxist AI Analytics",
-      legalName: "Coxist Analytics Labs Pvt Ltd",
-      mailingName: "Coxist AI Analytics",
-      country: "India",
-      state: "Delhi",
-      city: "New Delhi",
-      postalCode: "110001",
-      phone: "+91-11-4100-6677",
-      email: "info@coxistanalytics.com",
-      website: "https://analytics.coxistai.com",
-      address: {
-        label: "Analytics Center",
-        line1: "Plot 12, Cyber City",
-        city: "Gurugram",
-        state: "Haryana",
-        country: "India",
-        postalCode: "122002",
+        postalCode: "560025",
         isPrimary: true,
         isBilling: true,
         isShipping: false,
-      },
-    },
-    {
-      displayName: "Coxist AI Innovations",
-      legalName: "Coxist Innovations Pvt Ltd",
-      mailingName: "Coxist AI Innovations",
-      country: "India",
-      state: "Telangana",
-      city: "Hyderabad",
-      postalCode: "500081",
-      phone: "+91-40-6900-8899",
-      email: "hello@coxistinnovations.com",
-      website: "https://innovations.coxistai.com",
-      address: {
-        label: "Innovation Hub",
-        line1: "T-Hub Phase 2, Hitech City",
-        city: "Hyderabad",
-        state: "Telangana",
-        country: "India",
-        postalCode: "500081",
-        isPrimary: true,
-        isBilling: true,
-        isShipping: true,
-      },
-    },
-    {
-      displayName: "Coxist AI Ventures",
-      legalName: "Coxist Ventures Pvt Ltd",
-      mailingName: "Coxist AI Ventures",
-      country: "India",
-      state: "Tamil Nadu",
-      city: "Chennai",
-      postalCode: "600032",
-      phone: "+91-44-4200-5599",
-      email: "invest@coxistventures.com",
-      website: "https://ventures.coxistai.com",
-      address: {
-        label: "Venture Studio",
-        line1: "DLF IT Park, Ramapuram",
-        city: "Chennai",
-        state: "Tamil Nadu",
-        country: "India",
-        postalCode: "600089",
-        isPrimary: true,
-        isBilling: true,
-        isShipping: true,
       },
     },
   ];
@@ -514,30 +422,9 @@ async function main() {
   // 5. Create users for each startup
   const hashedPassword = await bcrypt.hash("password123", 10);
 
-  // Create users for Coxist AI (main demo account)
-  const coxistAIUsers = await Promise.all(
+  // Create users for both startups
+  const users = await Promise.all(
     [
-      {
-        email: "admin@coxistai.com",
-        firstName: "Alex",
-        lastName: "Johnson",
-        roleName: "Admin",
-        startupId: startups[0].id,
-      },
-      {
-        email: "cfo@coxistai.com",
-        firstName: "Brenda",
-        lastName: "Chen",
-        roleName: "CFO",
-        startupId: startups[0].id,
-      },
-      {
-        email: "accountant@coxistai.com",
-        firstName: "Carlos",
-        lastName: "Mendoza",
-        roleName: "Accountant",
-        startupId: startups[0].id,
-      },
       {
         email: "demo@coxistai.com",
         firstName: "Demo",
@@ -545,61 +432,13 @@ async function main() {
         roleName: "Admin",
         startupId: startups[0].id,
       },
-    ].map(async (userData) => {
-      const user = await prisma.user.create({
-        data: {
-          email: userData.email,
-          password: hashedPassword,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          isActive: true,
-          startupId: userData.startupId,
-        },
-      });
-      const role = roleMap.get(userData.roleName);
-      if (role) {
-        await prisma.userRole.create({
-          data: {
-            userId: user.id,
-            roleId: role.id,
-          },
-        });
-      }
-      return user;
-    })
-  );
-
-  // Create users for other startups
-  const otherStartupUsers = await Promise.all(
-    [
       {
-        email: "ceo@coxistai.cloud",
-        firstName: "Sarah",
-        lastName: "Wilson",
+        email: "admin@coxistai.com",
+        firstName: "Admin",
+        lastName: "User",
         roleName: "Admin",
         startupId: startups[1].id,
       },
-      {
-        email: "ceo@coxistai.analytics",
-        firstName: "Michael",
-        lastName: "Brown",
-        roleName: "Admin",
-        startupId: startups[2].id,
-      },
-      {
-        email: "ceo@coxistai.innovations",
-        firstName: "Lisa",
-        lastName: "Garcia",
-        roleName: "Admin",
-        startupId: startups[3].id,
-      },
-      {
-        email: "ceo@coxistai.ventures",
-        firstName: "David",
-        lastName: "Lee",
-        roleName: "Admin",
-        startupId: startups[4].id,
-      },
     ].map(async (userData) => {
       const user = await prisma.user.create({
         data: {
@@ -624,7 +463,7 @@ async function main() {
     })
   );
 
-  console.log("✓ Created users for all startups");
+  console.log("✓ Created users for both startups");
 
   // 6. Create Mock Bank Accounts for each startup
   const startupAccounts = new Map();
@@ -670,29 +509,11 @@ async function main() {
       monthlyExpenses: 2905000,
     }, // ₹4.15Cr, ₹37.4L, ₹29.1L
     {
-      name: "Coxist AI Cloud",
-      initialFunding: 16600000,
-      monthlyRevenue: 2075000,
-      monthlyExpenses: 1660000,
-    }, // ₹1.66Cr, ₹20.8L, ₹16.6L
-    {
-      name: "Coxist AI Analytics",
-      initialFunding: 83000000,
-      monthlyRevenue: 6640000,
-      monthlyExpenses: 4980000,
-    }, // ₹8.3Cr, ₹66.4L, ₹49.8L
-    {
-      name: "Coxist AI Lab",
-      initialFunding: 4150000,
-      monthlyRevenue: 996000,
-      monthlyExpenses: 1245000,
-    }, // ₹41.5L, ₹9.96L, ₹12.5L
-    {
-      name: "Coxist AI Green",
-      initialFunding: 24900000,
-      monthlyRevenue: 2490000,
-      monthlyExpenses: 2075000,
-    }, // ₹2.49Cr, ₹24.9L, ₹20.8L
+      name: "Coxist AI Admin",
+      initialFunding: 25000000,
+      monthlyRevenue: 2000000,
+      monthlyExpenses: 1500000,
+    }, // ₹2.5Cr, ₹20L, ₹15L
   ];
 
   for (let startupIndex = 0; startupIndex < startups.length; startupIndex++) {
@@ -785,7 +606,7 @@ async function main() {
 
   console.log("✓ Created transactions and updated balances for all startups");
 
-  // 8. Create Products and Sales for TechNova Solutions (main demo)
+  // 8. Create Products and Sales for main startup (demo account)
   const mainStartup = startups[0];
   const mainAccounts = startupAccounts.get(mainStartup.id);
 
@@ -1613,20 +1434,189 @@ async function main() {
     "✓ Created GST registration and ledger mappings for main startup"
   );
 
+  // 16. Create 10 customers for each startup
+  const customerData = [
+    {
+      customerName: "ABC Corporation",
+      customerType: "BUSINESS" as const,
+      phone: "+91-80-1234-5678",
+      email: "contact@abccorp.com",
+      billingAddressLine1: "123 Business Park",
+      city: "Bengaluru",
+      state: "Karnataka",
+      country: "India",
+      pincode: "560001",
+      gstApplicable: true,
+      gstin: "29AABCU1234A1Z5",
+      placeOfSupplyState: "29",
+      creditLimitAmount: 500000,
+      creditPeriodDays: 30,
+    },
+    {
+      customerName: "XYZ Tech Solutions",
+      customerType: "BUSINESS" as const,
+      phone: "+91-22-2345-6789",
+      email: "info@xyztech.com",
+      billingAddressLine1: "456 Tech Tower",
+      city: "Mumbai",
+      state: "Maharashtra",
+      country: "India",
+      pincode: "400001",
+      gstApplicable: true,
+      gstin: "27BXYZU5678B2Y6",
+      placeOfSupplyState: "27",
+      creditLimitAmount: 1000000,
+      creditPeriodDays: 45,
+    },
+    {
+      customerName: "Global Enterprises Ltd",
+      customerType: "BUSINESS" as const,
+      phone: "+91-11-3456-7890",
+      email: "sales@globalent.com",
+      billingAddressLine1: "789 Corporate Plaza",
+      city: "New Delhi",
+      state: "Delhi",
+      country: "India",
+      pincode: "110001",
+      gstApplicable: true,
+      gstin: "07CGLOU9012C3X7",
+      placeOfSupplyState: "07",
+      creditLimitAmount: 2000000,
+      creditPeriodDays: 60,
+    },
+    {
+      customerName: "Rajesh Kumar",
+      customerType: "INDIVIDUAL" as const,
+      phone: "+91-98765-43210",
+      email: "rajesh.kumar@email.com",
+      billingAddressLine1: "Flat 101, Green Heights",
+      city: "Pune",
+      state: "Maharashtra",
+      country: "India",
+      pincode: "411001",
+      gstApplicable: false,
+      creditLimitAmount: 100000,
+      creditPeriodDays: 15,
+    },
+    {
+      customerName: "Innovation Labs Pvt Ltd",
+      customerType: "BUSINESS" as const,
+      phone: "+91-40-4567-8901",
+      email: "hello@innovationlabs.com",
+      billingAddressLine1: "321 Innovation Hub",
+      city: "Hyderabad",
+      state: "Telangana",
+      country: "India",
+      pincode: "500081",
+      gstApplicable: true,
+      gstin: "36AINNOU3456D4W8",
+      placeOfSupplyState: "36",
+      creditLimitAmount: 750000,
+      creditPeriodDays: 30,
+    },
+    {
+      customerName: "Priya Sharma",
+      customerType: "INDIVIDUAL" as const,
+      phone: "+91-87654-32109",
+      email: "priya.sharma@email.com",
+      billingAddressLine1: "A-202, Sunrise Apartments",
+      city: "Chennai",
+      state: "Tamil Nadu",
+      country: "India",
+      pincode: "600032",
+      gstApplicable: false,
+      creditLimitAmount: 50000,
+      creditPeriodDays: 7,
+    },
+    {
+      customerName: "Digital Solutions Inc",
+      customerType: "BUSINESS" as const,
+      phone: "+91-33-5678-9012",
+      email: "contact@digitalsolutions.com",
+      billingAddressLine1: "555 Digital Park",
+      city: "Kolkata",
+      state: "West Bengal",
+      country: "India",
+      pincode: "700001",
+      gstApplicable: true,
+      gstin: "19ADIGIU7890E5V9",
+      placeOfSupplyState: "19",
+      creditLimitAmount: 1500000,
+      creditPeriodDays: 45,
+    },
+    {
+      customerName: "Amit Patel",
+      customerType: "INDIVIDUAL" as const,
+      phone: "+91-76543-21098",
+      email: "amit.patel@email.com",
+      billingAddressLine1: "B-304, Skyline Towers",
+      city: "Ahmedabad",
+      state: "Gujarat",
+      country: "India",
+      pincode: "380001",
+      gstApplicable: false,
+      creditLimitAmount: 75000,
+      creditPeriodDays: 10,
+    },
+    {
+      customerName: "Cloud Services Co",
+      customerType: "BUSINESS" as const,
+      phone: "+91-80-6789-0123",
+      email: "info@cloudservices.com",
+      billingAddressLine1: "888 Cloud Center",
+      city: "Bengaluru",
+      state: "Karnataka",
+      country: "India",
+      pincode: "560025",
+      gstApplicable: true,
+      gstin: "29ACLOU2345F6A1",
+      placeOfSupplyState: "29",
+      creditLimitAmount: 3000000,
+      creditPeriodDays: 60,
+    },
+    {
+      customerName: "Sneha Reddy",
+      customerType: "INDIVIDUAL" as const,
+      phone: "+91-65432-10987",
+      email: "sneha.reddy@email.com",
+      billingAddressLine1: "C-501, Garden View",
+      city: "Bengaluru",
+      state: "Karnataka",
+      country: "India",
+      pincode: "560095",
+      gstApplicable: false,
+      creditLimitAmount: 25000,
+      creditPeriodDays: 5,
+    },
+  ];
+
+  // Create customers for both startups
+  for (const startup of startups) {
+    for (const customer of customerData) {
+      try {
+        await createCustomer(startup.id, customer);
+      } catch (error) {
+        console.warn(
+          `Failed to create customer ${customer.customerName} for ${startup.name}:`,
+          error
+        );
+      }
+    }
+  }
+  console.log("✓ Created 10 customers for each startup");
+
   console.log("\n✅ Comprehensive seed completed successfully!");
   console.log('\n🔑 Login Credentials (password for all is "password123"):');
-  console.log("\n📊 Main Demo Account (Coxist AI):");
-  console.log("  - Admin: admin@coxistai.com");
-  console.log("  - CFO: cfo@coxistai.com");
-  console.log("  - Accountant: accountant@coxistai.com");
-  console.log("  - Demo User: demo@coxistai.com");
-  console.log("\n🏢 Other Demo Accounts:");
-  console.log("  - Coxist AI Cloud: ceo@coxistai.cloud");
-  console.log("  - Coxist AI Analytics: ceo@coxistai.analytics");
-  console.log("  - Coxist AI Innovations: ceo@coxistai.innovations");
-  console.log("  - Coxist AI Ventures: ceo@coxistai.ventures");
+  console.log("\n📊 Demo Account:");
+  console.log("  - Email: demo@coxistai.com");
+  console.log("  - Role: Admin");
+  console.log("  - Features: Full access with comprehensive seeded data");
+  console.log("\n📊 Admin Account:");
+  console.log("  - Email: admin@coxistai.com");
+  console.log("  - Role: Admin");
+  console.log("  - Features: Full access with comprehensive seeded data");
   console.log(
-    "\n💡 Use demo@coxistai.com for the best demo experience with full transaction history!"
+    "\n💡 Use demo@coxistai.com for the best demo experience with full transaction history and 10 customers!"
   );
 }
 

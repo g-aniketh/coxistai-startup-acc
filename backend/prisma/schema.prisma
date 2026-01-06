@@ -54,6 +54,7 @@ model Startup {
   auditLogs             AuditLog[]
   itemMasters           ItemMaster[]
   warehouses            WarehouseMaster[]
+  customers             Customer[]
 }
 
 model User {
@@ -1055,11 +1056,51 @@ model Ledger {
   group          LedgerGroup    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   vouchers       Voucher[]      @relation("VoucherPartyLedger")
   voucherEntries VoucherEntry[] @relation("VoucherEntryLedger")
+  customer       Customer?      @relation("CustomerLedger")
 
   @@unique([startupId, name])
   @@index([startupId])
   @@index([startupId, groupId])
   @@index([startupId, ledgerSubtype])
+}
+
+enum CustomerType {
+  BUSINESS
+  INDIVIDUAL
+}
+
+model Customer {
+  id                   String             @id @default(cuid())
+  startupId            String
+  customerName         String
+  customerType         CustomerType
+  phone                String?
+  email                String?
+  billingAddressLine1  String?
+  billingAddressLine2  String?
+  city                 String?
+  state                String?
+  country              String?
+  pincode              String?
+  gstApplicable        Boolean            @default(false)
+  gstin                String?
+  placeOfSupplyState   String?
+  creditLimitAmount    Decimal?
+  creditPeriodDays     Int?
+  openingBalanceAmount Decimal?           @default(0)
+  openingBalanceType   LedgerBalanceType? @default(DEBIT)
+  ledgerId             String?            @unique // Link to ledger
+  isActive             Boolean            @default(true)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  ledger  Ledger? @relation("CustomerLedger", fields: [ledgerId], references: [id], onDelete: SetNull)
+
+  @@unique([startupId, customerName])
+  @@index([startupId])
+  @@index([startupId, isActive])
+  @@index([ledgerId])
 }
 
 model ImportedTransaction {

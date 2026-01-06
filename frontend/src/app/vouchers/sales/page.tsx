@@ -15,7 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { apiClient, Ledger, ItemMaster, WarehouseMaster } from "@/lib/api";
+import {
+  apiClient,
+  Ledger,
+  ItemMaster,
+  WarehouseMaster,
+  Customer,
+} from "@/lib/api";
 import { format } from "date-fns";
 import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -35,9 +41,11 @@ export default function SalesVoucherPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [customerLedgers, setCustomerLedgers] = useState<Ledger[]>([]);
   const [items, setItems] = useState<ItemMaster[]>([]);
   const [warehouses, setWarehouses] = useState<WarehouseMaster[]>([]);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
   const [inventoryLines, setInventoryLines] = useState<InventoryLine[]>([
     {
       itemId: "",
@@ -66,17 +74,35 @@ export default function SalesVoucherPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [ledgersRes, itemsRes, warehousesRes] = await Promise.all([
-        apiClient.bookkeeping.listLedgers(),
-        apiClient.items.list(),
-        apiClient.warehouses.list(),
-      ]);
+      const [customersRes, ledgersRes, itemsRes, warehousesRes] =
+        await Promise.all([
+          apiClient.customers.list({ isActive: true }),
+          apiClient.bookkeeping.listLedgers(),
+          apiClient.items.list(),
+          apiClient.warehouses.list(),
+        ]);
+
+      if (customersRes.success && customersRes.data) {
+        setCustomers(customersRes.data);
+        // Also populate customer ledgers for backward compatibility
+        const customerLedgerList = customersRes.data
+          .filter((c) => c.ledger)
+          .map((c) => c.ledger!);
+        setCustomerLedgers(customerLedgerList);
+      }
 
       if (ledgersRes.success && ledgersRes.data) {
-        const customers = ledgersRes.data.filter(
+        // Also include any customer ledgers that might not have customers
+        const existingCustomerLedgers = ledgersRes.data.filter(
           (l) => l.ledgerSubtype === "CUSTOMER"
         );
-        setCustomerLedgers(customers);
+        setCustomerLedgers((prev) => {
+          const existingIds = new Set(prev.map((l) => l.id));
+          return [
+            ...prev,
+            ...existingCustomerLedgers.filter((l) => !existingIds.has(l.id)),
+          ];
+        });
       }
 
       if (itemsRes.success && itemsRes.data) {
@@ -91,6 +117,31 @@ export default function SalesVoucherPage() {
       toast.error("Failed to load data");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCustomerChange = (customerId: string) => {
+    setSelectedCustomerId(customerId);
+    const customer = customers.find((c) => c.id === customerId);
+    if (customer) {
+      // Auto-fill customer details
+      setForm({
+        ...form,
+        customerLedgerId: customer.ledgerId || "",
+        billingName: customer.customerName,
+        billingAddress: [
+          customer.billingAddressLine1,
+          customer.billingAddressLine2,
+          customer.city,
+          customer.state,
+          customer.country,
+          customer.pincode,
+        ]
+          .filter(Boolean)
+          .join(", "),
+        customerGstin: customer.gstin || "",
+        placeOfSupplyState: customer.placeOfSupplyState || "",
+      });
     }
   };
 
@@ -299,29 +350,56 @@ export default function SalesVoucherPage() {
 
                   <div className="space-y-2">
                     <Label
-                      htmlFor="customerLedgerId"
+                      htmlFor="customer"
                       className="text-[#2C2C2C]"
                     >
                       Customer *
                     </Label>
                     <Select
-                      value={form.customerLedgerId}
-                      onValueChange={(value) =>
-                        setForm({ ...form, customerLedgerId: value })
-                      }
+                      value={selectedCustomerId}
+                      onValueChange={handleCustomerChange}
                       required
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select customer" />
                       </SelectTrigger>
                       <SelectContent>
-                        {customerLedgers.map((ledger) => (
-                          <SelectItem key={ledger.id} value={ledger.id}>
-                            {ledger.name}
+                        {customers.length > 0 ? (
+                          customers.map((customer) => (
+                            <SelectItem key={customer.id} value={customer.id}>
+                              {customer.customerName}
+                              {customer.ledger && (
+                                <span className="text-xs text-muted-foreground ml-2">
+                                  ({customer.ledger.name})
+                                </span>
+                              )}
+                            </SelectItem>
+                          ))
+                        ) : customerLedgers.length > 0 ? (
+                          // Fallback to ledgers if no customers
+                          customerLedgers.map((ledger) => (
+                            <SelectItem key={ledger.id} value={ledger.id}>
+                              {ledger.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="" disabled>
+                            No customers available
                           </SelectItem>
-                        ))}
+                        )}
                       </SelectContent>
                     </Select>
+                    {customers.length === 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        <Link
+                          href="/customers"
+                          className="text-[#607c47] hover:underline"
+                        >
+                          Add a customer
+                        </Link>{" "}
+                        to use this feature
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2">

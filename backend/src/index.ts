@@ -34,6 +34,7 @@ import partyRoutes from "./routes/party";
 import bookkeepingRoutes from "./routes/bookkeeping";
 import itemsRoutes from "./routes/items";
 import warehousesRoutes from "./routes/warehouses";
+import customersRoutes from "./routes/customers";
 import { TransactionSyncService } from "./services/transactionSync";
 import { startJobs } from "./jobs";
 
@@ -453,6 +454,7 @@ v1Router.use("/parties", authenticateToken, partyRoutes);
 v1Router.use("/bookkeeping", authenticateToken, bookkeepingRoutes);
 v1Router.use("/items", authenticateToken, itemsRoutes);
 v1Router.use("/warehouses", authenticateToken, warehousesRoutes);
+v1Router.use("/customers", authenticateToken, customersRoutes);
 
 // Mount v1 routes
 app.use("/api/v1", v1Router);

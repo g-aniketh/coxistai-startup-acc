@@ -7,27 +7,41 @@ This document provides a step-by-step workflow to test all implemented features 
 - ✅ Database cleared and schema pushed (`npx prisma db push`)
 - ✅ Backend server running
 - ✅ Frontend server running
-- ✅ **No seed script required** - We'll test with a fresh signup
+- ✅ **Run seed script** to populate demo data: `cd backend && npx ts-node prisma/seed-comprehensive.ts`
+  - This creates 2 demo accounts with comprehensive seeded data
+  - **10 customers** are pre-seeded for each account
+  - All features have sample data ready for testing
 
 ---
 
-## Phase 1: Account Creation & Initial Setup
+## Phase 1: Account Login & Initial Setup
 
-### Step 1: User Registration
+### Step 1: Login to Demo Account
 
-1. Navigate to `/register` or `/login` (then click "Sign Up")
-2. **Create a new account**:
-   - Email: Use a test email (e.g., `test@example.com`)
-   - Password: At least 8 characters (e.g., `password123`)
-   - Startup Name: Enter your company name (e.g., "Test Company")
-   - First Name: Your first name
-   - Last Name: Your last name
-3. Click **Sign Up** or **Register**
-4. **Verify**: You are automatically logged in and redirected to `/dashboard`
+1. Navigate to `/login`
+2. **Login with seeded demo account**:
+   - **Email**: `demo@coxistai.com` (recommended for full demo experience)
+   - **Password**: `password123`
+   - OR use **admin@coxistai.com** with password `password123`
+3. Click **Login**
+4. **Verify**: You are logged in and redirected to `/dashboard`
 
-### Step 2: What's Automatically Created on Signup
+**Note**: Both accounts have comprehensive seeded data including:
+- ✅ 10 pre-created customers (with auto-created ledgers)
+- ✅ Chart of Accounts (Ledger Groups)
+- ✅ Essential Ledgers (Cash, Bank, Sales, Purchases, GST ledgers)
+- ✅ Warehouses (3 warehouses)
+- ✅ Items (5 items with HSN/SAC and GST rates)
+- ✅ GST Registration and Tax Rates
+- ✅ GST Ledger Mappings
+- ✅ Transactions and Sales data
+- ✅ Cashflow Metrics
+- ✅ AI Scenarios and Alerts
+- ✅ Investor Updates
 
-Upon successful signup, the following is **automatically created**:
+### Step 2: What's Pre-Seeded in Demo Accounts
+
+When you login to the seeded demo accounts, the following is **already available**:
 
 ✅ **Company Profile**:
    - Display Name, Legal Name, Mailing Name
@@ -51,25 +65,26 @@ Upon successful signup, the following is **automatically created**:
 ✅ **Feature Toggle**:
    - All features enabled by default
 
-✅ **8 Default Voucher Types** with default numbering series:
-   - Payment (PMT/)
-   - Receipt (RCT/)
-   - Contra (CTR/)
-   - Journal (JRN/)
-   - Sales (SAL/)
-   - Purchase (PUR/)
-   - Debit Note (DN/)
-   - Credit Note (CN/)
+✅ **All 13 Voucher Types** with default numbering series:
+   - Payment (PMT/), Receipt (RCT/), Contra (CTR/), Journal (JRN/)
+   - Sales (SAL/), Purchase (PUR/), Debit Note (DN/), Credit Note (CN/)
+   - Delivery Note (DN/), Receipt Note (RN/), Stock Journal (SJ/)
+   - Memo (MEMO/), Reversing Journal (REV/)
 
-⚠️ **NOT Created on Signup** (must be created manually):
+✅ **Pre-Seeded Data** (available after running seed script):
+   - **10 Customers** (with auto-created ledgers in Sundry Debtors)
    - Chart of Accounts (Ledger Groups)
-   - Ledgers
-   - Warehouses
-   - Items
+   - Essential Ledgers (Cash, Bank, Sales, Purchases, GST ledgers, Customer/Supplier ledgers)
+   - Warehouses (3 warehouses)
+   - Items (5 items with HSN/SAC and GST rates)
    - GST Registrations
    - GST Tax Rates
    - GST Ledger Mappings
-   - Additional Voucher Types (Delivery Note, Receipt Note, Stock Journal, Memo, Reversing Journal)
+   - All 13 Voucher Types (including Delivery Note, Receipt Note, Stock Journal, Memo, Reversing Journal)
+   - Transactions and Sales data
+   - Cashflow Metrics
+   - AI Scenarios and Alerts
+   - Investor Updates
 
 ---
 
@@ -146,101 +161,41 @@ Upon successful signup, the following is **automatically created**:
 
 ## Phase 3: Chart of Accounts & Ledger Setup
 
-### Step 8: Create Ledger Groups (Chart of Accounts)
+### Step 8: View Ledger Groups (Chart of Accounts)
 
 1. Navigate to **Bookkeeping** (`/bookkeeping`)
 2. The **Chart of Accounts** tab should be active by default
-3. **Note**: No ledger groups exist initially - you need to create them
-4. In the **Ledger Groups** panel:
-   - **Create root groups** using the form:
-     - Name: "Capital Accounts", Category: "Capital", Parent: "Root Level"
-     - Name: "Loans (Secured/Unsecured)", Category: "Loan", Parent: "Root Level"
-     - Name: "Current Liabilities", Category: "Current Liability", Parent: "Root Level"
-     - Name: "Bank Accounts", Category: "Bank Account", Parent: "Root Level"
-     - Name: "Cash-in-hand", Category: "Cash", Parent: "Root Level"
-     - Name: "Current Assets", Category: "Current Asset", Parent: "Root Level"
-     - Name: "Purchase Accounts", Category: "Purchase", Parent: "Root Level"
-     - Name: "Sales Accounts", Category: "Sales", Parent: "Root Level"
-     - Name: "Direct Expenses", Category: "Direct Expense", Parent: "Root Level"
-     - Name: "Indirect Expenses", Category: "Indirect Expense", Parent: "Root Level"
-     - Name: "Direct Incomes", Category: "Direct Income", Parent: "Root Level"
-     - Name: "Indirect Incomes", Category: "Indirect Income", Parent: "Root Level"
-   - **Create sub-groups**:
-     - Under "Current Liabilities":
-       - Name: "Sundry Creditors", Category: "Sundry Creditor", Parent: "Current Liabilities"
-       - Name: "Duties & Taxes", Category: "Current Liability", Parent: "Current Liabilities"
-     - Under "Current Assets":
-       - Name: "Sundry Debtors", Category: "Sundry Debtor", Parent: "Current Assets"
-       - Name: "Stock-in-hand", Category: "Stock", Parent: "Current Assets"
-5. Click **Add Group** for each entry
-6. **Verify**:
+3. **Note**: Ledger groups are pre-created by the seed script
+4. **View existing groups** in the Chart of Accounts tree:
+   - You should see all standard groups:
+     - Capital Accounts, Loans, Current Liabilities, Bank Accounts, Cash-in-hand
+     - Current Assets, Purchase Accounts, Sales Accounts
+     - Direct/Indirect Expenses and Incomes
+   - Sub-groups under Current Liabilities: Sundry Creditors, Duties & Taxes
+   - Sub-groups under Current Assets: Sundry Debtors, Stock-in-hand
+4. **Optional**: Create additional groups if needed using the form
+5. **Verify**:
    - All groups appear in the Chart of Accounts tree
    - Hierarchy renders correctly (child groups indented)
 
-### Step 9: Create Essential Ledgers
+### Step 9: View Essential Ledgers
 
 1. Stay in **Bookkeeping** → **Ledgers** tab (click on "Ledger Master" tab)
-2. Scroll to the **Create Ledger** card
-3. **Create essential ledgers**:
-
-   **Cash Ledger**:
-   - Ledger Name: "Cash"
-   - Under Group: Select "Cash-in-hand"
-   - Ledger Subtype: "CASH"
-   - Opening Balance: `50000`, Type: `Debit`
-   - Click **Create Ledger**
-
-   **Bank Ledger**:
-   - Ledger Name: "HDFC Bank - Current Account"
-   - Under Group: Select "Bank Accounts"
-   - Ledger Subtype: "BANK"
-   - Opening Balance: `1000000`, Type: `Debit`
-   - Click **Create Ledger**
-
-   **Sales Ledger**:
-   - Ledger Name: "Sales"
-   - Under Group: Select "Sales Accounts"
-   - Opening Balance: `0`, Type: `Credit`
-   - Click **Create Ledger**
-
-   **Purchases Ledger**:
-   - Ledger Name: "Purchases"
-   - Under Group: Select "Purchase Accounts"
-   - Opening Balance: `0`, Type: `Debit`
-   - Click **Create Ledger**
-
-   **Customer Ledger**:
-   - Ledger Name: "ABC Corporation"
-   - Under Group: Select "Sundry Debtors"
-   - Ledger Subtype: "CUSTOMER"
-   - Maintain Bill-by-bill: Enabled
-   - Opening Balance: `0`, Type: `Debit`
-   - Default Credit Period: `30`
-   - Credit Limit: `500000` (optional)
-   - Click **Create Ledger**
-
-   **Supplier Ledger**:
-   - Ledger Name: "Cloud Services Provider"
-   - Under Group: Select "Sundry Creditors"
-   - Ledger Subtype: "SUPPLIER"
-   - Maintain Bill-by-bill: Enabled
-   - Opening Balance: `0`, Type: `Credit`
-   - Default Credit Period: `45`
-   - Click **Create Ledger**
-
-   **GST Ledgers** (for GST functionality):
-   - Create 6 GST ledgers under "Duties & Taxes":
-     - "GST Output CGST" (Output CGST)
-     - "GST Output SGST" (Output SGST)
-     - "GST Output IGST" (Output IGST)
-     - "GST Input CGST" (Input CGST)
-     - "GST Input SGST" (Input SGST)
-     - "GST Input IGST" (Input IGST)
-
+2. **View existing ledgers** in the **Ledger Register** table:
+   - **Cash Ledger**: "Cash" (Cash-in-hand group, ₹50,000 opening balance)
+   - **Bank Ledger**: "HDFC Bank - Current Account" (Bank Accounts group, ₹10,00,000 opening balance)
+   - **Sales Ledger**: "Sales" (Sales Accounts group)
+   - **Purchases Ledger**: "Purchases" (Purchase Accounts group)
+   - **Customer Ledgers**: 10 customer ledgers (auto-created from customers, in Sundry Debtors group)
+   - **Supplier Ledgers**: "Cloud Services Provider", "Office Supplies Vendor" (in Sundry Creditors group)
+   - **GST Ledgers**: 6 GST ledgers (in Duties & Taxes group)
+     - GST Output CGST, SGST, IGST
+     - GST Input CGST, SGST, IGST
+3. **Optional**: Create additional ledgers if needed using the **Create Ledger** form
 4. **Verify**:
-   - Success toast appears for each ledger
    - All ledgers appear in the **Ledger Register** table
    - Ledgers show correct groups, subtypes, and opening balances
+   - Customer ledgers are linked to their respective customers
 
 ---
 
@@ -251,18 +206,10 @@ Upon successful signup, the following is **automatically created**:
 1. Navigate to **Settings** (`/settings`)
 2. Go to the **Financial** tab
 3. Scroll down to the **Voucher Types & Numbering** section
-4. **View existing types**: You should see 8 voucher types created on signup:
+4. **View existing types**: You should see **all 13 voucher types** pre-created by seed script:
    - Payment, Receipt, Contra, Journal, Sales, Purchase, Debit Note, Credit Note
-5. **Create additional voucher types** (if needed):
-   - Click **Add Voucher Type** button
-   - Name: "Delivery Note" (required)
-   - Category: "DELIVERY_NOTE" (required)
-   - Abbreviation: "DN" (optional)
-   - Prefix: "DN/" (optional)
-   - Numbering Method: "Automatic" (default)
-   - Numbering Behaviour: "Renumber" (default)
-   - Click **Add Voucher Type**
-   - Repeat for: Receipt Note, Stock Journal, Memo, Reversing Journal
+   - Delivery Note, Receipt Note, Stock Journal, Memo, Reversing Journal
+5. **Optional**: Create additional voucher types if needed using **Add Voucher Type** button
 6. **Verify**: All voucher types appear as cards with their configurations
 
 ### Step 11: Configure Numbering Series
@@ -284,106 +231,54 @@ Upon successful signup, the following is **automatically created**:
 
 ## Phase 5: Inventory & Items Setup
 
-### Step 12: Create Warehouses
+### Step 12: View Warehouses
 
 1. Navigate to **Vouchers** → **Warehouses** (`/vouchers/warehouses`)
-2. **Note**: No warehouses exist initially - you need to create them
-3. **Create warehouses**:
-   - Click **Add Warehouse** or **Create Warehouse** button
-   - **Warehouse 1**:
-     - Name: "Main Warehouse"
-     - Alias: "WH-001" (optional)
-     - Address: "123 Main St, Bengaluru, Karnataka, 560001"
-     - Mark as Active
-     - Click **Create** or **Save**
-   - **Warehouse 2**:
-     - Name: "Secondary Warehouse"
-     - Alias: "WH-002"
-     - Address: "456 Secondary St, Mumbai, Maharashtra, 400001"
-     - Mark as Active
-     - Click **Create**
-   - **Warehouse 3**:
-     - Name: "Storage Unit"
-     - Alias: "WH-003"
-     - Address: "789 Storage Rd, Gurugram, Haryana, 122001"
-     - Mark as Active
-     - Click **Create**
-4. **Verify**: All warehouses appear in the warehouses list
+2. **Note**: 3 warehouses are pre-created by the seed script
+3. **View existing warehouses**:
+   - **Main Warehouse** (WH-001): Bengaluru address
+   - **Secondary Warehouse** (WH-002): Mumbai address
+   - **Storage Unit** (WH-003): Gurugram address
+4. **Optional**: Create additional warehouses if needed using **Add Warehouse** button
+5. **Verify**: All warehouses appear in the warehouses list
 
-### Step 13: Create Items
+### Step 13: View Items
 
 1. Navigate to **Vouchers** → **Items** (`/vouchers/items`)
-2. **Note**: No items exist initially - you need to create them
-3. **Create items**:
-   - Click **Add Item** or **Create Item** button
-   - **Item 1**:
-     - Item Name: "Premium SaaS License"
-     - Alias: "ITEM-001" (optional)
-     - HSN/SAC: "998314"
-     - Unit: "License"
-     - Default Sales Rate: `24999`
-     - Default Purchase Rate: `0` (if applicable)
-     - GST Rate: `18`
-     - Mark as Active
-     - Click **Create** or **Save**
-   - **Item 2**:
-     - Item Name: "API Credits - 10K"
-     - Alias: "ITEM-002"
-     - HSN/SAC: "998314"
-     - Unit: "Pack"
-     - Default Sales Rate: `5000`
-     - GST Rate: `18`
-     - Mark as Active
-     - Click **Create**
-   - **Item 3**:
-     - Item Name: "Cloud Server - Monthly"
-     - Alias: "ITEM-003"
-     - HSN/SAC: "998314"
-     - Unit: "Month"
-     - Default Sales Rate: `8000`
-     - Default Purchase Rate: `6000`
-     - GST Rate: `18`
-     - Mark as Active
-     - Click **Create**
-   - **Item 4**:
-     - Item Name: "Office Supplies"
-     - Alias: "ITEM-004"
-     - HSN/SAC: "48201000"
-     - Unit: "Unit"
-     - Default Sales Rate: `500`
-     - Default Purchase Rate: `300`
-     - GST Rate: `12`
-     - Mark as Active
-     - Click **Create**
-4. **Verify**: All items appear in the items list with their HSN/SAC, GST rates, and default rates
+2. **Note**: 5 items are pre-created by the seed script
+3. **View existing items**:
+   - **Premium SaaS License** (ITEM-001): HSN 998314, GST 18%, Sales Rate ₹24,999
+   - **API Credits - 10K** (ITEM-002): HSN 998314, GST 18%, Sales Rate ₹4,199
+   - **Consulting Hours - 5hr Pack** (ITEM-003): HSN 998314, GST 18%, Sales Rate ₹62,500
+   - **Cloud Server - Monthly** (ITEM-004): HSN 998314, GST 18%, Sales Rate ₹15,000, Purchase Rate ₹8,000
+   - **Office Supplies** (ITEM-005): HSN 48201000, GST 12%, Purchase Rate ₹5,000
+4. **Optional**: Create additional items if needed using **Add Item** button
+5. **Verify**: All items appear in the items list with their HSN/SAC, GST rates, and default rates
 
 ---
 
 ## Phase 6: GST/Statutory Configuration
 
-### Step 14: Create GST Registration
+### Step 14: View GST Registration
 
 1. Navigate to **GST** (`/gst`)
 2. **GST Registrations Tab** should be active by default
-3. **Note**: No GST registrations exist initially - you need to create them
-4. **Create GST registration**:
-   - Click **Add Registration** or **Create Registration** button
-   - GSTIN: "29AABCU9603R1ZX" (or your actual GSTIN)
-   - Registration Type: "Regular" (select from dropdown)
-   - State: "Karnataka" (select from dropdown)
-   - State Code: "29" (auto-filled or enter manually)
-   - Legal Name: "Test Company Private Limited" (or your company name)
-   - Trade Name: "Test Company" (or your trade name)
-   - Effective From: `2024-04-01` (or your preferred date)
-   - Click **Create** or **Save**
-5. **Verify**: GST registration appears in the registrations list
+3. **Note**: GST registration is pre-created by the seed script
+4. **View existing GST registration**:
+   - GSTIN: "29AABCU9603R1ZX"
+   - Registration Type: "Regular"
+   - State: "Karnataka", State Code: "29"
+   - Legal Name: "Coxist AI Private Limited"
+   - Trade Name: "Coxist AI"
+5. **Optional**: Create additional registrations if needed using **Add Registration** button
+6. **Verify**: GST registration appears in the registrations list
 
-### Step 15: Create GST Tax Rates
+### Step 15: View GST Tax Rates
 
 1. Stay in **GST** → **Tax Rates** tab (click on "Tax Rates" tab)
-2. **Note**: No GST tax rates exist initially - you must create them
-3. Click **Create Tax Rate** button
-4. **Create tax rates**:
+2. **Note**: GST tax rates are pre-created by the seed script
+3. **View existing tax rates** (if any were created)
+4. **Optional**: Create tax rates if needed:
 
    **GST 18% Rate**:
    - Registration: Select your GST registration (or leave as "Use default registration")
@@ -419,51 +314,19 @@ Upon successful signup, the following is **automatically created**:
 
 5. **Verify**: All tax rates appear in the Tax Rates table with correct percentages
 
-### Step 16: Create GST Ledger Mappings
+### Step 16: View GST Ledger Mappings
 
 1. Stay in **GST** → **Mappings** tab (click on "Mappings" tab)
-2. **Note**: No GST ledger mappings exist initially - you must create them
-3. Click **Create Ledger Mapping** button
-4. **Create mappings**:
+2. **Note**: 6 GST ledger mappings are pre-created by the seed script
+3. **View existing mappings**:
 
-   **Output CGST Ledger**:
-   - Registration: Select your GST registration (or leave as "Use default registration")
-   - Mapping Type: "Output CGST"
-   - Ledger Name: "GST Output CGST" (must match the ledger you created earlier)
-   - Ledger Code: "OUTPUT-CGST" (optional)
-   - Description: "CGST payable on outward supplies" (optional)
-   - Click **Create**
-
-   **Output SGST Ledger**:
-   - Mapping Type: "Output SGST/UTGST"
-   - Ledger Name: "GST Output SGST"
-   - Ledger Code: "OUTPUT-SGST" (optional)
-   - Click **Create**
-
-   **Output IGST Ledger**:
-   - Mapping Type: "Output IGST"
-   - Ledger Name: "GST Output IGST"
-   - Ledger Code: "OUTPUT-IGST" (optional)
-   - Click **Create**
-
-   **Input CGST Ledger**:
-   - Mapping Type: "Input CGST"
-   - Ledger Name: "GST Input CGST"
-   - Ledger Code: "INPUT-CGST" (optional)
-   - Click **Create**
-
-   **Input SGST Ledger**:
-   - Mapping Type: "Input SGST/UTGST"
-   - Ledger Name: "GST Input SGST"
-   - Ledger Code: "INPUT-SGST" (optional)
-   - Click **Create**
-
-   **Input IGST Ledger**:
-   - Mapping Type: "Input IGST"
-   - Ledger Name: "GST Input IGST"
-   - Ledger Code: "INPUT-IGST" (optional)
-   - Click **Create**
-
+   - **Output CGST**: Mapped to "GST Output CGST" ledger
+   - **Output SGST**: Mapped to "GST Output SGST" ledger
+   - **Output IGST**: Mapped to "GST Output IGST" ledger
+   - **Input CGST**: Mapped to "GST Input CGST" ledger
+   - **Input SGST**: Mapped to "GST Input SGST" ledger
+   - **Input IGST**: Mapped to "GST Input IGST" ledger
+4. **Optional**: Create additional mappings if needed using **Create Ledger Mapping** button
 5. **Verify**: All mappings appear in the Ledger Mappings table with correct mapping types and ledger names
 
 ---
@@ -498,11 +361,13 @@ Upon successful signup, the following is **automatically created**:
    - Date: Today's date
    - Voucher Number: (Auto-generated from series)
    - Narration: "Sale to Customer ABC"
-   - Customer Ledger: Select "ABC Corporation" (the customer ledger you created)
-   - Billing Name: "ABC Corporation"
-   - Billing Address: "Customer address"
-   - Customer GSTIN: (optional)
-   - Place of Supply State: "Karnataka" (or select based on customer location)
+   - **Customer**: Select from dropdown (10 pre-seeded customers available)
+     - When you select a customer, billing details auto-fill:
+       - Billing Name: Auto-filled from customer
+       - Billing Address: Auto-filled from customer address
+       - Customer GSTIN: Auto-filled if customer has GST
+       - Place of Supply State: Auto-filled from customer
+   - Customer Ledger: Auto-selected based on customer (ledger was auto-created)
 4. Add inventory lines:
    - Click "Add Item" or similar button
    - Item: Select "Premium SaaS License" (or another item you created)
@@ -1068,30 +933,40 @@ Upon successful signup, the following is **automatically created**:
 
 ## Quick Reference: What's Auto-Created vs. Manual
 
-### ✅ Automatically Created on Signup
+### ✅ Pre-Seeded by Seed Script
 
+- **2 Demo Accounts**: demo@coxistai.com and admin@coxistai.com
+- **10 Customers**: Pre-created with auto-generated ledgers in Sundry Debtors
 - Company Profile (basic details)
 - Fiscal Configuration (default dates, allowBackdatedEntries: true, enableEditLog: false)
 - Security Configuration (default settings)
 - Currency Configuration (INR, ₹, 2 decimals)
 - Feature Toggle (all features enabled)
-- **8 Default Voucher Types**: Payment, Receipt, Contra, Journal, Sales, Purchase, Debit Note, Credit Note (each with default numbering series)
-
-### ⚠️ Must Be Created Manually
-
+- **All 13 Voucher Types**: Payment, Receipt, Contra, Journal, Sales, Purchase, Debit Note, Credit Note, Delivery Note, Receipt Note, Stock Journal, Memo, Reversing Journal (each with default numbering series)
 - **Chart of Accounts**: All ledger groups
-- **Ledgers**: All ledgers (Cash, Bank, Sales, Purchases, Customers, Suppliers, GST ledgers)
-- **Warehouses**: All warehouses
-- **Items**: All inventory items with HSN/SAC and GST rates
-- **GST Registrations**: All GST registrations
-- **GST Tax Rates**: All tax rates for different HSN/SAC codes
+- **Essential Ledgers**: Cash, Bank, Sales, Purchases, Customer/Supplier ledgers, GST ledgers
+- **Warehouses**: 3 warehouses (Main, Secondary, Storage Unit)
+- **Items**: 5 items with HSN/SAC and GST rates
+- **GST Registrations**: 1 GST registration
 - **GST Ledger Mappings**: All 6 mappings (Output/Input CGST, SGST, IGST)
-- **Additional Voucher Types**: Delivery Note, Receipt Note, Stock Journal, Memo, Reversing Journal
+- **Transactions**: 90 days of transaction history
+- **Products & Sales**: 3 products with 20 sales records
+- **Cashflow Metrics**: 6 months of metrics
+- **AI Scenarios**: 2 scenarios
+- **Alerts**: 2 alerts
+- **Investor Updates**: 1 investor update
+
+### ⚠️ Optional - Can Be Created Manually
+
+- **Additional Ledgers**: Create more ledgers as needed
+- **Additional Warehouses**: Create more warehouses as needed
+- **Additional Items**: Create more items as needed
+- **GST Tax Rates**: Create tax rates for different HSN/SAC codes
 - **Cost Categories**: All cost categories
 - **Cost Centers**: All cost centers
 - **Interest Profiles**: All interest calculation profiles
 - **Party Interest Assignments**: Assign interest profiles to parties
-- **Vouchers**: All vouchers to test the posting engine
+- **Vouchers**: Create vouchers to test the posting engine
 - **Bills**: Created automatically from vouchers with bill references
 - **Budgets**: Create budgets for variance analysis
 

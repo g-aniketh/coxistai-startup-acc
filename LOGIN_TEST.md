@@ -1,25 +1,28 @@
 # 🔍 Quick Login Test Script
 
-## Test all login credentials to ensure they work for demo:
+## Test login credentials for demo:
 
-### Main Demo Account (Recommended):
+### Demo Account (Recommended):
 - **Email**: demo@coxistai.com
 - **Password**: password123
 - **Role**: Admin
-- **Features**: Full access to all features with transaction history
+- **Features**: Full access to all features with comprehensive seeded data
+  - ✅ 10 pre-created customers (with auto-created ledgers)
+  - ✅ Chart of Accounts and Ledgers
+  - ✅ Warehouses, Items, GST configuration
+  - ✅ Transactions, Sales, Cashflow Metrics
+  - ✅ AI Scenarios, Alerts, Investor Updates
 
-### Other Test Accounts:
+### Admin Account:
 - **Email**: admin@coxistai.com
 - **Password**: password123
 - **Role**: Admin
-
-- **Email**: cfo@coxistai.com  
-- **Password**: password123
-- **Role**: CFO
-
-- **Email**: accountant@coxistai.com
-- **Password**: password123
-- **Role**: Accountant
+- **Features**: Full access to all features with comprehensive seeded data
+  - ✅ 10 pre-created customers (with auto-created ledgers)
+  - ✅ Chart of Accounts and Ledgers
+  - ✅ Warehouses, Items, GST configuration
+  - ✅ Transactions, Sales, Cashflow Metrics
+  - ✅ AI Scenarios, Alerts, Investor Updates
 
 ## 🧪 Quick Feature Test Checklist:
 
@@ -47,4 +50,6 @@
 
 ## 🚀 Ready for Screen Recording!
 
-All systems are go for your demo recording. Use `demo@coxistai.com` for the best experience with full transaction history and all features enabled.
+All systems are go for your demo recording. Use `demo@coxistai.com` for the best experience.
+
+**Note**: Run the seed script first: `cd backend && npx ts-node prisma/seed-comprehensive.ts`

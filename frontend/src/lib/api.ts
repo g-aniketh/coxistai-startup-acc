@@ -345,6 +345,72 @@ export interface WarehouseMaster {
   updatedAt: string;
 }
 
+export interface Customer {
+  id: string;
+  startupId: string;
+  customerName: string;
+  customerType: "BUSINESS" | "INDIVIDUAL";
+  phone?: string | null;
+  email?: string | null;
+  billingAddressLine1?: string | null;
+  billingAddressLine2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  country?: string | null;
+  pincode?: string | null;
+  gstApplicable: boolean;
+  gstin?: string | null;
+  placeOfSupplyState?: string | null;
+  creditLimitAmount?: number | null;
+  creditPeriodDays?: number | null;
+  openingBalanceAmount?: number | null;
+  openingBalanceType?: "DEBIT" | "CREDIT" | null;
+  ledgerId?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  ledger?: Ledger | null;
+}
+
+export interface CreateCustomerInput {
+  customerName: string;
+  customerType: "BUSINESS" | "INDIVIDUAL";
+  phone?: string;
+  email?: string;
+  billingAddressLine1?: string;
+  billingAddressLine2?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  pincode?: string;
+  gstApplicable?: boolean;
+  gstin?: string;
+  placeOfSupplyState?: string;
+  creditLimitAmount?: number;
+  creditPeriodDays?: number;
+  openingBalanceAmount?: number;
+  openingBalanceType?: "DR" | "CR";
+}
+
+export interface UpdateCustomerInput {
+  customerName?: string;
+  customerType?: "BUSINESS" | "INDIVIDUAL";
+  phone?: string;
+  email?: string;
+  billingAddressLine1?: string;
+  billingAddressLine2?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  pincode?: string;
+  gstApplicable?: boolean;
+  gstin?: string;
+  placeOfSupplyState?: string;
+  creditLimitAmount?: number;
+  creditPeriodDays?: number;
+  isActive?: boolean;
+}
+
 export interface Voucher {
   id: string;
   startupId: string;
@@ -2698,6 +2764,37 @@ export const apiClient = {
       ApiResponse<{ itemId: string; itemName: string; quantity: number }[]>
     > => {
       const response = await api.get(`/warehouses/${warehouseId}/stock`);
+      return response.data;
+    },
+  },
+
+  customers: {
+    list: async (params?: {
+      isActive?: boolean;
+      searchTerm?: string;
+    }): Promise<ApiResponse<Customer[]>> => {
+      const response = await api.get("/customers", { params });
+      return response.data;
+    },
+    get: async (customerId: string): Promise<ApiResponse<Customer>> => {
+      const response = await api.get(`/customers/${customerId}`);
+      return response.data;
+    },
+    create: async (
+      data: CreateCustomerInput
+    ): Promise<ApiResponse<Customer>> => {
+      const response = await api.post("/customers", data);
+      return response.data;
+    },
+    update: async (
+      customerId: string,
+      data: UpdateCustomerInput
+    ): Promise<ApiResponse<Customer>> => {
+      const response = await api.put(`/customers/${customerId}`, data);
+      return response.data;
+    },
+    delete: async (customerId: string): Promise<ApiResponse<void>> => {
+      const response = await api.delete(`/customers/${customerId}`);
       return response.data;
     },
   },
