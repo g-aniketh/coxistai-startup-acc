@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useEffect, useCallback } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import AuthGuard from "@/components/auth/AuthGuard";
+import { apiClient, DashboardSummary } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,40 +84,6 @@ const subscriptionPlans = [
   },
 ];
 
-const connectedAccounts = [
-  {
-    name: "Stripe",
-    icon: CreditCard,
-    connected: true,
-    status: "Live",
-    lastSync: "2 minutes ago",
-    balance: "$12,450",
-  },
-  {
-    name: "QuickBooks",
-    icon: Landmark,
-    connected: true,
-    status: "Live",
-    lastSync: "1 hour ago",
-    balance: "N/A",
-  },
-  {
-    name: "Bank of America",
-    icon: Landmark,
-    connected: false,
-    status: "Disconnected",
-    lastSync: "Never",
-    balance: "N/A",
-  },
-  {
-    name: "Chase Bank",
-    icon: Landmark,
-    connected: true,
-    status: "Live",
-    lastSync: "5 minutes ago",
-    balance: "$125,000",
-  },
-];
 
 const recentTransactions = [
   {
@@ -145,6 +113,78 @@ const recentTransactions = [
 ];
 
 export default function PaymentPage() {
+  const [dashboardSummary, setDashboardSummary] = useState<DashboardSummary | null>(null);
+  const [connectedAccounts, setConnectedAccounts] = useState<Array<{
+    name: string;
+    icon: typeof Landmark;
+    connected: boolean;
+    status: string;
+    lastSync: string;
+    balance: string;
+  }>>([]);
+
+  // Mock bank accounts - balances sum to totalBalance
+  const getMockBankAccounts = useCallback((summary: DashboardSummary | null) => {
+    if (!summary) return [];
+    const totalBalance = summary.financial.totalBalance;
+    
+    // Distribute balance across 3 accounts: 50%, 30%, 20%
+    const account1Balance = Math.round(totalBalance * 0.5);
+    const account2Balance = Math.round(totalBalance * 0.3);
+    const account3Balance = totalBalance - account1Balance - account2Balance; // Remaining to ensure exact sum
+    
+    const formatCurrency = (amount: number) => {
+      return new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        minimumFractionDigits: 2,
+      }).format(amount);
+    };
+    
+    return [
+      {
+        name: "HDFC Bank",
+        icon: Landmark,
+        connected: true,
+        status: "Live",
+        lastSync: "2 minutes ago",
+        balance: formatCurrency(account1Balance),
+      },
+      {
+        name: "ICICI Bank",
+        icon: Landmark,
+        connected: true,
+        status: "Live",
+        lastSync: "5 minutes ago",
+        balance: formatCurrency(account2Balance),
+      },
+      {
+        name: "Axis Bank",
+        icon: Landmark,
+        connected: true,
+        status: "Live",
+        lastSync: "1 minute ago",
+        balance: formatCurrency(account3Balance),
+      },
+    ];
+  }, []);
+
+  const loadDashboardSummary = useCallback(async () => {
+    try {
+      const response = await apiClient.dashboard.summary();
+      if (response.success && response.data) {
+        setDashboardSummary(response.data);
+        setConnectedAccounts(getMockBankAccounts(response.data));
+      }
+    } catch (error) {
+      console.error("Failed to load dashboard summary:", error);
+    }
+  }, [getMockBankAccounts]);
+
+  useEffect(() => {
+    loadDashboardSummary();
+  }, [loadDashboardSummary]);
+
   const handleUpgrade = (planName: string) => {
     toast.success(`Upgrading to ${planName} plan...`);
   };

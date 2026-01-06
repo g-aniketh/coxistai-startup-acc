@@ -43,7 +43,7 @@ import {
   CreateCustomerInput,
   UpdateCustomerInput,
 } from "@/lib/api";
-import { Plus, Search, Edit, Trash2, Loader2, User, Building2 } from "lucide-react";
+import { Plus, Edit, Trash2, Loader2, User, Building2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { cn } from "@/lib/utils";
 
@@ -74,7 +74,6 @@ const INITIAL_FORM_DATA: CustomerFormData = {
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(
     null
@@ -88,7 +87,6 @@ export default function CustomersPage() {
       setLoading(true);
       const response = await apiClient.customers.list({
         isActive: true,
-        searchTerm: searchTerm || undefined,
       });
       if (response.success && response.data) {
         setCustomers(response.data);
@@ -103,7 +101,7 @@ export default function CustomersPage() {
 
   useEffect(() => {
     loadCustomers();
-  }, [searchTerm]);
+  }, []);
 
   const resetForm = () => {
     setFormData(INITIAL_FORM_DATA);
@@ -274,11 +272,14 @@ export default function CustomersPage() {
   return (
     <AuthGuard>
       <MainLayout>
-        <div className="space-y-6 pb-32">
-          <div className="flex justify-between items-center">
+        <div className="p-4 md:p-8 space-y-6 pb-32">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold">Customers</h1>
-              <p className="text-muted-foreground mt-1">
+              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">
+                Customers
+              </h1>
+              <p className="text-sm text-[#2C2C2C]/70 mt-1">
                 Manage your customer database
               </p>
             </div>
@@ -291,128 +292,158 @@ export default function CustomersPage() {
             </Button>
           </div>
 
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>All Customers</CardTitle>
-                  <CardDescription>
-                    View and manage all your customers
-                  </CardDescription>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search customers..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-8 w-64"
-                    />
-                  </div>
-                </div>
+          {/* Customers Table Card */}
+          <Card className="rounded-2xl border border-gray-200 shadow-lg bg-white">
+            <CardHeader className="px-6 pt-6 pb-4">
+              <div>
+                <CardTitle className="text-lg font-semibold text-[#2C2C2C]">
+                  All Customers
+                </CardTitle>
+                <CardDescription className="text-sm text-[#2C2C2C]/60 mt-1">
+                  View and manage all your customers
+                </CardDescription>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-6 pb-6">
               {loading ? (
-                <div className="flex justify-center items-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <div className="flex justify-center items-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-[#607c47]" />
                 </div>
               ) : customers.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No customers found. Click "Add Customer" to create your first
-                  customer.
+                <div className="text-center py-12 text-[#2C2C2C]/60">
+                  <p className="text-sm">
+                    No customers found. Click "Add Customer" to create your first
+                    customer.
+                  </p>
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>GSTIN</TableHead>
-                      <TableHead>Credit Limit</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {customers.map((customer) => (
-                      <TableRow key={customer.id}>
-                        <TableCell className="font-medium">
-                          {customer.customerName}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "flex items-center gap-1 w-fit",
-                              customer.customerType === "BUSINESS"
-                                ? "bg-blue-50 text-blue-700 border-blue-200"
-                                : "bg-purple-50 text-purple-700 border-purple-200"
-                            )}
-                          >
-                            {customer.customerType === "BUSINESS" ? (
-                              <Building2 className="h-3 w-3" />
-                            ) : (
-                              <User className="h-3 w-3" />
-                            )}
-                            {customer.customerType}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm">
-                            {customer.phone && (
-                              <div>{customer.phone}</div>
-                            )}
-                            {customer.email && (
-                              <div className="text-muted-foreground">
-                                {customer.email}
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {customer.gstin ? (
-                            <Badge variant="outline">{customer.gstin}</Badge>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {customer.creditLimitAmount
-                            ? `₹${Number(customer.creditLimitAmount).toLocaleString()}`
-                            : "—"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={customer.isActive ? "default" : "secondary"}
-                          >
-                            {customer.isActive ? "Active" : "Inactive"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleOpenForm(customer)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(customer)}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                <div className="overflow-x-auto border border-gray-100 rounded-xl">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50/50">
+                        <TableHead className="px-4 py-3 text-sm font-semibold text-[#2C2C2C]">
+                          Name
+                        </TableHead>
+                        <TableHead className="px-4 py-3 text-sm font-semibold text-[#2C2C2C]">
+                          Type
+                        </TableHead>
+                        <TableHead className="px-4 py-3 text-sm font-semibold text-[#2C2C2C]">
+                          Contact
+                        </TableHead>
+                        <TableHead className="px-4 py-3 text-sm font-semibold text-[#2C2C2C]">
+                          GSTIN
+                        </TableHead>
+                        <TableHead className="px-4 py-3 text-sm font-semibold text-[#2C2C2C]">
+                          Credit Limit
+                        </TableHead>
+                        <TableHead className="px-4 py-3 text-sm font-semibold text-[#2C2C2C]">
+                          Status
+                        </TableHead>
+                        <TableHead className="px-4 py-3 text-sm font-semibold text-[#2C2C2C] text-right">
+                          Actions
+                        </TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {customers.map((customer) => (
+                        <TableRow
+                          key={customer.id}
+                          className="hover:bg-gray-50/50 transition-colors"
+                        >
+                          <TableCell className="px-4 py-3">
+                            <div className="font-medium text-[#2C2C2C]">
+                              {customer.customerName}
+                            </div>
+                          </TableCell>
+                          <TableCell className="px-4 py-3">
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "flex items-center gap-1.5 w-fit px-2.5 py-1",
+                                customer.customerType === "BUSINESS"
+                                  ? "bg-blue-50 text-blue-700 border-blue-200"
+                                  : "bg-purple-50 text-purple-700 border-purple-200"
+                              )}
+                            >
+                              {customer.customerType === "BUSINESS" ? (
+                                <Building2 className="h-3.5 w-3.5" />
+                              ) : (
+                                <User className="h-3.5 w-3.5" />
+                              )}
+                              <span className="text-xs font-medium">
+                                {customer.customerType}
+                              </span>
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="px-4 py-3">
+                            <div className="text-sm space-y-0.5">
+                              {customer.phone && (
+                                <div className="text-[#2C2C2C] font-medium">
+                                  {customer.phone}
+                                </div>
+                              )}
+                              {customer.email && (
+                                <div className="text-[#2C2C2C]/60 text-xs">
+                                  {customer.email}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="px-4 py-3">
+                            {customer.gstin ? (
+                              <span className="text-sm font-mono text-[#2C2C2C] font-medium">
+                                {customer.gstin}
+                              </span>
+                            ) : (
+                              <span className="text-sm text-[#2C2C2C]/40">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="px-4 py-3">
+                            {customer.creditLimitAmount ? (
+                              <span className="text-sm font-semibold text-[#2C2C2C]">
+                                ₹{Number(customer.creditLimitAmount).toLocaleString()}
+                              </span>
+                            ) : (
+                              <span className="text-sm text-[#2C2C2C]/40">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="px-4 py-3">
+                            <Badge
+                              className={
+                                customer.isActive
+                                  ? "bg-green-100 text-green-700 border-green-200"
+                                  : "bg-gray-100 text-gray-700 border-gray-200"
+                              }
+                              variant="outline"
+                            >
+                              {customer.isActive ? "Active" : "Inactive"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="px-4 py-3 text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleOpenForm(customer)}
+                                className="h-8 w-8 p-0 hover:bg-gray-100"
+                              >
+                                <Edit className="h-4 w-4 text-[#2C2C2C]" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(customer)}
+                                className="h-8 w-8 p-0 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4 text-red-600" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </CardContent>
           </Card>

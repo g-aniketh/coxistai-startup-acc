@@ -21,6 +21,7 @@ import {
   VoucherCategory,
   VoucherNumberingMethod,
   VoucherNumberingBehavior,
+  DashboardSummary,
 } from "@/lib/api";
 import MainLayout from "@/components/layout/MainLayout";
 import AuthGuard from "@/components/auth/AuthGuard";
@@ -41,15 +42,14 @@ import {
   Shield,
   Trash2,
   Settings,
-  Link,
   Plus,
   Building2,
   Loader2,
   IndianRupee,
   Check,
+  CreditCard,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import PlaidLink from "@/components/ui/PlaidLink";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 
@@ -408,7 +408,6 @@ const mapFeatureToggleToForm = (
 export default function SettingsPage() {
   const { user, setUser } = useAuthStore();
   const [activeTab, setActiveTab] = useState<SettingsTabId>("general");
-  const [plaidItems, setPlaidItems] = useState<any[]>([]);
   const [profileForm, setProfileForm] = useState<
     (CompanyProfileInput & { addresses: AddressForm[] }) | null
   >(null);
@@ -453,22 +452,57 @@ export default function SettingsPage() {
   const [seriesDrafts, setSeriesDrafts] = useState<
     Record<string, { name: string; prefix: string; suffix: string }>
   >({});
+  const [dashboardSummary, setDashboardSummary] = useState<DashboardSummary | null>(null);
 
   const hasAddresses = useMemo(
     () => (profileForm?.addresses?.length ?? 0) > 0,
     [profileForm]
   );
 
+  // Mock bank accounts - balances sum to totalBalance
+  const getMockBankAccounts = () => {
+    if (!dashboardSummary) return [];
+    const totalBalance = dashboardSummary.financial.totalBalance;
+    
+    // Distribute balance across 3 accounts: 50%, 30%, 20%
+    return [
+      {
+        name: "HDFC Bank - Current Account",
+        accountNumber: "XXX-XXXX-5678",
+        balance: Math.round(totalBalance * 0.5),
+      },
+      {
+        name: "ICICI Bank - Savings Account",
+        accountNumber: "XXX-XXXX-9012",
+        balance: Math.round(totalBalance * 0.3),
+      },
+      {
+        name: "Axis Bank - Current Account",
+        accountNumber: "XXX-XXXX-3456",
+        balance: totalBalance - Math.round(totalBalance * 0.5) - Math.round(totalBalance * 0.3), // Remaining to ensure exact sum
+      },
+    ];
+  };
+
+  const currencyFormatter = new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+  });
+
   useEffect(() => {
-    fetchPlaidItems();
     loadCompanyData();
+    loadDashboardSummary();
   }, []);
 
-  const fetchPlaidItems = async () => {
-    setPlaidItems([
-      { id: "1", institutionName: "Bank of America", accounts: { length: 2 } },
-      { id: "2", institutionName: "Chase", accounts: { length: 1 } },
-    ]);
+  const loadDashboardSummary = async () => {
+    try {
+      const response = await apiClient.dashboard.summary();
+      if (response.success && response.data) {
+        setDashboardSummary(response.data);
+      }
+    } catch (error) {
+      console.error("Failed to load dashboard summary:", error);
+    }
   };
 
   const loadCompanyData = async () => {
@@ -790,15 +824,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handlePlaidSuccess = () => {
-    toast.success("Account connected! Refreshing...");
-    setTimeout(fetchPlaidItems, 1000);
-  };
-
-  const handleDisconnectBank = async (plaidItemId: string) => {
-    toast.success("Bank account disconnected.");
-    setPlaidItems(plaidItems.filter((item) => item.id !== plaidItemId));
-  };
 
   const handleProfileFieldChange = (
     field: keyof CompanyProfileInput,
@@ -1315,55 +1340,83 @@ export default function SettingsPage() {
       ),
     },
     {
-      icon: <Link className="h-5 w-5 text-[#607c47]" />,
-      title: "Connections",
+      icon: <CreditCard className="h-5 w-5 text-[#607c47]" />,
+      title: "Bank Accounts",
       content: (
         <div className="space-y-4">
-          {plaidItems.length > 0 ? (
-            plaidItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-[#607c47]/30 hover:shadow-md transition-all duration-200"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-[#2C2C2C] text-base truncate">
-                    {item.institutionName || "Bank Account"}
-                  </p>
-                  <p className="text-sm text-[#2C2C2C]/60 mt-0.5">
-                    {item.accounts?.length || 0}{" "}
-                    {item.accounts?.length === 1 ? "account" : "accounts"}
-                  </p>
-                </div>
-                <Button
-                  onClick={() => handleDisconnectBank(item.id)}
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs text-red-500 hover:text-red-600 hover:bg-red-50 ml-3 flex-shrink-0"
+          {getMockBankAccounts().length > 0 ? (
+            getMockBankAccounts().map((account, index) => {
+              // Different color schemes for each bank
+              const bankColors = [
+                {
+                  gradient: "from-blue-50 to-blue-100/50",
+                  iconBg: "bg-blue-500/10",
+                  iconColor: "text-blue-600",
+                  border: "border-blue-200/50",
+                  bankName: "HDFC Bank",
+                },
+                {
+                  gradient: "from-purple-50 to-purple-100/50",
+                  iconBg: "bg-purple-500/10",
+                  iconColor: "text-purple-600",
+                  border: "border-purple-200/50",
+                  bankName: "ICICI Bank",
+                },
+                {
+                  gradient: "from-emerald-50 to-emerald-100/50",
+                  iconBg: "bg-emerald-500/10",
+                  iconColor: "text-emerald-600",
+                  border: "border-emerald-200/50",
+                  bankName: "Axis Bank",
+                },
+              ];
+              const colors = bankColors[index] || bankColors[0]; // Fallback to first color if index out of bounds
+
+              return (
+                <div
+                  key={index}
+                  className={`relative p-5 bg-gradient-to-br ${colors.gradient} border ${colors.border} rounded-2xl hover:shadow-lg transition-all duration-300 group overflow-hidden`}
                 >
-                  <Trash2 className="h-4 w-4 mr-1.5" /> Disconnect
-                </Button>
-              </div>
-            ))
+                  <div className="flex items-start gap-4">
+                    <div
+                      className={`p-3 ${colors.iconBg} rounded-xl group-hover:scale-110 transition-transform duration-300 flex-shrink-0`}
+                    >
+                      <CreditCard className={`h-6 w-6 ${colors.iconColor}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-semibold text-[#2C2C2C] mb-1">
+                        {colors.bankName}
+                      </h3>
+                      <p className="text-xs font-mono text-[#2C2C2C]/70 mb-1">
+                        {account.accountNumber}
+                      </p>
+                      <p className="text-xs text-[#2C2C2C]/60 mb-3">
+                        {account.name.includes("Current")
+                          ? "Current Account"
+                          : "Savings Account"}
+                      </p>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-[#2C2C2C]/60 uppercase tracking-wide">
+                          Available Balance
+                        </p>
+                        <p className="text-2xl font-bold text-[#2C2C2C] leading-tight">
+                          {currencyFormatter.format(account.balance)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Subtle bottom accent */}
+                  <div
+                    className={`absolute bottom-0 left-0 right-0 h-1 ${colors.iconBg} opacity-50`}
+                  />
+                </div>
+              );
+            })
           ) : (
             <div className="text-center py-8 text-[#2C2C2C]/50">
-              <p className="text-sm">No bank accounts connected</p>
+              <p className="text-sm">No bank accounts available</p>
             </div>
           )}
-          <div className="pt-2">
-            <PlaidLink
-              onSuccess={handlePlaidSuccess}
-              onError={(e: Error | unknown) => {
-                const errorMessage =
-                  e &&
-                  typeof e === "object" &&
-                  "display_message" in e &&
-                  typeof e.display_message === "string"
-                    ? e.display_message
-                    : "An error occurred.";
-                toast.error(errorMessage);
-              }}
-            />
-          </div>
         </div>
       ),
     },

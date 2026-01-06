@@ -22,7 +22,6 @@ import {
   Brain,
   Calendar,
   DollarSign,
-  Search,
   Target,
   TrendingDown,
   TrendingUp,
@@ -31,6 +30,7 @@ import {
   Settings,
   X,
   Info,
+  CreditCard,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -49,6 +49,31 @@ export default function DashboardPage() {
     null
   );
   const [showSetupBanner, setShowSetupBanner] = useState(false);
+
+  // Mock bank accounts - balances sum to totalBalance
+  const getMockBankAccounts = () => {
+    if (!summary) return [];
+    const totalBalance = summary.financial.totalBalance;
+    
+    // Distribute balance across 3 accounts: 50%, 30%, 20%
+    return [
+      {
+        name: "HDFC Bank - Current Account",
+        accountNumber: "XXX-XXXX-5678",
+        balance: Math.round(totalBalance * 0.5),
+      },
+      {
+        name: "ICICI Bank - Savings Account",
+        accountNumber: "XXX-XXXX-9012",
+        balance: Math.round(totalBalance * 0.3),
+      },
+      {
+        name: "Axis Bank - Current Account",
+        accountNumber: "XXX-XXXX-3456",
+        balance: totalBalance - Math.round(totalBalance * 0.5) - Math.round(totalBalance * 0.3), // Remaining to ensure exact sum
+      },
+    ];
+  };
 
   const loadDashboardData = async () => {
     try {
@@ -136,13 +161,6 @@ export default function DashboardPage() {
                   <p className="text-sm text-[#2C2C2C]/70">
                     Real-time Financial Health & Cashflow Insights
                   </p>
-                </div>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Search transactions, insights..."
-                    className="pl-10 bg-white rounded-lg"
-                  />
                 </div>
               </div>
 
@@ -238,125 +256,126 @@ export default function DashboardPage() {
                     router.push("/financial-dashboard?tab=statistics")
                   }
                 />
-                {/* Temporarily hidden */}
-                {/* <StatCard
-                  title="Runway"
-                  value={
-                    summary?.financial.runwayMonths
-                      ? `${summary.financial.runwayMonths.toFixed(1)} months`
-                      : "N/A"
-                  }
-                  icon={<Calendar className="h-5 w-5" />}
-                  cardClassName="bg-[#B7B3E6] text-[#2C2C2C]"
-                  onClick={() =>
-                    router.push("/financial-dashboard?tab=statistics")
-                  }
-                /> */}
-                {/* Temporarily hidden */}
-                {/* <StatCard
+                <StatCard
                   title="Burn Rate"
                   value={
                     summary
                       ? currencyFormatter.format(summary.financial.monthlyBurn)
                       : "₹0"
                   }
-                  percentageChange={-8}
+                  percentageChange={
+                    summary && summary.financial.monthlyRevenue > 0
+                      ? Math.round(
+                          (summary.financial.monthlyBurn /
+                            summary.financial.monthlyRevenue) *
+                            100
+                        )
+                      : undefined
+                  }
                   icon={<TrendingDown className="h-5 w-5" />}
                   cardClassName="bg-[#FFB3BA] text-[#8B0000]"
                   onClick={() =>
                     router.push("/financial-dashboard?tab=statistics")
                   }
-                /> */}
+                />
+                <StatCard
+                  title="ARR Forecast"
+                  value={
+                    summary
+                      ? currencyFormatter.format(
+                          summary.financial.monthlyRevenue * 12
+                        )
+                      : "₹0"
+                  }
+                  percentageChange={12}
+                  icon={<Target className="h-5 w-5" />}
+                  cardClassName="bg-[#B7B3E6] text-[#2C2C2C]"
+                  onClick={() =>
+                    router.push("/financial-dashboard?tab=statistics")
+                  }
+                />
               </div>
 
-              {/* AI CFO Insights Row */}
+              {/* Bank Accounts Row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-purple-50 to-indigo-50">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="p-2 bg-purple-100 rounded-lg">
-                        <Target className="h-4 w-4 text-purple-600" />
-                      </div>
-                      <CardTitle className="text-sm font-medium text-purple-900">
-                        ARR Forecast
-                      </CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-2xl font-bold text-purple-900 mb-2">
-                      {summary
-                        ? currencyFormatter.format(
-                            summary.financial.monthlyRevenue * 12
-                          )
-                        : "$0"}
-                    </div>
-                    <div className="text-xs text-purple-700">
-                      Based on current MRR
-                    </div>
-                    <div className="mt-3 text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded-full inline-block">
-                      AI Prediction: 95% confidence
-                    </div>
-                  </CardContent>
-                </Card>
+                {getMockBankAccounts().map((account, index) => {
+                  // Different color schemes for each bank
+                  const bankColors = [
+                    {
+                      gradient: "from-blue-50 to-blue-100/50",
+                      iconBg: "bg-blue-500/10",
+                      iconColor: "text-blue-600",
+                      border: "border-blue-200/50",
+                      bankName: "HDFC Bank",
+                    },
+                    {
+                      gradient: "from-purple-50 to-purple-100/50",
+                      iconBg: "bg-purple-500/10",
+                      iconColor: "text-purple-600",
+                      border: "border-purple-200/50",
+                      bankName: "ICICI Bank",
+                    },
+                    {
+                      gradient: "from-emerald-50 to-emerald-100/50",
+                      iconBg: "bg-emerald-500/10",
+                      iconColor: "text-emerald-600",
+                      border: "border-emerald-200/50",
+                      bankName: "Axis Bank",
+                    },
+                  ];
+                  const colors = bankColors[index] || bankColors[0]; // Fallback to first color if index out of bounds
 
-                {/* Temporarily hidden */}
-                {/* <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="p-2 bg-green-100 rounded-lg">
-                        <Zap className="h-4 w-4 text-green-600" />
+                  return (
+                    <Card
+                      key={index}
+                      className={`rounded-2xl border ${colors.border} bg-gradient-to-br ${colors.gradient} shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden`}
+                      onClick={() => router.push("/banking-payments")}
+                    >
+                      <div className="relative">
+                        <CardHeader className="pb-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-start gap-4 flex-1">
+                              <div
+                                className={`p-3 ${colors.iconBg} rounded-xl group-hover:scale-110 transition-transform duration-300`}
+                              >
+                                <CreditCard
+                                  className={`h-6 w-6 ${colors.iconColor}`}
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-base font-semibold text-[#2C2C2C] mb-1">
+                                  {colors.bankName}
+                                </h3>
+                                <p className="text-xs font-mono text-[#2C2C2C]/70">
+                                  {account.accountNumber}
+                                </p>
+                                <p className="text-xs text-[#2C2C2C]/60 mt-1">
+                                  {account.name.includes("Current")
+                                    ? "Current Account"
+                                    : "Savings Account"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="pt-0 pb-6">
+                          <div className="space-y-1">
+                            <p className="text-xs font-medium text-[#2C2C2C]/60 uppercase tracking-wide">
+                              Available Balance
+                            </p>
+                            <div className="text-3xl font-bold text-[#2C2C2C] leading-tight">
+                              {currencyFormatter.format(account.balance)}
+                            </div>
+                          </div>
+                        </CardContent>
+                        {/* Subtle bottom accent */}
+                        <div
+                          className={`absolute bottom-0 left-0 right-0 h-1 ${colors.iconBg} opacity-50`}
+                        />
                       </div>
-                      <CardTitle className="text-sm font-medium text-green-900">
-                        Fundraising Need
-                      </CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-2xl font-bold text-green-900 mb-2">
-                      {summary
-                        ? currencyFormatter.format(
-                            summary.financial.monthlyBurn * 18
-                          )
-                        : "$0"}
-                    </div>
-                    <div className="text-xs text-green-700">
-                      Series A timing: Q2 2024
-                    </div>
-                    <div className="mt-3 text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full inline-block">
-                      Optimal runway: 18 months
-                    </div>
-                  </CardContent>
-                </Card> */}
-
-                {/* Temporarily hidden - AI Alert with Runway Status */}
-                {/* <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-orange-50 to-red-50">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="p-2 bg-orange-100 rounded-lg">
-                        <AlertTriangle className="h-4 w-4 text-orange-600" />
-                      </div>
-                      <CardTitle className="text-sm font-medium text-orange-900">
-                        AI Alert
-                      </CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-sm font-semibold text-orange-900 mb-2">
-                      Runway Status
-                    </div>
-                    <div className="text-xs text-orange-700">
-                      {summary?.financial.runwayMonths
-                        ? `${summary.financial.runwayMonths.toFixed(1)} months remaining`
-                        : "Infinite runway"}
-                    </div>
-                    <div className="mt-3 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded-full inline-block">
-                      {summary?.financial.runwayMonths &&
-                      summary.financial.runwayMonths < 6
-                        ? "Consider fundraising soon"
-                        : "Healthy runway"}
-                    </div>
-                  </CardContent>
-                </Card> */}
+                    </Card>
+                  );
+                })}
               </div>
 
               {/* Cashflow Chart */}

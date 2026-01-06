@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import { apiClient, BankAccount } from "@/lib/api";
+import { apiClient, BankAccount, DashboardSummary } from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
 import MainLayout from "@/components/layout/MainLayout";
 import AuthGuard from "@/components/auth/AuthGuard";
@@ -164,6 +164,24 @@ function FinancialDashboardContent() {
   const [transactions, setTransactions] = useState<DemoTransaction[]>([]);
   const [accounts, setAccounts] = useState<DemoAccount[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dashboardSummary, setDashboardSummary] = useState<DashboardSummary | null>(null);
+
+  // Mock bank accounts - balances sum to totalBalance
+  const getMockBankAccounts = useCallback((summary: DashboardSummary | null): DemoAccount[] => {
+    if (!summary) return [];
+    const totalBalance = summary.financial.totalBalance;
+    
+    // Distribute balance across 3 accounts: 50%, 30%, 20%
+    const account1Balance = Math.round(totalBalance * 0.5);
+    const account2Balance = Math.round(totalBalance * 0.3);
+    const account3Balance = totalBalance - account1Balance - account2Balance; // Remaining to ensure exact sum
+    
+    return [
+      { id: "1", name: "HDFC Bank - Current Account", balance: account1Balance },
+      { id: "2", name: "ICICI Bank - Savings Account", balance: account2Balance },
+      { id: "3", name: "Axis Bank - Current Account", balance: account3Balance },
+    ];
+  }, []);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccount, setSelectedAccount] = useState<string>("all");
   const [sortConfig, setSortConfig] = useState<SortConfig>({
@@ -273,14 +291,8 @@ function FinancialDashboardContent() {
         },
       ];
 
-      const mockAccounts = [
-        { id: "1", name: "Business Checking", balance: 287500 },
-        { id: "2", name: "Business Savings", balance: 125000 },
-        { id: "3", name: "Credit Card", balance: -8500 },
-      ];
-
       setTransactions(mockTransactions);
-      setAccounts(mockAccounts);
+      // Accounts will be set after dashboard summary is loaded
     } catch (error) {
       console.error("Failed to load transactions:", error);
       toast.error("Failed to load transactions");
@@ -289,25 +301,22 @@ function FinancialDashboardContent() {
     }
   }, []);
 
-  const loadAccounts = useCallback(async () => {
+  const loadDashboardSummary = useCallback(async () => {
     try {
-      // Mock accounts data
-      const mockAccounts = [
-        { id: "1", name: "Business Checking", balance: 287500 },
-        { id: "2", name: "Business Savings", balance: 125000 },
-        { id: "3", name: "Credit Card", balance: -8500 },
-      ];
-      setAccounts(mockAccounts);
+      const response = await apiClient.dashboard.summary();
+      if (response.success && response.data) {
+        setDashboardSummary(response.data);
+        setAccounts(getMockBankAccounts(response.data));
+      }
     } catch (error) {
-      console.error("Failed to load accounts:", error);
-      toast.error("Failed to load accounts");
+      console.error("Failed to load dashboard summary:", error);
     }
-  }, []);
+  }, [getMockBankAccounts]);
 
   useEffect(() => {
     loadTransactions();
-    loadAccounts();
-  }, [loadTransactions, loadAccounts]);
+    loadDashboardSummary();
+  }, [loadTransactions, loadDashboardSummary]);
 
   // Initialize tab from query param if provided
   useEffect(() => {

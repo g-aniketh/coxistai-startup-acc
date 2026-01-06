@@ -34,7 +34,6 @@ import {
   TrendingUp,
   TrendingDown,
   Activity,
-  Shield,
   Zap,
   FileText,
   Calendar,
@@ -60,7 +59,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import toast from "react-hot-toast";
-import { apiClient, BankAccount as ApiBankAccount } from "@/lib/api";
+import { apiClient, BankAccount as ApiBankAccount, DashboardSummary } from "@/lib/api";
 import CreateAccountModal from "@/components/dashboard/CreateAccountModal";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -130,6 +129,7 @@ export default function BankingPaymentsHubPage() {
     null
   );
   const [accountModalOpen, setAccountModalOpen] = useState(false);
+  const [dashboardSummary, setDashboardSummary] = useState<DashboardSummary | null>(null);
 
   // Invoicing state
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -151,6 +151,56 @@ export default function BankingPaymentsHubPage() {
     balanceDue: 0,
     reminders: 0,
   });
+
+  // Mock bank accounts - balances sum to totalBalance
+  const getMockBankAccounts = useCallback(() => {
+    if (!dashboardSummary) return [];
+    const totalBalance = dashboardSummary.financial.totalBalance;
+    
+    // Distribute balance across 3 accounts: 50%, 30%, 20%
+    const account1Balance = Math.round(totalBalance * 0.5);
+    const account2Balance = Math.round(totalBalance * 0.3);
+    const account3Balance = totalBalance - account1Balance - account2Balance; // Remaining to ensure exact sum
+    
+    return [
+      {
+        id: "1",
+        name: "HDFC Bank - Current Account",
+        bankName: "HDFC Bank",
+        accountNumber: "XXX-XXXX-5678",
+        accountType: "checking" as const,
+        balance: account1Balance,
+        lastSync: new Date().toISOString(),
+        status: "connected" as const,
+        transactionsCount: 45,
+        pendingTransactions: 2,
+      },
+      {
+        id: "2",
+        name: "ICICI Bank - Savings Account",
+        bankName: "ICICI Bank",
+        accountNumber: "XXX-XXXX-9012",
+        accountType: "savings" as const,
+        balance: account2Balance,
+        lastSync: new Date().toISOString(),
+        status: "connected" as const,
+        transactionsCount: 12,
+        pendingTransactions: 0,
+      },
+      {
+        id: "3",
+        name: "Axis Bank - Current Account",
+        bankName: "Axis Bank",
+        accountNumber: "XXX-XXXX-3456",
+        accountType: "checking" as const,
+        balance: account3Balance,
+        lastSync: new Date().toISOString(),
+        status: "connected" as const,
+        transactionsCount: 23,
+        pendingTransactions: 1,
+      },
+    ];
+  }, [dashboardSummary]);
 
   // Initialize mock data
   const fetchMockBankAccounts = useCallback(async () => {
@@ -174,81 +224,53 @@ export default function BankingPaymentsHubPage() {
     }
   }, []);
 
+  const loadDashboardSummary = useCallback(async () => {
+    try {
+      const response = await apiClient.dashboard.summary();
+      if (response.success && response.data) {
+        setDashboardSummary(response.data);
+      }
+    } catch (error) {
+      console.error("Failed to load dashboard summary:", error);
+    }
+  }, []);
+
   useEffect(() => {
     fetchMockBankAccounts();
-  }, [fetchMockBankAccounts]);
+    loadDashboardSummary();
+  }, [fetchMockBankAccounts, loadDashboardSummary]);
 
   useEffect(() => {
-    // Banking mock data
-    setBankAccounts([
-      {
-        id: "1",
-        name: "Business Checking",
-        bankName: "Chase Bank",
-        accountNumber: "****1234",
-        accountType: "checking",
-        balance: 287500,
-        lastSync: "2024-01-20T10:30:00Z",
-        status: "connected",
-        transactionsCount: 45,
-        pendingTransactions: 2,
-      },
-      {
-        id: "2",
-        name: "Business Savings",
-        bankName: "Wells Fargo",
-        accountNumber: "****5678",
-        accountType: "savings",
-        balance: 125000,
-        lastSync: "2024-01-20T09:15:00Z",
-        status: "connected",
-        transactionsCount: 12,
-        pendingTransactions: 0,
-      },
-      {
-        id: "3",
-        name: "Business Credit Card",
-        bankName: "American Express",
-        accountNumber: "****9012",
-        accountType: "credit",
-        balance: -8500,
-        lastSync: "2024-01-19T16:45:00Z",
-        status: "syncing",
-        transactionsCount: 23,
-        pendingTransactions: 5,
-      },
-    ]);
+    // Update bank accounts when dashboard summary is loaded
+    if (dashboardSummary) {
+      setBankAccounts(getMockBankAccounts());
+    }
+  }, [dashboardSummary, getMockBankAccounts]);
 
+  useEffect(() => {
     setBankConnections([
       {
         id: "1",
-        bankName: "Chase Bank",
-        logo: "/chase-logo.png",
+        bankName: "HDFC Bank",
+        logo: "/hdfc-logo.png",
         status: "connected",
-        lastConnected: "2024-01-20T10:30:00Z",
-        accountsCount: 2,
+        lastConnected: new Date().toISOString(),
+        accountsCount: 1,
       },
       {
         id: "2",
-        bankName: "Wells Fargo",
-        logo: "/wells-fargo-logo.png",
+        bankName: "ICICI Bank",
+        logo: "/icici-logo.png",
         status: "connected",
-        lastConnected: "2024-01-20T09:15:00Z",
+        lastConnected: new Date().toISOString(),
         accountsCount: 1,
       },
       {
         id: "3",
-        bankName: "Bank of America",
-        logo: "/boa-logo.png",
-        status: "available",
-        accountsCount: 0,
-      },
-      {
-        id: "4",
-        bankName: "American Express",
-        logo: "/amex-logo.png",
+        bankName: "Axis Bank",
+        logo: "/axis-logo.png",
         status: "connected",
-        lastConnected: "2024-01-19T16:45:00Z",
+        lastConnected: new Date().toISOString(),
         accountsCount: 1,
       },
     ]);
@@ -892,16 +914,6 @@ export default function BankingPaymentsHubPage() {
                   <p className="text-sm text-[#2C2C2C]/70 mt-1">
                     Multi-bank synchronization and intelligent invoicing system
                   </p>
-                </div>
-                <div className="flex gap-3">
-                  <Button className="bg-[#607c47] hover:bg-[#4a6129] text-white">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Settings
-                  </Button>
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                    <Shield className="h-4 w-4 mr-2" />
-                    Security
-                  </Button>
                 </div>
               </div>
 

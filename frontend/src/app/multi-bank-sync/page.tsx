@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import AuthGuard from "@/components/auth/AuthGuard";
 import MainLayout from "@/components/layout/MainLayout";
+import { apiClient, DashboardSummary } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,87 +86,37 @@ const currency = (n: number) =>
 const MOCK_BANKS: BankConnection[] = [
   {
     id: "1",
-    bankName: "Bank of America",
+    bankName: "HDFC Bank",
     logo: "🏦",
     status: "connected",
-    lastSync: "2024-01-20T10:30:00Z",
-    accountsCount: 2,
+    lastSync: new Date().toISOString(),
+    accountsCount: 1,
   },
   {
     id: "2",
-    bankName: "Chase Bank",
+    bankName: "ICICI Bank",
     logo: "🏛️",
     status: "connected",
-    lastSync: "2024-01-20T10:25:00Z",
+    lastSync: new Date().toISOString(),
     accountsCount: 1,
   },
-  { id: "3", bankName: "Wells Fargo", logo: "🏪", status: "available" },
   {
-    id: "4",
-    bankName: "American Express",
-    logo: "💳",
+    id: "3",
+    bankName: "Axis Bank",
+    logo: "🏪",
     status: "connected",
-    lastSync: "2024-01-20T10:20:00Z",
+    lastSync: new Date().toISOString(),
     accountsCount: 1,
   },
 ];
 
-const MOCK_ACCOUNTS: BankAccount[] = [
-  {
-    id: "1",
-    name: "Business Checking",
-    bankName: "Bank of America",
-    accountNumber: "****1234",
-    accountType: "checking",
-    balance: 45678.9,
-    lastSync: "2024-01-20T10:30:00Z",
-    status: "connected",
-    transactionsCount: 45,
-    pendingTransactions: 2,
-  },
-  {
-    id: "2",
-    name: "Business Savings",
-    bankName: "Bank of America",
-    accountNumber: "****5678",
-    accountType: "savings",
-    balance: 125000.0,
-    lastSync: "2024-01-20T10:30:00Z",
-    status: "connected",
-    transactionsCount: 12,
-    pendingTransactions: 0,
-  },
-  {
-    id: "3",
-    name: "Chase Business",
-    bankName: "Chase Bank",
-    accountNumber: "****9876",
-    accountType: "checking",
-    balance: 23456.78,
-    lastSync: "2024-01-20T10:25:00Z",
-    status: "connected",
-    transactionsCount: 23,
-    pendingTransactions: 1,
-  },
-  {
-    id: "4",
-    name: "Amex Business Card",
-    bankName: "American Express",
-    accountNumber: "****5432",
-    accountType: "credit",
-    balance: -1234.56,
-    lastSync: "2024-01-20T10:20:00Z",
-    status: "connected",
-    transactionsCount: 18,
-    pendingTransactions: 0,
-  },
-];
+// Mock bank accounts will be calculated from dashboard summary
 
 const MOCK_SYNC_LOGS: SyncLog[] = [
   {
     id: "1",
-    timestamp: "2024-01-20T10:30:00Z",
-    account: "Bank of America - Business Checking",
+    timestamp: new Date().toISOString(),
+    account: "HDFC Bank - Current Account",
     action: "sync_complete",
     status: "success",
     message: "Successfully synced 5 new transactions",
@@ -173,8 +124,8 @@ const MOCK_SYNC_LOGS: SyncLog[] = [
   },
   {
     id: "2",
-    timestamp: "2024-01-20T10:25:00Z",
-    account: "Chase Bank - Business",
+    timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+    account: "ICICI Bank - Savings Account",
     action: "sync_complete",
     status: "success",
     message: "Successfully synced 3 new transactions",
@@ -182,8 +133,8 @@ const MOCK_SYNC_LOGS: SyncLog[] = [
   },
   {
     id: "3",
-    timestamp: "2024-01-20T10:20:00Z",
-    account: "American Express - Business Card",
+    timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+    account: "Axis Bank - Current Account",
     action: "reconciliation",
     status: "success",
     message: "Reconciled 2 pending transactions",
@@ -191,8 +142,8 @@ const MOCK_SYNC_LOGS: SyncLog[] = [
   },
   {
     id: "4",
-    timestamp: "2024-01-20T09:45:00Z",
-    account: "Wells Fargo - Business",
+    timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+    account: "HDFC Bank - Current Account",
     action: "sync_error",
     status: "error",
     message: "Connection timeout - retry scheduled",
@@ -206,12 +157,75 @@ export default function MultiBankSyncPage() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [dashboardSummary, setDashboardSummary] = useState<DashboardSummary | null>(null);
+
+  // Mock bank accounts - balances sum to totalBalance
+  const getMockBankAccounts = useCallback((summary: DashboardSummary | null): BankAccount[] => {
+    if (!summary) return [];
+    const totalBalance = summary.financial.totalBalance;
+    
+    // Distribute balance across 3 accounts: 50%, 30%, 20%
+    const account1Balance = Math.round(totalBalance * 0.5);
+    const account2Balance = Math.round(totalBalance * 0.3);
+    const account3Balance = totalBalance - account1Balance - account2Balance; // Remaining to ensure exact sum
+    
+    return [
+      {
+        id: "1",
+        name: "HDFC Bank - Current Account",
+        bankName: "HDFC Bank",
+        accountNumber: "XXX-XXXX-5678",
+        accountType: "checking" as const,
+        balance: account1Balance,
+        lastSync: new Date().toISOString(),
+        status: "connected" as const,
+        transactionsCount: 45,
+        pendingTransactions: 2,
+      },
+      {
+        id: "2",
+        name: "ICICI Bank - Savings Account",
+        bankName: "ICICI Bank",
+        accountNumber: "XXX-XXXX-9012",
+        accountType: "savings" as const,
+        balance: account2Balance,
+        lastSync: new Date().toISOString(),
+        status: "connected" as const,
+        transactionsCount: 12,
+        pendingTransactions: 0,
+      },
+      {
+        id: "3",
+        name: "Axis Bank - Current Account",
+        bankName: "Axis Bank",
+        accountNumber: "XXX-XXXX-3456",
+        accountType: "checking" as const,
+        balance: account3Balance,
+        lastSync: new Date().toISOString(),
+        status: "connected" as const,
+        transactionsCount: 23,
+        pendingTransactions: 1,
+      },
+    ];
+  }, []);
+
+  const loadDashboardSummary = useCallback(async () => {
+    try {
+      const response = await apiClient.dashboard.summary();
+      if (response.success && response.data) {
+        setDashboardSummary(response.data);
+        setAccounts(getMockBankAccounts(response.data));
+      }
+    } catch (error) {
+      console.error("Failed to load dashboard summary:", error);
+    }
+  }, [getMockBankAccounts]);
 
   useEffect(() => {
-    setAccounts(MOCK_ACCOUNTS);
+    loadDashboardSummary();
     setBanks(MOCK_BANKS);
     setSyncLogs(MOCK_SYNC_LOGS);
-  }, []);
+  }, [loadDashboardSummary]);
 
   const filteredAccounts = accounts.filter((account) => {
     const matchesSearch = [

@@ -53,7 +53,8 @@ const StatCard = ({
                 percentageChange > 0 ? "" : "transform rotate-180"
               )}
             />
-            +{percentageChange}%
+            {percentageChange > 0 ? "+" : ""}
+            {percentageChange}%
           </div>
         )}
       </CardHeader>

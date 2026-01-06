@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { apiClient, BankAccount } from "@/lib/api";
+import { apiClient, BankAccount, DashboardSummary } from "@/lib/api";
 import MainLayout from "@/components/layout/MainLayout";
 import AuthGuard from "@/components/auth/AuthGuard";
 import {
@@ -88,6 +88,7 @@ export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<DemoTransaction[]>([]);
   const [accounts, setAccounts] = useState<DemoAccount[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dashboardSummary, setDashboardSummary] = useState<DashboardSummary | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccount, setSelectedAccount] = useState<string>("all");
   const [sortConfig, setSortConfig] = useState<SortConfig>({
@@ -161,37 +162,39 @@ export default function TransactionsPage() {
     }
   }, []);
 
-  const loadAccounts = useCallback(async () => {
-    try {
-      // For demo purposes, use mock data that matches the expected interface
-      const mockAccounts = [
-        {
-          id: "acc1",
-          name: "Chase Business Account",
-          balance: 125000,
-        },
-        {
-          id: "acc2",
-          name: "Wells Fargo Business",
-          balance: 45000,
-        },
-        {
-          id: "acc3",
-          name: "Stripe Account",
-          balance: 8500,
-        },
-      ];
-
-      setAccounts(mockAccounts);
-    } catch (error) {
-      console.error("Failed to load accounts:", error);
-    }
+  // Mock bank accounts - balances sum to totalBalance
+  const getMockBankAccounts = useCallback((summary: DashboardSummary | null): DemoAccount[] => {
+    if (!summary) return [];
+    const totalBalance = summary.financial.totalBalance;
+    
+    // Distribute balance across 3 accounts: 50%, 30%, 20%
+    const account1Balance = Math.round(totalBalance * 0.5);
+    const account2Balance = Math.round(totalBalance * 0.3);
+    const account3Balance = totalBalance - account1Balance - account2Balance; // Remaining to ensure exact sum
+    
+    return [
+      { id: "1", name: "HDFC Bank - Current Account", balance: account1Balance },
+      { id: "2", name: "ICICI Bank - Savings Account", balance: account2Balance },
+      { id: "3", name: "Axis Bank - Current Account", balance: account3Balance },
+    ];
   }, []);
+
+  const loadDashboardSummary = useCallback(async () => {
+    try {
+      const response = await apiClient.dashboard.summary();
+      if (response.success && response.data) {
+        setDashboardSummary(response.data);
+        setAccounts(getMockBankAccounts(response.data));
+      }
+    } catch (error) {
+      console.error("Failed to load dashboard summary:", error);
+    }
+  }, [getMockBankAccounts]);
 
   useEffect(() => {
     loadTransactions();
-    loadAccounts();
-  }, [loadTransactions, loadAccounts]);
+    loadDashboardSummary();
+  }, [loadTransactions, loadDashboardSummary]);
 
   const handleSort = (key: keyof DemoTransaction) => {
     setSortConfig((prev) => ({
