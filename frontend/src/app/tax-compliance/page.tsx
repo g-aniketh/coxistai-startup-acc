@@ -856,14 +856,6 @@ export default function TaxCompliancePage() {
                                   <Eye className="h-4 w-4 mr-2" />
                                   View Details
                                 </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-green-600 hover:text-green-700"
-                                >
-                                  <Download className="h-4 w-4 mr-2" />
-                                  Download
-                                </Button>
                                 {return_.status === "Pending" && (
                                   <Button
                                     size="sm"

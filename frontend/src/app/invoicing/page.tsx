@@ -489,16 +489,6 @@ export default function InvoicingPage() {
                                     $500
                                   </Button>
                                 )}
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="border-gray-300"
-                                  onClick={() =>
-                                    toast.success("Invoice downloaded (mock)")
-                                  }
-                                >
-                                  <Download className="h-4 w-4" />
-                                </Button>
                               </div>
                             </TableCell>
                           </TableRow>

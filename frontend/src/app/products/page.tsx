@@ -850,14 +850,6 @@ export default function ProductsPage() {
                             <Filter className="h-4 w-4 mr-1" />
                             Filter
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-gray-300 text-[#2C2C2C]"
-                          >
-                            <Download className="h-4 w-4 mr-1" />
-                            Export
-                          </Button>
                         </div>
                       </div>
                     </CardHeader>

@@ -29,6 +29,9 @@ import {
   Cog,
   IndianRupee,
   BookOpen,
+  UserPlus,
+  Receipt,
+  FileCheck,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import Image from "next/image";
@@ -83,6 +86,8 @@ export default function Sidebar({
         },
         { name: "Vouchers", href: "/vouchers", icon: FileText },
         { name: "Bills", href: "/bills", icon: HandCoins },
+        { name: "Transactions", href: "/transactions", icon: Receipt },
+        { name: "Invoicing", href: "/invoicing", icon: FileCheck },
         {
           name: "Cost Management",
           href: "/cost-management",
@@ -90,6 +95,7 @@ export default function Sidebar({
         },
         { name: "Bookkeeping", href: "/bookkeeping", icon: BookOpen },
         { name: "Products", href: "/products", icon: Package },
+        { name: "Customers", href: "/customers", icon: UserPlus },
       ],
     },
     {

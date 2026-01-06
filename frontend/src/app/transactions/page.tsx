@@ -619,14 +619,6 @@ export default function TransactionsPage() {
                         variant="outline"
                         size="sm"
                         className="border-gray-300 text-[#2C2C2C]"
-                      >
-                        <Download className="h-4 w-4 mr-1" />
-                        Export
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-gray-300 text-[#2C2C2C]"
                         onClick={loadTransactions}
                       >
                         <RefreshCw className="h-4 w-4 mr-1" />
