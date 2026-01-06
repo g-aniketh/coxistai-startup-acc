@@ -1026,7 +1026,7 @@ export async function getLedgerBook(
  */
 export async function getJournals(
   startupId: string,
-  journalType:
+  journalType?:
     | "SALES"
     | "PURCHASE"
     | "PAYMENT"
@@ -1036,11 +1036,12 @@ export async function getJournals(
   fromDate?: string,
   toDate?: string
 ): Promise<{
-  journalType: string;
+  journalType?: string;
   vouchers: Array<{
     date: string;
     voucherNumber: string;
     narration?: string;
+    journalType?: string;
     entries: Array<{
       ledgerName: string;
       entryType: string;
@@ -1048,14 +1049,35 @@ export async function getJournals(
     }>;
   }>;
 }> {
-  const from = fromDate ? new Date(fromDate) : undefined;
-  const to = toDate ? new Date(toDate) : new Date();
+  // Validate and parse dates
+  let from: Date | undefined;
+  let to: Date;
+  
+  if (fromDate) {
+    from = new Date(fromDate);
+    if (isNaN(from.getTime())) {
+      throw new Error("Invalid fromDate format. Expected YYYY-MM-DD");
+    }
+  }
+  
+  if (toDate) {
+    to = new Date(toDate);
+    if (isNaN(to.getTime())) {
+      throw new Error("Invalid toDate format. Expected YYYY-MM-DD");
+    }
+  } else {
+    to = new Date();
+  }
 
   const voucherFilters: Prisma.VoucherWhereInput = {
     startupId,
-    voucherType: {
-      category: journalType as VoucherCategory,
-    },
+    ...(journalType
+      ? {
+          voucherType: {
+            category: journalType as VoucherCategory,
+          },
+        }
+      : {}),
     ...(from || to
       ? {
           date: {
@@ -1076,11 +1098,12 @@ export async function getJournals(
   });
 
   return {
-    journalType,
+    ...(journalType ? { journalType } : {}),
     vouchers: vouchers.map((v) => ({
       date: v.date.toISOString().split("T")[0],
       voucherNumber: v.voucherNumber,
       narration: v.narration ?? undefined,
+      journalType: v.voucherType.category,
       entries: v.entries.map((e) => ({
         ledgerName: e.ledgerName,
         entryType: e.entryType,

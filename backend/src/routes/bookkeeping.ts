@@ -504,11 +504,6 @@ router.get("/journals", async (req: AuthRequest, res) => {
       | "CONTRA"
       | "JOURNAL"
       | undefined;
-    if (!journalType) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Journal type is required" });
-    }
 
     const fromDate = req.query.fromDate as string | undefined;
     const toDate = req.query.toDate as string | undefined;

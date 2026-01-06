@@ -41,7 +41,6 @@ import {
   Tags,
   CreditCard,
   Building,
-  Camera,
   DollarSign,
   Tag,
   User,
@@ -123,14 +122,30 @@ interface ExpenseReceipt {
 }
 
 const MOCK_CATEGORIES = [
-  "SaaS: Subscriptions",
+  "Software: Subscriptions",
+  "Software: AI Tools",
+  "Software: Cloud Services",
+  "Software: Development Tools",
+  "Software: Design Tools",
+  "Software: Analytics",
+  "Office: Supplies",
+  "Travel: Transportation",
+  "Travel: Accommodation",
+  "Meals: Business",
+  "Meals: Entertainment",
+  "Marketing: Advertising",
+  "Professional: Services",
+  "Utilities: Internet",
+  "Utilities: Phone",
+  "Equipment: Hardware",
+  "Training: Courses",
+  "Legal: Services",
+  "Accounting: Services",
+  "Insurance: Business",
   "Payroll: Salaries",
-  "Marketing: Ads",
   "Operations: Rent",
   "Revenue: Sales",
   "Revenue: Refund",
-  "Travel: Flights",
-  "Office: Supplies",
 ];
 
 export default function ComplianceHubPage() {
@@ -167,11 +182,21 @@ export default function ComplianceHubPage() {
   const [expenseReceipts, setExpenseReceipts] = useState<ExpenseReceipt[]>([]);
   const [expenseSearchTerm, setExpenseSearchTerm] = useState("");
   const [expenseStatusFilter, setExpenseStatusFilter] = useState<string>("all");
-  const [isUploading, setIsUploading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<ExpenseReceipt | null>(
     null
   );
   const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [showReceiptForm, setShowReceiptForm] = useState(false);
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    merchant: "",
+    amount: "",
+    category: "",
+    description: "",
+    date: new Date().toISOString().split("T")[0],
+  });
 
   // Initialize mock data
   useEffect(() => {
@@ -399,180 +424,75 @@ export default function ComplianceHubPage() {
   };
 
   // Expense Management functions
-  const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
+  const handleManualReceiptSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validation
+    if (!formData.merchant.trim()) {
+      toast.error("Please enter a merchant name");
+      return;
+    }
+    if (!formData.amount || Number(formData.amount) <= 0) {
+      toast.error("Please enter a valid amount");
+      return;
+    }
+    if (!formData.category) {
+      toast.error("Please select a category");
+      return;
+    }
+    if (!formData.description.trim()) {
+      toast.error("Please enter a description");
+      return;
+    }
+    if (!formData.date) {
+      toast.error("Please select a date");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    // Simulate API call delay
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    const newReceipt: ExpenseReceipt = {
+      id: Date.now().toString(),
+      fileName: `receipt_${formData.merchant.replace(/\s+/g, "_")}_${formData.date}.txt`,
+      uploadDate: formData.date,
+      amount: Number(Number(formData.amount).toFixed(2)),
+      merchant: formData.merchant.trim(),
+      category: formData.category,
+      description: formData.description.trim(),
+      status: "reviewed" as const,
+      confidence: 100, // Manual entry is 100% accurate
+      ocrText: `Merchant: ${formData.merchant}\nDate: ${formData.date}\nDescription: ${formData.description}\nAmount: ₹${Number(formData.amount).toFixed(2)}\nCategory: ${formData.category}`,
+      tags: [
+        formData.category.split(":")[0].toLowerCase(),
+        formData.merchant.toLowerCase().replace(/\s+/g, "-"),
+      ],
+      approver: undefined,
+      approvedDate: undefined,
+    };
+
+    setExpenseReceipts((prev) => [newReceipt, ...prev]);
+    toast.success("Receipt added successfully!");
+    
+    // Reset form
+    setFormData({
+      merchant: "",
+      amount: "",
+      category: "",
+      description: "",
+      date: new Date().toISOString().split("T")[0],
+    });
+    setShowReceiptForm(false);
+    setIsSubmitting(false);
+  };
+
+  const handleFormChange = (
+    field: keyof typeof formData,
+    value: string
   ) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-
-    setIsUploading(true);
-
-    // Simulate OCR processing time
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
-    const newReceipts: ExpenseReceipt[] = Array.from(files).map(
-      (file, index) => {
-        // Generate realistic mock data based on file name or random selection
-        const mockMerchants = [
-          "Microsoft Azure",
-          "Google Cloud Platform",
-          "AWS",
-          "Salesforce",
-          "Adobe Creative Cloud",
-          "Slack",
-          "Zoom",
-          "Dropbox",
-          "GitHub",
-          "DigitalOcean",
-          "Stripe",
-          "PayPal",
-          "OpenAI",
-          "Anthropic",
-          "Midjourney",
-          "Stability AI",
-          "Runway ML",
-          "Canva Pro",
-          "Figma",
-          "Notion",
-          "Airtable",
-          "HubSpot",
-          "Mailchimp",
-          "Intercom",
-          "Office Depot",
-          "Staples",
-          "Amazon Business",
-          "Uber",
-          "Lyft",
-          "Airbnb",
-          "Hilton Hotels",
-          "Marriott",
-          "Delta Airlines",
-          "United Airlines",
-          "Starbucks",
-          "McDonald's",
-          "Subway",
-          "Chipotle",
-          "FedEx",
-          "UPS",
-          "Verizon",
-          "AT&T",
-        ];
-
-        const mockCategories = [
-          "Software: Subscriptions",
-          "Software: AI Tools",
-          "Software: Cloud Services",
-          "Software: Development Tools",
-          "Software: Design Tools",
-          "Software: Analytics",
-          "Office: Supplies",
-          "Travel: Transportation",
-          "Travel: Accommodation",
-          "Meals: Business",
-          "Meals: Entertainment",
-          "Marketing: Advertising",
-          "Professional: Services",
-          "Utilities: Internet",
-          "Utilities: Phone",
-          "Equipment: Hardware",
-          "Training: Courses",
-          "Legal: Services",
-          "Accounting: Services",
-          "Insurance: Business",
-        ];
-
-        const mockDescriptions = [
-          "SAAS for Cloud based Image Generation Platform",
-          "AI-powered content creation tools",
-          "Cloud hosting and infrastructure services",
-          "Software subscription renewal",
-          "AI model access and API usage",
-          "Design and collaboration platform",
-          "Business intelligence and analytics tools",
-          "Customer relationship management",
-          "Marketing automation platform",
-          "Communication and productivity tools",
-          "Office supplies and stationery",
-          "Business travel expenses",
-          "Client entertainment",
-          "Marketing campaign costs",
-          "Professional development",
-          "Equipment maintenance",
-          "Conference attendance",
-          "Team building activity",
-          "Business meal with client",
-          "Cloud hosting services",
-          "Legal consultation",
-          "Accounting services",
-          "Insurance premium",
-          "Training and certification",
-        ];
-
-        const merchant =
-          mockMerchants[Math.floor(Math.random() * mockMerchants.length)];
-        const category =
-          mockCategories[Math.floor(Math.random() * mockCategories.length)];
-        const description =
-          mockDescriptions[Math.floor(Math.random() * mockDescriptions.length)];
-
-        // Generate realistic amount based on category
-        let amount = 0;
-        if (category.includes("Software") || category.includes("AI Tools")) {
-          amount = Math.random() * 66000 + 4200; // ₹4,200-₹70,200 for software/AI services
-        } else if (category.includes("Travel")) {
-          amount = Math.random() * 83000 + 4200; // ₹4,200-₹87,200
-        } else if (category.includes("Meals")) {
-          amount = Math.random() * 17000 + 850; // ₹850-₹18,500
-        } else if (category.includes("Office")) {
-          amount = Math.random() * 25000 + 1250; // ₹1,250-₹26,250
-        } else {
-          amount = Math.random() * 33000 + 2100; // ₹2,100-₹35,100
-        }
-
-        // Generate realistic OCR text based on merchant type
-        let ocrText = "";
-        if (
-          merchant.includes("AI") ||
-          merchant.includes("OpenAI") ||
-          merchant.includes("Midjourney")
-        ) {
-          ocrText = `${merchant}\nInvoice #${Math.floor(Math.random() * 99999) + 10000}\nDate: ${new Date().toLocaleDateString()}\nDescription: ${description}\nAmount: ₹${amount.toFixed(0)}\nPayment Method: Credit Card`;
-        } else if (
-          merchant.includes("Cloud") ||
-          merchant.includes("AWS") ||
-          merchant.includes("Azure")
-        ) {
-          ocrText = `${merchant}\nService Invoice\nInvoice #${Math.floor(Math.random() * 99999) + 10000}\nBilling Period: ${new Date().toLocaleDateString()}\nService: ${description}\nTotal: ₹${amount.toFixed(0)}`;
-        } else {
-          ocrText = `${merchant}\nReceipt #${Math.floor(Math.random() * 99999) + 10000}\nDate: ${new Date().toLocaleDateString()}\nTotal: ₹${amount.toFixed(0)}\n${description}`;
-        }
-
-        return {
-          id: Date.now().toString() + index,
-          fileName: file.name,
-          uploadDate: new Date().toISOString().split("T")[0],
-          amount: Math.round(amount * 100) / 100, // Round to 2 decimal places
-          merchant,
-          category,
-          description,
-          status: "reviewed" as const, // Start as reviewed for better UX
-          confidence: Math.floor(Math.random() * 20) + 80, // 80-99% confidence
-          ocrText,
-          tags: [
-            category.split(":")[0].toLowerCase(),
-            merchant.toLowerCase().replace(/\s+/g, "-"),
-          ],
-          approver: undefined,
-          approvedDate: undefined,
-        };
-      }
-    );
-
-    setExpenseReceipts((prev) => [...newReceipts, ...prev]);
-    toast.success(
-      `${files.length} receipt(s) processed successfully! AI extracted data with high confidence.`
-    );
-    setIsUploading(false);
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const approveExpense = (id: string) => {
@@ -698,7 +618,7 @@ export default function ComplianceHubPage() {
                   </p>
                 </div>
                 <div className="flex gap-3">
-                  <Button className="bg-[#607c47] hover:bg-[#4a6129] text-white">
+                  <Button className="bg-[#607c47] hover:bg-[#4a6129] text-white hidden">
                     <Upload className="h-4 w-4 mr-2" />
                     Upload Documents
                   </Button>
@@ -1534,64 +1454,179 @@ export default function ComplianceHubPage() {
                     </Card>
                   </div>
 
-                  {/* Upload Section */}
+                  {/* Manual Receipt Entry Section */}
                   <Card className="bg-white rounded-xl border-0 shadow-lg">
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-lg font-medium text-[#2C2C2C] flex items-center gap-2">
-                        <Upload className="h-5 w-5 text-[#607c47]" />
-                        Upload Receipts
-                      </CardTitle>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg font-medium text-[#2C2C2C] flex items-center gap-2">
+                          <Receipt className="h-5 w-5 text-[#607c47]" />
+                          Add Receipt Manually
+                        </CardTitle>
+                        <Button
+                          onClick={() => setShowReceiptForm(!showReceiptForm)}
+                          className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                        >
+                          {showReceiptForm ? (
+                            <>
+                              <XCircle className="h-4 w-4 mr-2" />
+                              Cancel
+                            </>
+                          ) : (
+                            <>
+                              <Receipt className="h-4 w-4 mr-2" />
+                              Add Receipt
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                        <div className="flex flex-col items-center gap-4">
-                          <div className="p-3 bg-blue-100 rounded-full">
-                            <Camera className="h-8 w-8 text-blue-600" />
+                    {showReceiptForm && (
+                      <CardContent className="pt-0">
+                        <form onSubmit={handleManualReceiptSubmit} className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label
+                                htmlFor="merchant"
+                                className="text-sm font-medium text-[#2C2C2C]"
+                              >
+                                Merchant Name <span className="text-red-500">*</span>
+                              </Label>
+                              <Input
+                                id="merchant"
+                                type="text"
+                                value={formData.merchant}
+                                onChange={(e) =>
+                                  handleFormChange("merchant", e.target.value)
+                                }
+                                className="mt-2 bg-white"
+                                placeholder="e.g., Microsoft Azure, Amazon Business"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label
+                                htmlFor="amount"
+                                className="text-sm font-medium text-[#2C2C2C]"
+                              >
+                                Amount (₹) <span className="text-red-500">*</span>
+                              </Label>
+                              <Input
+                                id="amount"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={formData.amount}
+                                onChange={(e) =>
+                                  handleFormChange("amount", e.target.value)
+                                }
+                                className="mt-2 bg-white"
+                                placeholder="0.00"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label
+                                htmlFor="category"
+                                className="text-sm font-medium text-[#2C2C2C]"
+                              >
+                                Category <span className="text-red-500">*</span>
+                              </Label>
+                              <Select
+                                value={formData.category}
+                                onValueChange={(value) =>
+                                  handleFormChange("category", value)
+                                }
+                                required
+                              >
+                                <SelectTrigger className="mt-2 bg-white">
+                                  <SelectValue placeholder="Select a category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {MOCK_CATEGORIES.map((cat) => (
+                                    <SelectItem key={cat} value={cat}>
+                                      {cat}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label
+                                htmlFor="date"
+                                className="text-sm font-medium text-[#2C2C2C]"
+                              >
+                                Date <span className="text-red-500">*</span>
+                              </Label>
+                              <Input
+                                id="date"
+                                type="date"
+                                value={formData.date}
+                                onChange={(e) =>
+                                  handleFormChange("date", e.target.value)
+                                }
+                                className="mt-2 bg-white"
+                                required
+                              />
+                            </div>
                           </div>
                           <div>
-                            <h3 className="text-lg font-semibold text-[#2C2C2C]">
-                              Upload Receipt Images
-                            </h3>
-                            <p className="text-sm text-gray-600">
-                              Drag and drop files or click to browse
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <input
-                              type="file"
-                              multiple
-                              accept="image/*,.pdf"
-                              onChange={handleFileUpload}
-                              className="hidden"
-                              id="receipt-upload"
-                            />
-                            <label
-                              htmlFor="receipt-upload"
-                              className="cursor-pointer bg-[#607c47] hover:bg-[#4a6129] text-white px-4 py-2 rounded-lg flex items-center gap-2"
+                            <Label
+                              htmlFor="description"
+                              className="text-sm font-medium text-[#2C2C2C]"
                             >
-                              {isUploading ? (
+                              Description <span className="text-red-500">*</span>
+                            </Label>
+                            <Textarea
+                              id="description"
+                              value={formData.description}
+                              onChange={(e) =>
+                                handleFormChange("description", e.target.value)
+                              }
+                              className="mt-2 bg-white"
+                              placeholder="Enter a detailed description of the expense"
+                              rows={3}
+                              required
+                            />
+                          </div>
+                          <div className="flex gap-2 justify-end">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                setShowReceiptForm(false);
+                                setFormData({
+                                  merchant: "",
+                                  amount: "",
+                                  category: "",
+                                  description: "",
+                                  date: new Date().toISOString().split("T")[0],
+                                });
+                              }}
+                              className="border-gray-300 text-[#2C2C2C]"
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              type="submit"
+                              disabled={isSubmitting}
+                              className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                            >
+                              {isSubmitting ? (
                                 <>
                                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                                  Uploading...
+                                  Adding...
                                 </>
                               ) : (
                                 <>
-                                  <Upload className="h-4 w-4 mr-2" />
-                                  Choose Files
+                                  <Receipt className="h-4 w-4 mr-2" />
+                                  Add Receipt
                                 </>
                               )}
-                            </label>
-                            <Button
-                              variant="outline"
-                              className="border-gray-300 text-[#2C2C2C]"
-                            >
-                              <Camera className="h-4 w-4 mr-2" />
-                              Take Photo
                             </Button>
                           </div>
-                        </div>
-                      </div>
-                    </CardContent>
+                        </form>
+                      </CardContent>
+                    )}
                   </Card>
 
                   {/* Expense List */}
