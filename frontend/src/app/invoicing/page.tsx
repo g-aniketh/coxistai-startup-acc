@@ -58,7 +58,13 @@ interface PatientBill {
   patientEmail: string;
   serviceDate: string;
   dueDate: string;
-  status: "Draft" | "Sent" | "Overdue" | "Paid" | "Partially Paid" | "Insurance Pending";
+  status:
+    | "Draft"
+    | "Sent"
+    | "Overdue"
+    | "Paid"
+    | "Partially Paid"
+    | "Insurance Pending";
   items: BillingItem[];
   diagnosisCode: string;
   department: string;
@@ -244,7 +250,12 @@ export default function PatientBillingPage() {
 
   const filtered = useMemo(() => {
     return bills.filter((bill) => {
-      const matchesText = [bill.number, bill.patientName, bill.patientId, bill.department]
+      const matchesText = [
+        bill.number,
+        bill.patientName,
+        bill.patientId,
+        bill.department,
+      ]
         .join(" ")
         .toLowerCase()
         .includes(search.toLowerCase());
@@ -276,7 +287,13 @@ export default function PatientBillingPage() {
       diagnosisCode: "",
       insuranceProvider: "",
       items: [
-        { id: "i1", procedureCode: "99213", description: "General Consultation", quantity: 1, unitPrice: 800 },
+        {
+          id: "i1",
+          procedureCode: "99213",
+          description: "General Consultation",
+          quantity: 1,
+          unitPrice: 800,
+        },
       ],
       notes: "",
       total: 800,
@@ -298,7 +315,8 @@ export default function PatientBillingPage() {
               ...bill,
               ...updates,
               total: computeTotal(bill.items),
-              patientResponsibility: computeTotal(bill.items) - bill.insuranceCoverage,
+              patientResponsibility:
+                computeTotal(bill.items) - bill.insuranceCoverage,
               balanceDue: computeTotal(bill.items) - bill.insuranceCoverage,
             }
           : bill
@@ -389,7 +407,8 @@ export default function PatientBillingPage() {
                     Patient Billing
                   </h1>
                   <p className="text-sm text-[#2C2C2C]/70">
-                    Create patient bills, submit insurance claims, and track payments
+                    Create patient bills, submit insurance claims, and track
+                    payments
                   </p>
                 </div>
                 <div className="flex gap-3">
@@ -410,10 +429,14 @@ export default function PatientBillingPage() {
                       <SelectItem value="all">All Status</SelectItem>
                       <SelectItem value="Draft">Draft</SelectItem>
                       <SelectItem value="Sent">Sent</SelectItem>
-                      <SelectItem value="Insurance Pending">Insurance Pending</SelectItem>
+                      <SelectItem value="Insurance Pending">
+                        Insurance Pending
+                      </SelectItem>
                       <SelectItem value="Overdue">Overdue</SelectItem>
                       <SelectItem value="Paid">Paid</SelectItem>
-                      <SelectItem value="Partially Paid">Partially Paid</SelectItem>
+                      <SelectItem value="Partially Paid">
+                        Partially Paid
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <Button
@@ -453,9 +476,14 @@ export default function PatientBillingPage() {
                       <ClipboardList className="h-5 w-5 text-orange-600" />
                     </div>
                     <div>
-                      <div className="text-sm text-orange-700">Insurance Pending</div>
+                      <div className="text-sm text-orange-700">
+                        Insurance Pending
+                      </div>
                       <div className="text-lg font-bold text-orange-900">
-                        {bills.filter((b) => b.status === "Insurance Pending").length}
+                        {
+                          bills.filter((b) => b.status === "Insurance Pending")
+                            .length
+                        }
                       </div>
                     </div>
                   </CardContent>
@@ -483,7 +511,9 @@ export default function PatientBillingPage() {
                       <CheckCircle className="h-5 w-5 text-green-600" />
                     </div>
                     <div>
-                      <div className="text-sm text-green-700">Collected (30d)</div>
+                      <div className="text-sm text-green-700">
+                        Collected (30d)
+                      </div>
                       <div className="text-lg font-bold text-green-900">
                         {currency(
                           bills
@@ -536,12 +566,17 @@ export default function PatientBillingPage() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge variant="outline" className="border-gray-300">
+                              <Badge
+                                variant="outline"
+                                className="border-gray-300"
+                              >
                                 {bill.department}
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              {new Date(bill.serviceDate).toLocaleDateString("en-IN")}
+                              {new Date(bill.serviceDate).toLocaleDateString(
+                                "en-IN"
+                              )}
                             </TableCell>
                             <TableCell>
                               <Badge
@@ -586,7 +621,8 @@ export default function PatientBillingPage() {
                                       className="border-orange-300 text-orange-700"
                                       onClick={() => submitToInsurance(bill.id)}
                                     >
-                                      <ClipboardList className="h-4 w-4 mr-1" /> Insurance
+                                      <ClipboardList className="h-4 w-4 mr-1" />{" "}
+                                      Insurance
                                     </Button>
                                   </>
                                 )}
@@ -602,21 +638,26 @@ export default function PatientBillingPage() {
                                     <Mail className="h-4 w-4 mr-1" /> Remind
                                   </Button>
                                 )}
-                                {bill.status !== "Paid" && bill.status !== "Insurance Pending" && (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="border-green-300 text-green-700"
-                                    onClick={() =>
-                                      recordPayment(
-                                        bill.id,
-                                        Math.min(bill.balanceDue, bill.balanceDue)
-                                      )
-                                    }
-                                  >
-                                    <DollarSign className="h-4 w-4 mr-1" /> Pay
-                                  </Button>
-                                )}
+                                {bill.status !== "Paid" &&
+                                  bill.status !== "Insurance Pending" && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="border-green-300 text-green-700"
+                                      onClick={() =>
+                                        recordPayment(
+                                          bill.id,
+                                          Math.min(
+                                            bill.balanceDue,
+                                            bill.balanceDue
+                                          )
+                                        )
+                                      }
+                                    >
+                                      <DollarSign className="h-4 w-4 mr-1" />{" "}
+                                      Pay
+                                    </Button>
+                                  )}
                               </div>
                             </TableCell>
                           </TableRow>
@@ -644,18 +685,24 @@ export default function PatientBillingPage() {
                           <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                               <div>
-                                <label className="text-sm text-gray-600">Patient Name</label>
+                                <label className="text-sm text-gray-600">
+                                  Patient Name
+                                </label>
                                 <Input
                                   className="mt-1 bg-white"
                                   value={draft.patientName}
                                   onChange={(e) =>
-                                    updateBill(draft.id, { patientName: e.target.value })
+                                    updateBill(draft.id, {
+                                      patientName: e.target.value,
+                                    })
                                   }
                                   placeholder="Enter patient name"
                                 />
                               </div>
                               <div>
-                                <label className="text-sm text-gray-600">Patient ID</label>
+                                <label className="text-sm text-gray-600">
+                                  Patient ID
+                                </label>
                                 <Input
                                   className="mt-1 bg-white"
                                   value={draft.patientId}
@@ -665,18 +712,24 @@ export default function PatientBillingPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                               <div>
-                                <label className="text-sm text-gray-600">Patient Email</label>
+                                <label className="text-sm text-gray-600">
+                                  Patient Email
+                                </label>
                                 <Input
                                   className="mt-1 bg-white"
                                   value={draft.patientEmail}
                                   onChange={(e) =>
-                                    updateBill(draft.id, { patientEmail: e.target.value })
+                                    updateBill(draft.id, {
+                                      patientEmail: e.target.value,
+                                    })
                                   }
                                   placeholder="patient@email.com"
                                 />
                               </div>
                               <div>
-                                <label className="text-sm text-gray-600">Department</label>
+                                <label className="text-sm text-gray-600">
+                                  Department
+                                </label>
                                 <Select
                                   value={draft.department}
                                   onValueChange={(value) =>
@@ -687,36 +740,58 @@ export default function PatientBillingPage() {
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="General Medicine">General Medicine</SelectItem>
-                                    <SelectItem value="Cardiology">Cardiology</SelectItem>
-                                    <SelectItem value="Orthopedics">Orthopedics</SelectItem>
-                                    <SelectItem value="Gynecology">Gynecology</SelectItem>
-                                    <SelectItem value="Pediatrics">Pediatrics</SelectItem>
-                                    <SelectItem value="Neurology">Neurology</SelectItem>
-                                    <SelectItem value="Emergency">Emergency</SelectItem>
+                                    <SelectItem value="General Medicine">
+                                      General Medicine
+                                    </SelectItem>
+                                    <SelectItem value="Cardiology">
+                                      Cardiology
+                                    </SelectItem>
+                                    <SelectItem value="Orthopedics">
+                                      Orthopedics
+                                    </SelectItem>
+                                    <SelectItem value="Gynecology">
+                                      Gynecology
+                                    </SelectItem>
+                                    <SelectItem value="Pediatrics">
+                                      Pediatrics
+                                    </SelectItem>
+                                    <SelectItem value="Neurology">
+                                      Neurology
+                                    </SelectItem>
+                                    <SelectItem value="Emergency">
+                                      Emergency
+                                    </SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                               <div>
-                                <label className="text-sm text-gray-600">Diagnosis Code (ICD-10)</label>
+                                <label className="text-sm text-gray-600">
+                                  Diagnosis Code (ICD-10)
+                                </label>
                                 <Input
                                   className="mt-1 bg-white"
                                   value={draft.diagnosisCode}
                                   onChange={(e) =>
-                                    updateBill(draft.id, { diagnosisCode: e.target.value })
+                                    updateBill(draft.id, {
+                                      diagnosisCode: e.target.value,
+                                    })
                                   }
                                   placeholder="e.g., J06.9"
                                 />
                               </div>
                               <div>
-                                <label className="text-sm text-gray-600">Insurance Provider</label>
+                                <label className="text-sm text-gray-600">
+                                  Insurance Provider
+                                </label>
                                 <Input
                                   className="mt-1 bg-white"
                                   value={draft.insuranceProvider}
                                   onChange={(e) =>
-                                    updateBill(draft.id, { insuranceProvider: e.target.value })
+                                    updateBill(draft.id, {
+                                      insuranceProvider: e.target.value,
+                                    })
                                   }
                                   placeholder="e.g., Star Health"
                                 />
@@ -724,35 +799,47 @@ export default function PatientBillingPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                               <div>
-                                <label className="text-sm text-gray-600">Service Date</label>
+                                <label className="text-sm text-gray-600">
+                                  Service Date
+                                </label>
                                 <Input
                                   type="date"
                                   className="mt-1 bg-white"
                                   value={draft.serviceDate}
                                   onChange={(e) =>
-                                    updateBill(draft.id, { serviceDate: e.target.value })
+                                    updateBill(draft.id, {
+                                      serviceDate: e.target.value,
+                                    })
                                   }
                                 />
                               </div>
                               <div>
-                                <label className="text-sm text-gray-600">Due Date</label>
+                                <label className="text-sm text-gray-600">
+                                  Due Date
+                                </label>
                                 <Input
                                   type="date"
                                   className="mt-1 bg-white"
                                   value={draft.dueDate}
                                   onChange={(e) =>
-                                    updateBill(draft.id, { dueDate: e.target.value })
+                                    updateBill(draft.id, {
+                                      dueDate: e.target.value,
+                                    })
                                   }
                                 />
                               </div>
                             </div>
                             <div>
-                              <label className="text-sm text-gray-600">Notes</label>
+                              <label className="text-sm text-gray-600">
+                                Notes
+                              </label>
                               <Textarea
                                 className="mt-1"
                                 value={draft.notes}
                                 onChange={(e) =>
-                                  updateBill(draft.id, { notes: e.target.value })
+                                  updateBill(draft.id, {
+                                    notes: e.target.value,
+                                  })
                                 }
                                 placeholder="Additional notes..."
                               />
@@ -760,7 +847,9 @@ export default function PatientBillingPage() {
                           </div>
                           <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                              <h4 className="font-semibold text-[#2C2C2C]">Services & Procedures</h4>
+                              <h4 className="font-semibold text-[#2C2C2C]">
+                                Services & Procedures
+                              </h4>
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -786,7 +875,10 @@ export default function PatientBillingPage() {
                                           if (bill.id !== draft.id) return bill;
                                           const items = bill.items.map((x) =>
                                             x.id === it.id
-                                              ? { ...x, procedureCode: e.target.value }
+                                              ? {
+                                                  ...x,
+                                                  procedureCode: e.target.value,
+                                                }
                                               : x
                                           );
                                           return { ...bill, items };
@@ -804,7 +896,10 @@ export default function PatientBillingPage() {
                                           if (bill.id !== draft.id) return bill;
                                           const items = bill.items.map((x) =>
                                             x.id === it.id
-                                              ? { ...x, description: e.target.value }
+                                              ? {
+                                                  ...x,
+                                                  description: e.target.value,
+                                                }
                                               : x
                                           );
                                           return { ...bill, items };
@@ -822,15 +917,19 @@ export default function PatientBillingPage() {
                                         prev.map((bill) => {
                                           if (bill.id !== draft.id) return bill;
                                           const items = bill.items.map((x) =>
-                                            x.id === it.id ? { ...x, quantity: qty } : x
+                                            x.id === it.id
+                                              ? { ...x, quantity: qty }
+                                              : x
                                           );
                                           const total = computeTotal(items);
                                           return {
                                             ...bill,
                                             items,
                                             total,
-                                            patientResponsibility: total - bill.insuranceCoverage,
-                                            balanceDue: total - bill.insuranceCoverage,
+                                            patientResponsibility:
+                                              total - bill.insuranceCoverage,
+                                            balanceDue:
+                                              total - bill.insuranceCoverage,
                                           };
                                         })
                                       );
@@ -846,15 +945,19 @@ export default function PatientBillingPage() {
                                         prev.map((bill) => {
                                           if (bill.id !== draft.id) return bill;
                                           const items = bill.items.map((x) =>
-                                            x.id === it.id ? { ...x, unitPrice: price } : x
+                                            x.id === it.id
+                                              ? { ...x, unitPrice: price }
+                                              : x
                                           );
                                           const total = computeTotal(items);
                                           return {
                                             ...bill,
                                             items,
                                             total,
-                                            patientResponsibility: total - bill.insuranceCoverage,
-                                            balanceDue: total - bill.insuranceCoverage,
+                                            patientResponsibility:
+                                              total - bill.insuranceCoverage,
+                                            balanceDue:
+                                              total - bill.insuranceCoverage,
                                           };
                                         })
                                       );
@@ -865,15 +968,25 @@ export default function PatientBillingPage() {
                             </div>
                             <div className="border-t pt-4 space-y-2">
                               <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-600">Total Amount</span>
-                                <span className="font-bold text-[#2C2C2C]">{currency(draft.total)}</span>
+                                <span className="text-gray-600">
+                                  Total Amount
+                                </span>
+                                <span className="font-bold text-[#2C2C2C]">
+                                  {currency(draft.total)}
+                                </span>
                               </div>
                               <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-600">Insurance Coverage (Est.)</span>
-                                <span className="text-green-600">{currency(draft.insuranceCoverage)}</span>
+                                <span className="text-gray-600">
+                                  Insurance Coverage (Est.)
+                                </span>
+                                <span className="text-green-600">
+                                  {currency(draft.insuranceCoverage)}
+                                </span>
                               </div>
                               <div className="flex items-center justify-between text-sm border-t pt-2">
-                                <span className="text-gray-600 font-medium">Patient Responsibility</span>
+                                <span className="text-gray-600 font-medium">
+                                  Patient Responsibility
+                                </span>
                                 <span className="text-lg font-bold text-[#2C2C2C]">
                                   {currency(draft.patientResponsibility)}
                                 </span>
@@ -885,13 +998,15 @@ export default function PatientBillingPage() {
                                 className="border-orange-300 text-orange-700"
                                 onClick={() => submitToInsurance(draft.id)}
                               >
-                                <ClipboardList className="h-4 w-4 mr-1" /> Submit to Insurance
+                                <ClipboardList className="h-4 w-4 mr-1" />{" "}
+                                Submit to Insurance
                               </Button>
                               <Button
                                 onClick={() => sendBill(draft.id)}
                                 className="bg-teal-600 hover:bg-teal-700 text-white"
                               >
-                                <Send className="h-4 w-4 mr-1" /> Send to Patient
+                                <Send className="h-4 w-4 mr-1" /> Send to
+                                Patient
                               </Button>
                             </div>
                           </div>

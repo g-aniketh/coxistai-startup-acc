@@ -59,7 +59,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import toast from "react-hot-toast";
-import { apiClient, BankAccount as ApiBankAccount, DashboardSummary } from "@/lib/api";
+import {
+  apiClient,
+  BankAccount as ApiBankAccount,
+  DashboardSummary,
+} from "@/lib/api";
 import CreateAccountModal from "@/components/dashboard/CreateAccountModal";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -129,7 +133,8 @@ export default function BankingPaymentsHubPage() {
     null
   );
   const [accountModalOpen, setAccountModalOpen] = useState(false);
-  const [dashboardSummary, setDashboardSummary] = useState<DashboardSummary | null>(null);
+  const [dashboardSummary, setDashboardSummary] =
+    useState<DashboardSummary | null>(null);
 
   // Invoicing state
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -156,12 +161,12 @@ export default function BankingPaymentsHubPage() {
   const getMockBankAccounts = useCallback(() => {
     if (!dashboardSummary) return [];
     const totalBalance = dashboardSummary.financial.totalBalance;
-    
+
     // Distribute balance across 3 accounts: 50%, 30%, 20%
     const account1Balance = Math.round(totalBalance * 0.5);
     const account2Balance = Math.round(totalBalance * 0.3);
     const account3Balance = totalBalance - account1Balance - account2Balance; // Remaining to ensure exact sum
-    
+
     return [
       {
         id: "1",

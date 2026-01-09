@@ -78,8 +78,8 @@ router.get("/", async (req: AuthRequest, res: Response) => {
     return res.json({
       success: true,
       data: {
-      data: result.logs,
-      total: result.total,
+        data: result.logs,
+        total: result.total,
       },
     });
   } catch (error) {

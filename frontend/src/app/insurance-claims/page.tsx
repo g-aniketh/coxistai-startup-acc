@@ -61,7 +61,13 @@ interface InsuranceClaim {
   submissionDate: string;
   claimAmount: number;
   approvedAmount: number;
-  status: "Submitted" | "In Review" | "Approved" | "Denied" | "Paid" | "Pending Info";
+  status:
+    | "Submitted"
+    | "In Review"
+    | "Approved"
+    | "Denied"
+    | "Paid"
+    | "Pending Info";
   department: string;
   diagnosisCode: string;
   procedureCodes: string[];
@@ -216,20 +222,43 @@ const mockClaims: InsuranceClaim[] = [
   },
 ];
 
-const statusConfig: Record<InsuranceClaim["status"], { color: string; icon: React.ReactNode }> = {
-  Submitted: { color: "bg-teal-100 text-teal-700", icon: <Send className="h-3 w-3" /> },
-  "In Review": { color: "bg-amber-100 text-amber-700", icon: <Clock className="h-3 w-3" /> },
-  Approved: { color: "bg-green-100 text-green-700", icon: <CheckCircle className="h-3 w-3" /> },
-  Denied: { color: "bg-red-100 text-red-700", icon: <XCircle className="h-3 w-3" /> },
-  Paid: { color: "bg-blue-100 text-blue-700", icon: <DollarSign className="h-3 w-3" /> },
-  "Pending Info": { color: "bg-orange-100 text-orange-700", icon: <AlertTriangle className="h-3 w-3" /> },
+const statusConfig: Record<
+  InsuranceClaim["status"],
+  { color: string; icon: React.ReactNode }
+> = {
+  Submitted: {
+    color: "bg-teal-100 text-teal-700",
+    icon: <Send className="h-3 w-3" />,
+  },
+  "In Review": {
+    color: "bg-amber-100 text-amber-700",
+    icon: <Clock className="h-3 w-3" />,
+  },
+  Approved: {
+    color: "bg-green-100 text-green-700",
+    icon: <CheckCircle className="h-3 w-3" />,
+  },
+  Denied: {
+    color: "bg-red-100 text-red-700",
+    icon: <XCircle className="h-3 w-3" />,
+  },
+  Paid: {
+    color: "bg-blue-100 text-blue-700",
+    icon: <DollarSign className="h-3 w-3" />,
+  },
+  "Pending Info": {
+    color: "bg-orange-100 text-orange-700",
+    icon: <AlertTriangle className="h-3 w-3" />,
+  },
 };
 
 export default function InsuranceClaimsPage() {
   const [claims, setClaims] = useState<InsuranceClaim[]>(mockClaims);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [selectedClaim, setSelectedClaim] = useState<InsuranceClaim | null>(null);
+  const [selectedClaim, setSelectedClaim] = useState<InsuranceClaim | null>(
+    null
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -244,7 +273,8 @@ export default function InsuranceClaimsPage() {
         .join(" ")
         .toLowerCase()
         .includes(search.toLowerCase());
-      const matchesStatus = statusFilter === "all" || claim.status === statusFilter;
+      const matchesStatus =
+        statusFilter === "all" || claim.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
   }, [claims, search, statusFilter]);
@@ -258,10 +288,15 @@ export default function InsuranceClaimsPage() {
   // Calculate stats
   const totalSubmitted = claims.filter((c) => c.status === "Submitted").length;
   const totalInReview = claims.filter((c) => c.status === "In Review").length;
-  const totalApproved = claims.filter((c) => c.status === "Approved" || c.status === "Paid").length;
+  const totalApproved = claims.filter(
+    (c) => c.status === "Approved" || c.status === "Paid"
+  ).length;
   const totalDenied = claims.filter((c) => c.status === "Denied").length;
   const totalClaimAmount = claims.reduce((sum, c) => sum + c.claimAmount, 0);
-  const totalApprovedAmount = claims.reduce((sum, c) => sum + c.approvedAmount, 0);
+  const totalApprovedAmount = claims.reduce(
+    (sum, c) => sum + c.approvedAmount,
+    0
+  );
 
   const submitNewClaim = () => {
     toast.success("New claim submission form would open here");
@@ -270,7 +305,9 @@ export default function InsuranceClaimsPage() {
   const resubmitClaim = (claim: InsuranceClaim) => {
     setClaims((prev) =>
       prev.map((c) =>
-        c.id === claim.id ? { ...c, status: "Submitted" as const, denialReason: undefined } : c
+        c.id === claim.id
+          ? { ...c, status: "Submitted" as const, denialReason: undefined }
+          : c
       )
     );
     toast.success(`Claim ${claim.claimNumber} resubmitted`);
@@ -313,8 +350,12 @@ export default function InsuranceClaimsPage() {
                       <Send className="h-5 w-5 text-teal-600" />
                     </div>
                     <div>
-                      <div className="text-sm text-teal-700">Pending Submission</div>
-                      <div className="text-lg font-bold text-teal-900">{totalSubmitted}</div>
+                      <div className="text-sm text-teal-700">
+                        Pending Submission
+                      </div>
+                      <div className="text-lg font-bold text-teal-900">
+                        {totalSubmitted}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -326,7 +367,9 @@ export default function InsuranceClaimsPage() {
                     </div>
                     <div>
                       <div className="text-sm text-amber-700">In Review</div>
-                      <div className="text-lg font-bold text-amber-900">{totalInReview}</div>
+                      <div className="text-lg font-bold text-amber-900">
+                        {totalInReview}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -337,8 +380,12 @@ export default function InsuranceClaimsPage() {
                       <CheckCircle className="h-5 w-5 text-green-600" />
                     </div>
                     <div>
-                      <div className="text-sm text-green-700">Approved/Paid</div>
-                      <div className="text-lg font-bold text-green-900">{totalApproved}</div>
+                      <div className="text-sm text-green-700">
+                        Approved/Paid
+                      </div>
+                      <div className="text-lg font-bold text-green-900">
+                        {totalApproved}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -350,7 +397,9 @@ export default function InsuranceClaimsPage() {
                     </div>
                     <div>
                       <div className="text-sm text-red-700">Denied</div>
-                      <div className="text-lg font-bold text-red-900">{totalDenied}</div>
+                      <div className="text-lg font-bold text-red-900">
+                        {totalDenied}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -361,7 +410,9 @@ export default function InsuranceClaimsPage() {
                 <Card className="rounded-xl border-0 shadow-lg bg-white">
                   <CardContent className="p-6 flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-600">Total Claims Submitted</p>
+                      <p className="text-sm text-gray-600">
+                        Total Claims Submitted
+                      </p>
                       <p className="text-2xl font-bold text-gray-900">
                         {currencyFormatter.format(totalClaimAmount)}
                       </p>
@@ -375,12 +426,18 @@ export default function InsuranceClaimsPage() {
                 <Card className="rounded-xl border-0 shadow-lg bg-white">
                   <CardContent className="p-6 flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-600">Total Approved/Collected</p>
+                      <p className="text-sm text-gray-600">
+                        Total Approved/Collected
+                      </p>
                       <p className="text-2xl font-bold text-green-600">
                         {currencyFormatter.format(totalApprovedAmount)}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        {((totalApprovedAmount / totalClaimAmount) * 100).toFixed(1)}% approval rate
+                        {(
+                          (totalApprovedAmount / totalClaimAmount) *
+                          100
+                        ).toFixed(1)}
+                        % approval rate
                       </p>
                     </div>
                     <div className="p-4 bg-green-100 rounded-xl">
@@ -407,7 +464,10 @@ export default function InsuranceClaimsPage() {
                           onChange={(e) => setSearch(e.target.value)}
                         />
                       </div>
-                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <Select
+                        value={statusFilter}
+                        onValueChange={setStatusFilter}
+                      >
                         <SelectTrigger className="w-[160px] bg-white">
                           <SelectValue placeholder="Filter by status" />
                         </SelectTrigger>
@@ -418,7 +478,9 @@ export default function InsuranceClaimsPage() {
                           <SelectItem value="Approved">Approved</SelectItem>
                           <SelectItem value="Denied">Denied</SelectItem>
                           <SelectItem value="Paid">Paid</SelectItem>
-                          <SelectItem value="Pending Info">Pending Info</SelectItem>
+                          <SelectItem value="Pending Info">
+                            Pending Info
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -435,7 +497,9 @@ export default function InsuranceClaimsPage() {
                           <TableHead>Department</TableHead>
                           <TableHead>Service Date</TableHead>
                           <TableHead>Status</TableHead>
-                          <TableHead className="text-right">Claim Amount</TableHead>
+                          <TableHead className="text-right">
+                            Claim Amount
+                          </TableHead>
                           <TableHead className="text-right">Approved</TableHead>
                           <TableHead>Actions</TableHead>
                         </TableRow>
@@ -451,24 +515,33 @@ export default function InsuranceClaimsPage() {
                                 <span className="text-[#2C2C2C] font-medium">
                                   {claim.patientName}
                                 </span>
-                                <span className="text-xs text-gray-500">{claim.patientId}</span>
+                                <span className="text-xs text-gray-500">
+                                  {claim.patientId}
+                                </span>
                               </div>
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <Building2 className="h-4 w-4 text-gray-400" />
-                                <span className="text-sm">{claim.insuranceProvider}</span>
+                                <span className="text-sm">
+                                  {claim.insuranceProvider}
+                                </span>
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge variant="outline" className="border-gray-300">
+                              <Badge
+                                variant="outline"
+                                className="border-gray-300"
+                              >
                                 {claim.department}
                               </Badge>
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-1 text-sm text-gray-600">
                                 <Calendar className="h-3 w-3" />
-                                {new Date(claim.serviceDate).toLocaleDateString("en-IN")}
+                                {new Date(claim.serviceDate).toLocaleDateString(
+                                  "en-IN"
+                                )}
                               </div>
                             </TableCell>
                             <TableCell>
@@ -508,14 +581,16 @@ export default function InsuranceClaimsPage() {
                     <div className="flex items-center justify-between mt-4 pt-4 border-t">
                       <div className="text-sm text-gray-600">
                         Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                        {Math.min(currentPage * itemsPerPage, filtered.length)} of {filtered.length}{" "}
-                        claims
+                        {Math.min(currentPage * itemsPerPage, filtered.length)}{" "}
+                        of {filtered.length} claims
                       </div>
                       <div className="flex items-center gap-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                          onClick={() =>
+                            setCurrentPage((prev) => Math.max(prev - 1, 1))
+                          }
                           disabled={currentPage === 1}
                         >
                           <ChevronLeft className="h-4 w-4" />
@@ -526,7 +601,11 @@ export default function InsuranceClaimsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                          onClick={() =>
+                            setCurrentPage((prev) =>
+                              Math.min(prev + 1, totalPages)
+                            )
+                          }
                           disabled={currentPage === totalPages}
                         >
                           <ChevronRight className="h-4 w-4" />
@@ -538,7 +617,10 @@ export default function InsuranceClaimsPage() {
               </Card>
 
               {/* Claim Detail Dialog */}
-              <Dialog open={!!selectedClaim} onOpenChange={() => setSelectedClaim(null)}>
+              <Dialog
+                open={!!selectedClaim}
+                onOpenChange={() => setSelectedClaim(null)}
+              >
                 <DialogContent className="sm:max-w-2xl">
                   <DialogHeader>
                     <DialogTitle className="text-[#2C2C2C] flex items-center gap-2">
@@ -558,12 +640,14 @@ export default function InsuranceClaimsPage() {
                           selectedClaim.status === "Denied"
                             ? "bg-red-50 border border-red-200"
                             : selectedClaim.status === "Paid"
-                            ? "bg-green-50 border border-green-200"
-                            : "bg-gray-50 border border-gray-200"
+                              ? "bg-green-50 border border-green-200"
+                              : "bg-gray-50 border border-gray-200"
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <Badge className={statusConfig[selectedClaim.status].color}>
+                          <Badge
+                            className={statusConfig[selectedClaim.status].color}
+                          >
                             {statusConfig[selectedClaim.status].icon}
                             <span className="ml-1">{selectedClaim.status}</span>
                           </Badge>
@@ -578,33 +662,47 @@ export default function InsuranceClaimsPage() {
                       {/* Patient & Insurance Info */}
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-3">
-                          <h4 className="font-semibold text-gray-900">Patient Information</h4>
+                          <h4 className="font-semibold text-gray-900">
+                            Patient Information
+                          </h4>
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span className="text-gray-600">Name:</span>
-                              <span className="font-medium">{selectedClaim.patientName}</span>
+                              <span className="font-medium">
+                                {selectedClaim.patientName}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-600">Patient ID:</span>
-                              <span className="font-medium">{selectedClaim.patientId}</span>
+                              <span className="font-medium">
+                                {selectedClaim.patientId}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-600">Department:</span>
-                              <span className="font-medium">{selectedClaim.department}</span>
+                              <span className="font-medium">
+                                {selectedClaim.department}
+                              </span>
                             </div>
                           </div>
                         </div>
 
                         <div className="space-y-3">
-                          <h4 className="font-semibold text-gray-900">Insurance Information</h4>
+                          <h4 className="font-semibold text-gray-900">
+                            Insurance Information
+                          </h4>
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span className="text-gray-600">Provider:</span>
-                              <span className="font-medium">{selectedClaim.insuranceProvider}</span>
+                              <span className="font-medium">
+                                {selectedClaim.insuranceProvider}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-600">Policy #:</span>
-                              <span className="font-medium">{selectedClaim.policyNumber}</span>
+                              <span className="font-medium">
+                                {selectedClaim.policyNumber}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -612,26 +710,40 @@ export default function InsuranceClaimsPage() {
 
                       {/* Service Details */}
                       <div className="space-y-3">
-                        <h4 className="font-semibold text-gray-900">Service Details</h4>
+                        <h4 className="font-semibold text-gray-900">
+                          Service Details
+                        </h4>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div className="flex justify-between">
                             <span className="text-gray-600">Service Date:</span>
                             <span className="font-medium">
-                              {new Date(selectedClaim.serviceDate).toLocaleDateString("en-IN")}
+                              {new Date(
+                                selectedClaim.serviceDate
+                              ).toLocaleDateString("en-IN")}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Submission Date:</span>
+                            <span className="text-gray-600">
+                              Submission Date:
+                            </span>
                             <span className="font-medium">
-                              {new Date(selectedClaim.submissionDate).toLocaleDateString("en-IN")}
+                              {new Date(
+                                selectedClaim.submissionDate
+                              ).toLocaleDateString("en-IN")}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Diagnosis Code:</span>
-                            <span className="font-medium">{selectedClaim.diagnosisCode}</span>
+                            <span className="text-gray-600">
+                              Diagnosis Code:
+                            </span>
+                            <span className="font-medium">
+                              {selectedClaim.diagnosisCode}
+                            </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Procedure Codes:</span>
+                            <span className="text-gray-600">
+                              Procedure Codes:
+                            </span>
                             <span className="font-medium">
                               {selectedClaim.procedureCodes.join(", ")}
                             </span>
@@ -639,7 +751,9 @@ export default function InsuranceClaimsPage() {
                         </div>
                         <div className="pt-2">
                           <span className="text-gray-600 text-sm">Notes:</span>
-                          <p className="text-sm mt-1 p-2 bg-gray-50 rounded">{selectedClaim.notes}</p>
+                          <p className="text-sm mt-1 p-2 bg-gray-50 rounded">
+                            {selectedClaim.notes}
+                          </p>
                         </div>
                       </div>
 
@@ -648,14 +762,20 @@ export default function InsuranceClaimsPage() {
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-600">Claim Amount:</span>
                           <span className="font-semibold">
-                            {currencyFormatter.format(selectedClaim.claimAmount)}
+                            {currencyFormatter.format(
+                              selectedClaim.claimAmount
+                            )}
                           </span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Approved Amount:</span>
+                          <span className="text-gray-600">
+                            Approved Amount:
+                          </span>
                           <span className="font-semibold text-green-600">
                             {selectedClaim.approvedAmount > 0
-                              ? currencyFormatter.format(selectedClaim.approvedAmount)
+                              ? currencyFormatter.format(
+                                  selectedClaim.approvedAmount
+                                )
                               : "Pending"}
                           </span>
                         </div>
@@ -663,7 +783,10 @@ export default function InsuranceClaimsPage() {
 
                       {/* Actions */}
                       <div className="flex justify-end gap-3 pt-2">
-                        <Button variant="outline" onClick={() => setSelectedClaim(null)}>
+                        <Button
+                          variant="outline"
+                          onClick={() => setSelectedClaim(null)}
+                        >
                           Close
                         </Button>
                         {selectedClaim.status === "Denied" && (
@@ -687,4 +810,3 @@ export default function InsuranceClaimsPage() {
     </AuthGuard>
   );
 }
-

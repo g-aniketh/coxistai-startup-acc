@@ -67,12 +67,18 @@ export default function StaffPage() {
 
   const filtered = useMemo(() => {
     return staff.filter((member) => {
-      const matchesSearch = [member.id, member.name, member.email, member.department]
+      const matchesSearch = [
+        member.id,
+        member.name,
+        member.email,
+        member.department,
+      ]
         .join(" ")
         .toLowerCase()
         .includes(search.toLowerCase());
       const matchesRole = roleFilter === "all" || member.role === roleFilter;
-      const matchesDept = departmentFilter === "all" || member.department === departmentFilter;
+      const matchesDept =
+        departmentFilter === "all" || member.department === departmentFilter;
       return matchesSearch && matchesRole && matchesDept;
     });
   }, [staff, search, roleFilter, departmentFilter]);
@@ -122,7 +128,8 @@ export default function StaffPage() {
                   <div>
                     <p className="font-semibold text-amber-900">Demo Module</p>
                     <p className="text-sm text-amber-700">
-                      This is a demonstration module with sample staff data. Management features are for display purposes only.
+                      This is a demonstration module with sample staff data.
+                      Management features are for display purposes only.
                     </p>
                   </div>
                 </div>
@@ -137,7 +144,9 @@ export default function StaffPage() {
                     </div>
                     <div>
                       <div className="text-sm text-teal-700">Total Staff</div>
-                      <div className="text-lg font-bold text-teal-900">{totalStaff}</div>
+                      <div className="text-lg font-bold text-teal-900">
+                        {totalStaff}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -149,7 +158,9 @@ export default function StaffPage() {
                     </div>
                     <div>
                       <div className="text-sm text-blue-700">Physicians</div>
-                      <div className="text-lg font-bold text-blue-900">{physicians}</div>
+                      <div className="text-lg font-bold text-blue-900">
+                        {physicians}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -161,7 +172,9 @@ export default function StaffPage() {
                     </div>
                     <div>
                       <div className="text-sm text-purple-700">Nurses</div>
-                      <div className="text-lg font-bold text-purple-900">{nurses}</div>
+                      <div className="text-lg font-bold text-purple-900">
+                        {nurses}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -173,7 +186,9 @@ export default function StaffPage() {
                     </div>
                     <div>
                       <div className="text-sm text-green-700">Active</div>
-                      <div className="text-lg font-bold text-green-900">{activeStaff}</div>
+                      <div className="text-lg font-bold text-green-900">
+                        {activeStaff}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -204,12 +219,17 @@ export default function StaffPage() {
                           <SelectItem value="all">All Roles</SelectItem>
                           <SelectItem value="Physician">Physicians</SelectItem>
                           <SelectItem value="Nurse">Nurses</SelectItem>
-                          <SelectItem value="Technician">Technicians</SelectItem>
+                          <SelectItem value="Technician">
+                            Technicians
+                          </SelectItem>
                           <SelectItem value="Admin">Admin</SelectItem>
                           <SelectItem value="Support">Support</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                      <Select
+                        value={departmentFilter}
+                        onValueChange={setDepartmentFilter}
+                      >
                         <SelectTrigger className="w-[160px] bg-white">
                           <SelectValue placeholder="All Departments" />
                         </SelectTrigger>
@@ -237,11 +257,18 @@ export default function StaffPage() {
                           <div className="flex items-start justify-between mb-3">
                             <div className="flex items-center gap-3">
                               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-bold text-lg">
-                                {member.name.split(" ").map((n) => n[0]).join("")}
+                                {member.name
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")}
                               </div>
                               <div>
-                                <h3 className="font-semibold text-gray-900">{member.name}</h3>
-                                <p className="text-xs text-gray-500">{member.id}</p>
+                                <h3 className="font-semibold text-gray-900">
+                                  {member.name}
+                                </h3>
+                                <p className="text-xs text-gray-500">
+                                  {member.id}
+                                </p>
                               </div>
                             </div>
                             <Badge
@@ -249,8 +276,8 @@ export default function StaffPage() {
                                 member.status === "Active"
                                   ? "bg-green-100 text-green-700"
                                   : member.status === "On Leave"
-                                  ? "bg-amber-100 text-amber-700"
-                                  : "bg-gray-100 text-gray-700"
+                                    ? "bg-amber-100 text-amber-700"
+                                    : "bg-gray-100 text-gray-700"
                               }
                             >
                               {member.status}
@@ -259,8 +286,12 @@ export default function StaffPage() {
 
                           <div className="space-y-2">
                             <div className="flex items-center gap-2">
-                              <Badge className={roleColors[member.role]}>{member.role}</Badge>
-                              <Badge className={shiftColors[member.shift]}>{member.shift}</Badge>
+                              <Badge className={roleColors[member.role]}>
+                                {member.role}
+                              </Badge>
+                              <Badge className={shiftColors[member.shift]}>
+                                {member.shift}
+                              </Badge>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-gray-600">
                               <Building2 className="h-4 w-4 text-gray-400" />
@@ -280,7 +311,10 @@ export default function StaffPage() {
               </Card>
 
               {/* Staff Detail Dialog */}
-              <Dialog open={!!selectedStaff} onOpenChange={() => setSelectedStaff(null)}>
+              <Dialog
+                open={!!selectedStaff}
+                onOpenChange={() => setSelectedStaff(null)}
+              >
                 <DialogContent className="sm:max-w-lg">
                   <DialogHeader>
                     <DialogTitle className="text-[#2C2C2C] flex items-center gap-2">
@@ -297,13 +331,22 @@ export default function StaffPage() {
                       {/* Header */}
                       <div className="flex items-center gap-4">
                         <div className="w-16 h-16 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-bold text-xl">
-                          {selectedStaff.name.split(" ").map((n) => n[0]).join("")}
+                          {selectedStaff.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
                         </div>
                         <div>
-                          <h3 className="text-xl font-bold text-gray-900">{selectedStaff.name}</h3>
-                          <p className="text-sm text-gray-500">{selectedStaff.id}</p>
+                          <h3 className="text-xl font-bold text-gray-900">
+                            {selectedStaff.name}
+                          </h3>
+                          <p className="text-sm text-gray-500">
+                            {selectedStaff.id}
+                          </p>
                           <div className="flex gap-2 mt-2">
-                            <Badge className={roleColors[selectedStaff.role]}>{selectedStaff.role}</Badge>
+                            <Badge className={roleColors[selectedStaff.role]}>
+                              {selectedStaff.role}
+                            </Badge>
                             <Badge
                               className={
                                 selectedStaff.status === "Active"
@@ -323,19 +366,27 @@ export default function StaffPage() {
                           <div className="flex items-center gap-2 text-sm">
                             <Building2 className="h-4 w-4 text-gray-400" />
                             <span className="text-gray-600">Department:</span>
-                            <span className="font-medium">{selectedStaff.department}</span>
+                            <span className="font-medium">
+                              {selectedStaff.department}
+                            </span>
                           </div>
                           {selectedStaff.specialization && (
                             <div className="flex items-center gap-2 text-sm">
                               <Award className="h-4 w-4 text-gray-400" />
-                              <span className="text-gray-600">Specialization:</span>
-                              <span className="font-medium">{selectedStaff.specialization}</span>
+                              <span className="text-gray-600">
+                                Specialization:
+                              </span>
+                              <span className="font-medium">
+                                {selectedStaff.specialization}
+                              </span>
                             </div>
                           )}
                           <div className="flex items-center gap-2 text-sm">
                             <Clock className="h-4 w-4 text-gray-400" />
                             <span className="text-gray-600">Shift:</span>
-                            <Badge className={shiftColors[selectedStaff.shift]}>{selectedStaff.shift}</Badge>
+                            <Badge className={shiftColors[selectedStaff.shift]}>
+                              {selectedStaff.shift}
+                            </Badge>
                           </div>
                         </div>
                         <div className="space-y-3">
@@ -345,35 +396,49 @@ export default function StaffPage() {
                           </div>
                           <div className="flex items-center gap-2 text-sm">
                             <Mail className="h-4 w-4 text-gray-400" />
-                            <span className="text-xs">{selectedStaff.email}</span>
+                            <span className="text-xs">
+                              {selectedStaff.email}
+                            </span>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
                             <Calendar className="h-4 w-4 text-gray-400" />
                             <span className="text-gray-600">Joined:</span>
-                            <span>{new Date(selectedStaff.joinDate).toLocaleDateString("en-IN")}</span>
+                            <span>
+                              {new Date(
+                                selectedStaff.joinDate
+                              ).toLocaleDateString("en-IN")}
+                            </span>
                           </div>
                         </div>
                       </div>
 
                       {/* Credentials */}
-                      {selectedStaff.credentials && selectedStaff.credentials.length > 0 && (
-                        <div className="p-4 bg-teal-50 rounded-lg">
-                          <h4 className="font-semibold text-teal-900 mb-2 flex items-center gap-2">
-                            <Award className="h-4 w-4" />
-                            Credentials & Certifications
-                          </h4>
-                          <div className="flex flex-wrap gap-2">
-                            {selectedStaff.credentials.map((cred, idx) => (
-                              <Badge key={idx} variant="outline" className="border-teal-300 text-teal-700">
-                                {cred}
-                              </Badge>
-                            ))}
+                      {selectedStaff.credentials &&
+                        selectedStaff.credentials.length > 0 && (
+                          <div className="p-4 bg-teal-50 rounded-lg">
+                            <h4 className="font-semibold text-teal-900 mb-2 flex items-center gap-2">
+                              <Award className="h-4 w-4" />
+                              Credentials & Certifications
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                              {selectedStaff.credentials.map((cred, idx) => (
+                                <Badge
+                                  key={idx}
+                                  variant="outline"
+                                  className="border-teal-300 text-teal-700"
+                                >
+                                  {cred}
+                                </Badge>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
                       <div className="flex justify-end gap-3 pt-2">
-                        <Button variant="outline" onClick={() => setSelectedStaff(null)}>
+                        <Button
+                          variant="outline"
+                          onClick={() => setSelectedStaff(null)}
+                        >
                           Close
                         </Button>
                       </div>
@@ -388,4 +453,3 @@ export default function StaffPage() {
     </AuthGuard>
   );
 }
-

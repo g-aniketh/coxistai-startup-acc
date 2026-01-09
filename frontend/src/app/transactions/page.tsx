@@ -88,7 +88,8 @@ export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<DemoTransaction[]>([]);
   const [accounts, setAccounts] = useState<DemoAccount[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dashboardSummary, setDashboardSummary] = useState<DashboardSummary | null>(null);
+  const [dashboardSummary, setDashboardSummary] =
+    useState<DashboardSummary | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccount, setSelectedAccount] = useState<string>("all");
   const [sortConfig, setSortConfig] = useState<SortConfig>({
@@ -163,21 +164,36 @@ export default function TransactionsPage() {
   }, []);
 
   // Mock bank accounts - balances sum to totalBalance
-  const getMockBankAccounts = useCallback((summary: DashboardSummary | null): DemoAccount[] => {
-    if (!summary) return [];
-    const totalBalance = summary.financial.totalBalance;
-    
-    // Distribute balance across 3 accounts: 50%, 30%, 20%
-    const account1Balance = Math.round(totalBalance * 0.5);
-    const account2Balance = Math.round(totalBalance * 0.3);
-    const account3Balance = totalBalance - account1Balance - account2Balance; // Remaining to ensure exact sum
-    
-    return [
-      { id: "1", name: "HDFC Bank - Current Account", balance: account1Balance },
-      { id: "2", name: "ICICI Bank - Savings Account", balance: account2Balance },
-      { id: "3", name: "Axis Bank - Current Account", balance: account3Balance },
-    ];
-  }, []);
+  const getMockBankAccounts = useCallback(
+    (summary: DashboardSummary | null): DemoAccount[] => {
+      if (!summary) return [];
+      const totalBalance = summary.financial.totalBalance;
+
+      // Distribute balance across 3 accounts: 50%, 30%, 20%
+      const account1Balance = Math.round(totalBalance * 0.5);
+      const account2Balance = Math.round(totalBalance * 0.3);
+      const account3Balance = totalBalance - account1Balance - account2Balance; // Remaining to ensure exact sum
+
+      return [
+        {
+          id: "1",
+          name: "HDFC Bank - Current Account",
+          balance: account1Balance,
+        },
+        {
+          id: "2",
+          name: "ICICI Bank - Savings Account",
+          balance: account2Balance,
+        },
+        {
+          id: "3",
+          name: "Axis Bank - Current Account",
+          balance: account3Balance,
+        },
+      ];
+    },
+    []
+  );
 
   const loadDashboardSummary = useCallback(async () => {
     try {

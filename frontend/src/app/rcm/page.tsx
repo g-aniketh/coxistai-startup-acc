@@ -100,8 +100,11 @@ export default function RCMDashboardPage() {
   }, []);
 
   const totalClaims = claimsPipeline.reduce((sum, item) => sum + item.value, 0);
-  const cleanClaimRate = ((claimsPipeline[2].value + claimsPipeline[4].value) / totalClaims * 100).toFixed(1);
-  const denialRate = ((claimsPipeline[3].value) / totalClaims * 100).toFixed(1);
+  const cleanClaimRate = (
+    ((claimsPipeline[2].value + claimsPipeline[4].value) / totalClaims) *
+    100
+  ).toFixed(1);
+  const denialRate = ((claimsPipeline[3].value / totalClaims) * 100).toFixed(1);
   const totalAR = agingBuckets.reduce((sum, bucket) => sum + bucket.amount, 0);
   const daysInAR = 42;
 
@@ -112,7 +115,9 @@ export default function RCMDashboardPage() {
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
-              <p className="mt-4 text-muted-foreground">Loading RCM Dashboard...</p>
+              <p className="mt-4 text-muted-foreground">
+                Loading RCM Dashboard...
+              </p>
             </div>
           </div>
         </MainLayout>
@@ -134,7 +139,8 @@ export default function RCMDashboardPage() {
                     Revenue Cycle Management
                   </h1>
                   <p className="text-sm text-[#2C2C2C]/70">
-                    Monitor claims, collections, and revenue performance in real-time
+                    Monitor claims, collections, and revenue performance in
+                    real-time
                   </p>
                 </div>
                 <div className="flex gap-3">
@@ -157,9 +163,12 @@ export default function RCMDashboardPage() {
                       <Activity className="h-5 w-5 text-teal-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-teal-900">RCM Intelligence Active</h3>
+                      <h3 className="font-semibold text-teal-900">
+                        RCM Intelligence Active
+                      </h3>
                       <p className="text-sm text-teal-700">
-                        Real-time claim tracking • Denial analytics • Collection optimization
+                        Real-time claim tracking • Denial analytics • Collection
+                        optimization
                       </p>
                     </div>
                   </div>
@@ -176,12 +185,17 @@ export default function RCMDashboardPage() {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-teal-700">Total Claims Value</p>
+                        <p className="text-sm text-teal-700">
+                          Total Claims Value
+                        </p>
                         <p className="text-2xl font-bold text-teal-900 mt-1">
-                          {currencyFormatter.format(monthlyCollections[5].submitted)}
+                          {currencyFormatter.format(
+                            monthlyCollections[5].submitted
+                          )}
                         </p>
                         <p className="text-xs text-teal-600 mt-1 flex items-center gap-1">
-                          <TrendingUp className="h-3 w-3" /> +8.2% from last month
+                          <TrendingUp className="h-3 w-3" /> +8.2% from last
+                          month
                         </p>
                       </div>
                       <div className="p-3 bg-teal-100 rounded-xl">
@@ -195,12 +209,17 @@ export default function RCMDashboardPage() {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-green-700">Collections (MTD)</p>
+                        <p className="text-sm text-green-700">
+                          Collections (MTD)
+                        </p>
                         <p className="text-2xl font-bold text-green-900 mt-1">
-                          {currencyFormatter.format(monthlyCollections[5].collected)}
+                          {currencyFormatter.format(
+                            monthlyCollections[5].collected
+                          )}
                         </p>
                         <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                          <CheckCircle className="h-3 w-3" /> 91.8% collection rate
+                          <CheckCircle className="h-3 w-3" /> 91.8% collection
+                          rate
                         </p>
                       </div>
                       <div className="p-3 bg-green-100 rounded-xl">
@@ -215,9 +234,12 @@ export default function RCMDashboardPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-blue-700">Days in A/R</p>
-                        <p className="text-2xl font-bold text-blue-900 mt-1">{daysInAR}</p>
+                        <p className="text-2xl font-bold text-blue-900 mt-1">
+                          {daysInAR}
+                        </p>
                         <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
-                          <TrendingDown className="h-3 w-3" /> -3 days vs last month
+                          <TrendingDown className="h-3 w-3" /> -3 days vs last
+                          month
                         </p>
                       </div>
                       <div className="p-3 bg-blue-100 rounded-xl">
@@ -231,8 +253,12 @@ export default function RCMDashboardPage() {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-violet-700">Clean Claim Rate</p>
-                        <p className="text-2xl font-bold text-violet-900 mt-1">{cleanClaimRate}%</p>
+                        <p className="text-sm text-violet-700">
+                          Clean Claim Rate
+                        </p>
+                        <p className="text-2xl font-bold text-violet-900 mt-1">
+                          {cleanClaimRate}%
+                        </p>
                         <p className="text-xs text-violet-600 mt-1 flex items-center gap-1">
                           <FileCheck className="h-3 w-3" /> Industry avg: 78%
                         </p>
@@ -270,11 +296,17 @@ export default function RCMDashboardPage() {
                               dataKey="value"
                             >
                               {claimsPipeline.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                <Cell
+                                  key={`cell-${index}`}
+                                  fill={entry.color}
+                                />
                               ))}
                             </Pie>
                             <Tooltip
-                              formatter={(value, name) => [`${value} claims`, name]}
+                              formatter={(value, name) => [
+                                `${value} claims`,
+                                name,
+                              ]}
                               contentStyle={{
                                 backgroundColor: "#fff",
                                 border: "1px solid #e5e7eb",
@@ -286,20 +318,26 @@ export default function RCMDashboardPage() {
                       </div>
                       <div className="flex-1 space-y-3">
                         {claimsPipeline.map((item) => (
-                          <div key={item.name} className="flex items-center justify-between">
+                          <div
+                            key={item.name}
+                            className="flex items-center justify-between"
+                          >
                             <div className="flex items-center gap-2">
                               <div
                                 className="w-3 h-3 rounded-full"
                                 style={{ backgroundColor: item.color }}
                               />
-                              <span className="text-sm text-gray-700">{item.name}</span>
+                              <span className="text-sm text-gray-700">
+                                {item.name}
+                              </span>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-semibold text-gray-900">
                                 {item.value}
                               </span>
                               <span className="text-xs text-gray-500">
-                                ({((item.value / totalClaims) * 100).toFixed(0)}%)
+                                ({((item.value / totalClaims) * 100).toFixed(0)}
+                                %)
                               </span>
                             </div>
                           </div>
@@ -324,7 +362,9 @@ export default function RCMDashboardPage() {
                           <XAxis dataKey="bucket" tick={{ fontSize: 12 }} />
                           <YAxis
                             tick={{ fontSize: 12 }}
-                            tickFormatter={(value) => `₹${(value / 100000).toFixed(0)}L`}
+                            tickFormatter={(value) =>
+                              `₹${(value / 100000).toFixed(0)}L`
+                            }
                           />
                           <Tooltip
                             formatter={(value: number) => [
@@ -337,7 +377,11 @@ export default function RCMDashboardPage() {
                               borderRadius: "0.5rem",
                             }}
                           />
-                          <Bar dataKey="amount" fill="#0d9488" radius={[4, 4, 0, 0]} />
+                          <Bar
+                            dataKey="amount"
+                            fill="#0d9488"
+                            radius={[4, 4, 0, 0]}
+                          />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -367,7 +411,9 @@ export default function RCMDashboardPage() {
                         <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                         <YAxis
                           tick={{ fontSize: 12 }}
-                          tickFormatter={(value) => `₹${(value / 100000).toFixed(0)}L`}
+                          tickFormatter={(value) =>
+                            `₹${(value / 100000).toFixed(0)}L`
+                          }
                         />
                         <Tooltip
                           formatter={(value: number, name: string) => [
@@ -375,8 +421,8 @@ export default function RCMDashboardPage() {
                             name === "submitted"
                               ? "Claims Submitted"
                               : name === "collected"
-                              ? "Collected"
-                              : "Denied",
+                                ? "Collected"
+                                : "Denied",
                           ]}
                           contentStyle={{
                             backgroundColor: "#fff",
@@ -432,12 +478,19 @@ export default function RCMDashboardPage() {
                   <CardContent>
                     <div className="space-y-4">
                       {denialReasons.map((item, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                        >
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                              <span className="text-xs font-bold text-red-600">{item.count}</span>
+                              <span className="text-xs font-bold text-red-600">
+                                {item.count}
+                              </span>
                             </div>
-                            <span className="text-sm font-medium text-gray-700">{item.reason}</span>
+                            <span className="text-sm font-medium text-gray-700">
+                              {item.reason}
+                            </span>
                           </div>
                           <span className="text-sm font-semibold text-gray-900">
                             {currencyFormatter.format(item.amount)}
@@ -461,7 +514,9 @@ export default function RCMDashboardPage() {
                         <div className="flex items-start gap-3">
                           <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
                           <div>
-                            <h4 className="font-semibold text-red-900">28 Claims Denied</h4>
+                            <h4 className="font-semibold text-red-900">
+                              28 Claims Denied
+                            </h4>
                             <p className="text-sm text-red-700 mt-1">
                               Review and resubmit with corrected information
                             </p>
@@ -470,7 +525,8 @@ export default function RCMDashboardPage() {
                               variant="outline"
                               className="mt-2 border-red-300 text-red-700"
                             >
-                              Review Denials <ArrowRight className="h-4 w-4 ml-1" />
+                              Review Denials{" "}
+                              <ArrowRight className="h-4 w-4 ml-1" />
                             </Button>
                           </div>
                         </div>
@@ -480,7 +536,9 @@ export default function RCMDashboardPage() {
                         <div className="flex items-start gap-3">
                           <Clock className="h-5 w-5 text-amber-500 mt-0.5" />
                           <div>
-                            <h4 className="font-semibold text-amber-900">67 Claims In Review</h4>
+                            <h4 className="font-semibold text-amber-900">
+                              67 Claims In Review
+                            </h4>
                             <p className="text-sm text-amber-700 mt-1">
                               Follow up with payers for faster processing
                             </p>
@@ -489,7 +547,8 @@ export default function RCMDashboardPage() {
                               variant="outline"
                               className="mt-2 border-amber-300 text-amber-700"
                             >
-                              View Pending <ArrowRight className="h-4 w-4 ml-1" />
+                              View Pending{" "}
+                              <ArrowRight className="h-4 w-4 ml-1" />
                             </Button>
                           </div>
                         </div>
@@ -499,7 +558,9 @@ export default function RCMDashboardPage() {
                         <div className="flex items-start gap-3">
                           <DollarSign className="h-5 w-5 text-blue-500 mt-0.5" />
                           <div>
-                            <h4 className="font-semibold text-blue-900">₹32L in 90+ Day A/R</h4>
+                            <h4 className="font-semibold text-blue-900">
+                              ₹32L in 90+ Day A/R
+                            </h4>
                             <p className="text-sm text-blue-700 mt-1">
                               Escalate aged receivables for collection
                             </p>
@@ -508,7 +569,8 @@ export default function RCMDashboardPage() {
                               variant="outline"
                               className="mt-2 border-blue-300 text-blue-700"
                             >
-                              View Aged A/R <ArrowRight className="h-4 w-4 ml-1" />
+                              View Aged A/R{" "}
+                              <ArrowRight className="h-4 w-4 ml-1" />
                             </Button>
                           </div>
                         </div>
@@ -524,4 +586,3 @@ export default function RCMDashboardPage() {
     </AuthGuard>
   );
 }
-

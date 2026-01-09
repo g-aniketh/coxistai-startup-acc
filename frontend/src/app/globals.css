@@ -4,7 +4,9 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.98 0.01 200); /* Light background with slight teal tint */
+  --background: oklch(
+    0.98 0.01 200
+  ); /* Light background with slight teal tint */
   --foreground: oklch(0.15 0.02 200); /* Dark text */
   --card: oklch(1 0 0); /* White cards */
   --card-foreground: oklch(0.15 0.02 200);
@@ -28,9 +30,9 @@
   /* Healthcare color palette */
   --chart-1: oklch(0.45 0.12 195); /* Teal - Primary */
   --chart-2: oklch(0.55 0.15 160); /* Green - Success */
-  --chart-3: oklch(0.65 0.18 45);  /* Orange - Warning */
-  --chart-4: oklch(0.50 0.12 250); /* Blue - Info */
-  --chart-5: oklch(0.55 0.18 25);  /* Red - Critical */
+  --chart-3: oklch(0.65 0.18 45); /* Orange - Warning */
+  --chart-4: oklch(0.5 0.12 250); /* Blue - Info */
+  --chart-5: oklch(0.55 0.18 25); /* Red - Critical */
 }
 
 @theme inline {

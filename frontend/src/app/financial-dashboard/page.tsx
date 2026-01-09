@@ -91,7 +91,14 @@ type SortConfig = {
   direction: "ascending" | "descending";
 };
 
-const COLORS = ["#0d9488", "#10b981", "#f59e0b", "#6366f1", "#ec4899", "#8b5cf6"];
+const COLORS = [
+  "#0d9488",
+  "#10b981",
+  "#f59e0b",
+  "#6366f1",
+  "#ec4899",
+  "#8b5cf6",
+];
 
 // Healthcare Statistics data
 const kpiData = [
@@ -165,24 +172,32 @@ function FinancialDashboardContent() {
   const [transactions, setTransactions] = useState<DemoTransaction[]>([]);
   const [accounts, setAccounts] = useState<DemoAccount[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dashboardSummary, setDashboardSummary] = useState<DashboardSummary | null>(null);
+  const [dashboardSummary, setDashboardSummary] =
+    useState<DashboardSummary | null>(null);
 
   // Mock hospital bank accounts - balances sum to totalBalance
-  const getMockBankAccounts = useCallback((summary: DashboardSummary | null): DemoAccount[] => {
-    if (!summary) return [];
-    const totalBalance = summary.financial.totalBalance;
-    
-    // Distribute balance across 3 hospital accounts: 50%, 30%, 20%
-    const account1Balance = Math.round(totalBalance * 0.5);
-    const account2Balance = Math.round(totalBalance * 0.3);
-    const account3Balance = totalBalance - account1Balance - account2Balance;
-    
-    return [
-      { id: "1", name: "Hospital Operating Account", balance: account1Balance },
-      { id: "2", name: "Patient Trust Account", balance: account2Balance },
-      { id: "3", name: "Capital Reserve Account", balance: account3Balance },
-    ];
-  }, []);
+  const getMockBankAccounts = useCallback(
+    (summary: DashboardSummary | null): DemoAccount[] => {
+      if (!summary) return [];
+      const totalBalance = summary.financial.totalBalance;
+
+      // Distribute balance across 3 hospital accounts: 50%, 30%, 20%
+      const account1Balance = Math.round(totalBalance * 0.5);
+      const account2Balance = Math.round(totalBalance * 0.3);
+      const account3Balance = totalBalance - account1Balance - account2Balance;
+
+      return [
+        {
+          id: "1",
+          name: "Hospital Operating Account",
+          balance: account1Balance,
+        },
+        { id: "2", name: "Patient Trust Account", balance: account2Balance },
+        { id: "3", name: "Capital Reserve Account", balance: account3Balance },
+      ];
+    },
+    []
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccount, setSelectedAccount] = useState<string>("all");
   const [sortConfig, setSortConfig] = useState<SortConfig>({
@@ -442,7 +457,8 @@ function FinancialDashboardContent() {
                     Hospital Financial Dashboard
                   </h1>
                   <p className="text-sm text-[#2C2C2C]/70 mt-1">
-                    Comprehensive view of revenue, expenses, and financial performance
+                    Comprehensive view of revenue, expenses, and financial
+                    performance
                   </p>
                 </div>
                 <div className="flex gap-3">
@@ -478,7 +494,8 @@ function FinancialDashboardContent() {
                         Healthcare Financial Intelligence
                       </h3>
                       <p className="text-sm text-teal-700">
-                        Revenue cycle analytics • Claim tracking • Financial forecasting
+                        Revenue cycle analytics • Claim tracking • Financial
+                        forecasting
                       </p>
                     </div>
                   </div>

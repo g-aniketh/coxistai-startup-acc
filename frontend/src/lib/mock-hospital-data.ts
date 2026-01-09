@@ -53,7 +53,15 @@ export interface StaffMember {
 export interface Facility {
   id: string;
   name: string;
-  type: "Ward" | "ICU" | "OT" | "Lab" | "Pharmacy" | "Radiology" | "Emergency" | "OPD";
+  type:
+    | "Ward"
+    | "ICU"
+    | "OT"
+    | "Lab"
+    | "Pharmacy"
+    | "Radiology"
+    | "Emergency"
+    | "OPD";
   totalBeds?: number;
   occupiedBeds?: number;
   floor: string;
@@ -598,7 +606,11 @@ export const mockFacilities: Facility[] = [
     type: "Lab",
     floor: "Ground Floor",
     status: "Operational",
-    equipment: ["Hematology Analyzer", "Biochemistry Analyzer", "Blood Gas Analyzer"],
+    equipment: [
+      "Hematology Analyzer",
+      "Biochemistry Analyzer",
+      "Blood Gas Analyzer",
+    ],
     contactExtension: "101",
   },
   {
@@ -626,7 +638,11 @@ export const mockFacilities: Facility[] = [
     occupiedBeds: 8,
     floor: "Ground Floor",
     status: "Operational",
-    equipment: ["Trauma Bay", "Resuscitation Equipment", "Point-of-Care Testing"],
+    equipment: [
+      "Trauma Bay",
+      "Resuscitation Equipment",
+      "Point-of-Care Testing",
+    ],
     contactExtension: "100",
   },
   {
@@ -662,7 +678,9 @@ export const getTodaysAppointments = (): Appointment[] => {
 };
 
 export const getOccupancyStats = () => {
-  const wards = mockFacilities.filter((f) => f.type === "Ward" || f.type === "ICU");
+  const wards = mockFacilities.filter(
+    (f) => f.type === "Ward" || f.type === "ICU"
+  );
   const totalBeds = wards.reduce((sum, f) => sum + (f.totalBeds || 0), 0);
   const occupiedBeds = wards.reduce((sum, f) => sum + (f.occupiedBeds || 0), 0);
   return {
@@ -672,4 +690,3 @@ export const getOccupancyStats = () => {
     occupancyRate: ((occupiedBeds / totalBeds) * 100).toFixed(1),
   };
 };
-

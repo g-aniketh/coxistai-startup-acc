@@ -157,57 +157,61 @@ export default function MultiBankSyncPage() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [dashboardSummary, setDashboardSummary] = useState<DashboardSummary | null>(null);
+  const [dashboardSummary, setDashboardSummary] =
+    useState<DashboardSummary | null>(null);
 
   // Mock bank accounts - balances sum to totalBalance
-  const getMockBankAccounts = useCallback((summary: DashboardSummary | null): BankAccount[] => {
-    if (!summary) return [];
-    const totalBalance = summary.financial.totalBalance;
-    
-    // Distribute balance across 3 accounts: 50%, 30%, 20%
-    const account1Balance = Math.round(totalBalance * 0.5);
-    const account2Balance = Math.round(totalBalance * 0.3);
-    const account3Balance = totalBalance - account1Balance - account2Balance; // Remaining to ensure exact sum
-    
-    return [
-      {
-        id: "1",
-        name: "HDFC Bank - Current Account",
-        bankName: "HDFC Bank",
-        accountNumber: "XXX-XXXX-5678",
-        accountType: "checking" as const,
-        balance: account1Balance,
-        lastSync: new Date().toISOString(),
-        status: "connected" as const,
-        transactionsCount: 45,
-        pendingTransactions: 2,
-      },
-      {
-        id: "2",
-        name: "ICICI Bank - Savings Account",
-        bankName: "ICICI Bank",
-        accountNumber: "XXX-XXXX-9012",
-        accountType: "savings" as const,
-        balance: account2Balance,
-        lastSync: new Date().toISOString(),
-        status: "connected" as const,
-        transactionsCount: 12,
-        pendingTransactions: 0,
-      },
-      {
-        id: "3",
-        name: "Axis Bank - Current Account",
-        bankName: "Axis Bank",
-        accountNumber: "XXX-XXXX-3456",
-        accountType: "checking" as const,
-        balance: account3Balance,
-        lastSync: new Date().toISOString(),
-        status: "connected" as const,
-        transactionsCount: 23,
-        pendingTransactions: 1,
-      },
-    ];
-  }, []);
+  const getMockBankAccounts = useCallback(
+    (summary: DashboardSummary | null): BankAccount[] => {
+      if (!summary) return [];
+      const totalBalance = summary.financial.totalBalance;
+
+      // Distribute balance across 3 accounts: 50%, 30%, 20%
+      const account1Balance = Math.round(totalBalance * 0.5);
+      const account2Balance = Math.round(totalBalance * 0.3);
+      const account3Balance = totalBalance - account1Balance - account2Balance; // Remaining to ensure exact sum
+
+      return [
+        {
+          id: "1",
+          name: "HDFC Bank - Current Account",
+          bankName: "HDFC Bank",
+          accountNumber: "XXX-XXXX-5678",
+          accountType: "checking" as const,
+          balance: account1Balance,
+          lastSync: new Date().toISOString(),
+          status: "connected" as const,
+          transactionsCount: 45,
+          pendingTransactions: 2,
+        },
+        {
+          id: "2",
+          name: "ICICI Bank - Savings Account",
+          bankName: "ICICI Bank",
+          accountNumber: "XXX-XXXX-9012",
+          accountType: "savings" as const,
+          balance: account2Balance,
+          lastSync: new Date().toISOString(),
+          status: "connected" as const,
+          transactionsCount: 12,
+          pendingTransactions: 0,
+        },
+        {
+          id: "3",
+          name: "Axis Bank - Current Account",
+          bankName: "Axis Bank",
+          accountNumber: "XXX-XXXX-3456",
+          accountType: "checking" as const,
+          balance: account3Balance,
+          lastSync: new Date().toISOString(),
+          status: "connected" as const,
+          transactionsCount: 23,
+          pendingTransactions: 1,
+        },
+      ];
+    },
+    []
+  );
 
   const loadDashboardSummary = useCallback(async () => {
     try {

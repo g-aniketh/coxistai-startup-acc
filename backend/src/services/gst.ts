@@ -325,9 +325,16 @@ export const createGstTaxRate = async (
     sgstRate: new Decimal(sgstRate),
     igstRate: new Decimal(igstRate),
     cessRate: new Decimal(input.cessRate ?? 0),
-    taxType: (input.taxType ?? "REGULAR") as "REGULAR" | "EXEMPT" | "NIL" | "ZERO_RATED",
+    taxType: (input.taxType ?? "REGULAR") as
+      | "REGULAR"
+      | "EXEMPT"
+      | "NIL"
+      | "ZERO_RATED",
     reverseCharge: input.reverseCharge ?? false,
-    applicableOn: (input.applicableOn ?? "BOTH") as "SALES" | "PURCHASE" | "BOTH",
+    applicableOn: (input.applicableOn ?? "BOTH") as
+      | "SALES"
+      | "PURCHASE"
+      | "BOTH",
     effectiveFrom,
     effectiveTo,
     isActive: input.isActive ?? true,
@@ -401,47 +408,52 @@ export const updateGstTaxRate = async (
   }
 
   const updateData = {
-      registrationId:
-        input.registrationId !== undefined
-          ? input.registrationId || null
-          : taxRate.registrationId,
-      supplyType: input.supplyType ?? taxRate.supplyType,
-      taxName:
-        input.taxName !== undefined
-          ? input.taxName?.trim() || null
-          : (taxRate as { taxName?: string | null }).taxName ?? null,
-      hsnOrSac:
-        input.hsnOrSac !== undefined
-          ? input.hsnOrSac?.trim() || null
-          : taxRate.hsnOrSac,
-      description:
-        input.description !== undefined
-          ? input.description?.trim() || null
-          : taxRate.description,
-      gstRate:
-        gstRate !== undefined ? new Decimal(gstRate) : (taxRate as { gstRate?: Decimal }).gstRate ?? new Decimal(0),
-      cgstRate: new Decimal(cgstRate),
-      sgstRate: new Decimal(sgstRate),
-      igstRate: new Decimal(igstRate),
-      cessRate:
-        input.cessRate !== undefined
-          ? new Decimal(input.cessRate)
-          : taxRate.cessRate,
-      effectiveFrom,
-      effectiveTo,
-      taxType:
-        input.taxType !== undefined
-          ? (input.taxType as "REGULAR" | "EXEMPT" | "NIL" | "ZERO_RATED")
-          : (taxRate as { taxType?: "REGULAR" | "EXEMPT" | "NIL" | "ZERO_RATED" }).taxType ?? "REGULAR",
-      reverseCharge:
-        input.reverseCharge !== undefined
-          ? input.reverseCharge
-          : (taxRate as { reverseCharge?: boolean }).reverseCharge ?? false,
-      applicableOn:
-        input.applicableOn !== undefined
-          ? (input.applicableOn as "SALES" | "PURCHASE" | "BOTH")
-          : (taxRate as { applicableOn?: "SALES" | "PURCHASE" | "BOTH" }).applicableOn ?? "BOTH",
-      isActive: input.isActive ?? taxRate.isActive,
+    registrationId:
+      input.registrationId !== undefined
+        ? input.registrationId || null
+        : taxRate.registrationId,
+    supplyType: input.supplyType ?? taxRate.supplyType,
+    taxName:
+      input.taxName !== undefined
+        ? input.taxName?.trim() || null
+        : ((taxRate as { taxName?: string | null }).taxName ?? null),
+    hsnOrSac:
+      input.hsnOrSac !== undefined
+        ? input.hsnOrSac?.trim() || null
+        : taxRate.hsnOrSac,
+    description:
+      input.description !== undefined
+        ? input.description?.trim() || null
+        : taxRate.description,
+    gstRate:
+      gstRate !== undefined
+        ? new Decimal(gstRate)
+        : ((taxRate as { gstRate?: Decimal }).gstRate ?? new Decimal(0)),
+    cgstRate: new Decimal(cgstRate),
+    sgstRate: new Decimal(sgstRate),
+    igstRate: new Decimal(igstRate),
+    cessRate:
+      input.cessRate !== undefined
+        ? new Decimal(input.cessRate)
+        : taxRate.cessRate,
+    effectiveFrom,
+    effectiveTo,
+    taxType:
+      input.taxType !== undefined
+        ? (input.taxType as "REGULAR" | "EXEMPT" | "NIL" | "ZERO_RATED")
+        : ((
+            taxRate as { taxType?: "REGULAR" | "EXEMPT" | "NIL" | "ZERO_RATED" }
+          ).taxType ?? "REGULAR"),
+    reverseCharge:
+      input.reverseCharge !== undefined
+        ? input.reverseCharge
+        : ((taxRate as { reverseCharge?: boolean }).reverseCharge ?? false),
+    applicableOn:
+      input.applicableOn !== undefined
+        ? (input.applicableOn as "SALES" | "PURCHASE" | "BOTH")
+        : ((taxRate as { applicableOn?: "SALES" | "PURCHASE" | "BOTH" })
+            .applicableOn ?? "BOTH"),
+    isActive: input.isActive ?? taxRate.isActive,
   };
 
   return prisma.gstTaxRate.update({

@@ -61,7 +61,7 @@ export default function DashboardPage() {
   const getMockBankAccounts = () => {
     if (!summary) return [];
     const totalBalance = summary.financial.totalBalance;
-    
+
     // Distribute balance across hospital accounts: 50%, 30%, 20%
     return [
       {
@@ -79,7 +79,10 @@ export default function DashboardPage() {
       {
         name: "Capital Reserve Account",
         accountNumber: "XXX-XXXX-3456",
-        balance: totalBalance - Math.round(totalBalance * 0.5) - Math.round(totalBalance * 0.3),
+        balance:
+          totalBalance -
+          Math.round(totalBalance * 0.5) -
+          Math.round(totalBalance * 0.3),
         type: "Reserve",
       },
     ];
@@ -155,7 +158,9 @@ export default function DashboardPage() {
   }
 
   // Calculate healthcare-specific metrics
-  const outstandingClaims = summary ? Math.round(summary.financial.totalBalance * 0.15) : 0;
+  const outstandingClaims = summary
+    ? Math.round(summary.financial.totalBalance * 0.15)
+    : 0;
   const daysInAR = 42; // Mock value - typical healthcare metric
   const collectionRate = 94.5; // Mock percentage
 
@@ -198,8 +203,9 @@ export default function DashboardPage() {
                         Complete Your Organization Setup (Recommended)
                       </h3>
                       <p className="text-sm text-amber-800 mb-3">
-                        Add your hospital details, NPI, Tax ID, and contact information 
-                        to optimize billing, compliance, and financial reporting.
+                        Add your hospital details, NPI, Tax ID, and contact
+                        information to optimize billing, compliance, and
+                        financial reporting.
                       </p>
                       <Button
                         onClick={handleGoToSettings}
@@ -225,7 +231,8 @@ export default function DashboardPage() {
                         Financial Intelligence: Active
                       </h3>
                       <p className="text-sm text-teal-700">
-                        Connected to billing systems • Real-time revenue analytics
+                        Connected to billing systems • Real-time revenue
+                        analytics
                       </p>
                     </div>
                   </div>
@@ -317,11 +324,15 @@ export default function DashboardPage() {
                         <ClipboardList className="h-6 w-6 text-orange-600" />
                       </div>
                       <div>
-                        <p className="text-sm text-orange-700">Outstanding Claims</p>
+                        <p className="text-sm text-orange-700">
+                          Outstanding Claims
+                        </p>
                         <p className="text-2xl font-bold text-orange-900">
                           {currencyFormatter.format(outstandingClaims)}
                         </p>
-                        <p className="text-xs text-orange-600">Pending insurance</p>
+                        <p className="text-xs text-orange-600">
+                          Pending insurance
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -335,8 +346,12 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <p className="text-sm text-blue-700">Days in A/R</p>
-                        <p className="text-2xl font-bold text-blue-900">{daysInAR}</p>
-                        <p className="text-xs text-blue-600">Industry avg: 49 days</p>
+                        <p className="text-2xl font-bold text-blue-900">
+                          {daysInAR}
+                        </p>
+                        <p className="text-xs text-blue-600">
+                          Industry avg: 49 days
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -349,8 +364,12 @@ export default function DashboardPage() {
                         <FileCheck className="h-6 w-6 text-emerald-600" />
                       </div>
                       <div>
-                        <p className="text-sm text-emerald-700">Collection Rate</p>
-                        <p className="text-2xl font-bold text-emerald-900">{collectionRate}%</p>
+                        <p className="text-sm text-emerald-700">
+                          Collection Rate
+                        </p>
+                        <p className="text-2xl font-bold text-emerald-900">
+                          {collectionRate}%
+                        </p>
                         <p className="text-xs text-emerald-600">Target: 95%</p>
                       </div>
                     </div>

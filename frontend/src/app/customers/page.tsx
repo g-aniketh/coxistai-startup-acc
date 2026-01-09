@@ -75,9 +75,7 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(
-    null
-  );
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [formData, setFormData] = useState<CustomerFormData>(INITIAL_FORM_DATA);
   const [submitting, setSubmitting] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -177,8 +175,10 @@ export default function CustomersPage() {
           customerType: formData.customerType,
           phone: formData.phone?.trim() || undefined,
           email: formData.email?.trim() || undefined,
-          billingAddressLine1: formData.billingAddressLine1?.trim() || undefined,
-          billingAddressLine2: formData.billingAddressLine2?.trim() || undefined,
+          billingAddressLine1:
+            formData.billingAddressLine1?.trim() || undefined,
+          billingAddressLine2:
+            formData.billingAddressLine2?.trim() || undefined,
           city: formData.city?.trim() || undefined,
           state: formData.state?.trim() || undefined,
           country: formData.country?.trim() || undefined,
@@ -209,8 +209,10 @@ export default function CustomersPage() {
           customerType: formData.customerType,
           phone: formData.phone?.trim() || undefined,
           email: formData.email?.trim() || undefined,
-          billingAddressLine1: formData.billingAddressLine1?.trim() || undefined,
-          billingAddressLine2: formData.billingAddressLine2?.trim() || undefined,
+          billingAddressLine1:
+            formData.billingAddressLine1?.trim() || undefined,
+          billingAddressLine2:
+            formData.billingAddressLine2?.trim() || undefined,
           city: formData.city?.trim() || undefined,
           state: formData.state?.trim() || undefined,
           country: formData.country?.trim() || undefined,
@@ -236,9 +238,7 @@ export default function CustomersPage() {
       }
     } catch (error: any) {
       console.error("Failed to save customer:", error);
-      toast.error(
-        error.response?.data?.message || "Failed to save customer"
-      );
+      toast.error(error.response?.data?.message || "Failed to save customer");
     } finally {
       setSubmitting(false);
     }
@@ -263,9 +263,7 @@ export default function CustomersPage() {
       }
     } catch (error: any) {
       console.error("Failed to delete customer:", error);
-      toast.error(
-        error.response?.data?.message || "Failed to delete customer"
-      );
+      toast.error(error.response?.data?.message || "Failed to delete customer");
     }
   };
 
@@ -312,8 +310,8 @@ export default function CustomersPage() {
               ) : customers.length === 0 ? (
                 <div className="text-center py-12 text-[#2C2C2C]/60">
                   <p className="text-sm">
-                    No customers found. Click "Add Customer" to create your first
-                    customer.
+                    No customers found. Click "Add Customer" to create your
+                    first customer.
                   </p>
                 </div>
               ) : (
@@ -395,16 +393,23 @@ export default function CustomersPage() {
                                 {customer.gstin}
                               </span>
                             ) : (
-                              <span className="text-sm text-[#2C2C2C]/40">—</span>
+                              <span className="text-sm text-[#2C2C2C]/40">
+                                —
+                              </span>
                             )}
                           </TableCell>
                           <TableCell className="px-4 py-3">
                             {customer.creditLimitAmount ? (
                               <span className="text-sm font-semibold text-[#2C2C2C]">
-                                ₹{Number(customer.creditLimitAmount).toLocaleString()}
+                                ₹
+                                {Number(
+                                  customer.creditLimitAmount
+                                ).toLocaleString()}
                               </span>
                             ) : (
-                              <span className="text-sm text-[#2C2C2C]/40">—</span>
+                              <span className="text-sm text-[#2C2C2C]/40">
+                                —
+                              </span>
                             )}
                           </TableCell>
                           <TableCell className="px-4 py-3">
@@ -476,7 +481,10 @@ export default function CustomersPage() {
                         id="customerName"
                         value={formData.customerName}
                         onChange={(e) =>
-                          setFormData({ ...formData, customerName: e.target.value })
+                          setFormData({
+                            ...formData,
+                            customerName: e.target.value,
+                          })
                         }
                         required
                         placeholder="Enter customer name"
@@ -548,9 +556,7 @@ export default function CustomersPage() {
                   <h3 className="text-lg font-semibold">Billing Address</h3>
 
                   <div className="space-y-2">
-                    <Label htmlFor="billingAddressLine1">
-                      Address Line 1
-                    </Label>
+                    <Label htmlFor="billingAddressLine1">Address Line 1</Label>
                     <Input
                       id="billingAddressLine1"
                       value={formData.billingAddressLine1}
@@ -565,9 +571,7 @@ export default function CustomersPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="billingAddressLine2">
-                      Address Line 2
-                    </Label>
+                    <Label htmlFor="billingAddressLine2">Address Line 2</Label>
                     <Input
                       id="billingAddressLine2"
                       value={formData.billingAddressLine2}
@@ -838,4 +842,3 @@ export default function CustomersPage() {
     </AuthGuard>
   );
 }
-

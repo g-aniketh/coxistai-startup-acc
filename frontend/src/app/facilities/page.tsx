@@ -27,24 +27,67 @@ import {
   Layers,
   Package,
 } from "lucide-react";
-import { mockFacilities, Facility, getOccupancyStats } from "@/lib/mock-hospital-data";
+import {
+  mockFacilities,
+  Facility,
+  getOccupancyStats,
+} from "@/lib/mock-hospital-data";
 import toast from "react-hot-toast";
 
-const typeConfig: Record<Facility["type"], { color: string; icon: React.ReactNode }> = {
-  Ward: { color: "bg-blue-100 text-blue-700", icon: <BedDouble className="h-4 w-4" /> },
-  ICU: { color: "bg-red-100 text-red-700", icon: <Activity className="h-4 w-4" /> },
-  OT: { color: "bg-purple-100 text-purple-700", icon: <Activity className="h-4 w-4" /> },
-  Lab: { color: "bg-green-100 text-green-700", icon: <Package className="h-4 w-4" /> },
-  Pharmacy: { color: "bg-teal-100 text-teal-700", icon: <Package className="h-4 w-4" /> },
-  Radiology: { color: "bg-indigo-100 text-indigo-700", icon: <Activity className="h-4 w-4" /> },
-  Emergency: { color: "bg-orange-100 text-orange-700", icon: <AlertTriangle className="h-4 w-4" /> },
-  OPD: { color: "bg-cyan-100 text-cyan-700", icon: <Building2 className="h-4 w-4" /> },
+const typeConfig: Record<
+  Facility["type"],
+  { color: string; icon: React.ReactNode }
+> = {
+  Ward: {
+    color: "bg-blue-100 text-blue-700",
+    icon: <BedDouble className="h-4 w-4" />,
+  },
+  ICU: {
+    color: "bg-red-100 text-red-700",
+    icon: <Activity className="h-4 w-4" />,
+  },
+  OT: {
+    color: "bg-purple-100 text-purple-700",
+    icon: <Activity className="h-4 w-4" />,
+  },
+  Lab: {
+    color: "bg-green-100 text-green-700",
+    icon: <Package className="h-4 w-4" />,
+  },
+  Pharmacy: {
+    color: "bg-teal-100 text-teal-700",
+    icon: <Package className="h-4 w-4" />,
+  },
+  Radiology: {
+    color: "bg-indigo-100 text-indigo-700",
+    icon: <Activity className="h-4 w-4" />,
+  },
+  Emergency: {
+    color: "bg-orange-100 text-orange-700",
+    icon: <AlertTriangle className="h-4 w-4" />,
+  },
+  OPD: {
+    color: "bg-cyan-100 text-cyan-700",
+    icon: <Building2 className="h-4 w-4" />,
+  },
 };
 
-const statusConfig: Record<Facility["status"], { color: string; icon: React.ReactNode }> = {
-  Operational: { color: "bg-green-100 text-green-700", icon: <CheckCircle className="h-3 w-3" /> },
-  "Under Maintenance": { color: "bg-amber-100 text-amber-700", icon: <Wrench className="h-3 w-3" /> },
-  Closed: { color: "bg-red-100 text-red-700", icon: <XCircle className="h-3 w-3" /> },
+const statusConfig: Record<
+  Facility["status"],
+  { color: string; icon: React.ReactNode }
+> = {
+  Operational: {
+    color: "bg-green-100 text-green-700",
+    icon: <CheckCircle className="h-3 w-3" />,
+  },
+  "Under Maintenance": {
+    color: "bg-amber-100 text-amber-700",
+    icon: <Wrench className="h-3 w-3" />,
+  },
+  Closed: {
+    color: "bg-red-100 text-red-700",
+    icon: <XCircle className="h-3 w-3" />,
+  },
 };
 
 export default function FacilitiesPage() {
@@ -65,8 +108,12 @@ export default function FacilitiesPage() {
 
   // Stats
   const occupancy = getOccupancyStats();
-  const operationalCount = facilities.filter((f) => f.status === "Operational").length;
-  const maintenanceCount = facilities.filter((f) => f.status === "Under Maintenance").length;
+  const operationalCount = facilities.filter(
+    (f) => f.status === "Operational"
+  ).length;
+  const maintenanceCount = facilities.filter(
+    (f) => f.status === "Under Maintenance"
+  ).length;
 
   return (
     <AuthGuard requireAuth={true}>
@@ -94,7 +141,9 @@ export default function FacilitiesPage() {
                   <div>
                     <p className="font-semibold text-amber-900">Demo Module</p>
                     <p className="text-sm text-amber-700">
-                      This is a demonstration module with sample facility data. Real-time monitoring features are for display purposes only.
+                      This is a demonstration module with sample facility data.
+                      Real-time monitoring features are for display purposes
+                      only.
                     </p>
                   </div>
                 </div>
@@ -110,7 +159,9 @@ export default function FacilitiesPage() {
                       </div>
                       <div className="text-sm text-teal-700">Total Beds</div>
                     </div>
-                    <div className="text-2xl font-bold text-teal-900">{occupancy.totalBeds}</div>
+                    <div className="text-2xl font-bold text-teal-900">
+                      {occupancy.totalBeds}
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -122,8 +173,12 @@ export default function FacilitiesPage() {
                       </div>
                       <div className="text-sm text-blue-700">Occupied</div>
                     </div>
-                    <div className="text-2xl font-bold text-blue-900">{occupancy.occupiedBeds}</div>
-                    <div className="text-xs text-blue-600">{occupancy.occupancyRate}% occupancy</div>
+                    <div className="text-2xl font-bold text-blue-900">
+                      {occupancy.occupiedBeds}
+                    </div>
+                    <div className="text-xs text-blue-600">
+                      {occupancy.occupancyRate}% occupancy
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -135,7 +190,9 @@ export default function FacilitiesPage() {
                       </div>
                       <div className="text-sm text-green-700">Available</div>
                     </div>
-                    <div className="text-2xl font-bold text-green-900">{occupancy.availableBeds}</div>
+                    <div className="text-2xl font-bold text-green-900">
+                      {occupancy.availableBeds}
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -147,7 +204,9 @@ export default function FacilitiesPage() {
                       </div>
                       <div className="text-sm text-amber-700">Maintenance</div>
                     </div>
-                    <div className="text-2xl font-bold text-amber-900">{maintenanceCount}</div>
+                    <div className="text-2xl font-bold text-amber-900">
+                      {maintenanceCount}
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -195,7 +254,9 @@ export default function FacilitiesPage() {
                     <CardHeader className="pb-2">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                          <div className={`p-3 rounded-xl ${typeConfig[facility.type].color}`}>
+                          <div
+                            className={`p-3 rounded-xl ${typeConfig[facility.type].color}`}
+                          >
                             {typeConfig[facility.type].icon}
                           </div>
                           <div>
@@ -203,13 +264,17 @@ export default function FacilitiesPage() {
                               {facility.name}
                             </CardTitle>
                             <div className="flex items-center gap-2 mt-1">
-                              <Badge className={typeConfig[facility.type].color}>
+                              <Badge
+                                className={typeConfig[facility.type].color}
+                              >
                                 {facility.type}
                               </Badge>
                             </div>
                           </div>
                         </div>
-                        <Badge className={`${statusConfig[facility.status].color} flex items-center gap-1`}>
+                        <Badge
+                          className={`${statusConfig[facility.status].color} flex items-center gap-1`}
+                        >
                           {statusConfig[facility.status].icon}
                           {facility.status}
                         </Badge>
@@ -231,7 +296,9 @@ export default function FacilitiesPage() {
                         {facility.totalBeds && (
                           <div className="pt-3 border-t">
                             <div className="flex items-center justify-between text-sm mb-2">
-                              <span className="text-gray-600">Bed Occupancy</span>
+                              <span className="text-gray-600">
+                                Bed Occupancy
+                              </span>
                               <span className="font-semibold">
                                 {facility.occupiedBeds}/{facility.totalBeds}
                               </span>
@@ -239,11 +306,15 @@ export default function FacilitiesPage() {
                             <div className="w-full bg-gray-200 rounded-full h-2">
                               <div
                                 className={`h-2 rounded-full ${
-                                  ((facility.occupiedBeds || 0) / facility.totalBeds) > 0.9
+                                  (facility.occupiedBeds || 0) /
+                                    facility.totalBeds >
+                                  0.9
                                     ? "bg-red-500"
-                                    : ((facility.occupiedBeds || 0) / facility.totalBeds) > 0.7
-                                    ? "bg-amber-500"
-                                    : "bg-green-500"
+                                    : (facility.occupiedBeds || 0) /
+                                          facility.totalBeds >
+                                        0.7
+                                      ? "bg-amber-500"
+                                      : "bg-green-500"
                                 }`}
                                 style={{
                                   width: `${((facility.occupiedBeds || 0) / facility.totalBeds) * 100}%`,
@@ -251,36 +322,53 @@ export default function FacilitiesPage() {
                               />
                             </div>
                             <div className="flex justify-between text-xs text-gray-500 mt-1">
-                              <span>{facility.totalBeds - (facility.occupiedBeds || 0)} available</span>
                               <span>
-                                {(((facility.occupiedBeds || 0) / facility.totalBeds) * 100).toFixed(0)}%
+                                {facility.totalBeds -
+                                  (facility.occupiedBeds || 0)}{" "}
+                                available
+                              </span>
+                              <span>
+                                {(
+                                  ((facility.occupiedBeds || 0) /
+                                    facility.totalBeds) *
+                                  100
+                                ).toFixed(0)}
+                                %
                               </span>
                             </div>
                           </div>
                         )}
 
                         {/* Equipment list */}
-                        {facility.equipment && facility.equipment.length > 0 && (
-                          <div className="pt-3 border-t">
-                            <p className="text-xs text-gray-500 mb-2">Equipment</p>
-                            <div className="flex flex-wrap gap-1">
-                              {facility.equipment.slice(0, 3).map((eq, idx) => (
-                                <Badge
-                                  key={idx}
-                                  variant="outline"
-                                  className="text-xs border-gray-300"
-                                >
-                                  {eq}
-                                </Badge>
-                              ))}
-                              {facility.equipment.length > 3 && (
-                                <Badge variant="outline" className="text-xs border-gray-300">
-                                  +{facility.equipment.length - 3} more
-                                </Badge>
-                              )}
+                        {facility.equipment &&
+                          facility.equipment.length > 0 && (
+                            <div className="pt-3 border-t">
+                              <p className="text-xs text-gray-500 mb-2">
+                                Equipment
+                              </p>
+                              <div className="flex flex-wrap gap-1">
+                                {facility.equipment
+                                  .slice(0, 3)
+                                  .map((eq, idx) => (
+                                    <Badge
+                                      key={idx}
+                                      variant="outline"
+                                      className="text-xs border-gray-300"
+                                    >
+                                      {eq}
+                                    </Badge>
+                                  ))}
+                                {facility.equipment.length > 3 && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs border-gray-300"
+                                  >
+                                    +{facility.equipment.length - 3} more
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
                       </div>
                     </CardContent>
                   </Card>
@@ -293,4 +381,3 @@ export default function FacilitiesPage() {
     </AuthGuard>
   );
 }
-

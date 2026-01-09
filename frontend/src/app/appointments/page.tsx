@@ -31,12 +31,30 @@ import {
 import { mockAppointments, Appointment } from "@/lib/mock-hospital-data";
 import toast from "react-hot-toast";
 
-const statusConfig: Record<Appointment["status"], { color: string; icon: React.ReactNode }> = {
-  Scheduled: { color: "bg-blue-100 text-blue-700", icon: <Clock className="h-3 w-3" /> },
-  "In Progress": { color: "bg-amber-100 text-amber-700", icon: <Clock className="h-3 w-3" /> },
-  Completed: { color: "bg-green-100 text-green-700", icon: <CheckCircle className="h-3 w-3" /> },
-  Cancelled: { color: "bg-gray-100 text-gray-700", icon: <XCircle className="h-3 w-3" /> },
-  "No Show": { color: "bg-red-100 text-red-700", icon: <AlertTriangle className="h-3 w-3" /> },
+const statusConfig: Record<
+  Appointment["status"],
+  { color: string; icon: React.ReactNode }
+> = {
+  Scheduled: {
+    color: "bg-blue-100 text-blue-700",
+    icon: <Clock className="h-3 w-3" />,
+  },
+  "In Progress": {
+    color: "bg-amber-100 text-amber-700",
+    icon: <Clock className="h-3 w-3" />,
+  },
+  Completed: {
+    color: "bg-green-100 text-green-700",
+    icon: <CheckCircle className="h-3 w-3" />,
+  },
+  Cancelled: {
+    color: "bg-gray-100 text-gray-700",
+    icon: <XCircle className="h-3 w-3" />,
+  },
+  "No Show": {
+    color: "bg-red-100 text-red-700",
+    icon: <AlertTriangle className="h-3 w-3" />,
+  },
 };
 
 const typeColors: Record<Appointment["type"], string> = {
@@ -51,7 +69,9 @@ export default function AppointmentsPage() {
   const [appointments] = useState<Appointment[]>(mockAppointments);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
 
   const filtered = useMemo(() => {
     return appointments.filter((apt) => {
@@ -59,7 +79,8 @@ export default function AppointmentsPage() {
         .join(" ")
         .toLowerCase()
         .includes(search.toLowerCase());
-      const matchesStatus = statusFilter === "all" || apt.status === statusFilter;
+      const matchesStatus =
+        statusFilter === "all" || apt.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
   }, [appointments, search, statusFilter]);
@@ -84,9 +105,15 @@ export default function AppointmentsPage() {
   const dates = Object.keys(appointmentsByDate).sort();
 
   // Stats
-  const todayCount = appointments.filter((a) => a.date === new Date().toISOString().split("T")[0]).length;
-  const scheduledCount = appointments.filter((a) => a.status === "Scheduled").length;
-  const completedCount = appointments.filter((a) => a.status === "Completed").length;
+  const todayCount = appointments.filter(
+    (a) => a.date === new Date().toISOString().split("T")[0]
+  ).length;
+  const scheduledCount = appointments.filter(
+    (a) => a.status === "Scheduled"
+  ).length;
+  const completedCount = appointments.filter(
+    (a) => a.status === "Completed"
+  ).length;
 
   const scheduleAppointment = () => {
     toast.success("Appointment scheduling form would open here (Demo Mode)");
@@ -133,7 +160,8 @@ export default function AppointmentsPage() {
                   <div>
                     <p className="font-semibold text-amber-900">Demo Module</p>
                     <p className="text-sm text-amber-700">
-                      This is a demonstration module with sample appointments. Scheduling features are for display purposes only.
+                      This is a demonstration module with sample appointments.
+                      Scheduling features are for display purposes only.
                     </p>
                   </div>
                 </div>
@@ -147,8 +175,12 @@ export default function AppointmentsPage() {
                       <Calendar className="h-5 w-5 text-teal-600" />
                     </div>
                     <div>
-                      <div className="text-sm text-teal-700">Today's Appointments</div>
-                      <div className="text-lg font-bold text-teal-900">{todayCount}</div>
+                      <div className="text-sm text-teal-700">
+                        Today's Appointments
+                      </div>
+                      <div className="text-lg font-bold text-teal-900">
+                        {todayCount}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -160,7 +192,9 @@ export default function AppointmentsPage() {
                     </div>
                     <div>
                       <div className="text-sm text-blue-700">Scheduled</div>
-                      <div className="text-lg font-bold text-blue-900">{scheduledCount}</div>
+                      <div className="text-lg font-bold text-blue-900">
+                        {scheduledCount}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -172,7 +206,9 @@ export default function AppointmentsPage() {
                     </div>
                     <div>
                       <div className="text-sm text-green-700">Completed</div>
-                      <div className="text-lg font-bold text-green-900">{completedCount}</div>
+                      <div className="text-lg font-bold text-green-900">
+                        {completedCount}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -184,7 +220,11 @@ export default function AppointmentsPage() {
                   <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
                     {/* Date Navigation */}
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" onClick={() => navigateDate("prev")}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigateDate("prev")}
+                      >
                         <ChevronLeft className="h-4 w-4" />
                       </Button>
                       <Input
@@ -193,13 +233,21 @@ export default function AppointmentsPage() {
                         onChange={(e) => setSelectedDate(e.target.value)}
                         className="w-40"
                       />
-                      <Button variant="outline" size="sm" onClick={() => navigateDate("next")}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigateDate("next")}
+                      >
                         <ChevronRight className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setSelectedDate(new Date().toISOString().split("T")[0])}
+                        onClick={() =>
+                          setSelectedDate(
+                            new Date().toISOString().split("T")[0]
+                          )
+                        }
                       >
                         Today
                       </Button>
@@ -215,14 +263,19 @@ export default function AppointmentsPage() {
                           onChange={(e) => setSearch(e.target.value)}
                         />
                       </div>
-                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <Select
+                        value={statusFilter}
+                        onValueChange={setStatusFilter}
+                      >
                         <SelectTrigger className="w-[150px] bg-white">
                           <SelectValue placeholder="All Status" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">All Status</SelectItem>
                           <SelectItem value="Scheduled">Scheduled</SelectItem>
-                          <SelectItem value="In Progress">In Progress</SelectItem>
+                          <SelectItem value="In Progress">
+                            In Progress
+                          </SelectItem>
                           <SelectItem value="Completed">Completed</SelectItem>
                           <SelectItem value="Cancelled">Cancelled</SelectItem>
                           <SelectItem value="No Show">No Show</SelectItem>
@@ -238,12 +291,17 @@ export default function AppointmentsPage() {
                 <Card className="rounded-xl border-0 shadow-lg bg-white">
                   <CardContent className="p-8 text-center">
                     <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500">No appointments found matching your criteria</p>
+                    <p className="text-gray-500">
+                      No appointments found matching your criteria
+                    </p>
                   </CardContent>
                 </Card>
               ) : (
                 dates.map((date) => (
-                  <Card key={date} className="rounded-xl border-0 shadow-lg bg-white">
+                  <Card
+                    key={date}
+                    className="rounded-xl border-0 shadow-lg bg-white"
+                  >
                     <CardHeader className="pb-2">
                       <CardTitle className="text-lg font-medium text-[#2C2C2C] flex items-center gap-2">
                         <Calendar className="h-5 w-5 text-teal-600" />
@@ -267,8 +325,12 @@ export default function AppointmentsPage() {
                           >
                             {/* Time */}
                             <div className="w-20 text-center">
-                              <div className="text-lg font-bold text-teal-600">{apt.time}</div>
-                              <div className="text-xs text-gray-500">{apt.duration} min</div>
+                              <div className="text-lg font-bold text-teal-600">
+                                {apt.time}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {apt.duration} min
+                              </div>
                             </div>
 
                             {/* Divider */}
@@ -279,27 +341,41 @@ export default function AppointmentsPage() {
                               <div className="flex items-center gap-2">
                                 <User className="h-4 w-4 text-gray-400" />
                                 <div>
-                                  <p className="font-medium text-gray-900">{apt.patientName}</p>
-                                  <p className="text-xs text-gray-500">{apt.patientId}</p>
+                                  <p className="font-medium text-gray-900">
+                                    {apt.patientName}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    {apt.patientId}
+                                  </p>
                                 </div>
                               </div>
 
                               <div className="flex items-center gap-2">
                                 <Stethoscope className="h-4 w-4 text-gray-400" />
                                 <div>
-                                  <p className="font-medium text-gray-900">{apt.doctorName}</p>
-                                  <p className="text-xs text-gray-500">{apt.department}</p>
+                                  <p className="font-medium text-gray-900">
+                                    {apt.doctorName}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    {apt.department}
+                                  </p>
                                 </div>
                               </div>
 
                               <div className="flex items-center gap-2">
                                 <MapPin className="h-4 w-4 text-gray-400" />
-                                <span className="text-sm text-gray-600">{apt.room}</span>
+                                <span className="text-sm text-gray-600">
+                                  {apt.room}
+                                </span>
                               </div>
 
                               <div className="flex items-center gap-2">
-                                <Badge className={typeColors[apt.type]}>{apt.type}</Badge>
-                                <Badge className={`${statusConfig[apt.status].color} flex items-center gap-1`}>
+                                <Badge className={typeColors[apt.type]}>
+                                  {apt.type}
+                                </Badge>
+                                <Badge
+                                  className={`${statusConfig[apt.status].color} flex items-center gap-1`}
+                                >
                                   {statusConfig[apt.status].icon}
                                   {apt.status}
                                 </Badge>
@@ -319,4 +395,3 @@ export default function AppointmentsPage() {
     </AuthGuard>
   );
 }
-

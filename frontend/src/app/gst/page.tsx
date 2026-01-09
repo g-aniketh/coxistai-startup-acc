@@ -1148,8 +1148,7 @@ export default function GstManagementPage() {
                     onValueChange={(value) =>
                       setTaxForm({
                         ...taxForm,
-                        registrationId:
-                          value === "__default__" ? "" : value,
+                        registrationId: value === "__default__" ? "" : value,
                       })
                     }
                   >

@@ -85,7 +85,8 @@ export default function PatientsPage() {
                     Patient Management
                   </h1>
                   <p className="text-sm text-[#2C2C2C]/70">
-                    View and manage patient records, medical history, and balances
+                    View and manage patient records, medical history, and
+                    balances
                   </p>
                 </div>
                 <div className="flex gap-3">
@@ -106,7 +107,8 @@ export default function PatientsPage() {
                   <div>
                     <p className="font-semibold text-amber-900">Demo Module</p>
                     <p className="text-sm text-amber-700">
-                      This is a demonstration module with sample data. Patient management features are for display purposes only.
+                      This is a demonstration module with sample data. Patient
+                      management features are for display purposes only.
                     </p>
                   </div>
                 </div>
@@ -120,8 +122,12 @@ export default function PatientsPage() {
                       <Users className="h-5 w-5 text-teal-600" />
                     </div>
                     <div>
-                      <div className="text-sm text-teal-700">Total Patients</div>
-                      <div className="text-lg font-bold text-teal-900">{totalPatients}</div>
+                      <div className="text-sm text-teal-700">
+                        Total Patients
+                      </div>
+                      <div className="text-lg font-bold text-teal-900">
+                        {totalPatients}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -133,7 +139,9 @@ export default function PatientsPage() {
                     </div>
                     <div>
                       <div className="text-sm text-green-700">Active</div>
-                      <div className="text-lg font-bold text-green-900">{activePatients}</div>
+                      <div className="text-lg font-bold text-green-900">
+                        {activePatients}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -144,8 +152,12 @@ export default function PatientsPage() {
                       <DollarSign className="h-5 w-5 text-orange-600" />
                     </div>
                     <div>
-                      <div className="text-sm text-orange-700">With Balance</div>
-                      <div className="text-lg font-bold text-orange-900">{patientsWithBalance}</div>
+                      <div className="text-sm text-orange-700">
+                        With Balance
+                      </div>
+                      <div className="text-lg font-bold text-orange-900">
+                        {patientsWithBalance}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -200,7 +212,10 @@ export default function PatientsPage() {
                       </TableHeader>
                       <TableBody>
                         {filtered.map((patient) => (
-                          <TableRow key={patient.id} className="hover:bg-gray-50">
+                          <TableRow
+                            key={patient.id}
+                            className="hover:bg-gray-50"
+                          >
                             <TableCell className="font-medium text-teal-600">
                               {patient.id}
                             </TableCell>
@@ -216,20 +231,28 @@ export default function PatientsPage() {
                             </TableCell>
                             <TableCell>
                               <div className="flex flex-col text-sm">
-                                <span className="text-gray-600">{patient.phone}</span>
-                                <span className="text-xs text-gray-400">{patient.email}</span>
+                                <span className="text-gray-600">
+                                  {patient.phone}
+                                </span>
+                                <span className="text-xs text-gray-400">
+                                  {patient.email}
+                                </span>
                               </div>
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-1">
                                 <Building2 className="h-3 w-3 text-gray-400" />
-                                <span className="text-sm">{patient.insuranceProvider}</span>
+                                <span className="text-sm">
+                                  {patient.insuranceProvider}
+                                </span>
                               </div>
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-1 text-sm text-gray-600">
                                 <Calendar className="h-3 w-3" />
-                                {new Date(patient.lastVisit).toLocaleDateString("en-IN")}
+                                {new Date(patient.lastVisit).toLocaleDateString(
+                                  "en-IN"
+                                )}
                               </div>
                             </TableCell>
                             <TableCell>
@@ -238,8 +261,8 @@ export default function PatientsPage() {
                                   patient.status === "Active"
                                     ? "bg-green-100 text-green-700"
                                     : patient.status === "Discharged"
-                                    ? "bg-blue-100 text-blue-700"
-                                    : "bg-gray-100 text-gray-700"
+                                      ? "bg-blue-100 text-blue-700"
+                                      : "bg-gray-100 text-gray-700"
                                 }
                               >
                                 {patient.status}
@@ -273,7 +296,10 @@ export default function PatientsPage() {
               </Card>
 
               {/* Patient Detail Dialog */}
-              <Dialog open={!!selectedPatient} onOpenChange={() => setSelectedPatient(null)}>
+              <Dialog
+                open={!!selectedPatient}
+                onOpenChange={() => setSelectedPatient(null)}
+              >
                 <DialogContent className="sm:max-w-2xl">
                   <DialogHeader>
                     <DialogTitle className="text-[#2C2C2C] flex items-center gap-2">
@@ -291,25 +317,45 @@ export default function PatientsPage() {
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-4">
                           <div>
-                            <h4 className="text-xs text-gray-500 uppercase tracking-wide">Patient ID</h4>
-                            <p className="font-semibold text-teal-600">{selectedPatient.id}</p>
+                            <h4 className="text-xs text-gray-500 uppercase tracking-wide">
+                              Patient ID
+                            </h4>
+                            <p className="font-semibold text-teal-600">
+                              {selectedPatient.id}
+                            </p>
                           </div>
                           <div>
-                            <h4 className="text-xs text-gray-500 uppercase tracking-wide">Full Name</h4>
-                            <p className="font-medium">{selectedPatient.name}</p>
+                            <h4 className="text-xs text-gray-500 uppercase tracking-wide">
+                              Full Name
+                            </h4>
+                            <p className="font-medium">
+                              {selectedPatient.name}
+                            </p>
                           </div>
                           <div className="flex gap-4">
                             <div>
-                              <h4 className="text-xs text-gray-500 uppercase tracking-wide">DOB</h4>
-                              <p>{new Date(selectedPatient.dateOfBirth).toLocaleDateString("en-IN")}</p>
+                              <h4 className="text-xs text-gray-500 uppercase tracking-wide">
+                                DOB
+                              </h4>
+                              <p>
+                                {new Date(
+                                  selectedPatient.dateOfBirth
+                                ).toLocaleDateString("en-IN")}
+                              </p>
                             </div>
                             <div>
-                              <h4 className="text-xs text-gray-500 uppercase tracking-wide">Gender</h4>
+                              <h4 className="text-xs text-gray-500 uppercase tracking-wide">
+                                Gender
+                              </h4>
                               <p>{selectedPatient.gender}</p>
                             </div>
                             <div>
-                              <h4 className="text-xs text-gray-500 uppercase tracking-wide">Blood</h4>
-                              <p className="font-bold text-red-600">{selectedPatient.bloodType}</p>
+                              <h4 className="text-xs text-gray-500 uppercase tracking-wide">
+                                Blood
+                              </h4>
+                              <p className="font-bold text-red-600">
+                                {selectedPatient.bloodType}
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -320,26 +366,36 @@ export default function PatientsPage() {
                           </div>
                           <div className="flex items-center gap-2">
                             <Mail className="h-4 w-4 text-gray-400" />
-                            <span className="text-sm">{selectedPatient.email}</span>
+                            <span className="text-sm">
+                              {selectedPatient.email}
+                            </span>
                           </div>
                           <div className="flex items-start gap-2">
                             <MapPin className="h-4 w-4 text-gray-400 mt-0.5" />
-                            <span className="text-sm">{selectedPatient.address}</span>
+                            <span className="text-sm">
+                              {selectedPatient.address}
+                            </span>
                           </div>
                         </div>
                       </div>
 
                       {/* Insurance */}
                       <div className="p-4 bg-blue-50 rounded-lg">
-                        <h4 className="font-semibold text-blue-900 mb-2">Insurance Information</h4>
+                        <h4 className="font-semibold text-blue-900 mb-2">
+                          Insurance Information
+                        </h4>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
                             <span className="text-blue-600">Provider:</span>
-                            <span className="ml-2 font-medium">{selectedPatient.insuranceProvider}</span>
+                            <span className="ml-2 font-medium">
+                              {selectedPatient.insuranceProvider}
+                            </span>
                           </div>
                           <div>
                             <span className="text-blue-600">Policy #:</span>
-                            <span className="ml-2 font-medium">{selectedPatient.policyNumber}</span>
+                            <span className="ml-2 font-medium">
+                              {selectedPatient.policyNumber}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -347,37 +403,60 @@ export default function PatientsPage() {
                       {/* Medical Info */}
                       <div className="grid grid-cols-2 gap-4">
                         <div className="p-4 bg-gray-50 rounded-lg">
-                          <h4 className="font-semibold text-gray-900 mb-2">Medical History</h4>
+                          <h4 className="font-semibold text-gray-900 mb-2">
+                            Medical History
+                          </h4>
                           {selectedPatient.medicalHistory.length > 0 ? (
                             <ul className="text-sm space-y-1">
-                              {selectedPatient.medicalHistory.map((item, idx) => (
-                                <li key={idx} className="text-gray-600">• {item}</li>
-                              ))}
+                              {selectedPatient.medicalHistory.map(
+                                (item, idx) => (
+                                  <li key={idx} className="text-gray-600">
+                                    • {item}
+                                  </li>
+                                )
+                              )}
                             </ul>
                           ) : (
-                            <p className="text-sm text-gray-500">No significant history</p>
+                            <p className="text-sm text-gray-500">
+                              No significant history
+                            </p>
                           )}
                         </div>
                         <div className="p-4 bg-red-50 rounded-lg">
-                          <h4 className="font-semibold text-red-900 mb-2">Allergies</h4>
+                          <h4 className="font-semibold text-red-900 mb-2">
+                            Allergies
+                          </h4>
                           {selectedPatient.allergies.length > 0 ? (
                             <ul className="text-sm space-y-1">
                               {selectedPatient.allergies.map((allergy, idx) => (
-                                <li key={idx} className="text-red-600 font-medium">⚠ {allergy}</li>
+                                <li
+                                  key={idx}
+                                  className="text-red-600 font-medium"
+                                >
+                                  ⚠ {allergy}
+                                </li>
                               ))}
                             </ul>
                           ) : (
-                            <p className="text-sm text-gray-500">No known allergies</p>
+                            <p className="text-sm text-gray-500">
+                              No known allergies
+                            </p>
                           )}
                         </div>
                       </div>
 
                       {/* Emergency Contact */}
                       <div className="p-4 bg-amber-50 rounded-lg">
-                        <h4 className="font-semibold text-amber-900 mb-2">Emergency Contact</h4>
+                        <h4 className="font-semibold text-amber-900 mb-2">
+                          Emergency Contact
+                        </h4>
                         <div className="text-sm">
-                          <span className="font-medium">{selectedPatient.emergencyContact}</span>
-                          <span className="text-amber-600 ml-4">{selectedPatient.emergencyPhone}</span>
+                          <span className="font-medium">
+                            {selectedPatient.emergencyContact}
+                          </span>
+                          <span className="text-amber-600 ml-4">
+                            {selectedPatient.emergencyPhone}
+                          </span>
                         </div>
                       </div>
 
@@ -385,8 +464,12 @@ export default function PatientsPage() {
                       {selectedPatient.balance > 0 && (
                         <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg flex items-center justify-between">
                           <div>
-                            <h4 className="font-semibold text-rose-900">Outstanding Balance</h4>
-                            <p className="text-sm text-rose-600">Payment pending</p>
+                            <h4 className="font-semibold text-rose-900">
+                              Outstanding Balance
+                            </h4>
+                            <p className="text-sm text-rose-600">
+                              Payment pending
+                            </p>
                           </div>
                           <span className="text-2xl font-bold text-rose-600">
                             {currencyFormatter.format(selectedPatient.balance)}
@@ -395,7 +478,10 @@ export default function PatientsPage() {
                       )}
 
                       <div className="flex justify-end gap-3 pt-2">
-                        <Button variant="outline" onClick={() => setSelectedPatient(null)}>
+                        <Button
+                          variant="outline"
+                          onClick={() => setSelectedPatient(null)}
+                        >
                           Close
                         </Button>
                       </div>
@@ -410,4 +496,3 @@ export default function PatientsPage() {
     </AuthGuard>
   );
 }
-

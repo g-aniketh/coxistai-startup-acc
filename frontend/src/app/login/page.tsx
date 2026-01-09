@@ -5,7 +5,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth";
 import AuthGuard from "@/components/auth/AuthGuard";
-import { Eye, EyeOff, HeartPulse, Activity, Shield, BarChart3 } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  HeartPulse,
+  Activity,
+  Shield,
+  BarChart3,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
@@ -37,19 +44,29 @@ export default function LoginPage() {
           <div className="absolute inset-0 opacity-10">
             <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
               <defs>
-                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1"/>
+                <pattern
+                  id="grid"
+                  width="40"
+                  height="40"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <path
+                    d="M 40 0 L 0 0 0 40"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="1"
+                  />
                 </pattern>
               </defs>
               <rect width="100%" height="100%" fill="url(#grid)" />
             </svg>
           </div>
-          
+
           {/* Floating Elements */}
           <div className="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-2xl backdrop-blur-sm animate-pulse" />
           <div className="absolute bottom-32 right-20 w-16 h-16 bg-white/10 rounded-xl backdrop-blur-sm animate-pulse delay-300" />
           <div className="absolute top-1/3 right-10 w-12 h-12 bg-white/10 rounded-lg backdrop-blur-sm animate-pulse delay-700" />
-          
+
           <div className="relative z-10 flex flex-col justify-center p-12 text-white">
             <div className="flex items-center gap-3 mb-8">
               <div className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
@@ -57,18 +74,23 @@ export default function LoginPage() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold">MediFinance Pro</h1>
-                <p className="text-teal-100 text-sm">Hospital Financial Management</p>
+                <p className="text-teal-100 text-sm">
+                  Hospital Financial Management
+                </p>
               </div>
             </div>
-            
+
             <h2 className="text-4xl font-bold mb-4 leading-tight">
-              Optimize Your Hospital's<br />Financial Health
+              Optimize Your Hospital's
+              <br />
+              Financial Health
             </h2>
             <p className="text-teal-100 text-lg mb-8 max-w-md">
-              Real-time revenue cycle management, patient billing, insurance claims tracking, 
-              and comprehensive financial analytics — all in one platform.
+              Real-time revenue cycle management, patient billing, insurance
+              claims tracking, and comprehensive financial analytics — all in
+              one platform.
             </p>
-            
+
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
@@ -80,7 +102,9 @@ export default function LoginPage() {
                 <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
                   <BarChart3 className="h-5 w-5" />
                 </div>
-                <span className="text-teal-50">AI-Powered Financial Insights</span>
+                <span className="text-teal-50">
+                  AI-Powered Financial Insights
+                </span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
@@ -101,7 +125,9 @@ export default function LoginPage() {
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center">
                   <HeartPulse className="h-6 w-6 text-white" />
                 </div>
-                <span className="text-2xl font-bold text-gray-900">MediFinance Pro</span>
+                <span className="text-2xl font-bold text-gray-900">
+                  MediFinance Pro
+                </span>
               </div>
             </div>
 
@@ -180,7 +206,7 @@ export default function LoginPage() {
                 </button>
               </form>
             </div>
-            
+
             <p className="text-center text-sm text-gray-600">
               Don't have an account?{" "}
               <Link

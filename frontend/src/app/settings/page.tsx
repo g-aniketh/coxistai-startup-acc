@@ -452,7 +452,8 @@ export default function SettingsPage() {
   const [seriesDrafts, setSeriesDrafts] = useState<
     Record<string, { name: string; prefix: string; suffix: string }>
   >({});
-  const [dashboardSummary, setDashboardSummary] = useState<DashboardSummary | null>(null);
+  const [dashboardSummary, setDashboardSummary] =
+    useState<DashboardSummary | null>(null);
 
   const hasAddresses = useMemo(
     () => (profileForm?.addresses?.length ?? 0) > 0,
@@ -463,7 +464,7 @@ export default function SettingsPage() {
   const getMockBankAccounts = () => {
     if (!dashboardSummary) return [];
     const totalBalance = dashboardSummary.financial.totalBalance;
-    
+
     // Distribute balance across 3 accounts: 50%, 30%, 20%
     return [
       {
@@ -479,7 +480,10 @@ export default function SettingsPage() {
       {
         name: "Axis Bank - Current Account",
         accountNumber: "XXX-XXXX-3456",
-        balance: totalBalance - Math.round(totalBalance * 0.5) - Math.round(totalBalance * 0.3), // Remaining to ensure exact sum
+        balance:
+          totalBalance -
+          Math.round(totalBalance * 0.5) -
+          Math.round(totalBalance * 0.3), // Remaining to ensure exact sum
       },
     ];
   };
@@ -823,7 +827,6 @@ export default function SettingsPage() {
       setVoucherSaving((prev) => ({ ...prev, [voucherTypeId]: false }));
     }
   };
-
 
   const handleProfileFieldChange = (
     field: keyof CompanyProfileInput,

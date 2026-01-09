@@ -28,7 +28,9 @@ export default function Home() {
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center mx-auto mb-4 animate-pulse">
           <HeartPulse className="h-8 w-8 text-white" />
         </div>
-        <h1 className="text-xl font-bold text-gray-900 mb-2">MediFinance Pro</h1>
+        <h1 className="text-xl font-bold text-gray-900 mb-2">
+          MediFinance Pro
+        </h1>
         <div className="flex items-center justify-center gap-2">
           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-teal-600"></div>
           <p className="text-gray-600">Loading...</p>

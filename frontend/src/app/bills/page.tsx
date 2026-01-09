@@ -647,7 +647,8 @@ export default function BillsPage() {
             <Card className="rounded-2xl shadow-lg border-0 bg-white">
               <CardHeader className="flex flex-col gap-2">
                 <CardTitle className="text-lg">
-                  Create {billType === "RECEIVABLE" ? "Patient Account" : "Vendor"}{" "}
+                  Create{" "}
+                  {billType === "RECEIVABLE" ? "Patient Account" : "Vendor"}{" "}
                   Entry
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
@@ -817,11 +818,11 @@ export default function BillsPage() {
                     )}
                   </div>
 
-                    <Button
-                      type="submit"
-                      disabled={creating}
-                      className="w-full bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center gap-2"
-                    >
+                  <Button
+                    type="submit"
+                    disabled={creating}
+                    className="w-full bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center gap-2"
+                  >
                     {creating ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />

@@ -77,10 +77,10 @@ export default function SalesVoucherPage() {
       const [customersRes, ledgersRes, itemsRes, warehousesRes] =
         await Promise.all([
           apiClient.customers.list({ isActive: true }),
-        apiClient.bookkeeping.listLedgers(),
-        apiClient.items.list(),
-        apiClient.warehouses.list(),
-      ]);
+          apiClient.bookkeeping.listLedgers(),
+          apiClient.items.list(),
+          apiClient.warehouses.list(),
+        ]);
 
       if (customersRes.success && customersRes.data) {
         setCustomers(customersRes.data);
@@ -349,10 +349,7 @@ export default function SalesVoucherPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="customer"
-                      className="text-[#2C2C2C]"
-                    >
+                    <Label htmlFor="customer" className="text-[#2C2C2C]">
                       Customer *
                     </Label>
                     <Select
@@ -378,8 +375,8 @@ export default function SalesVoucherPage() {
                         ) : customerLedgers.length > 0 ? (
                           // Fallback to ledgers if no customers
                           customerLedgers.map((ledger) => (
-                          <SelectItem key={ledger.id} value={ledger.id}>
-                            {ledger.name}
+                            <SelectItem key={ledger.id} value={ledger.id}>
+                              {ledger.name}
                             </SelectItem>
                           ))
                         ) : (

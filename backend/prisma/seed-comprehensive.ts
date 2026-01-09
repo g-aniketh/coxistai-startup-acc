@@ -1865,43 +1865,56 @@ async function main() {
   // IMPORTANT: Create Purchase Vouchers FIRST to add stock, then create Sales vouchers
   // Create Purchase Vouchers with GST (these add stock to warehouses)
   // Create purchase vouchers for ALL items to ensure every item has stock
-  if (purchaseVoucherType && suppliers.length > 0 && items.length > 0 && voucherWarehouse && purchaseLedger && bankAccount) {
+  if (
+    purchaseVoucherType &&
+    suppliers.length > 0 &&
+    items.length > 0 &&
+    voucherWarehouse &&
+    purchaseLedger &&
+    bankAccount
+  ) {
     for (const item of items) {
       const numPurchases = 3 + Math.floor(Math.random() * 3); // 3-5 purchases per item
-      
+
       for (let i = 0; i < numPurchases; i++) {
-        const supplier = suppliers[Math.floor(Math.random() * suppliers.length)];
+        const supplier =
+          suppliers[Math.floor(Math.random() * suppliers.length)];
         const warehouse = voucherWarehouse;
 
-      try {
-        // Create larger quantities to ensure enough stock for sales
-        const quantity = 20 + Math.floor(Math.random() * 30); // 20-50 units
-        const rate = 5000 + Math.random() * 20000;
-        const gstRate = [5, 12, 18][Math.floor(Math.random() * 3)];
+        try {
+          // Create larger quantities to ensure enough stock for sales
+          const quantity = 20 + Math.floor(Math.random() * 30); // 20-50 units
+          const rate = 5000 + Math.random() * 20000;
+          const gstRate = [5, 12, 18][Math.floor(Math.random() * 3)];
 
-        // Use earlier dates for purchases (so stock exists before sales)
-        const voucherDate = new Date();
-        voucherDate.setDate(voucherDate.getDate() - (90 + Math.floor(Math.random() * 30))); // 90-120 days ago
+          // Use earlier dates for purchases (so stock exists before sales)
+          const voucherDate = new Date();
+          voucherDate.setDate(
+            voucherDate.getDate() - (90 + Math.floor(Math.random() * 30))
+          ); // 90-120 days ago
 
-        await createVoucher(mainStartup.id, {
-          voucherTypeId: purchaseVoucherType.id,
-          date: voucherDate.toISOString().split("T")[0],
-          narration: `Purchase from ${supplier.name}`,
-          partyLedgerId: supplier.id,
-          inventoryLines: [
-            {
-              itemId: item.id,
-              warehouseId: warehouse.id,
-              quantity,
-              rate,
-              gstRatePercent: gstRate,
-            },
-          ],
-          autoPost: true,
-        });
-      } catch (error) {
-        console.warn(`Failed to create purchase voucher for ${item.itemName}:`, error);
-      }
+          await createVoucher(mainStartup.id, {
+            voucherTypeId: purchaseVoucherType.id,
+            date: voucherDate.toISOString().split("T")[0],
+            narration: `Purchase from ${supplier.name}`,
+            partyLedgerId: supplier.id,
+            inventoryLines: [
+              {
+                itemId: item.id,
+                warehouseId: warehouse.id,
+                quantity,
+                rate,
+                gstRatePercent: gstRate,
+              },
+            ],
+            autoPost: true,
+          });
+        } catch (error) {
+          console.warn(
+            `Failed to create purchase voucher for ${item.itemName}:`,
+            error
+          );
+        }
       }
     }
     console.log("✓ Created purchase vouchers with GST for main startup");
@@ -1909,7 +1922,14 @@ async function main() {
 
   // Create Sales Vouchers with GST (these consume stock)
   // Use all items for sales vouchers since they all have stock now
-  if (salesVoucherType && customers.length > 0 && items.length > 0 && voucherWarehouse && salesLedger && bankAccount) {
+  if (
+    salesVoucherType &&
+    customers.length > 0 &&
+    items.length > 0 &&
+    voucherWarehouse &&
+    salesLedger &&
+    bankAccount
+  ) {
     for (let i = 0; i < 5; i++) {
       const customer = customers[i % customers.length];
       const item = items[i % items.length]; // Use all items, cycling through
@@ -1930,7 +1950,9 @@ async function main() {
 
           // Use more recent dates for sales (after purchases)
           const voucherDate = new Date();
-          voucherDate.setDate(voucherDate.getDate() - Math.floor(Math.random() * 30)); // 0-30 days ago
+          voucherDate.setDate(
+            voucherDate.getDate() - Math.floor(Math.random() * 30)
+          ); // 0-30 days ago
 
           await createVoucher(mainStartup.id, {
             voucherTypeId: salesVoucherType.id,
@@ -1964,7 +1986,9 @@ async function main() {
       try {
         const amount = 10000 + Math.random() * 50000;
         const voucherDate = new Date();
-        voucherDate.setDate(voucherDate.getDate() - Math.floor(Math.random() * 60));
+        voucherDate.setDate(
+          voucherDate.getDate() - Math.floor(Math.random() * 60)
+        );
 
         await createVoucher(mainStartup.id, {
           voucherTypeId: paymentVoucherType.id,
@@ -2006,7 +2030,9 @@ async function main() {
         try {
           const amount = 20000 + Math.random() * 100000;
           const voucherDate = new Date();
-          voucherDate.setDate(voucherDate.getDate() - Math.floor(Math.random() * 60));
+          voucherDate.setDate(
+            voucherDate.getDate() - Math.floor(Math.random() * 60)
+          );
 
           await createVoucher(mainStartup.id, {
             voucherTypeId: receiptVoucherType.id,

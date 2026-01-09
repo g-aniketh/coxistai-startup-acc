@@ -81,7 +81,11 @@ export default function Sidebar({
       items: [
         { name: "RCM Dashboard", href: "/rcm", icon: Activity },
         { name: "Patient Billing", href: "/invoicing", icon: FileCheck },
-        { name: "Insurance Claims", href: "/insurance-claims", icon: ClipboardList },
+        {
+          name: "Insurance Claims",
+          href: "/insurance-claims",
+          icon: ClipboardList,
+        },
         { name: "Patient Accounts", href: "/bills", icon: HandCoins },
       ],
     },

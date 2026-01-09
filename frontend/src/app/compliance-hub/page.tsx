@@ -188,7 +188,7 @@ export default function ComplianceHubPage() {
   );
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [showReceiptForm, setShowReceiptForm] = useState(false);
-  
+
   // Form state
   const [formData, setFormData] = useState({
     merchant: "",
@@ -475,7 +475,7 @@ export default function ComplianceHubPage() {
 
     setExpenseReceipts((prev) => [newReceipt, ...prev]);
     toast.success("Receipt added successfully!");
-    
+
     // Reset form
     setFormData({
       merchant: "",
@@ -488,10 +488,7 @@ export default function ComplianceHubPage() {
     setIsSubmitting(false);
   };
 
-  const handleFormChange = (
-    field: keyof typeof formData,
-    value: string
-  ) => {
+  const handleFormChange = (field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -1482,14 +1479,18 @@ export default function ComplianceHubPage() {
                     </CardHeader>
                     {showReceiptForm && (
                       <CardContent className="pt-0">
-                        <form onSubmit={handleManualReceiptSubmit} className="space-y-4">
+                        <form
+                          onSubmit={handleManualReceiptSubmit}
+                          className="space-y-4"
+                        >
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                               <Label
                                 htmlFor="merchant"
                                 className="text-sm font-medium text-[#2C2C2C]"
                               >
-                                Merchant Name <span className="text-red-500">*</span>
+                                Merchant Name{" "}
+                                <span className="text-red-500">*</span>
                               </Label>
                               <Input
                                 id="merchant"
@@ -1508,7 +1509,8 @@ export default function ComplianceHubPage() {
                                 htmlFor="amount"
                                 className="text-sm font-medium text-[#2C2C2C]"
                               >
-                                Amount (₹) <span className="text-red-500">*</span>
+                                Amount (₹){" "}
+                                <span className="text-red-500">*</span>
                               </Label>
                               <Input
                                 id="amount"
@@ -1574,7 +1576,8 @@ export default function ComplianceHubPage() {
                               htmlFor="description"
                               className="text-sm font-medium text-[#2C2C2C]"
                             >
-                              Description <span className="text-red-500">*</span>
+                              Description{" "}
+                              <span className="text-red-500">*</span>
                             </Label>
                             <Textarea
                               id="description"

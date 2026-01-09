@@ -1052,14 +1052,14 @@ export async function getJournals(
   // Validate and parse dates
   let from: Date | undefined;
   let to: Date;
-  
+
   if (fromDate) {
     from = new Date(fromDate);
     if (isNaN(from.getTime())) {
       throw new Error("Invalid fromDate format. Expected YYYY-MM-DD");
     }
   }
-  
+
   if (toDate) {
     to = new Date(toDate);
     if (isNaN(to.getTime())) {

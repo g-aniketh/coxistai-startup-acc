@@ -39,9 +39,7 @@ router.get("/", async (req: AuthRequest, res) => {
     return res.status(500).json({
       success: false,
       message:
-        error instanceof Error
-          ? error.message
-          : "Failed to fetch customers",
+        error instanceof Error ? error.message : "Failed to fetch customers",
     });
   }
 });
@@ -63,8 +61,7 @@ router.get("/:customerId", async (req: AuthRequest, res) => {
     console.error("Get customer error:", error);
     return res.status(404).json({
       success: false,
-      message:
-        error instanceof Error ? error.message : "Customer not found",
+      message: error instanceof Error ? error.message : "Customer not found",
     });
   }
 });
@@ -95,9 +92,7 @@ router.post("/", async (req: AuthRequest, res) => {
     return res.status(400).json({
       success: false,
       message:
-        error instanceof Error
-          ? error.message
-          : "Failed to create customer",
+        error instanceof Error ? error.message : "Failed to create customer",
     });
   }
 });
@@ -129,9 +124,7 @@ router.put("/:customerId", async (req: AuthRequest, res) => {
     return res.status(400).json({
       success: false,
       message:
-        error instanceof Error
-          ? error.message
-          : "Failed to update customer",
+        error instanceof Error ? error.message : "Failed to update customer",
     });
   }
 });
@@ -157,12 +150,9 @@ router.delete("/:customerId", async (req: AuthRequest, res) => {
     return res.status(400).json({
       success: false,
       message:
-        error instanceof Error
-          ? error.message
-          : "Failed to delete customer",
+        error instanceof Error ? error.message : "Failed to delete customer",
     });
   }
 });
 
 export default router;
-

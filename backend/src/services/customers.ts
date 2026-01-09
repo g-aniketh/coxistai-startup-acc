@@ -139,9 +139,7 @@ export const createCustomer = async (
         ledgerSubtype: LedgerSubtype.CUSTOMER,
         maintainBillByBill: true, // Important for customer tracking
         defaultCreditPeriodDays: input.creditPeriodDays ?? null,
-        creditLimit: input.creditLimitAmount
-          ? input.creditLimitAmount
-          : null,
+        creditLimit: input.creditLimitAmount ? input.creditLimitAmount : null,
         gstNumber: input.gstin?.trim() || null,
         openingBalance: input.openingBalanceAmount
           ? input.openingBalanceAmount
@@ -314,7 +312,10 @@ export const updateCustomer = async (
   }
 
   // If customer name is being changed, check for duplicates
-  if (input.customerName && input.customerName.trim() !== customer.customerName) {
+  if (
+    input.customerName &&
+    input.customerName.trim() !== customer.customerName
+  ) {
     const existing = await prisma.customer.findFirst({
       where: {
         startupId,
@@ -499,4 +500,3 @@ export const deleteCustomer = async (
 
   return deleted;
 };
-
