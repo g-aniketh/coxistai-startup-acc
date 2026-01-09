@@ -31,6 +31,13 @@ import {
   X,
   Info,
   CreditCard,
+  Activity,
+  ClipboardList,
+  Clock,
+  HeartPulse,
+  Building2,
+  FileCheck,
+  Users,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -50,27 +57,30 @@ export default function DashboardPage() {
   );
   const [showSetupBanner, setShowSetupBanner] = useState(false);
 
-  // Mock bank accounts - balances sum to totalBalance
+  // Mock hospital bank accounts - balances sum to totalBalance
   const getMockBankAccounts = () => {
     if (!summary) return [];
     const totalBalance = summary.financial.totalBalance;
     
-    // Distribute balance across 3 accounts: 50%, 30%, 20%
+    // Distribute balance across hospital accounts: 50%, 30%, 20%
     return [
       {
-        name: "HDFC Bank - Current Account",
+        name: "Hospital Operating Account",
         accountNumber: "XXX-XXXX-5678",
         balance: Math.round(totalBalance * 0.5),
+        type: "Operating",
       },
       {
-        name: "ICICI Bank - Savings Account",
+        name: "Patient Trust Account",
         accountNumber: "XXX-XXXX-9012",
         balance: Math.round(totalBalance * 0.3),
+        type: "Trust",
       },
       {
-        name: "Axis Bank - Current Account",
+        name: "Capital Reserve Account",
         accountNumber: "XXX-XXXX-3456",
-        balance: totalBalance - Math.round(totalBalance * 0.5) - Math.round(totalBalance * 0.3), // Remaining to ensure exact sum
+        balance: totalBalance - Math.round(totalBalance * 0.5) - Math.round(totalBalance * 0.3),
+        type: "Reserve",
       },
     ];
   };
@@ -94,13 +104,11 @@ export default function DashboardPage() {
 
       if (profileRes.success && profileRes.data) {
         setCompanyProfile(profileRes.data);
-        // Check if company profile is incomplete (missing email, phone, or addresses)
         const isIncomplete =
           !profileRes.data.email ||
           !profileRes.data.phone ||
           (profileRes.data.addresses && profileRes.data.addresses.length === 0);
 
-        // Check if user dismissed the banner (stored in localStorage)
         const dismissed = localStorage.getItem(
           "company-setup-banner-dismissed"
         );
@@ -137,7 +145,7 @@ export default function DashboardPage() {
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
               <p className="mt-4 text-muted-foreground">
-                Loading AI CFO Dashboard...
+                Loading Hospital Finance Dashboard...
               </p>
             </div>
           </div>
@@ -145,6 +153,12 @@ export default function DashboardPage() {
       </AuthGuard>
     );
   }
+
+  // Calculate healthcare-specific metrics
+  const outstandingClaims = summary ? Math.round(summary.financial.totalBalance * 0.15) : 0;
+  const daysInAR = 42; // Mock value - typical healthcare metric
+  const collectionRate = 94.5; // Mock percentage
+
   return (
     <AuthGuard requireAuth={true}>
       <MainLayout>
@@ -155,16 +169,17 @@ export default function DashboardPage() {
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">
-                    AI CFO Dashboard
+                  <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C] flex items-center gap-3">
+                    <HeartPulse className="h-8 w-8 text-teal-600" />
+                    Hospital Finance Dashboard
                   </h1>
                   <p className="text-sm text-[#2C2C2C]/70">
-                    Real-time Financial Health & Cashflow Insights
+                    Real-time Financial Health & Revenue Cycle Insights
                   </p>
                 </div>
               </div>
 
-              {/* Company Setup Banner */}
+              {/* Organization Setup Banner */}
               {showSetupBanner && (
                 <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 mb-6 relative">
                   <button
@@ -180,17 +195,15 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-amber-900 mb-1">
-                        Complete Your Company Setup (Recommended)
+                        Complete Your Organization Setup (Recommended)
                       </h3>
                       <p className="text-sm text-amber-800 mb-3">
-                        Add your company details, contact information, and
-                        addresses to get the most out of your AI CFO dashboard.
-                        This will help with invoicing, compliance, and financial
-                        reporting.
+                        Add your hospital details, NPI, Tax ID, and contact information 
+                        to optimize billing, compliance, and financial reporting.
                       </p>
                       <Button
                         onClick={handleGoToSettings}
-                        className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                        className="bg-teal-600 hover:bg-teal-700 text-white"
                       >
                         <Settings className="h-4 w-4 mr-2" />
                         Go to Settings
@@ -200,34 +213,33 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              {/* AI CFO Status Banner */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-6">
+              {/* Financial Intelligence Status Banner */}
+              <div className="bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-xl p-4 mb-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Brain className="h-5 w-5 text-blue-600" />
+                    <div className="p-2 bg-teal-100 rounded-lg">
+                      <Activity className="h-5 w-5 text-teal-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-blue-900">
-                        AI CFO Status: Live Data
+                      <h3 className="font-semibold text-teal-900">
+                        Financial Intelligence: Active
                       </h3>
-                      <p className="text-sm text-blue-700">
-                        Connected to your financial data • Real-time insights
-                        and analysis
+                      <p className="text-sm text-teal-700">
+                        Connected to billing systems • Real-time revenue analytics
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-blue-600">
+                  <div className="flex items-center gap-2 text-sm text-teal-600">
                     <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                     Live Data
                   </div>
                 </div>
               </div>
 
-              {/* Top Cards */}
+              {/* Top Financial KPIs */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
-                  title="Cash Balance"
+                  title="Cash Position"
                   value={
                     summary
                       ? currencyFormatter.format(summary.financial.totalBalance)
@@ -235,13 +247,13 @@ export default function DashboardPage() {
                   }
                   percentageChange={17}
                   icon={<DollarSign className="h-5 w-5" />}
-                  cardClassName="bg-[#C9E0B0] text-[#3a5129]"
+                  cardClassName="bg-gradient-to-br from-teal-100 to-cyan-100 text-teal-800"
                   onClick={() =>
                     router.push("/financial-dashboard?tab=transactions")
                   }
                 />
                 <StatCard
-                  title="Monthly Revenue"
+                  title="Patient Collections"
                   value={
                     summary
                       ? currencyFormatter.format(
@@ -251,13 +263,13 @@ export default function DashboardPage() {
                   }
                   percentageChange={23}
                   icon={<TrendingUp className="h-5 w-5" />}
-                  cardClassName="bg-[#F6D97A] text-[#7a6015]"
+                  cardClassName="bg-gradient-to-br from-green-100 to-emerald-100 text-green-800"
                   onClick={() =>
                     router.push("/financial-dashboard?tab=statistics")
                   }
                 />
                 <StatCard
-                  title="Burn Rate"
+                  title="Operating Expenses"
                   value={
                     summary
                       ? currencyFormatter.format(summary.financial.monthlyBurn)
@@ -273,13 +285,13 @@ export default function DashboardPage() {
                       : undefined
                   }
                   icon={<TrendingDown className="h-5 w-5" />}
-                  cardClassName="bg-[#FFB3BA] text-[#8B0000]"
+                  cardClassName="bg-gradient-to-br from-rose-100 to-pink-100 text-rose-800"
                   onClick={() =>
                     router.push("/financial-dashboard?tab=statistics")
                   }
                 />
                 <StatCard
-                  title="ARR Forecast"
+                  title="Annual Revenue"
                   value={
                     summary
                       ? currencyFormatter.format(
@@ -289,41 +301,87 @@ export default function DashboardPage() {
                   }
                   percentageChange={12}
                   icon={<Target className="h-5 w-5" />}
-                  cardClassName="bg-[#B7B3E6] text-[#2C2C2C]"
+                  cardClassName="bg-gradient-to-br from-violet-100 to-purple-100 text-violet-800"
                   onClick={() =>
                     router.push("/financial-dashboard?tab=statistics")
                   }
                 />
               </div>
 
-              {/* Bank Accounts Row */}
+              {/* Healthcare-Specific KPIs */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-orange-50 to-amber-50">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-orange-100 rounded-xl">
+                        <ClipboardList className="h-6 w-6 text-orange-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-orange-700">Outstanding Claims</p>
+                        <p className="text-2xl font-bold text-orange-900">
+                          {currencyFormatter.format(outstandingClaims)}
+                        </p>
+                        <p className="text-xs text-orange-600">Pending insurance</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-blue-100 rounded-xl">
+                        <Clock className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-blue-700">Days in A/R</p>
+                        <p className="text-2xl font-bold text-blue-900">{daysInAR}</p>
+                        <p className="text-xs text-blue-600">Industry avg: 49 days</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-emerald-50 to-green-50">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-emerald-100 rounded-xl">
+                        <FileCheck className="h-6 w-6 text-emerald-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-emerald-700">Collection Rate</p>
+                        <p className="text-2xl font-bold text-emerald-900">{collectionRate}%</p>
+                        <p className="text-xs text-emerald-600">Target: 95%</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Hospital Bank Accounts Row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {getMockBankAccounts().map((account, index) => {
-                  // Different color schemes for each bank
                   const bankColors = [
                     {
-                      gradient: "from-blue-50 to-blue-100/50",
+                      gradient: "from-teal-50 to-cyan-100/50",
+                      iconBg: "bg-teal-500/10",
+                      iconColor: "text-teal-600",
+                      border: "border-teal-200/50",
+                    },
+                    {
+                      gradient: "from-blue-50 to-indigo-100/50",
                       iconBg: "bg-blue-500/10",
                       iconColor: "text-blue-600",
                       border: "border-blue-200/50",
-                      bankName: "HDFC Bank",
                     },
                     {
-                      gradient: "from-purple-50 to-purple-100/50",
-                      iconBg: "bg-purple-500/10",
-                      iconColor: "text-purple-600",
-                      border: "border-purple-200/50",
-                      bankName: "ICICI Bank",
-                    },
-                    {
-                      gradient: "from-emerald-50 to-emerald-100/50",
+                      gradient: "from-emerald-50 to-green-100/50",
                       iconBg: "bg-emerald-500/10",
                       iconColor: "text-emerald-600",
                       border: "border-emerald-200/50",
-                      bankName: "Axis Bank",
                     },
                   ];
-                  const colors = bankColors[index] || bankColors[0]; // Fallback to first color if index out of bounds
+                  const colors = bankColors[index] || bankColors[0];
 
                   return (
                     <Card
@@ -338,21 +396,19 @@ export default function DashboardPage() {
                               <div
                                 className={`p-3 ${colors.iconBg} rounded-xl group-hover:scale-110 transition-transform duration-300`}
                               >
-                                <CreditCard
+                                <Building2
                                   className={`h-6 w-6 ${colors.iconColor}`}
                                 />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <h3 className="text-base font-semibold text-[#2C2C2C] mb-1">
-                                  {colors.bankName}
+                                  {account.name}
                                 </h3>
                                 <p className="text-xs font-mono text-[#2C2C2C]/70">
                                   {account.accountNumber}
                                 </p>
                                 <p className="text-xs text-[#2C2C2C]/60 mt-1">
-                                  {account.name.includes("Current")
-                                    ? "Current Account"
-                                    : "Savings Account"}
+                                  {account.type} Account
                                 </p>
                               </div>
                             </div>
@@ -368,7 +424,6 @@ export default function DashboardPage() {
                             </div>
                           </div>
                         </CardContent>
-                        {/* Subtle bottom accent */}
                         <div
                           className={`absolute bottom-0 left-0 right-0 h-1 ${colors.iconBg} opacity-50`}
                         />
@@ -378,7 +433,7 @@ export default function DashboardPage() {
                 })}
               </div>
 
-              {/* Cashflow Chart */}
+              {/* Revenue & Cashflow Chart */}
               <UserChart data={cashflowData} />
 
               {/* Revenue Breakdown Chart */}
@@ -386,58 +441,58 @@ export default function DashboardPage() {
                 <ProfitChart summary={summary || undefined} />
               </div>
 
-              {/* AI CFO What-If Scenarios */}
+              {/* AI Financial Scenarios */}
               <div className="mt-6">
-                <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-indigo-50 to-purple-50">
+                <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-teal-50 to-cyan-50">
                   <CardHeader className="pb-3">
                     <div className="flex items-center gap-2">
-                      <div className="p-2 bg-indigo-100 rounded-lg">
-                        <Brain className="h-4 w-4 text-indigo-600" />
+                      <div className="p-2 bg-teal-100 rounded-lg">
+                        <Brain className="h-4 w-4 text-teal-600" />
                       </div>
-                      <CardTitle className="text-sm font-medium text-indigo-900">
-                        AI CFO Scenarios
+                      <CardTitle className="text-sm font-medium text-teal-900">
+                        AI Financial Scenarios
                       </CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0 space-y-3">
                     <div className="bg-white/60 rounded-lg p-3">
-                      <div className="text-xs font-semibold text-indigo-900 mb-1">
-                        Scenario: Hire 2 Engineers
+                      <div className="text-xs font-semibold text-teal-900 mb-1">
+                        Scenario: Add 10 Beds to ICU
                       </div>
-                      <div className="text-xs text-indigo-700">
-                        Runway: 8.2mo → 6.1mo
+                      <div className="text-xs text-teal-700">
+                        Revenue Impact: +₹45L/month
                       </div>
-                      <div className="text-xs text-indigo-600">
-                        Impact: -$8K/mo burn
-                      </div>
-                    </div>
-                    <div className="bg-white/60 rounded-lg p-3">
-                      <div className="text-xs font-semibold text-indigo-900 mb-1">
-                        Scenario: Cut SaaS by 30%
-                      </div>
-                      <div className="text-xs text-indigo-700">
-                        Runway: 8.2mo → 9.1mo
-                      </div>
-                      <div className="text-xs text-indigo-600">
-                        Impact: +$1.8K/mo savings
+                      <div className="text-xs text-teal-600">
+                        ROI: 18 months payback
                       </div>
                     </div>
                     <div className="bg-white/60 rounded-lg p-3">
-                      <div className="text-xs font-semibold text-indigo-900 mb-1">
-                        Scenario: 20% Revenue Growth
+                      <div className="text-xs font-semibold text-teal-900 mb-1">
+                        Scenario: Reduce A/R Days by 10
                       </div>
-                      <div className="text-xs text-indigo-700">
-                        Runway: 8.2mo → 10.4mo
+                      <div className="text-xs text-teal-700">
+                        Cash Flow: +₹12L immediate
                       </div>
-                      <div className="text-xs text-indigo-600">
-                        Impact: +$9K/mo revenue
+                      <div className="text-xs text-teal-600">
+                        Impact: Improved liquidity
+                      </div>
+                    </div>
+                    <div className="bg-white/60 rounded-lg p-3">
+                      <div className="text-xs font-semibold text-teal-900 mb-1">
+                        Scenario: 15% Claim Denial Reduction
+                      </div>
+                      <div className="text-xs text-teal-700">
+                        Annual Savings: +₹85L
+                      </div>
+                      <div className="text-xs text-teal-600">
+                        Impact: Improved collection rate
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Proactive Alerts */}
+              {/* Financial Alerts */}
               <div className="mt-6">
                 <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-red-50 to-orange-50">
                   <CardHeader className="pb-3">
@@ -446,49 +501,49 @@ export default function DashboardPage() {
                         <AlertTriangle className="h-4 w-4 text-red-600" />
                       </div>
                       <CardTitle className="text-sm font-medium text-red-900">
-                        AI Alerts
+                        Financial Alerts
                       </CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0 space-y-3">
                     <div className="bg-white/60 rounded-lg p-3 border-l-4 border-red-400">
                       <div className="text-xs font-semibold text-red-900 mb-1">
-                        ⚠️ High Burn Rate
+                        ⚠️ High Claim Denials
                       </div>
                       <div className="text-xs text-red-700">
-                        Current burn 15% above forecast
+                        Denial rate up 8% this month
                       </div>
                       <div className="text-xs text-red-600 mt-1">
-                        Recommendation: Review contractor costs
+                        Review: Cardiology coding accuracy
                       </div>
                     </div>
                     <div className="bg-white/60 rounded-lg p-3 border-l-4 border-orange-400">
                       <div className="text-xs font-semibold text-orange-900 mb-1">
-                        📊 Revenue Opportunity
+                        📊 Collection Opportunity
                       </div>
                       <div className="text-xs text-orange-700">
-                        Churn rate down 2% this month
+                        ₹28L in claims over 60 days
                       </div>
                       <div className="text-xs text-orange-600 mt-1">
-                        Consider expansion pricing
+                        Consider: Accelerated follow-up
                       </div>
                     </div>
                     <div className="bg-white/60 rounded-lg p-3 border-l-4 border-yellow-400">
                       <div className="text-xs font-semibold text-yellow-900 mb-1">
-                        💰 Cash Flow
+                        💰 Cash Flow Alert
                       </div>
                       <div className="text-xs text-yellow-700">
-                        3 invoices overdue ($12K total)
+                        15 patient invoices overdue
                       </div>
                       <div className="text-xs text-yellow-600 mt-1">
-                        Auto-send reminders?
+                        Send automated payment reminders?
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Bank Integration Status */}
+              {/* Connected Systems Status */}
               <div className="mt-6">
                 <Card className="rounded-xl border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50">
                   <CardHeader className="pb-3">
@@ -497,7 +552,7 @@ export default function DashboardPage() {
                         <Wallet className="h-4 w-4 text-green-600" />
                       </div>
                       <CardTitle className="text-sm font-medium text-green-900">
-                        Connected Accounts
+                        Connected Systems
                       </CardTitle>
                     </div>
                   </CardHeader>
@@ -506,37 +561,37 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                         <span className="text-xs font-medium text-green-900">
-                          Chase Business
+                          Hospital Banking
                         </span>
                       </div>
-                      <span className="text-xs text-green-600">Live</span>
+                      <span className="text-xs text-green-600">Connected</span>
                     </div>
                     <div className="flex items-center justify-between bg-white/60 rounded-lg p-3">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                         <span className="text-xs font-medium text-green-900">
-                          Stripe
+                          Payment Gateway
                         </span>
                       </div>
-                      <span className="text-xs text-green-600">Live</span>
+                      <span className="text-xs text-green-600">Active</span>
                     </div>
                     <div className="flex items-center justify-between bg-white/60 rounded-lg p-3">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
                         <span className="text-xs font-medium text-green-900">
-                          QuickBooks
+                          Insurance Portal
                         </span>
                       </div>
-                      <span className="text-xs text-orange-600">Mock</span>
+                      <span className="text-xs text-orange-600">Demo</span>
                     </div>
                     <div className="flex items-center justify-between bg-white/60 rounded-lg p-3">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
                         <span className="text-xs font-medium text-green-900">
-                          Payroll (Gusto)
+                          EHR Integration
                         </span>
                       </div>
-                      <span className="text-xs text-orange-600">Mock</span>
+                      <span className="text-xs text-orange-600">Demo</span>
                     </div>
                   </CardContent>
                 </Card>

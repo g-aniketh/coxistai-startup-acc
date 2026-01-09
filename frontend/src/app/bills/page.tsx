@@ -39,6 +39,8 @@ import {
   TrendingDown,
   TrendingUp,
   Wallet,
+  HeartPulse,
+  ClipboardList,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { format } from "date-fns";
@@ -416,15 +418,14 @@ export default function BillsPage() {
         <div className="p-4 md:p-8 space-y-6 pb-32">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center gap-3">
-              <HandCoins className="h-10 w-10 text-[#2C2C2C]" />
+              <HeartPulse className="h-10 w-10 text-teal-600" />
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">
-                  Bill-wise Receivables & Payables
+                  Patient Accounts & Receivables
                 </h1>
                 <p className="text-sm text-[#2C2C2C]/70">
-                  Track outstanding bills, create receivables/payables, and
-                  manage settlements in-line with TallyPrime’s bill-wise
-                  features.
+                  Track patient accounts, manage insurance receivables, and
+                  process payments with comprehensive aging analysis.
                 </p>
               </div>
             </div>
@@ -438,7 +439,7 @@ export default function BillsPage() {
                   onClick={() => handleBillTypeToggle(type)}
                   className={
                     billType === type
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
+                      ? "bg-teal-600 hover:bg-teal-700 text-white"
                       : "border border-gray-300 bg-white text-[#2C2C2C]"
                   }
                 >
@@ -452,7 +453,7 @@ export default function BillsPage() {
             <Card className="rounded-2xl shadow-lg border-0 bg-white">
               <CardContent className="p-5 space-y-3">
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <Wallet className="h-5 w-5 text-[#607c47]" />
+                  <Wallet className="h-5 w-5 text-teal-600" />
                   <span>Total Outstanding</span>
                 </div>
                 <p className="text-2xl font-semibold text-[#2C2C2C]">
@@ -461,8 +462,8 @@ export default function BillsPage() {
                 <p className="text-xs text-muted-foreground">
                   Across {totalBills}{" "}
                   {billType === "RECEIVABLE"
-                    ? "customer invoices"
-                    : "supplier bills"}
+                    ? "patient accounts"
+                    : "vendor invoices"}
                 </p>
               </CardContent>
             </Card>
@@ -529,8 +530,8 @@ export default function BillsPage() {
                 <CardTitle className="text-lg">Bill Register</CardTitle>
                 <p className="text-sm text-muted-foreground">
                   {billType === "RECEIVABLE"
-                    ? "Monitor customer invoices and link them to receipts or credit notes for settlement."
-                    : "Track supplier bills and settle against payments or debit notes."}
+                    ? "Monitor patient accounts and insurance claims, link them to payments for settlement."
+                    : "Track vendor and supplier invoices, settle against payments."}
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -597,7 +598,7 @@ export default function BillsPage() {
                             <TableCell className="text-right text-sm font-medium text-[#2C2C2C]">
                               {formatCurrency(bill.originalAmount)}
                             </TableCell>
-                            <TableCell className="text-right text-sm font-semibold text-[#607c47]">
+                            <TableCell className="text-right text-sm font-semibold text-teal-600">
                               {formatCurrency(bill.outstandingAmount)}
                             </TableCell>
                             <TableCell>
@@ -646,12 +647,12 @@ export default function BillsPage() {
             <Card className="rounded-2xl shadow-lg border-0 bg-white">
               <CardHeader className="flex flex-col gap-2">
                 <CardTitle className="text-lg">
-                  Create {billType === "RECEIVABLE" ? "Receivable" : "Payable"}{" "}
-                  Bill
+                  Create {billType === "RECEIVABLE" ? "Patient Account" : "Vendor"}{" "}
+                  Entry
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Mirror TallyPrime’s bill-wise controls by capturing bill
-                  metadata, due dates, and linking to vouchers.
+                  Record patient charges, insurance claims, or vendor invoices
+                  with due dates and tracking references.
                 </p>
               </CardHeader>
               <CardContent>
@@ -816,11 +817,11 @@ export default function BillsPage() {
                     )}
                   </div>
 
-                  <Button
-                    type="submit"
-                    disabled={creating}
-                    className="w-full bg-[#607c47] hover:bg-[#4a6129] text-white flex items-center justify-center gap-2"
-                  >
+                    <Button
+                      type="submit"
+                      disabled={creating}
+                      className="w-full bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center gap-2"
+                    >
                     {creating ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -915,7 +916,7 @@ export default function BillsPage() {
             <Card className="rounded-2xl shadow-lg border-0 bg-white">
               <CardHeader className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-[#607c47]" />
+                  <TrendingUp className="h-5 w-5 text-teal-600" />
                   <CardTitle className="text-lg">
                     Cash Flow Projections
                   </CardTitle>
@@ -1089,10 +1090,10 @@ export default function BillsPage() {
 
           <Card className="rounded-2xl shadow-lg border-0 bg-white">
             <CardHeader className="flex flex-col gap-2">
-              <CardTitle className="text-lg">Outstanding by Ledger</CardTitle>
+              <CardTitle className="text-lg">Outstanding by Account</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Quickly reconcile open balances by customer or supplier. Drill
-                down into each ledger&apos;s outstanding bills.
+                Review open balances by patient or insurance provider. Drill
+                down into each account&apos;s outstanding charges.
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -1123,7 +1124,7 @@ export default function BillsPage() {
                           {ledger.billCount !== 1 ? "s" : ""}
                         </div>
                       </div>
-                      <div className="text-lg font-semibold text-[#607c47]">
+                      <div className="text-lg font-semibold text-teal-600">
                         {formatCurrency(ledger.totalOutstanding)}
                       </div>
                       <div className="space-y-2">
@@ -1293,7 +1294,7 @@ export default function BillsPage() {
                     <Button
                       type="submit"
                       disabled={settling}
-                      className="bg-[#607c47] hover:bg-[#4a6129] text-white flex items-center gap-2"
+                      className="bg-teal-600 hover:bg-teal-700 text-white flex items-center gap-2"
                     >
                       {settling ? (
                         <>

@@ -32,6 +32,14 @@ import {
   UserPlus,
   Receipt,
   FileCheck,
+  Activity,
+  ClipboardList,
+  Calendar,
+  Building2,
+  Stethoscope,
+  HeartPulse,
+  BedDouble,
+  UserCog,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import Image from "next/image";
@@ -69,47 +77,56 @@ export default function Sidebar({
       ],
     },
     {
-      label: "Compliance",
+      label: "Revenue Cycle",
       items: [
-        { name: "Compliance Hub", href: "/compliance-hub", icon: Calculator },
-        { name: "GST", href: "/gst", icon: Globe },
-        { name: "Audit Log", href: "/audit-log", icon: History },
+        { name: "RCM Dashboard", href: "/rcm", icon: Activity },
+        { name: "Patient Billing", href: "/invoicing", icon: FileCheck },
+        { name: "Insurance Claims", href: "/insurance-claims", icon: ClipboardList },
+        { name: "Patient Accounts", href: "/bills", icon: HandCoins },
       ],
     },
     {
-      label: "Finance & Ops",
+      label: "Finance & Accounting",
       items: [
         {
           name: "Banking & Payments",
           href: "/banking-payments",
           icon: CreditCard,
         },
-        { name: "Vouchers", href: "/vouchers", icon: FileText },
-        { name: "Bills", href: "/bills", icon: HandCoins },
         { name: "Transactions", href: "/transactions", icon: Receipt },
-        { name: "Invoicing", href: "/invoicing", icon: FileCheck },
+        { name: "Vouchers", href: "/vouchers", icon: FileText },
         {
           name: "Cost Management",
           href: "/cost-management",
           icon: IndianRupee,
         },
         { name: "Bookkeeping", href: "/bookkeeping", icon: BookOpen },
-        { name: "Products", href: "/products", icon: Package },
-        { name: "Customers", href: "/customers", icon: UserPlus },
       ],
     },
     {
-      label: "Automation",
+      label: "Hospital Operations",
       items: [
+        { name: "Patients", href: "/patients", icon: HeartPulse },
+        { name: "Appointments", href: "/appointments", icon: Calendar },
+        { name: "Staff", href: "/staff", icon: Stethoscope },
+        { name: "Facilities", href: "/facilities", icon: BedDouble },
+      ],
+    },
+    {
+      label: "Compliance & Reports",
+      items: [
+        { name: "Compliance Hub", href: "/compliance-hub", icon: Calculator },
+        { name: "GST", href: "/gst", icon: Globe },
+        { name: "Audit Log", href: "/audit-log", icon: History },
         { name: "Smart Alerts", href: "/alerts", icon: AlertTriangle },
-        { name: "Import from Tally", href: "/tally-import", icon: Upload },
       ],
     },
     {
       label: "Admin",
       items: [
-        { name: "Role Management", href: "/role-management", icon: Shield },
         { name: "Team Management", href: "/team", icon: Users },
+        { name: "Role Management", href: "/role-management", icon: Shield },
+        { name: "Import Data", href: "/tally-import", icon: Upload },
       ],
     },
   ];
@@ -176,15 +193,11 @@ export default function Sidebar({
         <div
           className={cn("flex items-center gap-2", collapsed ? "mx-auto" : "")}
         >
-          <Image
-            src="/favicon-32x32.png"
-            alt="Coxist AI CFO Logo"
-            width={32}
-            height={32}
-            className="rounded-lg shrink-0"
-          />
+          <div className="w-8 h-8 rounded-lg shrink-0 bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center">
+            <HeartPulse className="h-5 w-5 text-white" />
+          </div>
           {!collapsed && (
-            <h2 className="font-bold text-lg tracking-tight">Coxist AI CFO</h2>
+            <h2 className="font-bold text-lg tracking-tight">MediFinance</h2>
           )}
         </div>
         {onToggleCollapse && (

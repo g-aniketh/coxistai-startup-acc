@@ -91,28 +91,28 @@ type SortConfig = {
   direction: "ascending" | "descending";
 };
 
-const COLORS = ["#607c47", "#FFB3BA", "#B7B3E6", "#F6D97A", "#C9E0B0"];
+const COLORS = ["#0d9488", "#10b981", "#f59e0b", "#6366f1", "#ec4899", "#8b5cf6"];
 
-// Statistics data
+// Healthcare Statistics data
 const kpiData = [
   {
-    title: "Runway",
-    value: "8.2 months",
+    title: "Days in A/R",
+    value: "42 days",
     icon: Calendar,
     color: "text-blue-500",
     bgColor: "bg-blue-50",
-    change: "+0.3 mo",
+    change: "-3 days",
   },
   {
-    title: "Burn Rate",
-    value: "₹2.9L",
+    title: "Operating Margin",
+    value: "12.5%",
     icon: TrendingDown,
-    color: "text-red-500",
-    bgColor: "bg-red-50",
-    change: "-8.6%",
+    color: "text-teal-500",
+    bgColor: "bg-teal-50",
+    change: "+1.2%",
   },
   {
-    title: "ARR",
+    title: "Annual Revenue",
     value: "₹4.5Cr",
     icon: TrendingUp,
     color: "text-green-500",
@@ -120,38 +120,39 @@ const kpiData = [
     change: "+15.2%",
   },
   {
-    title: "Customers",
-    value: "342",
+    title: "Patient Volume",
+    value: "2,847",
     icon: Users,
     color: "text-purple-500",
     bgColor: "bg-purple-50",
-    change: "+12.5%",
+    change: "+8.5%",
   },
 ];
 
 const cashFlowData = [
-  { name: "Jan", income: 45000, expenses: 32000, net: 13000 },
-  { name: "Feb", income: 48000, expenses: 35000, net: 13000 },
-  { name: "Mar", income: 52000, expenses: 38000, net: 14000 },
-  { name: "Apr", income: 46000, expenses: 34000, net: 12000 },
-  { name: "May", income: 51000, expenses: 36000, net: 15000 },
-  { name: "Jun", income: 55000, expenses: 35000, net: 20000 },
+  { name: "Jan", income: 4500000, expenses: 3200000, net: 1300000 },
+  { name: "Feb", income: 4800000, expenses: 3500000, net: 1300000 },
+  { name: "Mar", income: 5200000, expenses: 3800000, net: 1400000 },
+  { name: "Apr", income: 4600000, expenses: 3400000, net: 1200000 },
+  { name: "May", income: 5100000, expenses: 3600000, net: 1500000 },
+  { name: "Jun", income: 5500000, expenses: 3500000, net: 2000000 },
 ];
 
 const revenueData = [
-  { name: "Q1 2023", revenue: 120000, customers: 180 },
-  { name: "Q2 2023", revenue: 145000, customers: 220 },
-  { name: "Q3 2023", revenue: 168000, customers: 260 },
-  { name: "Q4 2023", revenue: 195000, customers: 300 },
-  { name: "Q1 2024", revenue: 225000, customers: 342 },
+  { name: "Q1 2024", revenue: 12000000, patients: 2180 },
+  { name: "Q2 2024", revenue: 14500000, patients: 2420 },
+  { name: "Q3 2024", revenue: 16800000, patients: 2660 },
+  { name: "Q4 2024", revenue: 19500000, patients: 2800 },
+  { name: "Q1 2025", revenue: 22500000, patients: 2847 },
 ];
 
 const expenseBreakdown = [
-  { name: "Payroll", value: 210000, color: "#607c47" },
-  { name: "Marketing", value: 45000, color: "#F6D97A" },
-  { name: "SaaS", value: 18000, color: "#B7B3E6" },
-  { name: "Operations", value: 32000, color: "#FFB3BA" },
-  { name: "Other", value: 15000, color: "#C9E0B0" },
+  { name: "Staff Salaries", value: 2100000, color: "#0d9488" },
+  { name: "Medical Supplies", value: 850000, color: "#10b981" },
+  { name: "Pharmaceuticals", value: 620000, color: "#f59e0b" },
+  { name: "Equipment & Maintenance", value: 420000, color: "#6366f1" },
+  { name: "Utilities & Facilities", value: 280000, color: "#ec4899" },
+  { name: "Administrative", value: 180000, color: "#8b5cf6" },
 ];
 
 function FinancialDashboardContent() {
@@ -166,20 +167,20 @@ function FinancialDashboardContent() {
   const [loading, setLoading] = useState(true);
   const [dashboardSummary, setDashboardSummary] = useState<DashboardSummary | null>(null);
 
-  // Mock bank accounts - balances sum to totalBalance
+  // Mock hospital bank accounts - balances sum to totalBalance
   const getMockBankAccounts = useCallback((summary: DashboardSummary | null): DemoAccount[] => {
     if (!summary) return [];
     const totalBalance = summary.financial.totalBalance;
     
-    // Distribute balance across 3 accounts: 50%, 30%, 20%
+    // Distribute balance across 3 hospital accounts: 50%, 30%, 20%
     const account1Balance = Math.round(totalBalance * 0.5);
     const account2Balance = Math.round(totalBalance * 0.3);
-    const account3Balance = totalBalance - account1Balance - account2Balance; // Remaining to ensure exact sum
+    const account3Balance = totalBalance - account1Balance - account2Balance;
     
     return [
-      { id: "1", name: "HDFC Bank - Current Account", balance: account1Balance },
-      { id: "2", name: "ICICI Bank - Savings Account", balance: account2Balance },
-      { id: "3", name: "Axis Bank - Current Account", balance: account3Balance },
+      { id: "1", name: "Hospital Operating Account", balance: account1Balance },
+      { id: "2", name: "Patient Trust Account", balance: account2Balance },
+      { id: "3", name: "Capital Reserve Account", balance: account3Balance },
     ];
   }, []);
   const [searchTerm, setSearchTerm] = useState("");
@@ -197,95 +198,95 @@ function FinancialDashboardContent() {
   const loadTransactions = useCallback(async () => {
     try {
       setLoading(true);
-      // For demo purposes, use mock data that matches the expected interface
+      // Healthcare transactions data
       const mockTransactions: DemoTransaction[] = [
         {
           id: "1",
-          amount: 5000,
+          amount: 125000,
           type: "income" as const,
-          description: "Customer Payment - SaaS Subscription",
-          category: "Sales Revenue",
+          description: "Insurance Claim Payment - Blue Cross",
+          category: "Insurance Revenue",
           date: "2024-01-15T10:30:00Z",
           accountId: "1",
         },
         {
           id: "2",
-          amount: 1200,
+          amount: 45000,
           type: "expense" as const,
-          description: "Office Rent - Downtown Location",
-          category: "Office Expenses",
+          description: "Medical Supplies - Surgical Equipment",
+          category: "Medical Supplies",
           date: "2024-01-14T09:00:00Z",
           accountId: "1",
         },
         {
           id: "3",
-          amount: 850,
+          amount: 28500,
           type: "expense" as const,
-          description: "Software Licenses - Development Tools",
-          category: "Software & Tools",
+          description: "Pharmaceuticals - Monthly Stock",
+          category: "Pharmaceuticals",
           date: "2024-01-13T14:20:00Z",
           accountId: "2",
         },
         {
           id: "4",
-          amount: 3200,
+          amount: 85000,
           type: "income" as const,
-          description: "Client Payment - Consulting Services",
-          category: "Professional Services",
+          description: "Patient Payment - Cardiology Services",
+          category: "Patient Revenue",
           date: "2024-01-12T16:45:00Z",
           accountId: "1",
         },
         {
           id: "5",
-          amount: 450,
+          amount: 15200,
           type: "expense" as const,
-          description: "Marketing Campaign - Google Ads",
-          category: "Marketing",
+          description: "Lab Equipment Maintenance",
+          category: "Equipment Maintenance",
           date: "2024-01-11T11:30:00Z",
           accountId: "2",
         },
         {
           id: "6",
-          amount: 1800,
+          amount: 180000,
           type: "expense" as const,
-          description: "Employee Salary - January",
-          category: "Payroll",
+          description: "Staff Salaries - January",
+          category: "Staff Salaries",
           date: "2024-01-10T08:00:00Z",
           accountId: "1",
         },
         {
           id: "7",
-          amount: 2800,
+          amount: 95000,
           type: "income" as const,
-          description: "Product Sales - Monthly Subscription",
-          category: "Sales Revenue",
+          description: "Insurance Payment - United Healthcare",
+          category: "Insurance Revenue",
           date: "2024-01-09T13:15:00Z",
           accountId: "1",
         },
         {
           id: "8",
-          amount: 320,
+          amount: 12800,
           type: "expense" as const,
-          description: "Internet & Utilities - Office",
+          description: "Utilities - Hospital Building",
           category: "Utilities",
           date: "2024-01-08T10:00:00Z",
           accountId: "2",
         },
         {
           id: "9",
-          amount: 1500,
+          amount: 42000,
           type: "income" as const,
-          description: "Freelance Project Payment",
-          category: "Professional Services",
+          description: "Patient Payment - Emergency Services",
+          category: "Patient Revenue",
           date: "2024-01-07T15:30:00Z",
           accountId: "1",
         },
         {
           id: "10",
-          amount: 680,
+          amount: 68000,
           type: "expense" as const,
-          description: "Equipment Purchase - Laptop",
-          category: "Equipment",
+          description: "Medical Equipment - Diagnostic Machines",
+          category: "Equipment Purchase",
           date: "2024-01-06T12:00:00Z",
           accountId: "2",
         },
@@ -437,12 +438,11 @@ function FinancialDashboardContent() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C] flex items-center gap-2">
-                    <BarChart2 className="h-8 w-8 text-[#607c47]" />
-                    Financial Dashboard
+                    <BarChart2 className="h-8 w-8 text-teal-600" />
+                    Hospital Financial Dashboard
                   </h1>
                   <p className="text-sm text-[#2C2C2C]/70 mt-1">
-                    Comprehensive view of your transactions, analytics, and
-                    financial health
+                    Comprehensive view of revenue, expenses, and financial performance
                   </p>
                 </div>
                 <div className="flex gap-3">
@@ -455,11 +455,11 @@ function FinancialDashboardContent() {
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
-                  <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+                  <Button className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white">
                     <Upload className="h-4 w-4" />
                     Import Transactions
                   </Button>
-                  <Button className="flex items-center gap-2 bg-[#607c47] hover:bg-[#4a6129] text-white">
+                  <Button className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white">
                     <Download className="h-4 w-4" />
                     Export
                   </Button>
@@ -467,23 +467,22 @@ function FinancialDashboardContent() {
               </div>
 
               {/* AI Status Banner */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-6">
+              <div className="bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-xl p-4 mb-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <BarChart2 className="h-5 w-5 text-blue-600" />
+                    <div className="p-2 bg-teal-100 rounded-lg">
+                      <BarChart2 className="h-5 w-5 text-teal-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-blue-900">
-                        Financial Intelligence
+                      <h3 className="font-semibold text-teal-900">
+                        Healthcare Financial Intelligence
                       </h3>
-                      <p className="text-sm text-blue-700">
-                        Real-time analytics • Transaction insights • Financial
-                        forecasting
+                      <p className="text-sm text-teal-700">
+                        Revenue cycle analytics • Claim tracking • Financial forecasting
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-blue-600">
+                  <div className="flex items-center gap-2 text-sm text-teal-600">
                     <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                     Live Sync
                   </div>
@@ -497,7 +496,7 @@ function FinancialDashboardContent() {
                   variant={activeTab === "transactions" ? "default" : "ghost"}
                   className={
                     activeTab === "transactions"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
+                      ? "bg-teal-600 hover:bg-teal-700 text-white"
                       : "text-[#2C2C2C] hover:bg-gray-100"
                   }
                 >
@@ -509,7 +508,7 @@ function FinancialDashboardContent() {
                   variant={activeTab === "statistics" ? "default" : "ghost"}
                   className={
                     activeTab === "statistics"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
+                      ? "bg-teal-600 hover:bg-teal-700 text-white"
                       : "text-[#2C2C2C] hover:bg-gray-100"
                   }
                 >
@@ -615,7 +614,7 @@ function FinancialDashboardContent() {
                           </Select>
                           <Button
                             onClick={() => setShowAddModal(true)}
-                            className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                            className="bg-teal-600 hover:bg-teal-700 text-white"
                           >
                             <Plus className="h-4 w-4 mr-2" />
                             Add Transaction
@@ -816,8 +815,8 @@ function FinancialDashboardContent() {
                     <Card className="bg-white rounded-xl border-0 shadow-lg">
                       <CardHeader className="pb-3">
                         <CardTitle className="text-lg font-medium text-[#2C2C2C] flex items-center gap-2">
-                          <TrendingUp className="h-5 w-5 text-[#607c47]" />
-                          Cash Flow Trend
+                          <TrendingUp className="h-5 w-5 text-teal-600" />
+                          Revenue & Expense Trend
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="pt-0">
@@ -879,8 +878,8 @@ function FinancialDashboardContent() {
                     <Card className="bg-white rounded-xl border-0 shadow-lg">
                       <CardHeader className="pb-3">
                         <CardTitle className="text-lg font-medium text-[#2C2C2C] flex items-center gap-2">
-                          <DollarSign className="h-5 w-5 text-[#607c47]" />
-                          Revenue Growth
+                          <DollarSign className="h-5 w-5 text-teal-600" />
+                          Patient Revenue Growth
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="pt-0">
@@ -912,7 +911,7 @@ function FinancialDashboardContent() {
                               />
                               <Bar
                                 dataKey="revenue"
-                                fill="#607c47"
+                                fill="#0d9488"
                                 radius={[4, 4, 0, 0]}
                               />
                             </BarChart>
@@ -926,8 +925,8 @@ function FinancialDashboardContent() {
                   <Card className="bg-white rounded-xl border-0 shadow-lg">
                     <CardHeader className="pb-3">
                       <CardTitle className="text-lg font-medium text-[#2C2C2C] flex items-center gap-2">
-                        <PieChart className="h-5 w-5 text-[#607c47]" />
-                        Expense Breakdown
+                        <PieChart className="h-5 w-5 text-teal-600" />
+                        Hospital Operating Expenses
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">

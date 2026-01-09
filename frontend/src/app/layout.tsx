@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CoXist AI - Your AI CFO Copilot",
+  title: "MediFinance Pro - Hospital Financial Management",
   description:
-    "AI-powered financial management and cashflow copilot for startups. Never run out of money.",
+    "Comprehensive hospital financial management system with revenue cycle management, patient billing, insurance claims, and real-time financial analytics.",
 };
 
 export default function RootLayout({
