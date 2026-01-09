@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { apiClient, BankAccount, DashboardSummary } from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
+import { getHospitalBankAccountsWithBalance } from "@/lib/hospital-constants";
 import MainLayout from "@/components/layout/MainLayout";
 import AuthGuard from "@/components/auth/AuthGuard";
 import {
@@ -176,25 +177,18 @@ function FinancialDashboardContent() {
     useState<DashboardSummary | null>(null);
 
   // Mock hospital bank accounts - balances sum to totalBalance
+  // Get hospital bank accounts with calculated balances from centralized constants
   const getMockBankAccounts = useCallback(
     (summary: DashboardSummary | null): DemoAccount[] => {
       if (!summary) return [];
-      const totalBalance = summary.financial.totalBalance;
-
-      // Distribute balance across 3 hospital accounts: 50%, 30%, 20%
-      const account1Balance = Math.round(totalBalance * 0.5);
-      const account2Balance = Math.round(totalBalance * 0.3);
-      const account3Balance = totalBalance - account1Balance - account2Balance;
-
-      return [
-        {
-          id: "1",
-          name: "Hospital Operating Account",
-          balance: account1Balance,
-        },
-        { id: "2", name: "Patient Trust Account", balance: account2Balance },
-        { id: "3", name: "Capital Reserve Account", balance: account3Balance },
-      ];
+      const accounts = getHospitalBankAccountsWithBalance(
+        summary.financial.totalBalance
+      );
+      return accounts.map((acc) => ({
+        id: acc.id,
+        name: acc.name,
+        balance: acc.balance,
+      }));
     },
     []
   );

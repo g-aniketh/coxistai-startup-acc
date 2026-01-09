@@ -69,6 +69,11 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { pdf } from "@react-pdf/renderer";
 import { formatCurrency } from "@/lib/utils";
+import {
+  getHospitalBankAccountsWithBalance,
+  HOSPITAL_BANK_CONNECTIONS,
+  formatINR,
+} from "@/lib/hospital-constants";
 
 // Multi-Bank Sync interfaces
 interface BankAccount {
@@ -157,54 +162,25 @@ export default function BankingPaymentsHubPage() {
     reminders: 0,
   });
 
-  // Mock bank accounts - balances sum to totalBalance
+  // Get hospital bank accounts with calculated balances from centralized constants
   const getMockBankAccounts = useCallback(() => {
     if (!dashboardSummary) return [];
-    const totalBalance = dashboardSummary.financial.totalBalance;
+    const accounts = getHospitalBankAccountsWithBalance(
+      dashboardSummary.financial.totalBalance
+    );
 
-    // Distribute balance across 3 accounts: 50%, 30%, 20%
-    const account1Balance = Math.round(totalBalance * 0.5);
-    const account2Balance = Math.round(totalBalance * 0.3);
-    const account3Balance = totalBalance - account1Balance - account2Balance; // Remaining to ensure exact sum
-
-    return [
-      {
-        id: "1",
-        name: "HDFC Bank - Current Account",
-        bankName: "HDFC Bank",
-        accountNumber: "XXX-XXXX-5678",
-        accountType: "checking" as const,
-        balance: account1Balance,
-        lastSync: new Date().toISOString(),
-        status: "connected" as const,
-        transactionsCount: 45,
-        pendingTransactions: 2,
-      },
-      {
-        id: "2",
-        name: "ICICI Bank - Savings Account",
-        bankName: "ICICI Bank",
-        accountNumber: "XXX-XXXX-9012",
-        accountType: "savings" as const,
-        balance: account2Balance,
-        lastSync: new Date().toISOString(),
-        status: "connected" as const,
-        transactionsCount: 12,
-        pendingTransactions: 0,
-      },
-      {
-        id: "3",
-        name: "Axis Bank - Current Account",
-        bankName: "Axis Bank",
-        accountNumber: "XXX-XXXX-3456",
-        accountType: "checking" as const,
-        balance: account3Balance,
-        lastSync: new Date().toISOString(),
-        status: "connected" as const,
-        transactionsCount: 23,
-        pendingTransactions: 1,
-      },
-    ];
+    return accounts.map((account, index) => ({
+      id: account.id,
+      name: account.name,
+      bankName: account.bankName,
+      accountNumber: account.accountNumber,
+      accountType: account.accountType,
+      balance: account.balance,
+      lastSync: new Date().toISOString(),
+      status: "connected" as const,
+      transactionsCount: [45, 12, 23][index] || 0,
+      pendingTransactions: [2, 0, 1][index] || 0,
+    }));
   }, [dashboardSummary]);
 
   // Initialize mock data

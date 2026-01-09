@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import StatCard from "@/components/dashboard/StatCard";
 import UserChart from "@/components/dashboard/UserChart";
 import ProfitChart from "@/components/dashboard/ProfitChart";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   apiClient,
@@ -16,35 +15,30 @@ import {
   RecentActivity,
   CompanyProfile,
 } from "@/lib/api";
+import {
+  getHospitalBankAccountsWithBalance,
+  formatINR,
+} from "@/lib/hospital-constants";
 import toast from "react-hot-toast";
 import {
   AlertTriangle,
   Brain,
-  Calendar,
   DollarSign,
   Target,
   TrendingDown,
   TrendingUp,
   Wallet,
-  Zap,
   Settings,
   X,
   Info,
-  CreditCard,
   Activity,
   ClipboardList,
   Clock,
   HeartPulse,
   Building2,
   FileCheck,
-  Users,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-
-const currencyFormatter = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-});
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -57,35 +51,10 @@ export default function DashboardPage() {
   );
   const [showSetupBanner, setShowSetupBanner] = useState(false);
 
-  // Mock hospital bank accounts - balances sum to totalBalance
+  // Get hospital bank accounts with calculated balances
   const getMockBankAccounts = () => {
     if (!summary) return [];
-    const totalBalance = summary.financial.totalBalance;
-
-    // Distribute balance across hospital accounts: 50%, 30%, 20%
-    return [
-      {
-        name: "Hospital Operating Account",
-        accountNumber: "XXX-XXXX-5678",
-        balance: Math.round(totalBalance * 0.5),
-        type: "Operating",
-      },
-      {
-        name: "Patient Trust Account",
-        accountNumber: "XXX-XXXX-9012",
-        balance: Math.round(totalBalance * 0.3),
-        type: "Trust",
-      },
-      {
-        name: "Capital Reserve Account",
-        accountNumber: "XXX-XXXX-3456",
-        balance:
-          totalBalance -
-          Math.round(totalBalance * 0.5) -
-          Math.round(totalBalance * 0.3),
-        type: "Reserve",
-      },
-    ];
+    return getHospitalBankAccountsWithBalance(summary.financial.totalBalance);
   };
 
   const loadDashboardData = async () => {
@@ -249,7 +218,7 @@ export default function DashboardPage() {
                   title="Cash Position"
                   value={
                     summary
-                      ? currencyFormatter.format(summary.financial.totalBalance)
+                      ? formatINR(summary.financial.totalBalance)
                       : "₹0"
                   }
                   percentageChange={17}
@@ -263,7 +232,7 @@ export default function DashboardPage() {
                   title="Patient Collections"
                   value={
                     summary
-                      ? currencyFormatter.format(
+                      ? formatINR(
                           summary.financial.monthlyRevenue
                         )
                       : "₹0"
@@ -279,7 +248,7 @@ export default function DashboardPage() {
                   title="Operating Expenses"
                   value={
                     summary
-                      ? currencyFormatter.format(summary.financial.monthlyBurn)
+                      ? formatINR(summary.financial.monthlyBurn)
                       : "₹0"
                   }
                   percentageChange={
@@ -301,7 +270,7 @@ export default function DashboardPage() {
                   title="Annual Revenue"
                   value={
                     summary
-                      ? currencyFormatter.format(
+                      ? formatINR(
                           summary.financial.monthlyRevenue * 12
                         )
                       : "₹0"
@@ -328,7 +297,7 @@ export default function DashboardPage() {
                           Outstanding Claims
                         </p>
                         <p className="text-2xl font-bold text-orange-900">
-                          {currencyFormatter.format(outstandingClaims)}
+                          {formatINR(outstandingClaims)}
                         </p>
                         <p className="text-xs text-orange-600">
                           Pending insurance
@@ -423,11 +392,11 @@ export default function DashboardPage() {
                                 <h3 className="text-base font-semibold text-[#2C2C2C] mb-1">
                                   {account.name}
                                 </h3>
-                                <p className="text-xs font-mono text-[#2C2C2C]/70">
+                                <p className="text-xs font-mono text-gray-600">
                                   {account.accountNumber}
                                 </p>
-                                <p className="text-xs text-[#2C2C2C]/60 mt-1">
-                                  {account.type} Account
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {account.purpose} Account • {account.bankName}
                                 </p>
                               </div>
                             </div>
@@ -438,8 +407,8 @@ export default function DashboardPage() {
                             <p className="text-xs font-medium text-[#2C2C2C]/60 uppercase tracking-wide">
                               Available Balance
                             </p>
-                            <div className="text-3xl font-bold text-[#2C2C2C] leading-tight">
-                              {currencyFormatter.format(account.balance)}
+                            <div className="text-3xl font-bold text-gray-900 leading-tight">
+                              {formatINR(account.balance)}
                             </div>
                           </div>
                         </CardContent>
