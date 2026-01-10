@@ -1,5 +1,6 @@
 node_modules
 npm-debug.log
+.next
 .nexts
 .git
 .gitignore
@@ -15,3 +16,16 @@ coverage
 *.log
 .DS_Store
 Thumbs.db
+.env.local
+.env*.local
+dist
+build
+.vscode-test
+*.tsbuildinfo
+test
+tests
+__tests__
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx

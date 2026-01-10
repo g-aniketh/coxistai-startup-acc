@@ -16,3 +16,15 @@ coverage
 *.log
 .DS_Store
 Thumbs.db
+.env.local
+.env*.local
+build
+.vscode-test
+*.tsbuildinfo
+test
+tests
+__tests__
+*.test.ts
+*.spec.ts
+prisma/migrations
+.prisma

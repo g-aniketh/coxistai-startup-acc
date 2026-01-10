@@ -25,6 +25,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      # NEXT_PUBLIC_API_URL must be set in root .env file (not frontend/.env)
+      # Example: NEXT_PUBLIC_API_URL=http://your-ec2-ip:3001/api/v1
+      # This is required for build-time embedding in Next.js
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     container_name: coxist-frontend

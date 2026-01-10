@@ -7,24 +7,25 @@ WORKDIR /app
 # Install dependencies for Prisma and native modules
 RUN apk add --no-cache openssl curl wget
 
-# Copy package files
+# Copy package files first for better caching
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install ALL dependencies (including dev dependencies for build)
-RUN npm install
+# Install dependencies (including dev dependencies for build)
+# Use npm ci for faster, reliable, reproducible builds
+RUN npm ci
+
+# Generate Prisma client (before copying source to leverage cache)
+RUN npx prisma generate
 
 # Copy source code
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
-
 # Build the application
 RUN npm run build
 
-# Remove dev dependencies after build
-RUN npm prune --production
+# Remove dev dependencies and prune to reduce image size
+RUN npm prune --production && rm -rf /tmp/* /var/cache/apk/* ~/.npm
 
 # Expose port
 EXPOSE 3001

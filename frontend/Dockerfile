@@ -8,24 +8,25 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-# Use npm install instead of npm ci to handle lock file issues
-RUN npm install --omit=dev
+# Install ALL dependencies (including dev dependencies needed for build)
+RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
 
-# Accept build arguments
+# Accept build arguments (from docker-compose or root .env)
+# This takes precedence over .env file if provided
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
+# Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
+# Copy source code (including .env file)
+# Note: If NEXT_PUBLIC_API_URL build arg is empty/unset, Next.js will read from .env file during build
 COPY . .
 
-# Install all dependencies for build (including dev dependencies)
-RUN npm install
-
-# Build the application
+# Build the application (dependencies already installed, so no npm install needed)
 RUN npm run build
 
 # Production image, copy all the files and run next
