@@ -651,45 +651,49 @@ export default function ComplianceHubPage() {
               </div>
 
               {/* Tabs */}
-              <div className="flex gap-2 border-b border-gray-200">
-                <Button
-                  onClick={() => setActiveTab("tax-compliance")}
-                  variant={activeTab === "tax-compliance" ? "default" : "ghost"}
-                  className={
-                    activeTab === "tax-compliance"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <Calculator className="h-4 w-4 mr-2" />
-                  Tax & Compliance
-                </Button>
-                <Button
-                  onClick={() => setActiveTab("bookkeeping")}
-                  variant={activeTab === "bookkeeping" ? "default" : "ghost"}
-                  className={
-                    activeTab === "bookkeeping"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Bookkeeping
-                </Button>
-                <Button
-                  onClick={() => setActiveTab("expense-management")}
-                  variant={
-                    activeTab === "expense-management" ? "default" : "ghost"
-                  }
-                  className={
-                    activeTab === "expense-management"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <Receipt className="h-4 w-4 mr-2" />
-                  Expense Management
-                </Button>
+              <div className="border-b border-gray-200 overflow-x-auto custom-scrollbar">
+                <div className="flex gap-2 min-w-max pb-2">
+                  <Button
+                    onClick={() => setActiveTab("tax-compliance")}
+                    variant={
+                      activeTab === "tax-compliance" ? "default" : "ghost"
+                    }
+                    className={
+                      activeTab === "tax-compliance"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <Calculator className="h-4 w-4 mr-2" />
+                    Tax & Compliance
+                  </Button>
+                  <Button
+                    onClick={() => setActiveTab("bookkeeping")}
+                    variant={activeTab === "bookkeeping" ? "default" : "ghost"}
+                    className={
+                      activeTab === "bookkeeping"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Bookkeeping
+                  </Button>
+                  <Button
+                    onClick={() => setActiveTab("expense-management")}
+                    variant={
+                      activeTab === "expense-management" ? "default" : "ghost"
+                    }
+                    className={
+                      activeTab === "expense-management"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <Receipt className="h-4 w-4 mr-2" />
+                    Expense Management
+                  </Button>
+                </div>
               </div>
 
               {/* Tax & Compliance Tab */}
@@ -1051,11 +1055,11 @@ export default function ComplianceHubPage() {
                                 </div>
                               </div>
 
-                              <div className="flex gap-2">
+                              <div className="flex flex-wrap gap-2">
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="text-blue-600 hover:text-blue-700"
+                                  className="text-blue-600 hover:text-blue-700 whitespace-nowrap"
                                 >
                                   <Eye className="h-4 w-4 mr-2" />
                                   View Details
@@ -1063,7 +1067,7 @@ export default function ComplianceHubPage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="text-green-600 hover:text-green-700"
+                                  className="text-green-600 hover:text-green-700 whitespace-nowrap"
                                 >
                                   <Download className="h-4 w-4 mr-2" />
                                   Download
@@ -1072,7 +1076,7 @@ export default function ComplianceHubPage() {
                                   <Button
                                     size="sm"
                                     onClick={() => fileTaxReturn(return_.id)}
-                                    className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                                    className="bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
                                   >
                                     <FileText className="h-4 w-4 mr-2" />
                                     File Return
@@ -1454,14 +1458,14 @@ export default function ComplianceHubPage() {
                   {/* Manual Receipt Entry Section */}
                   <Card className="bg-white rounded-xl border-0 shadow-lg">
                     <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg font-medium text-[#2C2C2C] flex items-center gap-2">
-                          <Receipt className="h-5 w-5 text-[#607c47]" />
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <CardTitle className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                          <Receipt className="h-5 w-5 text-teal-600" />
                           Add Receipt Manually
                         </CardTitle>
                         <Button
                           onClick={() => setShowReceiptForm(!showReceiptForm)}
-                          className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                          className="bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap w-full sm:w-auto"
                         >
                           {showReceiptForm ? (
                             <>
@@ -1591,7 +1595,7 @@ export default function ComplianceHubPage() {
                               required
                             />
                           </div>
-                          <div className="flex gap-2 justify-end">
+                          <div className="flex flex-wrap gap-2 justify-end">
                             <Button
                               type="button"
                               variant="outline"
@@ -1605,14 +1609,14 @@ export default function ComplianceHubPage() {
                                   date: new Date().toISOString().split("T")[0],
                                 });
                               }}
-                              className="border-gray-300 text-[#2C2C2C]"
+                              className="border-gray-300 text-gray-900 whitespace-nowrap"
                             >
                               Cancel
                             </Button>
                             <Button
                               type="submit"
                               disabled={isSubmitting}
-                              className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                              className="bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
                             >
                               {isSubmitting ? (
                                 <>
@@ -1635,12 +1639,12 @@ export default function ComplianceHubPage() {
                   {/* Expense List */}
                   <Card className="bg-white rounded-xl border-0 shadow-lg">
                     <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg font-medium text-[#2C2C2C]">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <CardTitle className="text-lg font-medium text-gray-900">
                           Expense Receipts ({filteredReceipts.length})
                         </CardTitle>
-                        <div className="flex gap-2">
-                          <div className="relative">
+                        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                          <div className="relative flex-1 sm:flex-none sm:w-64">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <Input
                               placeholder="Search receipts..."
@@ -1648,14 +1652,14 @@ export default function ComplianceHubPage() {
                               onChange={(e) =>
                                 setExpenseSearchTerm(e.target.value)
                               }
-                              className="pl-10 bg-white w-64"
+                              className="pl-10 bg-white w-full"
                             />
                           </div>
                           <Select
                             value={expenseStatusFilter}
                             onValueChange={setExpenseStatusFilter}
                           >
-                            <SelectTrigger className="w-40">
+                            <SelectTrigger className="w-full sm:w-40">
                               <SelectValue placeholder="All Status" />
                             </SelectTrigger>
                             <SelectContent>
@@ -1743,11 +1747,11 @@ export default function ComplianceHubPage() {
                                   </Badge>
                                 </TableCell>
                                 <TableCell>
-                                  <div className="flex gap-1">
+                                  <div className="flex flex-wrap gap-1">
                                     <Button
                                       variant="outline"
                                       size="sm"
-                                      className="border-gray-300 text-[#2C2C2C]"
+                                      className="border-gray-300 text-gray-900"
                                       onClick={() =>
                                         viewReceiptDetails(receipt)
                                       }

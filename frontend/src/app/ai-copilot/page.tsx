@@ -429,43 +429,45 @@ export default function AICopilotPage() {
               </div>
 
               {/* Tabs */}
-              <div className="flex gap-2 border-b border-gray-200">
-                <Button
-                  onClick={() => setActiveTab("insights")}
-                  variant={activeTab === "insights" ? "default" : "ghost"}
-                  className={
-                    activeTab === "insights"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <Lightbulb className="h-4 w-4 mr-2" />
-                  Financial Insights
-                </Button>
-                <Button
-                  onClick={() => setActiveTab("scenarios")}
-                  variant={activeTab === "scenarios" ? "default" : "ghost"}
-                  className={
-                    activeTab === "scenarios"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <Target className="h-4 w-4 mr-2" />
-                  What-If Scenarios
-                </Button>
-                <Button
-                  onClick={() => setActiveTab("forecasting")}
-                  variant={activeTab === "forecasting" ? "default" : "ghost"}
-                  className={
-                    activeTab === "forecasting"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  AI Forecasting
-                </Button>
+              <div className="border-b border-gray-200 overflow-x-auto custom-scrollbar">
+                <div className="flex gap-2 min-w-max pb-2">
+                  <Button
+                    onClick={() => setActiveTab("insights")}
+                    variant={activeTab === "insights" ? "default" : "ghost"}
+                    className={
+                      activeTab === "insights"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <Lightbulb className="h-4 w-4 mr-2" />
+                    Financial Insights
+                  </Button>
+                  <Button
+                    onClick={() => setActiveTab("scenarios")}
+                    variant={activeTab === "scenarios" ? "default" : "ghost"}
+                    className={
+                      activeTab === "scenarios"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <Target className="h-4 w-4 mr-2" />
+                    What-If Scenarios
+                  </Button>
+                  <Button
+                    onClick={() => setActiveTab("forecasting")}
+                    variant={activeTab === "forecasting" ? "default" : "ghost"}
+                    className={
+                      activeTab === "forecasting"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    AI Forecasting
+                  </Button>
+                </div>
               </div>
 
               {/* Insights Tab */}

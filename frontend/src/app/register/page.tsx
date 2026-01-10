@@ -9,12 +9,12 @@ import {
   Eye,
   EyeOff,
   Building2,
-  HeartPulse,
   Activity,
   BarChart3,
   Shield,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import Image from "next/image";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -104,11 +104,17 @@ export default function RegisterPage() {
 
           <div className="relative z-10 flex flex-col justify-center p-12 text-white">
             <div className="flex items-center gap-3 mb-8">
-              <div className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <HeartPulse className="h-8 w-8 text-white" />
+              <div className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center overflow-hidden">
+                <Image
+                  src="/hospitalLogo.jpeg"
+                  alt="Sai Vishwas Hospitals"
+                  width={56}
+                  height={56}
+                  className="object-cover"
+                />
               </div>
               <div>
-                <h1 className="text-3xl font-bold">MediFinance Pro</h1>
+                <h1 className="text-3xl font-bold">Sai Vishwas Hospitals</h1>
                 <p className="text-teal-100 text-sm">
                   Hospital Financial Management
                 </p>
@@ -157,11 +163,17 @@ export default function RegisterPage() {
             {/* Mobile Logo */}
             <div className="lg:hidden text-center">
               <div className="inline-flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center">
-                  <HeartPulse className="h-6 w-6 text-white" />
+                <div className="w-10 h-10 rounded-xl overflow-hidden bg-white flex items-center justify-center shadow-md">
+                  <Image
+                    src="/hospitalLogo.jpeg"
+                    alt="Sai Vishwas Hospitals"
+                    width={40}
+                    height={40}
+                    className="object-cover"
+                  />
                 </div>
                 <span className="text-2xl font-bold text-gray-900">
-                  MediFinance Pro
+                  Sai Vishwas Hospitals
                 </span>
               </div>
             </div>

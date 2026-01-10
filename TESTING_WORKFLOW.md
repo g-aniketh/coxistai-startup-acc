@@ -1,6 +1,6 @@
-# Complete Testing Workflow - Seeded Demo Account
+# Complete Testing Workflow - Seeded Demo Account (Sai Vishwas Hospitals)
 
-This document provides a step-by-step workflow to test all implemented features using the **pre-seeded demo account** (`demo@coxistai.com`) with comprehensive data already in place.
+This document provides a step-by-step workflow to test all implemented features using the **pre-seeded demo account** (`demo@coxistai.com`) with comprehensive data already in place for **Sai Vishwas Hospitals**.
 
 ## Prerequisites
 
@@ -160,19 +160,52 @@ When you login to `demo@coxistai.com`, the following is **already available and 
 5. **View GST Tax Rates**: Navigate to `/gst` → Tax Rates tab - See 7 tax rates
 6. **View Bills**: Navigate to `/bills` - See bills from pre-created vouchers
 
-### Step 5: Test Financial Statements
+### Step 5: Test Revenue Cycle Management (RCM)
+
+1. Navigate to **RCM Dashboard** (`/rcm`)
+2. **Verify**: View RCM dashboard with claims pipeline, days in AR, collection rates
+3. Navigate to **Patient Billing** (`/invoicing`)
+4. **Create Invoice**: Create a patient invoice with services
+5. Navigate to **Insurance Claims** (`/insurance-claims`)
+6. **Verify**: View claims management interface with status tracking
+7. Navigate to **Patient Accounts** (`/bills`)
+8. **Verify**: View patient receivables and aging analysis
+
+### Step 6: Test Financial Statements
 
 1. Navigate to **Bookkeeping** (`/bookkeeping`)
-2. **Trial Balance**: Click Trial Balance tab → Select date → Refresh
+2. **Chart of Accounts**: Create ledger groups and manage hierarchy
+3. **Ledger Master**: Create and manage individual ledgers
+4. **Trial Balance**: Click Trial Balance tab → Select date → Refresh
    - **Verify**: Shows all ledger balances from pre-created vouchers
-3. **Profit & Loss**: Click Profit & Loss tab → Select date range → Refresh
+5. **Profit & Loss**: Click Profit & Loss tab → Select date range → Refresh
    - **Verify**: Shows income and expenses from sales/purchase vouchers
-4. **Balance Sheet**: Click Balance Sheet tab → Select date → Refresh
+6. **Balance Sheet**: Click Balance Sheet tab → Select date → Refresh
    - **Verify**: Shows assets, liabilities, and capital
-5. **Cash Flow**: Click Cash Flow tab → Select date range → Refresh
+7. **Cash Flow**: Click Cash Flow tab → Select date range → Refresh
    - **Verify**: Shows cash flows from operations, investing, financing
+8. **Financial Ratios**: Click Financial Ratios tab → Select date → Refresh
+   - **Verify**: Shows profitability, liquidity, efficiency, and leverage ratios
+9. **Cash Book**: Click Cash Book tab → Select date range → Refresh
+   - **Verify**: Shows all cash transactions
+10. **Bank Book**: Click Bank Book tab → Select bank and date range → Refresh
+    - **Verify**: Shows bank transactions
+11. **Day Book**: Click Day Book tab → Select date → Refresh
+    - **Verify**: Shows all vouchers for the selected day
+12. **Ledger Book**: Click Ledger Book tab → Select ledger and date range → Refresh
+    - **Verify**: Shows ledger-wise entries
+13. **Journals**: Click Journals tab → Select journal type and date range → Refresh
+    - **Verify**: Shows journals by type
+14. **Budgeting**: Click Budgeting tab
+    - **Create Budget**: Create a budget for ledger/group/cost centre
+    - **View Variance**: Check budget variance analytics
+    - **View Breaches**: Check budget breach alerts
+15. **Year-End Operations**: Click Year-End Operations tab
+    - **Generate Closing Entries**: Test closing entries generation
+    - **Run Depreciation**: Test depreciation calculation
+    - **Carry Forward Balances**: Test balance carry-forward workflow
 
-### Step 6: Test Inventory Stock
+### Step 7: Test Inventory Stock
 
 1. Navigate to **Vouchers** → **Items** (`/vouchers/items`)
 2. **View Stock**: Check stock balance for each item
@@ -180,7 +213,22 @@ When you login to `demo@coxistai.com`, the following is **already available and 
 3. **Create Sales Voucher**: Use any item - stock should be available
 4. **Verify Stock Decrease**: After posting sales voucher, stock decreases
 
-### Step 7: Test GST Features
+### Step 8: Test Banking & Payments
+
+1. Navigate to **Banking & Payments** (`/banking-payments`)
+2. **View Bank Accounts**: Verify hospital bank accounts (HDFC, ICICI, Axis)
+3. **View Bank Connections**: Check connected bank accounts
+4. **Create Invoice**: Generate patient invoice
+5. **View Transactions**: Check transaction history
+
+### Step 9: Test Transactions
+
+1. Navigate to **Transactions** (`/transactions`)
+2. **Verify**: View all financial transactions
+3. **Filter**: Test filtering by date, type, amount
+4. **Search**: Test search functionality
+
+### Step 10: Test GST Features
 
 1. Navigate to **GST** (`/gst`)
 2. **View Registrations**: See pre-created GST registration
@@ -188,7 +236,7 @@ When you login to `demo@coxistai.com`, the following is **already available and 
 4. **View Mappings**: See 6 pre-created ledger mappings
 5. **Create Sales Voucher**: GST auto-calculates and posts to GST ledgers
 
-### Step 8: Test Cost Management
+### Step 11: Test Cost Management
 
 1. Navigate to **Cost Management** (`/cost-management`)
 2. **View Cost Categories**: See 5 pre-created categories
@@ -196,7 +244,42 @@ When you login to `demo@coxistai.com`, the following is **already available and 
 4. **View Interest Profiles**: See 3 pre-created interest profiles
 5. **Test Cost Centre Reporting**: Generate report with pre-created data
 
-### Step 9: Test Bills Management
+### Step 12: Test Compliance & Reports
+
+1. Navigate to **Compliance Hub** (`/compliance-hub`)
+2. **Verify**: View compliance dashboard with GST, tax, and statutory reports
+3. Navigate to **Audit Log** (`/audit-log`)
+4. **Verify**: View audit trail of all system actions
+5. Navigate to **Smart Alerts** (`/alerts`)
+6. **Verify**: View system alerts and notifications
+
+### Step 13: Test Hospital Operations (Dummy Pages)
+
+1. Navigate to **Patients** (`/patients`)
+   - **Verify**: View patient management interface (dummy UI)
+2. Navigate to **Appointments** (`/appointments`)
+   - **Verify**: View appointment scheduling interface (dummy UI)
+3. Navigate to **Staff** (`/staff`)
+   - **Verify**: View staff directory (dummy UI)
+4. Navigate to **Facilities** (`/facilities`)
+   - **Verify**: View facility management interface (dummy UI)
+
+### Step 14: Test Admin Features
+
+1. Navigate to **Team Management** (`/team`)
+2. **Verify**: View team members and add/remove users
+3. Navigate to **Role Management** (`/role-management`)
+4. **Verify**: View roles and permissions, assign roles to users
+5. Navigate to **Import Data** (`/tally-import`)
+6. **Test Import**: Import data from Tally/Excel
+7. **Test Export**: Export data to Tally/Excel
+8. Navigate to **Settings** (`/settings`)
+9. **General Settings**: Update company profile, banking connections
+10. **Financial Settings**: Configure fiscal periods, currency, voucher numbering
+11. **Security Settings**: Configure vault encryption and access controls
+12. **Billing Settings**: View subscription and feature toggles
+
+### Step 15: Test Bills Management
 
 1. Navigate to **Bills** (`/bills`)
 2. **View Bills**: See bills from pre-created vouchers
@@ -204,13 +287,13 @@ When you login to `demo@coxistai.com`, the following is **already available and 
 4. **View Outstanding by Ledger**: See party-wise outstanding
 5. **Test Settlement**: Create payment/receipt voucher to settle bills
 
-### Step 10: Test Advanced Features
+### Step 16: Test AI Features
 
-1. **Audit Log**: Navigate to `/audit-log` - See audit trail of all actions
-2. **Role Management**: Navigate to `/role-management` - View roles and permissions
-3. **Tally Import/Export**: Navigate to `/tally-import` - Test import/export
-4. **AI Assistant**: Navigate to `/ai-assistant` - Test AI features with real data
-5. **Year-End Operations**: Navigate to `/bookkeeping` → Year-End tab - Test closing entries
+1. Navigate to **AI Assistant** (`/ai-assistant`)
+2. **Chatbot**: Ask questions about financial data and get insights
+3. **Scenarios**: Run what-if scenarios with financial data
+4. **Insights**: Generate financial insights and recommendations
+5. **Forecasting**: Generate revenue and cashflow forecasts
 
 ---
 
@@ -362,6 +445,13 @@ All voucher types have dedicated forms. Test each:
 ✅ **Login & Dashboard**
 - [x] Login to demo@coxistai.com
 - [x] View dashboard with pre-seeded data
+- [x] View Financial Dashboard
+
+✅ **Revenue Cycle Management**
+- [x] RCM Dashboard with claims pipeline
+- [x] Patient Billing (Invoicing)
+- [x] Insurance Claims Management
+- [x] Patient Accounts (Bills) with aging
 
 ✅ **Voucher Management**
 - [x] Create Sales vouchers (all items have stock!)
@@ -370,6 +460,43 @@ All voucher types have dedicated forms. Test each:
 - [x] Create all 13 voucher types
 - [x] Post and cancel vouchers
 - [x] Test bill-wise references
+
+✅ **Banking & Payments**
+- [x] View bank accounts (HDFC, ICICI, Axis)
+- [x] View bank connections
+- [x] Generate invoices
+- [x] View transaction history
+
+✅ **Transactions**
+- [x] View all transactions
+- [x] Filter and search transactions
+
+✅ **Bookkeeping - Chart of Accounts & Ledgers**
+- [x] Create ledger groups
+- [x] Create and manage ledgers
+- [x] Manage hierarchy
+
+✅ **Bookkeeping - Financial Statements**
+- [x] Trial Balance
+- [x] Profit & Loss
+- [x] Balance Sheet
+- [x] Cash Flow
+- [x] Financial Ratios
+
+✅ **Bookkeeping - Books & Registers**
+- [x] Cash Book
+- [x] Bank Book
+- [x] Day Book
+- [x] Ledger Book
+- [x] Journals
+
+✅ **Bookkeeping - Budgeting & Year-End**
+- [x] Create budgets (Ledger/Group/Cost Centre)
+- [x] View budget variance analytics
+- [x] Check budget breach alerts
+- [x] Generate closing entries
+- [x] Run depreciation
+- [x] Carry forward balances
 
 ✅ **Inventory Management**
 - [x] View items with stock
@@ -383,38 +510,31 @@ All voucher types have dedicated forms. Test each:
 - [x] View GST ledger mappings
 - [x] Test GST calculation in vouchers
 
-✅ **Financial Statements**
-- [x] Trial Balance
-- [x] Profit & Loss
-- [x] Balance Sheet
-- [x] Cash Flow
-- [x] Financial Ratios
-
-✅ **Advanced Books**
-- [x] Cash Book
-- [x] Bank Book
-- [x] Day Book
-- [x] Ledger Book
-- [x] Journals
-
 ✅ **Cost Management**
 - [x] View cost categories
 - [x] View cost centers
 - [x] View interest profiles
 - [x] Cost centre reporting
 
-✅ **Bills Management**
-- [x] View bills
-- [x] Aging reports
-- [x] Outstanding by ledger
-- [x] Bill settlement
-
-✅ **Additional Features**
+✅ **Compliance & Reports**
+- [x] Compliance Hub
 - [x] Audit Log
+- [x] Smart Alerts
+
+✅ **Hospital Operations (Dummy)**
+- [x] Patients management UI
+- [x] Appointments scheduling UI
+- [x] Staff directory UI
+- [x] Facilities management UI
+
+✅ **Admin Features**
+- [x] Team Management
 - [x] Role Management
 - [x] Tally Import/Export
-- [x] AI Assistant
-- [x] Year-End Operations
+- [x] Settings (General, Financial, Security, Billing)
+
+✅ **AI Features**
+- [x] AI Assistant (Chatbot, Scenarios, Insights, Forecasting)
 
 ---
 

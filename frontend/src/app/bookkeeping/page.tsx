@@ -631,7 +631,7 @@ const BookkeepingPage = () => {
       <MainLayout>
         <div className="bg-gray-50 min-h-screen">
           <div className="flex-1 overflow-y-auto custom-scrollbar">
-            <div className="p-4 md:p-8 space-y-6 pb-32">
+            <div className="p-4 md:p-8 space-y-4 md:space-y-6 pb-32 max-w-full">
               {/* Header */}
               <div className="space-y-2">
                 <p className="text-sm uppercase tracking-wide text-[#607c47] font-semibold">
@@ -649,26 +649,28 @@ const BookkeepingPage = () => {
 
               {/* Tabs */}
               <div className="border-b border-gray-200">
-                <div className="flex gap-1">
-                  {bookkeepingTabs.map((tab) => {
-                    const Icon = tab.icon;
-                    return (
-                      <button
-                        key={tab.id}
-                        type="button"
-                        onClick={() => setActiveTab(tab.id)}
-                        className={cn(
-                          "px-4 py-2 text-sm font-semibold rounded-t-lg border-b-2 transition-colors flex items-center gap-2",
-                          activeTab === tab.id
-                            ? "text-[#2C2C2C] border-[#607c47] bg-white"
-                            : "text-gray-600 border-transparent hover:text-[#2C2C2C] hover:bg-gray-50"
-                        )}
-                      >
-                        <Icon className="h-4 w-4" />
-                        {tab.label}
-                      </button>
-                    );
-                  })}
+                <div className="overflow-x-auto custom-scrollbar">
+                  <div className="flex gap-1 min-w-max pb-2">
+                    {bookkeepingTabs.map((tab) => {
+                      const Icon = tab.icon;
+                      return (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => setActiveTab(tab.id)}
+                          className={cn(
+                            "px-4 py-2 text-sm font-semibold rounded-t-lg border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap flex-shrink-0",
+                            activeTab === tab.id
+                              ? "text-gray-900 border-teal-600 bg-white"
+                              : "text-gray-600 border-transparent hover:text-gray-900 hover:bg-gray-50"
+                          )}
+                        >
+                          <Icon className="h-4 w-4" />
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
                 {activeTabMeta && (
                   <p className="mt-2 text-sm text-gray-600 px-4">
@@ -1230,128 +1232,130 @@ const BookkeepingPage = () => {
                         </CardDescription>
                       </div>
                     </CardHeader>
-                    <CardContent className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="text-[#2C2C2C]">
-                              Name
-                            </TableHead>
-                            <TableHead className="text-[#2C2C2C]">
-                              Group
-                            </TableHead>
-                            <TableHead className="text-[#2C2C2C]">
-                              Opening
-                            </TableHead>
-                            <TableHead className="text-[#2C2C2C]">
-                              Interest
-                            </TableHead>
-                            <TableHead className="text-[#2C2C2C]">
-                              Flags
-                            </TableHead>
-                            <TableHead className="w-16 text-[#2C2C2C]">
-                              Actions
-                            </TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {ledgers.length === 0 && !ledgersLoading ? (
+                    <CardContent className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+                      <div className="min-w-full">
+                        <Table>
+                          <TableHeader>
                             <TableRow>
-                              <TableCell
-                                colSpan={6}
-                                className="text-center text-sm text-gray-500 py-8"
-                              >
-                                <BookOpen className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                                <p className="font-medium">No ledgers yet</p>
-                                <p className="text-xs mt-1">
-                                  Use the form above to add one
-                                </p>
-                              </TableCell>
+                              <TableHead className="text-[#2C2C2C]">
+                                Name
+                              </TableHead>
+                              <TableHead className="text-[#2C2C2C]">
+                                Group
+                              </TableHead>
+                              <TableHead className="text-[#2C2C2C]">
+                                Opening
+                              </TableHead>
+                              <TableHead className="text-[#2C2C2C]">
+                                Interest
+                              </TableHead>
+                              <TableHead className="text-[#2C2C2C]">
+                                Flags
+                              </TableHead>
+                              <TableHead className="w-16 text-[#2C2C2C]">
+                                Actions
+                              </TableHead>
                             </TableRow>
-                          ) : (
-                            ledgers.map((ledger) => (
-                              <TableRow
-                                key={ledger.id}
-                                className="hover:bg-gray-50"
-                              >
-                                <TableCell>
-                                  <div className="font-semibold text-[#2C2C2C]">
-                                    {ledger.name}
-                                  </div>
-                                  {ledger.alias && (
-                                    <div className="text-xs text-gray-500">
-                                      {ledger.alias}
-                                    </div>
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  <Badge className="bg-gray-100 text-gray-700 border-gray-200">
-                                    {ledger.group?.name}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="text-sm font-medium text-[#2C2C2C]">
-                                    {ledger.openingBalance !== null &&
-                                    ledger.openingBalance !== undefined
-                                      ? formatCurrency(
-                                          Number(ledger.openingBalance)
-                                        )
-                                      : "₹0.00"}
-                                  </div>
-                                  <div className="text-xs text-gray-500">
-                                    {ledger.openingBalanceType === "DEBIT"
-                                      ? "Dr"
-                                      : "Cr"}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  {ledger.interestComputation === "NONE" ? (
-                                    <span className="text-xs text-gray-500">
-                                      Disabled
-                                    </span>
-                                  ) : (
-                                    <div className="text-sm text-[#2C2C2C]">
-                                      {ledger.interestComputation} ·{" "}
-                                      {ledger.interestRate ?? 0}%
-                                    </div>
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex flex-wrap gap-1">
-                                    {ledger.maintainBillByBill && (
-                                      <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                                        Bill-wise
-                                      </Badge>
-                                    )}
-                                    {ledger.inventoryAffectsStock && (
-                                      <Badge className="bg-amber-100 text-amber-700 border-amber-200">
-                                        Inventory
-                                      </Badge>
-                                    )}
-                                    {ledger.costCenterApplicable && (
-                                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
-                                        Cost Centre
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() =>
-                                      handleDeleteLedger(ledger.id)
-                                    }
-                                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
+                          </TableHeader>
+                          <TableBody>
+                            {ledgers.length === 0 && !ledgersLoading ? (
+                              <TableRow>
+                                <TableCell
+                                  colSpan={6}
+                                  className="text-center text-sm text-gray-500 py-8"
+                                >
+                                  <BookOpen className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                                  <p className="font-medium">No ledgers yet</p>
+                                  <p className="text-xs mt-1">
+                                    Use the form above to add one
+                                  </p>
                                 </TableCell>
                               </TableRow>
-                            ))
-                          )}
-                        </TableBody>
-                      </Table>
+                            ) : (
+                              ledgers.map((ledger) => (
+                                <TableRow
+                                  key={ledger.id}
+                                  className="hover:bg-gray-50"
+                                >
+                                  <TableCell>
+                                    <div className="font-semibold text-[#2C2C2C]">
+                                      {ledger.name}
+                                    </div>
+                                    {ledger.alias && (
+                                      <div className="text-xs text-gray-500">
+                                        {ledger.alias}
+                                      </div>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge className="bg-gray-100 text-gray-700 border-gray-200">
+                                      {ledger.group?.name}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="text-sm font-medium text-[#2C2C2C]">
+                                      {ledger.openingBalance !== null &&
+                                      ledger.openingBalance !== undefined
+                                        ? formatCurrency(
+                                            Number(ledger.openingBalance)
+                                          )
+                                        : "₹0.00"}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      {ledger.openingBalanceType === "DEBIT"
+                                        ? "Dr"
+                                        : "Cr"}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    {ledger.interestComputation === "NONE" ? (
+                                      <span className="text-xs text-gray-500">
+                                        Disabled
+                                      </span>
+                                    ) : (
+                                      <div className="text-sm text-[#2C2C2C]">
+                                        {ledger.interestComputation} ·{" "}
+                                        {ledger.interestRate ?? 0}%
+                                      </div>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex flex-wrap gap-1">
+                                      {ledger.maintainBillByBill && (
+                                        <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                                          Bill-wise
+                                        </Badge>
+                                      )}
+                                      {ledger.inventoryAffectsStock && (
+                                        <Badge className="bg-amber-100 text-amber-700 border-amber-200">
+                                          Inventory
+                                        </Badge>
+                                      )}
+                                      {ledger.costCenterApplicable && (
+                                        <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                                          Cost Centre
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() =>
+                                        handleDeleteLedger(ledger.id)
+                                      }
+                                      className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))
+                            )}
+                          </TableBody>
+                        </Table>
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
@@ -1370,6 +1374,10 @@ const BookkeepingPage = () => {
               {activeTab === "day-book" && <DayBookTab />}
               {activeTab === "ledger-book" && <LedgerBookTab />}
               {activeTab === "journals" && <JournalsTab />}
+
+              {/* Budgeting & Year-End Tabs */}
+              {activeTab === "budgeting" && <BudgetingTab />}
+              {activeTab === "year-end" && <YearEndTab />}
             </div>
           </div>
         </div>
@@ -2149,7 +2157,7 @@ function BudgetingTab() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-semibold text-[#2C2C2C]">
+          <h2 className="text-xl font-semibold text-gray-900">
             Budgeting & Variance
           </h2>
           <p className="text-sm text-muted-foreground">
@@ -2158,7 +2166,7 @@ function BudgetingTab() {
         </div>
         <Button
           onClick={() => setFormOpen(true)}
-          className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+          className="bg-teal-600 hover:bg-teal-700 text-white"
         >
           <Plus className="h-4 w-4 mr-2" />
           Create Budget
@@ -2172,7 +2180,7 @@ function BudgetingTab() {
               <div className="text-sm text-muted-foreground">
                 Total Budgeted
               </div>
-              <div className="text-2xl font-semibold text-[#2C2C2C]">
+              <div className="text-2xl font-semibold text-gray-900">
                 {formatCurrency(variance.totalBudgeted)}
               </div>
             </CardContent>
@@ -2180,7 +2188,7 @@ function BudgetingTab() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Total Actual</div>
-              <div className="text-2xl font-semibold text-[#607c47]">
+              <div className="text-2xl font-semibold text-teal-600">
                 {formatCurrency(variance.totalActual)}
               </div>
             </CardContent>
@@ -2296,8 +2304,8 @@ function BudgetingTab() {
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-[#2C2C2C]">Create Budget</DialogTitle>
-            <DialogDescription className="text-[#2C2C2C]/70">
+            <DialogTitle className="text-gray-900">Create Budget</DialogTitle>
+            <DialogDescription className="text-gray-600">
               Define a budget for ledger, group, or cost centre
             </DialogDescription>
           </DialogHeader>
@@ -2385,7 +2393,7 @@ function BudgetingTab() {
               </Button>
               <Button
                 type="submit"
-                className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                className="bg-teal-600 hover:bg-teal-700 text-white"
               >
                 Create Budget
               </Button>
@@ -2485,7 +2493,7 @@ function YearEndTab() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-[#2C2C2C]">
+        <h2 className="text-xl font-semibold text-gray-900">
           Year-End Operations
         </h2>
         <p className="text-sm text-muted-foreground">
@@ -2533,7 +2541,7 @@ function YearEndTab() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#607c47] hover:bg-[#4a6129] text-white"
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white"
               >
                 Generate Closing Entries
               </Button>
@@ -2597,7 +2605,7 @@ function YearEndTab() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#607c47] hover:bg-[#4a6129] text-white"
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white"
               >
                 Run Depreciation
               </Button>
@@ -2645,7 +2653,7 @@ function YearEndTab() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#607c47] hover:bg-[#4a6129] text-white"
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white"
               >
                 Carry Forward Balances
               </Button>

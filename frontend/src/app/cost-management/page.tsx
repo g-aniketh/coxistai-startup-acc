@@ -1274,45 +1274,47 @@ export default function CostManagementPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 border-b border-gray-200">
-            {[
-              {
-                id: "categories" as TabType,
-                label: "Categories",
-                icon: Building2,
-              },
-              {
-                id: "centers" as TabType,
-                label: "Cost Centers",
-                icon: Calculator,
-              },
-              {
-                id: "interest" as TabType,
-                label: "Interest Profiles",
-                icon: Settings,
-              },
-              {
-                id: "party-interest" as TabType,
-                label: "Party Interest",
-                icon: Users,
-              },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
-                    activeTab === tab.id
-                      ? "border-[#607c47] text-[#607c47] font-medium"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  {tab.label}
-                </button>
-              );
-            })}
+          <div className="border-b border-gray-200 overflow-x-auto custom-scrollbar">
+            <div className="flex gap-2 min-w-max pb-2">
+              {[
+                {
+                  id: "categories" as TabType,
+                  label: "Categories",
+                  icon: Building2,
+                },
+                {
+                  id: "centers" as TabType,
+                  label: "Cost Centers",
+                  icon: Calculator,
+                },
+                {
+                  id: "interest" as TabType,
+                  label: "Interest Profiles",
+                  icon: Settings,
+                },
+                {
+                  id: "party-interest" as TabType,
+                  label: "Party Interest",
+                  icon: Users,
+                },
+              ].map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors whitespace-nowrap flex-shrink-0 ${
+                      activeTab === tab.id
+                        ? "border-teal-600 text-teal-600 font-medium"
+                        : "border-transparent text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Tab Content */}

@@ -724,12 +724,15 @@ export default function AIChatbot({
 
   return (
     <Card
-      className={cn("w-full shadow-lg border-0 rounded-xl bg-white", className)}
+      className={cn(
+        "w-full h-full shadow-lg border-0 rounded-xl bg-white flex flex-col",
+        className
+      )}
     >
-      <CardContent className="p-0">
+      <CardContent className="p-0 flex-1 flex flex-col min-h-0 h-full">
         <ScrollArea
           ref={scrollAreaRef}
-          className="max-h-[62vh] md:h-[65vh] p-4 bg-white"
+          className="flex-1 p-4 bg-white min-h-0 h-full"
         >
           <div className="space-y-4 pb-4">
             {messages.map((message) => (

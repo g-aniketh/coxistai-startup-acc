@@ -215,10 +215,12 @@ const parseMarkdown = (text: string) => {
 
 interface FloatingChatbotProps {
   sidebarCollapsed?: boolean;
+  isMobileSidebarOpen?: boolean;
 }
 
 export default function FloatingChatbot({
   sidebarCollapsed = false,
+  isMobileSidebarOpen = false,
 }: FloatingChatbotProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(true);
@@ -479,29 +481,40 @@ export default function FloatingChatbot({
   };
 
   // Calculate left position based on sidebar state
-  // Sidebar: w-64 (256px) when expanded, w-20 (80px) when collapsed
+  // Sidebar: w-80 (320px) when expanded, w-20 (80px) when collapsed
   // Add 24px (6 * 4px) margin
-  const leftPosition = sidebarCollapsed ? "lg:left-[104px]" : "lg:left-[280px]";
+  const leftPosition = sidebarCollapsed ? "lg:left-[104px]" : "lg:left-[344px]";
+
+  // Hide on mobile when sidebar is open
+  if (isMobileSidebarOpen) {
+    return null;
+  }
 
   if (!isOpen) {
     return (
-      <div className={`fixed bottom-6 left-6 ${leftPosition} z-50`}>
+      <div
+        className={`fixed bottom-4 left-4 ${leftPosition} z-[45] lg:z-50 lg:bottom-6`}
+      >
         <button
           onClick={toggleOpen}
-          className="flex items-center gap-3 bg-gradient-to-br from-blue-600 to-indigo-600 text-white px-6 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
+          className="flex items-center gap-2 md:gap-3 bg-gradient-to-br from-blue-600 to-indigo-600 text-white px-4 md:px-6 py-3 md:py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group w-full lg:w-auto justify-center"
         >
           <div className="relative">
-            <Sparkles className="h-6 w-6" />
-            <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-400 rounded-full border-2 border-white animate-pulse" />
+            <Sparkles className="h-5 w-5 md:h-6 md:w-6" />
+            <div className="absolute -top-1 -right-1 h-2.5 w-2.5 md:h-3 md:w-3 bg-green-400 rounded-full border-2 border-white animate-pulse" />
           </div>
-          <span className="font-medium text-base">How can I help you?</span>
+          <span className="font-medium text-sm md:text-base">
+            How can I help you?
+          </span>
         </button>
       </div>
     );
   }
 
   return (
-    <div className={`fixed bottom-6 left-6 ${leftPosition} z-50 w-[380px]`}>
+    <div
+      className={`fixed bottom-4 left-4 right-4 lg:right-auto lg:left-6 ${leftPosition} z-[45] lg:z-50 lg:bottom-6 w-auto lg:w-[380px] max-w-full`}
+    >
       <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col transition-all duration-300">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 flex items-center justify-between">

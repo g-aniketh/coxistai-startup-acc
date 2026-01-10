@@ -98,14 +98,52 @@
   border: 1px solid oklch(0.2 0.02 230);
 }
 
-/* Custom scrollbar - hidden but functional */
+/* Custom scrollbar - hidden but functional for vertical scroll */
 .custom-scrollbar {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: thin; /* Firefox */
+  -ms-overflow-style: auto; /* Internet Explorer 10+ */
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  display: none; /* WebKit */
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Horizontal scrollbar for tabs - always visible on mobile */
+.overflow-x-auto {
+  scrollbar-width: thin;
+  -ms-overflow-style: auto;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+  height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
 }
 
 /* Custom scrollbar */

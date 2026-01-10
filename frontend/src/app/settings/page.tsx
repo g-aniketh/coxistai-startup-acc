@@ -1448,22 +1448,24 @@ export default function SettingsPage() {
           </div>
 
           <div className="mt-4">
-            <div className="flex flex-wrap gap-2 border-b border-gray-200">
-              {settingsTabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id)}
-                  className={cn(
-                    "px-4 py-2 text-sm font-semibold rounded-t-lg border-b-2 transition-colors",
-                    activeTab === tab.id
-                      ? "text-[#2C2C2C] border-[#607c47]"
-                      : "text-muted-foreground border-transparent hover:text-[#2C2C2C]"
-                  )}
-                >
-                  {tab.label}
-                </button>
-              ))}
+            <div className="border-b border-gray-200 overflow-x-auto custom-scrollbar">
+              <div className="flex gap-2 min-w-max pb-2">
+                {settingsTabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={cn(
+                      "px-4 py-2 text-sm font-semibold rounded-t-lg border-b-2 transition-colors whitespace-nowrap flex-shrink-0",
+                      activeTab === tab.id
+                        ? "text-gray-900 border-teal-600"
+                        : "text-gray-500 border-transparent hover:text-gray-900"
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
               {activeTabMeta?.description}

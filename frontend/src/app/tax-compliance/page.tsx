@@ -290,55 +290,57 @@ export default function TaxCompliancePage() {
               </div>
 
               {/* Tabs */}
-              <div className="flex gap-2 border-b border-gray-200">
-                <Button
-                  onClick={() => setActiveTab("overview")}
-                  variant={activeTab === "overview" ? "default" : "ghost"}
-                  className={
-                    activeTab === "overview"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Overview
-                </Button>
-                <Button
-                  onClick={() => setActiveTab("gst")}
-                  variant={activeTab === "gst" ? "default" : "ghost"}
-                  className={
-                    activeTab === "gst"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <Calculator className="h-4 w-4 mr-2" />
-                  GST Calculator
-                </Button>
-                <Button
-                  onClick={() => setActiveTab("tds")}
-                  variant={activeTab === "tds" ? "default" : "ghost"}
-                  className={
-                    activeTab === "tds"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <Banknote className="h-4 w-4 mr-2" />
-                  TDS Management
-                </Button>
-                <Button
-                  onClick={() => setActiveTab("returns")}
-                  variant={activeTab === "returns" ? "default" : "ghost"}
-                  className={
-                    activeTab === "returns"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Tax Returns
-                </Button>
+              <div className="border-b border-gray-200 overflow-x-auto custom-scrollbar">
+                <div className="flex gap-2 min-w-max pb-2">
+                  <Button
+                    onClick={() => setActiveTab("overview")}
+                    variant={activeTab === "overview" ? "default" : "ghost"}
+                    className={
+                      activeTab === "overview"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Overview
+                  </Button>
+                  <Button
+                    onClick={() => setActiveTab("gst")}
+                    variant={activeTab === "gst" ? "default" : "ghost"}
+                    className={
+                      activeTab === "gst"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <Calculator className="h-4 w-4 mr-2" />
+                    GST Calculator
+                  </Button>
+                  <Button
+                    onClick={() => setActiveTab("tds")}
+                    variant={activeTab === "tds" ? "default" : "ghost"}
+                    className={
+                      activeTab === "tds"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <Banknote className="h-4 w-4 mr-2" />
+                    TDS Management
+                  </Button>
+                  <Button
+                    onClick={() => setActiveTab("returns")}
+                    variant={activeTab === "returns" ? "default" : "ghost"}
+                    className={
+                      activeTab === "returns"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Tax Returns
+                  </Button>
+                </div>
               </div>
 
               {/* Overview Tab */}

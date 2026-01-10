@@ -2,8 +2,12 @@
 
 import { ReactNode, useState } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { Menu, X } from "lucide-react";
 import Sidebar from "./Sidebar";
 import FloatingChatbot from "@/components/FloatingChatbot";
+import { cn } from "@/lib/utils";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -16,6 +20,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   // Hide chatbot on AI assistant page
   const shouldShowChatbot = pathname !== "/ai-assistant";
+  // Disable MainLayout scrolling for AI Assistant page
+  const isAIAssistantPage = pathname === "/ai-assistant";
 
   return (
     <div className="h-screen flex overflow-hidden bg-white">
@@ -27,6 +33,41 @@ export default function MainLayout({ children }: MainLayoutProps) {
         />
       </aside>
 
+      {/* Mobile Header - Top Bar */}
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <div className="flex items-center justify-between px-4 h-16">
+          {/* Logo */}
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-xl overflow-hidden bg-white flex items-center justify-center shadow-sm border-2 border-gray-100">
+              <Image
+                src="/hospitalLogo.jpeg"
+                alt="Sai Vishwas Hospitals"
+                width={40}
+                height={40}
+                className="object-cover"
+                priority
+              />
+            </div>
+            <span className="text-lg font-semibold text-gray-900">
+              Sai Vishwas Hospitals
+            </span>
+          </Link>
+
+          {/* Hamburger Menu Button */}
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+            aria-label="Toggle menu"
+          >
+            {isSidebarOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </button>
+        </div>
+      </header>
+
       {/* Sidebar - Mobile (Overlay) */}
       {isSidebarOpen && (
         <>
@@ -37,10 +78,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
           />
 
           {/* Sidebar */}
-          <aside className="fixed inset-y-0 left-0 z-50 lg:hidden">
+          <aside className="fixed inset-y-0 left-0 z-50 lg:hidden w-80">
             <Sidebar
               collapsed={false}
               onToggleCollapse={() => setIsSidebarOpen(false)}
+              isMobile={true}
             />
           </aside>
         </>
@@ -49,14 +91,23 @@ export default function MainLayout({ children }: MainLayoutProps) {
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden relative">
         {/* Section 2: Main Content */}
-        <main className="flex-1 overflow-y-auto relative z-10 custom-scrollbar">
+        <main
+          className={cn(
+            "flex-1 relative z-10 custom-scrollbar",
+            "lg:pt-0 pt-16", // Add top padding on mobile for header
+            isAIAssistantPage ? "overflow-hidden" : "overflow-y-auto"
+          )}
+        >
           <div className="h-full">{children}</div>
         </main>
       </div>
 
-      {/* Floating Chatbot Widget - Hidden on AI assistant page */}
+      {/* Floating Chatbot Widget - Hidden on AI assistant page and when mobile sidebar is open */}
       {shouldShowChatbot && (
-        <FloatingChatbot sidebarCollapsed={isSidebarCollapsed} />
+        <FloatingChatbot
+          sidebarCollapsed={isSidebarCollapsed}
+          isMobileSidebarOpen={isSidebarOpen}
+        />
       )}
     </div>
   );

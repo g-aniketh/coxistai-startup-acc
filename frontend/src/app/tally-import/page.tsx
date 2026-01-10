@@ -186,8 +186,8 @@ export default function TallyImportPage() {
                 Import from Tally
               </h1>
               <p className="text-gray-700">
-                Migrate your Tally financial records to Coxist AI. Your data
-                will be seamlessly integrated into your dashboard.
+                Migrate your Tally financial records to Sai Vishwas Hospitals.
+                Your data will be seamlessly integrated into your dashboard.
               </p>
             </div>
 

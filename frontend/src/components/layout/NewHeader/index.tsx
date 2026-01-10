@@ -2,7 +2,7 @@
 
 import React, { ReactNode } from "react";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import Image from "next/image";
 import FluidGlass from "@/components/FluidGlass";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -29,11 +29,17 @@ const NewHeader = () => {
         }}
       >
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <Sparkles className="h-5 w-5 text-primary" />
+          <div className="h-8 w-8 rounded-full overflow-hidden bg-white flex items-center justify-center">
+            <Image
+              src="/hospitalLogo.jpeg"
+              alt="Sai Vishwas Hospitals"
+              width={32}
+              height={32}
+              className="object-cover"
+            />
           </div>
           <span className="text-lg font-semibold text-foreground">
-            CoXist AI
+            Sai Vishwas Hospitals
           </span>
         </Link>
 

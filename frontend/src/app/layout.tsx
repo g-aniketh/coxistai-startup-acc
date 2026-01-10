@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MediFinance Pro - Hospital Financial Management",
+  title: "Sai Vishwas Hospitals - Hospital Financial Management",
   description:
     "Comprehensive hospital financial management system with revenue cycle management, patient billing, insurance claims, and real-time financial analytics.",
 };
@@ -36,7 +36,7 @@ export default function RootLayout({
         className="antialiased h-full bg-background text-foreground"
         suppressHydrationWarning
       >
-        <ThemeProvider defaultTheme="light" storageKey="coxistai-theme">
+        <ThemeProvider defaultTheme="light" storageKey="sai-vishwas-theme">
           <AuthProvider>
             <Toaster
               position="top-center"

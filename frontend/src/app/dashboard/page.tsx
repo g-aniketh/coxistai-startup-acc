@@ -139,7 +139,7 @@ export default function DashboardPage() {
         <div className="h-screen">
           {/* Main Content - Full Width */}
           <div className="overflow-y-auto custom-scrollbar h-full">
-            <div className="p-4 md:p-8 space-y-4 md:space-y-6 w-full px-4 md:px-8 lg:px-16 pb-32">
+            <div className="p-4 md:p-8 space-y-4 md:space-y-6 w-full max-w-full pb-32">
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -217,9 +217,7 @@ export default function DashboardPage() {
                 <StatCard
                   title="Cash Position"
                   value={
-                    summary
-                      ? formatINR(summary.financial.totalBalance)
-                      : "₹0"
+                    summary ? formatINR(summary.financial.totalBalance) : "₹0"
                   }
                   percentageChange={17}
                   icon={<DollarSign className="h-5 w-5" />}
@@ -231,11 +229,7 @@ export default function DashboardPage() {
                 <StatCard
                   title="Patient Collections"
                   value={
-                    summary
-                      ? formatINR(
-                          summary.financial.monthlyRevenue
-                        )
-                      : "₹0"
+                    summary ? formatINR(summary.financial.monthlyRevenue) : "₹0"
                   }
                   percentageChange={23}
                   icon={<TrendingUp className="h-5 w-5" />}
@@ -247,9 +241,7 @@ export default function DashboardPage() {
                 <StatCard
                   title="Operating Expenses"
                   value={
-                    summary
-                      ? formatINR(summary.financial.monthlyBurn)
-                      : "₹0"
+                    summary ? formatINR(summary.financial.monthlyBurn) : "₹0"
                   }
                   percentageChange={
                     summary && summary.financial.monthlyRevenue > 0
@@ -270,9 +262,7 @@ export default function DashboardPage() {
                   title="Annual Revenue"
                   value={
                     summary
-                      ? formatINR(
-                          summary.financial.monthlyRevenue * 12
-                        )
+                      ? formatINR(summary.financial.monthlyRevenue * 12)
                       : "₹0"
                   }
                   percentageChange={12}

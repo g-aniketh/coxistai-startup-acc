@@ -624,55 +624,57 @@ export default function ProductsPage() {
               </div>
 
               {/* Tabs */}
-              <div className="flex gap-2 border-b border-gray-200">
-                <Button
-                  onClick={() => setActiveTab("overview")}
-                  variant={activeTab === "overview" ? "default" : "ghost"}
-                  className={
-                    activeTab === "overview"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <Activity className="h-4 w-4 mr-2" />
-                  Overview
-                </Button>
-                <Button
-                  onClick={() => setActiveTab("movements")}
-                  variant={activeTab === "movements" ? "default" : "ghost"}
-                  className={
-                    activeTab === "movements"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <History className="h-4 w-4 mr-2" />
-                  Stock Movements
-                </Button>
-                <Button
-                  onClick={() => setActiveTab("alerts")}
-                  variant={activeTab === "alerts" ? "default" : "ghost"}
-                  className={
-                    activeTab === "alerts"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <AlertTriangle className="h-4 w-4 mr-2" />
-                  Alerts ({inventoryAlerts.length})
-                </Button>
-                <Button
-                  onClick={() => setActiveTab("analytics")}
-                  variant={activeTab === "analytics" ? "default" : "ghost"}
-                  className={
-                    activeTab === "analytics"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Analytics
-                </Button>
+              <div className="border-b border-gray-200 overflow-x-auto custom-scrollbar">
+                <div className="flex gap-2 min-w-max pb-2">
+                  <Button
+                    onClick={() => setActiveTab("overview")}
+                    variant={activeTab === "overview" ? "default" : "ghost"}
+                    className={
+                      activeTab === "overview"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <Activity className="h-4 w-4 mr-2" />
+                    Overview
+                  </Button>
+                  <Button
+                    onClick={() => setActiveTab("movements")}
+                    variant={activeTab === "movements" ? "default" : "ghost"}
+                    className={
+                      activeTab === "movements"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <History className="h-4 w-4 mr-2" />
+                    Stock Movements
+                  </Button>
+                  <Button
+                    onClick={() => setActiveTab("alerts")}
+                    variant={activeTab === "alerts" ? "default" : "ghost"}
+                    className={
+                      activeTab === "alerts"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                    Alerts ({inventoryAlerts.length})
+                  </Button>
+                  <Button
+                    onClick={() => setActiveTab("analytics")}
+                    variant={activeTab === "analytics" ? "default" : "ghost"}
+                    className={
+                      activeTab === "analytics"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Analytics
+                  </Button>
+                </div>
               </div>
 
               {/* Overview Tab */}

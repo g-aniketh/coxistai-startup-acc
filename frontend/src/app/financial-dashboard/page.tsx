@@ -501,31 +501,33 @@ function FinancialDashboardContent() {
               </div>
 
               {/* Tabs */}
-              <div className="flex gap-2 border-b border-gray-200">
-                <Button
-                  onClick={() => setActiveTab("transactions")}
-                  variant={activeTab === "transactions" ? "default" : "ghost"}
-                  className={
-                    activeTab === "transactions"
-                      ? "bg-teal-600 hover:bg-teal-700 text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <Receipt className="h-4 w-4 mr-2" />
-                  Transactions
-                </Button>
-                <Button
-                  onClick={() => setActiveTab("statistics")}
-                  variant={activeTab === "statistics" ? "default" : "ghost"}
-                  className={
-                    activeTab === "statistics"
-                      ? "bg-teal-600 hover:bg-teal-700 text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <BarChart2 className="h-4 w-4 mr-2" />
-                  Analytics
-                </Button>
+              <div className="border-b border-gray-200 overflow-x-auto custom-scrollbar">
+                <div className="flex gap-2 min-w-max pb-2">
+                  <Button
+                    onClick={() => setActiveTab("transactions")}
+                    variant={activeTab === "transactions" ? "default" : "ghost"}
+                    className={
+                      activeTab === "transactions"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <Receipt className="h-4 w-4 mr-2" />
+                    Transactions
+                  </Button>
+                  <Button
+                    onClick={() => setActiveTab("statistics")}
+                    variant={activeTab === "statistics" ? "default" : "ghost"}
+                    className={
+                      activeTab === "statistics"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <BarChart2 className="h-4 w-4 mr-2" />
+                    Analytics
+                  </Button>
+                </div>
               </div>
 
               {/* Transactions Tab */}
@@ -602,16 +604,16 @@ function FinancialDashboardContent() {
                   {/* Filters and Actions */}
                   <Card className="bg-white rounded-xl border-0 shadow-lg">
                     <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg font-medium text-[#2C2C2C]">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <CardTitle className="text-lg font-medium text-gray-900">
                           Transactions ({filteredTransactions.length})
                         </CardTitle>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                           <Select
                             value={selectedAccount}
                             onValueChange={setSelectedAccount}
                           >
-                            <SelectTrigger className="w-40">
+                            <SelectTrigger className="w-full sm:w-40">
                               <SelectValue placeholder="All Accounts" />
                             </SelectTrigger>
                             <SelectContent>
@@ -625,7 +627,7 @@ function FinancialDashboardContent() {
                           </Select>
                           <Button
                             onClick={() => setShowAddModal(true)}
-                            className="bg-teal-600 hover:bg-teal-700 text-white"
+                            className="bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap w-full sm:w-auto"
                           >
                             <Plus className="h-4 w-4 mr-2" />
                             Add Transaction

@@ -859,40 +859,42 @@ export default function GstManagementPage() {
             </div>
           </div>
 
-          <div className="flex gap-2 border-b border-gray-200">
-            {[
-              {
-                id: "registrations" as GstTab,
-                label: "Registrations",
-                icon: Building2,
-              },
-              {
-                id: "taxRates" as GstTab,
-                label: "Tax Rates",
-                icon: BadgePercent,
-              },
-              {
-                id: "mappings" as GstTab,
-                label: "Ledger Mappings",
-                icon: ListChecks,
-              },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
-                    activeTab === tab.id
-                      ? "border-[#607c47] text-[#607c47] font-medium"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  {tab.label}
-                </button>
-              );
-            })}
+          <div className="border-b border-gray-200 overflow-x-auto custom-scrollbar">
+            <div className="flex gap-2 min-w-max pb-2">
+              {[
+                {
+                  id: "registrations" as GstTab,
+                  label: "Registrations",
+                  icon: Building2,
+                },
+                {
+                  id: "taxRates" as GstTab,
+                  label: "Tax Rates",
+                  icon: BadgePercent,
+                },
+                {
+                  id: "mappings" as GstTab,
+                  label: "Ledger Mappings",
+                  icon: ListChecks,
+                },
+              ].map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors whitespace-nowrap flex-shrink-0 ${
+                      activeTab === tab.id
+                        ? "border-teal-600 text-teal-600 font-medium"
+                        : "border-transparent text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <Card className="rounded-2xl shadow-lg border-0 bg-white">
@@ -1127,18 +1129,18 @@ export default function GstManagementPage() {
 
           {/* Tax Rate Dialog */}
           <Dialog open={taxDialogOpen} onOpenChange={setTaxDialogOpen}>
-            <DialogContent className="max-w-3xl">
-              <DialogHeader>
-                <DialogTitle className="text-[#2C2C2C]">
+            <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col">
+              <DialogHeader className="flex-shrink-0">
+                <DialogTitle className="text-gray-900">
                   {editingTaxRate ? "Edit Tax Rate" : "Create Tax Rate"}
                 </DialogTitle>
-                <DialogDescription className="text-[#2C2C2C]/70">
+                <DialogDescription className="text-gray-600">
                   Configure GST slabs and splits. Total GST is auto-split into
                   CGST/SGST for intra-state supplies; IGST applies for
                   inter-state.
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
+              <div className="space-y-4 overflow-y-auto flex-1 min-h-0 pr-2 custom-scrollbar">
                 <div className="space-y-2">
                   <Label>Registration</Label>
                   <Select
@@ -1386,11 +1388,11 @@ export default function GstManagementPage() {
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-2">
+                <div className="flex flex-wrap gap-2 justify-end">
                   <Button
                     variant="outline"
                     onClick={() => setTaxDialogOpen(false)}
-                    className="text-[#2C2C2C] border-gray-300 hover:bg-gray-100"
+                    className="text-gray-900 border-gray-300 hover:bg-gray-100 whitespace-nowrap"
                     disabled={taxSaving}
                   >
                     Cancel
@@ -1398,7 +1400,7 @@ export default function GstManagementPage() {
                   <Button
                     onClick={handleSaveTaxRate}
                     disabled={taxSaving}
-                    className="bg-[#607c47] hover:bg-[#4a6129] text-white"
+                    className="bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
                   >
                     {taxSaving
                       ? "Saving..."

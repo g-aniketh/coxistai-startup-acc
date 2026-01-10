@@ -328,38 +328,34 @@ export default function AIAssistantPage() {
   return (
     <AuthGuard requireAuth={true}>
       <MainLayout>
-        <div className="bg-gray-50 flex">
-          <div className="flex-1 overflow-y-auto custom-scrollbar pb-6">
-            <div
-              className={cn(
-                "p-4 md:p-8",
-                showIntro ? "space-y-4 md:space-y-6" : "space-y-3 md:space-y-4"
-              )}
-            >
+        <div className="bg-gray-50 h-full flex flex-col overflow-hidden">
+          {/* Fixed Header Section - No scrolling */}
+          <div className="flex-shrink-0 bg-gray-50 border-b border-gray-200">
+            <div className="p-4 md:p-8 pb-0">
               {showIntro && (
                 <>
                   {/* Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                     <div>
-                      <h1 className="text-2xl md:text-3xl font-bold text-[#2C2C2C] flex items-center gap-2">
-                        <Sparkles className="h-8 w-8 text-[#607c47]" />
+                      <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
+                        <Sparkles className="h-8 w-8 text-teal-600" />
                         AI Assistant
                       </h1>
-                      <p className="text-sm text-[#2C2C2C]/70 mt-1">
+                      <p className="text-sm text-gray-600 mt-1">
                         Your intelligent CFO companion for insights,
                         forecasting, and financial guidance
                       </p>
                     </div>
                     <Badge
                       variant="outline"
-                      className="border-gray-300 text-[#2C2C2C]"
+                      className="border-gray-300 text-gray-900"
                     >
                       AI Powered
                     </Badge>
                   </div>
 
-                  {/* AI Status Banner */}
-                  <div className="bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-2 md:mb-4">
+                  {/* AI Status Banner - Hidden on mobile */}
+                  <div className="hidden lg:block bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-100 rounded-lg">
@@ -383,70 +379,70 @@ export default function AIAssistantPage() {
                 </>
               )}
 
-              {/* Tabs */}
-              <div
-                className={cn(
-                  "flex gap-2 border-b border-gray-200",
-                  !showIntro &&
-                    activeTab === "chatbot" &&
-                    "border-transparent pt-0 pb-0"
-                )}
-              >
-                <Button
-                  onClick={() => setActiveTab("chatbot")}
-                  variant={activeTab === "chatbot" ? "default" : "ghost"}
-                  className={
-                    activeTab === "chatbot"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <Bot className="h-4 w-4 mr-2" />
-                  AI Chat
-                </Button>
-                <Button
-                  onClick={() => setActiveTab("insights")}
-                  variant={activeTab === "insights" ? "default" : "ghost"}
-                  className={
-                    activeTab === "insights"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <Lightbulb className="h-4 w-4 mr-2" />
-                  AI Insights
-                </Button>
-                <Button
-                  onClick={() => setActiveTab("scenarios")}
-                  variant={activeTab === "scenarios" ? "default" : "ghost"}
-                  className={
-                    activeTab === "scenarios"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <Target className="h-4 w-4 mr-2" />
-                  What-If Scenarios
-                </Button>
-                <Button
-                  onClick={() => setActiveTab("forecasting")}
-                  variant={activeTab === "forecasting" ? "default" : "ghost"}
-                  className={
-                    activeTab === "forecasting"
-                      ? "bg-[#607c47] hover:bg-[#4a6129] text-white"
-                      : "text-[#2C2C2C] hover:bg-gray-100"
-                  }
-                >
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  AI Forecasting
-                </Button>
+              {/* Fixed Tabs - Sticky, horizontal scroll for tabs */}
+              <div className="border-b border-gray-200 overflow-x-auto custom-scrollbar bg-gray-50">
+                <div className="flex gap-2 min-w-max pb-2">
+                  <Button
+                    onClick={() => setActiveTab("chatbot")}
+                    variant={activeTab === "chatbot" ? "default" : "ghost"}
+                    className={
+                      activeTab === "chatbot"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <Bot className="h-4 w-4 mr-2" />
+                    AI Chat
+                  </Button>
+                  <Button
+                    onClick={() => setActiveTab("insights")}
+                    variant={activeTab === "insights" ? "default" : "ghost"}
+                    className={
+                      activeTab === "insights"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <Lightbulb className="h-4 w-4 mr-2" />
+                    AI Insights
+                  </Button>
+                  <Button
+                    onClick={() => setActiveTab("scenarios")}
+                    variant={activeTab === "scenarios" ? "default" : "ghost"}
+                    className={
+                      activeTab === "scenarios"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <Target className="h-4 w-4 mr-2" />
+                    What-If Scenarios
+                  </Button>
+                  <Button
+                    onClick={() => setActiveTab("forecasting")}
+                    variant={activeTab === "forecasting" ? "default" : "ghost"}
+                    className={
+                      activeTab === "forecasting"
+                        ? "bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                        : "text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                    }
+                  >
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    AI Forecasting
+                  </Button>
+                </div>
               </div>
+            </div>
+          </div>
 
+          {/* Tab Content Area - Only this section scrolls */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0">
+            <div className="p-4 md:p-8">
               {/* Chatbot Tab */}
               {activeTab === "chatbot" && (
-                <div className="space-y-6">
+                <div className="h-full min-h-[600px] flex flex-col">
                   <AIChatbot
-                    className="w-full"
+                    className="w-full flex-1 min-h-0"
                     onUserMessage={() => setHasInteracted(true)}
                   />
                 </div>
@@ -454,7 +450,7 @@ export default function AIAssistantPage() {
 
               {/* Insights Tab */}
               {activeTab === "insights" && (
-                <div className="space-y-6">
+                <div className="space-y-6 pb-8">
                   <div className="flex justify-between items-center">
                     <h2 className="text-xl font-semibold text-[#2C2C2C]">
                       AI Financial Insights
@@ -676,7 +672,7 @@ export default function AIAssistantPage() {
 
               {/* Scenarios Tab */}
               {activeTab === "scenarios" && (
-                <div className="space-y-6">
+                <div className="space-y-6 pb-8">
                   <div className="flex justify-between items-center">
                     <h2 className="text-xl font-semibold text-[#2C2C2C]">
                       What-If Scenario Analysis
@@ -885,7 +881,7 @@ export default function AIAssistantPage() {
 
               {/* Forecasting Tab */}
               {activeTab === "forecasting" && (
-                <div className="space-y-6">
+                <div className="space-y-6 pb-8">
                   <div className="flex justify-between items-center">
                     <h2 className="text-xl font-semibold text-[#2C2C2C]">
                       AI Financial Forecasting

@@ -51,7 +51,12 @@ export const getHospitalBankAccountsWithBalance = (totalBalance: number) => {
 
   return HOSPITAL_BANK_ACCOUNTS.map((account, index) => ({
     ...account,
-    balance: index === 0 ? account1Balance : index === 1 ? account2Balance : account3Balance,
+    balance:
+      index === 0
+        ? account1Balance
+        : index === 1
+          ? account2Balance
+          : account3Balance,
   }));
 };
 
@@ -147,4 +152,3 @@ export const currencyFormatter = new Intl.NumberFormat("en-IN", {
 });
 
 export const formatINR = (amount: number) => currencyFormatter.format(amount);
-

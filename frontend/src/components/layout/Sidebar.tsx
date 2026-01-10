@@ -54,11 +54,13 @@ interface NavItem {
 interface SidebarProps {
   collapsed?: boolean;
   onToggleCollapse?: () => void;
+  isMobile?: boolean;
 }
 
 export default function Sidebar({
   collapsed = false,
   onToggleCollapse,
+  isMobile = false,
 }: SidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
@@ -149,11 +151,20 @@ export default function Sidebar({
     isActive: boolean;
   }) => {
     const Icon = item.icon;
+
+    const handleClick = () => {
+      // Close sidebar on mobile when navigation item is clicked
+      if (isMobile && onToggleCollapse) {
+        onToggleCollapse();
+      }
+    };
+
     const linkElement = (
       <Link
         href={item.href}
         title={collapsed ? item.name : undefined}
         aria-label={item.name}
+        onClick={handleClick}
         className={cn(
           "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors relative w-full",
           collapsed ? "justify-center" : "",
@@ -189,22 +200,28 @@ export default function Sidebar({
     <div
       className={cn(
         "relative flex flex-col h-full bg-[#1E1E1E] text-white transition-all duration-300",
-        collapsed ? "w-20" : "w-64"
+        collapsed ? "w-20" : "w-80"
       )}
     >
-      {/* Header / Profile / Toggle */}
-      <div className="px-4 pt-2 pb-2 flex items-center justify-between gap-3">
+      {/* Header / Logo / Toggle */}
+      <div className="px-4 pt-4 pb-2 flex flex-col items-center gap-3 relative">
         <div
-          className={cn("flex items-center gap-2", collapsed ? "mx-auto" : "")}
-        >
-          <div className="w-8 h-8 rounded-lg shrink-0 bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center">
-            <HeartPulse className="h-5 w-5 text-white" />
-          </div>
-          {!collapsed && (
-            <h2 className="font-bold text-lg tracking-tight">MediFinance</h2>
+          className={cn(
+            "rounded-xl overflow-hidden bg-white flex items-center justify-center shadow-lg border-2 border-white/20 transition-all duration-300",
+            collapsed ? "w-16 h-16" : "w-28 h-28"
           )}
+        >
+          <Image
+            src="/hospitalLogo.jpeg"
+            alt="Sai Vishwas Hospitals"
+            width={collapsed ? 64 : 112}
+            height={collapsed ? 64 : 112}
+            className="object-cover"
+            priority
+          />
         </div>
-        {onToggleCollapse && (
+        {/* Desktop Toggle Button - Only show on desktop */}
+        {!isMobile && onToggleCollapse && (
           <button
             onClick={(e) => {
               e.stopPropagation();

@@ -252,7 +252,8 @@ export default function TeamPage() {
                     No team members yet
                   </h3>
                   <p className="text-[#1f1f1f]/70 mb-4">
-                    Create accounts for your team to collaborate on Coxist AI.
+                    Create accounts for your team to collaborate on Sai Vishwas
+                    Hospitals.
                   </p>
                   {canManageTeam && (
                     <Button
